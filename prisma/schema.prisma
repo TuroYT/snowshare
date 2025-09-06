@@ -66,8 +66,8 @@ model VerificationToken {
 model Share {
   id          String   @id @default(cuid())
   type        ShareType
-  ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String?
+  owner       User?     @relation(fields: [ownerId], references: [id])
   filePath    String?
   paste       String?
   pastelanguage pasteType?
@@ -75,7 +75,7 @@ model Share {
   slug        String  @unique
   password    String?
   createdAt   DateTime @default(now())
-  expiresAt   DateTime
+  expiresAt   DateTime?
 }
 
 enum ShareType {
