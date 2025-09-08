@@ -1,7 +1,3 @@
-# SnowShare
-
-SnowShare is a modern, secure file and link sharing platform built with Next.js, Prisma, and NextAuth. It provides a clean, user-friendly interface for sharing URLs, text snippets, and files with customizable options for expiration, privacy, and access.
-
 <p align="center">
    <img src="public/logo.svg" alt="SnowShare Logo" width="120" style="margin-bottom: 10px;" />
 </p>
@@ -13,34 +9,34 @@ SnowShare is a modern, secure file and link sharing platform built with Next.js,
    It provides a clean, user-friendly interface for sharing URLs, text snippets, and files with customizable options for expiration, privacy, and access.
 </p>
 
-## Features
+## Features ✨
 
-### LinkShare
+### LinkShare 🔗
 - Share any URL with a customizable shortened link
-- Set expiration times (1 day to solar explosion)
+- Set expiration times (1 day to solar explosion) ⏳
 - Option for no expiration (authenticated users)
 - Custom slugs for personalized links
-- Password protection for enhanced security
-- Instant QR code generation for shared links
+- Password protection for enhanced security 🔒
+- Instant QR code generation for shared links 📱
 
-### PasteShare
-- Share code snippets and text with syntax highlighting
+### PasteShare 📋
+- Share code snippets and text with syntax highlighting 🎨
 - Support for multiple programming languages
-- Expiration options and password protection
+- Expiration options and password protection 🔒
 - Ideal for sharing code samples, configuration files, or any text content
 
-### FileShare
+### FileShare 📁
 - Secure file uploads with size limits
 - Automatic file type detection
-- Download tracking
+- Download tracking 📥
 - Same expiration and protection features
 
-### User Management
-- User registration and authentication via NextAuth
+### User Management 👥
+- User registration and authentication via NextAuth 🔑
 - Extended privileges for registered users (longer expiration times, more storage)
 - Track and manage your shared content
 
-## Tech Stack
+## Tech Stack 🧰
 
 - **Frontend**: Next.js 15.5, React 19.1, TailwindCSS 4
 - **Backend**: Next.js API Routes
@@ -48,14 +44,18 @@ SnowShare is a modern, secure file and link sharing platform built with Next.js,
 - **Authentication**: NextAuth.js with bcrypt password hashing
 - **Special Features**: QR code generation, custom URL slugs
 
-## Getting Started
+## Getting Started 🚀
 
-### Prerequisites
+- Node.js 18+ and npm/yarn
+- PostgreSQL database
+### Prerequisites ✅
+- Node.js 18+ and npm/yarn
+- PostgreSQL database
 
 - Node.js 18+ and npm/yarn
 - PostgreSQL database
 
-### Installation
+### Installation 🛠️
 
 1. Clone the repository
    ```
@@ -94,7 +94,7 @@ SnowShare is a modern, secure file and link sharing platform built with Next.js,
 
 6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Project Structure
+## Project Structure 🗂️
 
 ```
 /
@@ -111,30 +111,6 @@ SnowShare is a modern, secure file and link sharing platform built with Next.js,
     └── lib/               # Utility functions and shared code
 ```
 
-## 🚀 Features
-
-### 🔗 LinkShare
-
-### 📝 PasteShare
-   ```
-### 📁 FileShare
-   vercel
-### 👤 User Management
-
-## 🛠️ Tech Stack
-   - Build the project: `npm run build`
-## 🏁 Getting Started
-
-## 📂 Project Structure
-
-## 🚢 Deployment
-- Encrypted file storage
-## 🔒 Security Features
-- Password-protected shares
-## 🤝 Contributing
-
-## 📄 License
-
 ## 🙏 Acknowledgments
 
 1. Fork the repository
@@ -143,11 +119,11 @@ SnowShare is a modern, secure file and link sharing platform built with Next.js,
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## License ⚖️
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## Acknowledgments / Credits 🙌
 
 - [Next.js](https://nextjs.org/) - The React Framework
 - [Prisma](https://www.prisma.io/) - Next-generation ORM
