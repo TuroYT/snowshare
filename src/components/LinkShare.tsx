@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/useAuth"
+import { QRCodeSVG } from "qrcode.react"
 
 const MAX_DAYS_ANON = 7
 const MAX_DAYS_AUTH = 365
@@ -140,12 +141,12 @@ const LinkShare: React.FC = () => {
         setError(data?.error || "Erreur lors de la création du partage")
       } else {
         // Expect backend to return the created share (slug or full URL)
-        const returned = data?.share || data
-        const returnedSlug = returned?.slug || returned?.id || null
-        if (returnedSlug) {
-          setSuccess(`${window.location.origin}/s/${returnedSlug}`)
-        } else if (data?.url) {
-          setSuccess(String(data.url))
+        console.log("Données retournées par le backend:", data);
+        const linkShare = data?.share?.linkShare;
+        if (linkShare?.slug) {
+          setSuccess(`${window.location.origin}/s/${linkShare.slug}`)
+        } else if (linkShare?.id) {
+          setSuccess(`${window.location.origin}/s/${linkShare.id}`)
         } else {
           setSuccess("Partage créé")
         }
@@ -399,6 +400,14 @@ const LinkShare: React.FC = () => {
               {copied && (
                 <p className="text-xs text-green-400 mt-2">✓ Copié dans le presse-papiers</p>
               )}
+              
+              {/* QR Code pour le lien */}
+              <div className="mt-3 flex flex-col items-center bg-gray-750 p-3 rounded-lg border border-gray-600">
+                <p className="text-sm text-gray-300 mb-2">Scanner ce QR code pour accéder au lien</p>
+                <div className="bg-white p-2 rounded">
+                  <QRCodeSVG value={success} size={150}  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

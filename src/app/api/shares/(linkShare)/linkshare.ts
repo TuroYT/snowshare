@@ -1,7 +1,9 @@
-import { Share } from './../../../../generated/prisma/index.d';
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { authOptions } from "@/lib/auth";
+import { encrypt } from "@/lib/crypto-link";
+
 
 // Utility function to validate URLs
 function isValidUrl(url: string) {
@@ -44,7 +46,8 @@ export const createLinkShare = async (
         }
     }
 
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+    
     if (!session) {
         // verif si expire supérieur à 7 jours
         if (expiresAt) {
@@ -58,10 +61,11 @@ export const createLinkShare = async (
         }
     }
 
-    // hash password and link if provided
+    // hash password et chiffrer l'URL si password fourni
     if (password) {
-        password = await bcrypt.hash(password, 12);
-        urlOriginal = await bcrypt.hash(urlOriginal, 12);
+        const hashedPassword = await bcrypt.hash(password, 12);
+        urlOriginal = encrypt(urlOriginal, password);
+        password = hashedPassword;
     }
 
     // generate unique slug if not provided

@@ -16,6 +16,7 @@
     "next": "15.5.0",
     "next-auth": "^4.24.11",
     "prisma": "^6.14.0",
+    "qrcode.react": "^4.2.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
