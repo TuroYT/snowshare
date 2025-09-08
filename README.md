@@ -2,7 +2,16 @@
 
 SnowShare is a modern, secure file and link sharing platform built with Next.js, Prisma, and NextAuth. It provides a clean, user-friendly interface for sharing URLs, text snippets, and files with customizable options for expiration, privacy, and access.
 
-![SnowShare Logo](public/logo.svg)
+<p align="center">
+   <img src="public/logo.svg" alt="SnowShare Logo" width="120" style="margin-bottom: 10px;" />
+</p>
+
+<h1 align="center" style="font-family: 'Segoe UI', Arial, sans-serif; color: #3b82f6; font-size: 2.5rem; margin-bottom: 0.5em;">SnowShare</h1>
+
+<p align="center" style="font-size: 1.15rem; color: #374151; font-weight: 500; margin-bottom: 1.5em;">
+   SnowShare is a modern, <b>secure</b> file and link sharing platform built with Next.js, Prisma, and NextAuth.<br>
+   It provides a clean, user-friendly interface for sharing URLs, text snippets, and files with customizable options for expiration, privacy, and access.
+</p>
 
 ## Features
 
@@ -102,31 +111,31 @@ SnowShare is a modern, secure file and link sharing platform built with Next.js,
     └── lib/               # Utility functions and shared code
 ```
 
-## Deployment
+## 🚀 Features
 
-This project can be deployed on platforms that support Next.js applications:
+### 🔗 LinkShare
 
-1. **Vercel** (recommended)
+### 📝 PasteShare
    ```
-   npm install -g vercel
+### 📁 FileShare
    vercel
-   ```
+### 👤 User Management
 
-2. **Other platforms**
+## 🛠️ Tech Stack
    - Build the project: `npm run build`
-   - Start the production server: `npm start`
+## 🏁 Getting Started
 
-## Security Features
+## 📂 Project Structure
 
-- Password hashing with bcrypt
+## 🚢 Deployment
 - Encrypted file storage
-- Link expiration
+## 🔒 Security Features
 - Password-protected shares
-- Rate limiting for API routes
+## 🤝 Contributing
 
-## Contributing
+## 📄 License
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🙏 Acknowledgments
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
