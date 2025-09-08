@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "hello": "Hello, {{email}}",
+    "signout": "Sign out",
+    "signin": "Sign in",
+    "signup": "Sign up"
+  },
+  "loading": "Loading..."
+  ,
+  "pasteshare": {
+    "title": "PasteShare",
+    "description": "Share your text snippets securely and easily."
+  },
+  "fileshare": {
+    "title": "FileShare",
+    "description": "Share your files securely and easily."
+  }
+  ,
+  "home": {
+    "title": "Welcome to SnowShare",
+    "description": "Share your files, code and URLs securely and easily."
+  },
+  "tabs": {
+    "linkshare": "LinkShare",
+    "pasteshare": "PasteShare",
+    "fileshare": "FileShare"
+  },
+  "linkshare": {
+    "title": "Share a link",
+    "subtitle": "Create a shareable link for any URL",
+    "label_url": "URL to share",
+    "placeholder_url": "https://example.com/my-page",
+    "url_error": "Invalid URL format",
+    "url_required": "URL is required",
+    "url_invalid": "Provided URL is not valid",
+    "created": "Share created",
+    "network_error": "Network error — could not create share",
+    "never_expires": "Never expires",
+    "never_expires_desc": "This link will remain active indefinitely",
+    "days": "days",
+    "login_for_more": "Log in for longer durations (up to {{max}} days) or no expiration",
+    "advanced": "Advanced settings (optional)",
+    "custom_slug": "Custom link",
+    "slug_hint": "Letters, numbers, dashes and underscores only",
+    "password_protect": "Password protection",
+    "password_placeholder": "Optional - leave empty for open access",
+    "shortcut": "Tip:",
+    "shortcut_tail": "to create quickly",
+    "error_title": "Error",
+    "success_title": "Link created successfully!",
+    "copy_title": "Copy link",
+    "duration_never": "This link will never expire",
+    "duration_in_1_day": "This link will expire in 1 day",
+    "duration_in_x_days": "This link will expire in {{count}} days",
+    "duration_in_1_week": "This link will expire in 1 week",
+    "duration_in_x_weeks": "This link will expire in {{count}} weeks",
+    "duration_in_1_month": "This link will expire in 1 month",
+    "duration_in_x_months": "This link will expire in {{count}} months",
+    "duration_in_x_years": "This link will expire in {{count}} year(s)"
+  },
+  "footer": {
+    "made_with": "Made with",
+    "by": "by Romain",
+    "github": "GitHub",
+    "license": "License"
+  },
+  "auth": {
+    "signin_title": "Sign in to your account",
+    "signin_loading": "Signing in...",
+    "signin_button": "Sign in",
+    "no_account": "No account? Create one",
+    "signup_title": "Create an account",
+    "signup_loading": "Creating...",
+    "signup_button": "Create account",
+    "already_account": "Already have an account? Sign in"
+  }
+}

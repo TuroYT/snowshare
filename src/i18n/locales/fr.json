@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "hello": "Bonjour, {{email}}",
+    "signout": "Déconnexion",
+    "signin": "Connexion",
+    "signup": "Inscription"
+  },
+  "loading": "Chargement..."
+  ,
+  "pasteshare": {
+    "title": "PasteShare",
+    "description": "Partagez vos extraits de texte en toute sécurité et simplicité."
+  },
+  "fileshare": {
+    "title": "FileShare",
+    "description": "Partagez vos fichiers en toute sécurité et simplicité."
+  }
+  ,
+  "home": {
+    "title": "Bienvenue sur SnowShare",
+    "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."
+  },
+  "tabs": {
+    "linkshare": "LinkShare",
+    "pasteshare": "PasteShare",
+    "fileshare": "FileShare"
+  },
+  "linkshare": {
+    "title": "Partager un lien",
+    "subtitle": "Créez un lien partageable pour n'importe quelle URL",
+    "label_url": "URL à partager",
+    "placeholder_url": "https://exemple.com/ma-page",
+    "url_error": "Format d'URL invalide",
+    "url_required": "L'URL est requise",
+    "url_invalid": "L'URL fournie n'est pas valide",
+    "created": "Partage créé",
+    "network_error": "Erreur réseau — impossible de créer le partage",
+    "never_expires": "Aucune expiration",
+    "never_expires_desc": "Ce lien restera actif indéfiniment",
+    "days": "jours",
+    "login_for_more": "Connectez-vous pour des durées plus longues (jusqu'à {{max}} jours) ou sans expiration",
+    "advanced": "Paramètres avancés (optionnel)",
+    "custom_slug": "Lien personnalisé",
+    "slug_hint": "Lettres, chiffres, tirets et underscores uniquement",
+    "password_protect": "Protection par mot de passe",
+    "password_placeholder": "Optionnel - laissez vide pour un accès libre",
+    "shortcut": "Astuce :",
+    "shortcut_tail": "pour créer rapidement",
+    "error_title": "Erreur",
+    "success_title": "Lien créé avec succès !",
+    "copy_title": "Copier le lien"
+  },
+  "footer": {
+    "made_with": "Made with",
+    "by": "by Romain",
+    "github": "GitHub",
+    "license": "License"
+  },
+  "auth": {
+    "signin_title": "Connexion à votre compte",
+    "signin_loading": "Connexion...",
+    "signin_button": "Se connecter",
+    "no_account": "Pas de compte ? Créer un compte",
+    "signup_title": "Créer un compte",
+    "signup_loading": "Création...",
+    "signup_button": "Créer un compte",
+    "already_account": "Déjà un compte ? Se connecter"
+  }
+}

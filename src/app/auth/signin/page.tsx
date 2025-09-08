@@ -4,6 +4,7 @@ import { useState } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslation } from "react-i18next"
 
 export default function SignIn() {
   const [email, setEmail] = useState("")
@@ -11,6 +12,7 @@ export default function SignIn() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,10 +46,10 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
-            Connexion à votre compte
-          </h2>
-        </div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
+              {t('auth.signin_title','Connexion à votre compte')}
+            </h2>
+          </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -94,7 +96,7 @@ export default function SignIn() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
             >
-              {loading ? "Connexion..." : "Se connecter"}
+              {loading ? t('auth.signin_loading','Connexion...') : t('auth.signin_button','Se connecter')}
             </button>
           </div>
 
@@ -103,7 +105,7 @@ export default function SignIn() {
               href="/auth/signup"
               className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
             >
-              Pas de compte ? Créer un compte
+              {t('auth.no_account','Pas de compte ? Créer un compte')}
             </Link>
           </div>
         </form>

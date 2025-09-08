@@ -4,18 +4,24 @@ import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useTranslation } from "react-i18next"
 
 export default function Navigation() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { t, i18n } = useTranslation()
 
   const handleSignOut = async () => {
     await signOut({ redirect: false })
     router.push("/")
   }
 
+  const changeLang = (lng: string) => {
+    i18n.changeLanguage(lng)
+  }
+
   if (status === "loading") {
-    return <div className="bg-gray-800 text-gray-300 p-4">Chargement...</div>
+    return <div className="bg-gray-800 text-gray-300 p-4">{t('loading')}</div>
   }
 
   return (
@@ -32,16 +38,19 @@ export default function Navigation() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2">
+              <button onClick={() => changeLang('fr')} className="text-gray-400 hover:text-white text-sm">FR</button>
+              <button onClick={() => changeLang('en')} className="text-gray-400 hover:text-white text-sm">EN</button>
+            </div>
+
             {session ? (
               <>
-                <span className="text-gray-400">
-                  Bonjour, {session.user?.email}
-                </span>
+                <span className="text-gray-400">{t('nav.hello', { email: session.user?.email })}</span>
                 <button
                   onClick={handleSignOut}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  Déconnexion
+                  {t('nav.signout')}
                 </button>
               </>
             ) : (
@@ -50,13 +59,13 @@ export default function Navigation() {
                   href="/auth/signin"
                   className="text-gray-400 hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  Connexion
+                  {t('nav.signin')}
                 </Link>
                 <Link
                   href="/auth/signup"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  Inscription
+                  {t('nav.signup')}
                 </Link>
               </>
             )}

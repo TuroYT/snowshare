@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useTranslation } from "react-i18next"
 
 export default function SignUp() {
   const [email, setEmail] = useState("")
@@ -11,6 +12,7 @@ export default function SignUp() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,7 +59,7 @@ export default function SignUp() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
-            Créer un compte
+            {t('auth.signup_title','Créer un compte')}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -122,7 +124,7 @@ export default function SignUp() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
             >
-              {loading ? "Création..." : "Créer un compte"}
+              {loading ? t('auth.signup_loading','Création...') : t('auth.signup_button','Créer un compte')}
             </button>
           </div>
 
@@ -131,7 +133,7 @@ export default function SignUp() {
               href="/auth/signin"
               className="font-medium text-blue-400 hover:text-blue-300 transition-colors"
             >
-              Déjà un compte ? Se connecter
+              {t('auth.already_account','Déjà un compte ? Se connecter')}
             </Link>
           </div>
         </form>
