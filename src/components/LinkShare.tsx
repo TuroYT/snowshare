@@ -21,6 +21,7 @@ const LinkShare: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [qrSize, setQrSize] = useState<number>(150)
 
   function isValidUrl(value: string) {
     try {
@@ -72,6 +73,25 @@ const LinkShare: React.FC = () => {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [url, urlError, loading])
+
+  // Responsive QR size
+  useEffect(() => {
+    const update = () => {
+      try {
+        const w = window.innerWidth
+        // Small screens: smaller QR, larger screens: up to 200
+        if (w < 480) setQrSize(110)
+        else if (w < 640) setQrSize(140)
+        else if (w < 1024) setQrSize(160)
+        else setQrSize(200)
+      } catch {
+        setQrSize(150)
+      }
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -129,8 +149,8 @@ const LinkShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 max-w-2xl">
-      <div className="flex items-center gap-3 mb-6">
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 w-full max-w-2xl">
+      <div className="flex items-center gap-3 mb-6 justify-center">
         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -237,7 +257,7 @@ const LinkShare: React.FC = () => {
               <label htmlFor="slug" className="block text-sm font-medium text-gray-300 mb-2">
                 {t('linkshare.custom_slug','Lien personnalisé')}
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
                 <span className="text-sm text-gray-400 whitespace-nowrap">{typeof window !== 'undefined' ? window.location.origin + '/s/' : '/s/'}</span>
                 <input
                   id="slug"
@@ -246,7 +266,7 @@ const LinkShare: React.FC = () => {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
-                  className="flex-1 rounded-lg border border-gray-600 bg-gray-700 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                  className="flex-1 rounded-lg border border-gray-600 bg-gray-700 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 "
                 />
               </div>
               <p className="text-xs text-gray-400 mt-1">{t('linkshare.slug_hint','Lettres, chiffres, tirets et underscores uniquement')}</p>
@@ -329,41 +349,46 @@ const LinkShare: React.FC = () => {
             </svg>
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-medium text-green-300 mb-2">{t('linkshare.success_title','Lien créé avec succès !')}</h4>
-              <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 flex items-center gap-3">
-                <a 
-                  href={success} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="flex-1 text-sm text-blue-400 hover:text-blue-300 underline break-all min-w-0"
-                >
-                  {success}
-                </a>
-                <button
-                  onClick={() => copyToClipboard(success)}
-                  className="flex-shrink-0 p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-                  title={t('linkshare.copy_title','Copier le lien')}
-                >
-                  {copied ? (
-                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  )}
-                </button>
+              <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <a
+                        href={success}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-blue-400 hover:text-blue-300 underline break-all"
+                      >
+                        {success}
+                      </a>
+                      {copied && (
+                        <p className="text-xs text-green-400 mt-2">{t('linkshare.copied','✓ Copié dans le presse-papiers')}</p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 flex items-start gap-2">
+                      <button
+                        onClick={() => copyToClipboard(success)}
+                        className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                        title={t('linkshare.copy_title','Copier le lien')}
+                      >
+                        {copied ? (
+                          <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
               </div>
-              {copied && (
-                <p className="text-xs text-green-400 mt-2">{t('linkshare.copied','✓ Copié dans le presse-papiers')}</p>
-              )}
-              
-              <div className="mt-3 flex flex-col items-center bg-gray-750 p-3 rounded-lg border border-gray-600">
-                <p className="text-sm text-gray-300 mb-2">{t('linkshare.qr_info','Scanner ce QR code pour accéder au lien')}</p>
-                <div className="bg-white p-2 rounded">
-                  <QRCodeSVG value={success} size={150}  />
-                </div>
-              </div>
+                  <div className="mt-3 w-full sm:mt-0 sm:ml-4 flex-shrink-0">
+                    <div className="flex flex-col items-center bg-gray-750 p-3 rounded-lg border border-gray-600">
+                      <p className="text-sm text-gray-300 mb-2 text-center">{t('linkshare.qr_info','Scanner ce QR code pour accéder au lien')}</p>
+                      <div className="bg-white p-2 rounded" style={{ width: qrSize, height: qrSize }}>
+                        <QRCodeSVG value={success} size={qrSize} />
+                      </div>
+                    </div>
+                  </div>
             </div>
           </div>
         </div>
