@@ -17,7 +17,12 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      "generated/**",
+      "public/**",
       "next-env.d.ts",
+      "**/*.d.ts",
+      "prisma/**",
+      "src/generated/**",
     ],
   },
 ];

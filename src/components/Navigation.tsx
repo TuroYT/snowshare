@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 export default function Navigation() {
@@ -22,8 +23,11 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-gray-100 hover:text-white transition-colors">
-              SnowShare
+            <Link href="/" className="flex items-center gap-3">
+              <Image src="/logo.svg" alt="SnowShare Logo" width={36} height={36} />
+              <span className="text-xl font-bold text-gray-100 hover:text-white transition-colors">
+                SnowShare
+              </span>
             </Link>
           </div>
           

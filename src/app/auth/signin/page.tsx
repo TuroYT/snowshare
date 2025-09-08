@@ -34,7 +34,7 @@ export default function SignIn() {
         }
       }
     } catch (error) {
-      setError("Une erreur est survenue")
+      setError("Une erreur est survenue : " + (error as Error).message)
     } finally {
       setLoading(false)
     }

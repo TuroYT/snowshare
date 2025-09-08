@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+  "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+  "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
