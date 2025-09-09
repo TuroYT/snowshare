@@ -157,7 +157,7 @@ const LinkShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 w-full max-w-2xl">
+    <div className="bg-[#181f2a] p-8 rounded-2xl shadow-xl border border-[#232a38] w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-3 mb-6 justify-center">
         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +177,7 @@ const LinkShare: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+  <form onSubmit={handleSubmit} className="space-y-6">
         {/* Enhanced URL input */}
         <div className="space-y-2">
           <label htmlFor="url" className="block text-sm font-medium text-gray-300">
@@ -191,9 +191,7 @@ const LinkShare: React.FC = () => {
               value={url}
               onChange={(e) => handleUrlChange(e.target.value)}
               required
-              className={`w-full rounded-lg border ${
-                urlError ? "border-red-500 focus:ring-red-500" : "border-gray-600 focus:ring-blue-500"
-              } bg-gray-700 text-gray-100 px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:border-transparent placeholder-gray-400 transition-colors`}
+              className={`input-paste w-full pr-10 ${urlError ? "border-red-500 focus:ring-red-500" : ""}`}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
               {url && isValidUrl(url) && (
@@ -242,7 +240,7 @@ const LinkShare: React.FC = () => {
                 value={expiresDays}
                 onChange={(e) => setExpiresDays(Number(e.target.value))}
                 disabled={isAuthenticated && neverExpires}
-                className="w-full rounded-lg border border-gray-600 bg-gray-700 text-gray-100 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
             <span className="text-sm text-gray-400 min-w-0">{t("linkshare.days", "jours")}</span>
@@ -308,7 +306,7 @@ const LinkShare: React.FC = () => {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
-                  className="flex-1 rounded-lg border border-gray-600 bg-gray-700 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 "
+                  className="input-paste flex-1"
                 />
               </div>
               <p className="text-xs text-gray-400 mt-1">
@@ -327,7 +325,7 @@ const LinkShare: React.FC = () => {
                   placeholder={t("linkshare.password_placeholder", "Optionnel - laissez vide pour un accès libre")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-gray-600 bg-gray-700 text-gray-100 px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                  className="input-paste w-full pr-10"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,7 +346,7 @@ const LinkShare: React.FC = () => {
           <button
             type="submit"
             disabled={loading || !url.trim() || !!urlError}
-            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            className="btn-paste w-full inline-flex items-center justify-center gap-2 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -485,6 +483,40 @@ const LinkShare: React.FC = () => {
           </div>
         </div>
       )}
+      <style jsx global>{`
+        .input-paste {
+          border: 1px solid #232a38;
+          border-radius: 0.75rem;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.97rem;
+          background: #232a38;
+          color: #e2e8f0;
+          transition: border-color 0.2s, background 0.2s;
+        }
+        .input-paste:focus {
+          outline: none;
+          border-color: #2563eb;
+          background: #181f2a;
+        }
+        .input-paste::placeholder {
+          color: #64748b;
+          opacity: 1;
+        }
+        .btn-paste {
+          background: linear-gradient(90deg,#2563eb 60%,#1e40af 100%);
+          color: #fff;
+          border-radius: 0.75rem;
+          font-weight: 500;
+          box-shadow: 0 2px 8px 0 #232a38;
+          transition: background 0.2s;
+        }
+        .btn-paste:hover {
+          background: linear-gradient(90deg,#1e40af 60%,#2563eb 100%);
+        }
+        label {
+          color: #e2e8f0;
+        }
+      `}</style>
     </div>
   );
 };

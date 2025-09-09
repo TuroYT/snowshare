@@ -11,6 +11,21 @@
     "title": "PasteShare",
     "description": "Share your text snippets securely and easily."
   },
+  "pasteshare_ui": {
+    "label_title": "Title",
+    "label_language": "Language",
+    "label_expiration": "Expiration",
+    "label_password": "Password (optional)",
+    "placeholder_password": "Optional - leave empty for open access",
+    "submit": "Create paste",
+    "expiration_never": "Never",
+    "expiration_7_days": "7 days",
+    "expiration_30_days": "30 days",
+    "expiration_custom": "Custom",
+    "advanced": "Advanced settings",
+    "login_for_more": "Log in for longer durations or no expiration",
+    "language_placeholder": "Select a language"
+  },
   "fileshare": {
     "title": "FileShare",
     "description": "Share your files securely and easily."
