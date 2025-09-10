@@ -55,6 +55,14 @@ module.exports = {
       },
     },
     {
+      // Test files: relax some rules
+      files: ["**/__tests__/**/*", "**/*.test.*", "**/*.spec.*"],
+      rules: {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "react/react-in-jsx-scope": "off",
+      },
+    },
+    {
       files: ["**/*.md"],
       rules: {
         // Docs often contain code blocks; relax some rules there
