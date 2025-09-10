@@ -47,7 +47,7 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="mt-6 flex justify-center">{tabs.find((tab) => tab.id === activeTab)?.component}</div>
+            <div className="mt-6 flex justify-center ">{tabs.find((tab) => tab.id === activeTab)?.component}</div>
           </div>
         </div>
       </main>

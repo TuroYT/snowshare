@@ -27,16 +27,50 @@ export async function GET(request: Request) {
         return jsonResponse({ error: "Ce partage a expiré" }, 410);
     }
 
-    // If the share is password-protected, don't expose the target URL on GET.
-    if (share.password) {
+    // If this is a paste, prefer redirecting browser clients to the unified view page
+    if (share.type === "PASTE") {
+        const accept = request.headers.get("accept") || "";
         const url = new URL(request.url);
-        const protectedUrl = new URL("/protected?slug=" + slug, url.origin);
-        return Response.redirect(protectedUrl.toString(), 302);
+        // If the client expects HTML (browser), redirect to the view page which handles protected and public pastes
+        if (accept.includes("text/html")) {
+            const viewUrl = new URL(`/s/view/${slug}`, url.origin);
+            return Response.redirect(viewUrl.toString(), 302);
+        }
+
+        // API clients: if paste is protected, return a protected error so frontend can POST the password
+        if (share.password) {
+            return jsonResponse({ error: "Ce partage est protégé" }, 403);
+        }
+
+        // Public paste for API clients -> return paste content
+        return jsonResponse({
+            paste: share.paste,
+            pastelanguage: share.pastelanguage,
+            ownerId: share.ownerId,
+            createdAt: share.createdAt,
+            expiresAt: share.expiresAt,
+            slug: share.slug,
+        });
     }
 
-    // Non-protected => redirect to original URL
-    if (!share.urlOriginal) return jsonResponse({ error: "URL introuvable" }, 500);
-    return Response.redirect(share.urlOriginal, 302);
+    // Gestion URL
+    if (share.type === "URL") {
+        // if protected, backend currently redirects — but if it returns JSON with message, handle it
+        if (share.password) {
+            const accept = request.headers.get("accept") || "";
+            // If the client expects HTML (browser), redirect to the view page which handles protected and public pastes
+            if (accept.includes("text/html")) {
+                const viewUrl = new URL(`/protected?slug=${slug}`, url.origin);
+                return Response.redirect(viewUrl.toString(), 302);
+            }
+            return jsonResponse({ error: "Ce partage est protégé" }, 403);
+        }
+        if (!share.urlOriginal) return jsonResponse({ error: "URL introuvable" }, 500);
+        return Response.redirect(share.urlOriginal, 302);
+    }
+
+    // Gestion FILE (à compléter si besoin)
+    return jsonResponse({ error: "Type de partage non géré" }, 400);
 }
 
 export async function POST(request: Request) {
@@ -60,14 +94,42 @@ export async function POST(request: Request) {
     }
 
     if (!share.password) {
-        // no password required, return URL
-        return jsonResponse({ url: share.urlOriginal });
+        // pas de mot de passe requis
+        if (share.type === "PASTE") {
+            return jsonResponse({
+                paste: share.paste,
+                pastelanguage: share.pastelanguage,
+                ownerId: share.ownerId,
+                createdAt: share.createdAt,
+                expiresAt: share.expiresAt,
+                slug: share.slug,
+            });
+        }
+        if (share.type === "URL") {
+            return jsonResponse({ url: share.urlOriginal });
+        }
+        return jsonResponse({ error: "Type de partage non géré" }, 400);
     }
 
     const ok = await bcrypt.compare(password, share.password);
     if (!ok) return jsonResponse({ error: "Mot de passe incorrect" }, 401);
 
-    // decript url
-    const decrypted = decrypt(share.urlOriginal || "", password);
-    return jsonResponse({ url: decrypted });
+    // Si paste protégé
+    if (share.type === "PASTE") {
+        return jsonResponse({
+            paste: share.paste,
+            pastelanguage: share.pastelanguage,
+            ownerId: share.ownerId,
+            createdAt: share.createdAt,
+            expiresAt: share.expiresAt,
+            slug: share.slug,
+        });
+    }
+    // Si URL protégée
+    if (share.type === "URL") {
+        // decript url
+        const decrypted = decrypt(share.urlOriginal || "", password);
+        return jsonResponse({ url: decrypted });
+    }
+    return jsonResponse({ error: "Type de partage non géré" }, 400);
 }

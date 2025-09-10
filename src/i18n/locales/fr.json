@@ -22,8 +22,12 @@
     "expiration_7_days": "7 jours",
     "expiration_30_days": "30 jours",
     "expiration_custom": "Personnalisé",
-    "advanced": "Paramètres avancés",
-    "login_for_more": "Connectez-vous pour des durées plus longues ou aucune expiration"
+    "advanced": "Paramètres avancés (optionnel)",
+    "login_for_more": "Connectez-vous pour des durées plus longues ou aucune expiration",
+    "language_placeholder": "Sélectionnez un langage",
+    "custom_slug": "Lien personnalisé",
+    "slug_hint": "Lettres, chiffres, tirets et underscores uniquement",
+    "never_expires_desc": "Ce paste restera disponible indéfiniment"
   },
   "fileshare": {
     "title": "FileShare",

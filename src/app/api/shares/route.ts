@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { createLinkShare } from "./(linkShare)/linkshare";
+import { createPasteShare } from "./(pasteShare)/pasteshareshare";
 
 async function POST(req: Request) {
   const data = await req.json();
@@ -10,17 +11,22 @@ async function POST(req: Request) {
   }
 
   switch (data.type) {
-    case "FILE":
-    case "PASTE":
-    case "URL":
-      // cas d'usage pour les partages de liens
+    case "URL": {
       const { urlOriginal, expiresAt, slug, password } = data;
       const result = await createLinkShare(urlOriginal, expiresAt, slug, password);
       if (result?.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
       return NextResponse.json({ share: result }, { status: 201 });
-
+    }
+    case "PASTE": {
+      const { paste, pastelanguage, expiresAt, slug, password } = data;
+      const result = await createPasteShare(paste, pastelanguage, expiresAt, slug, password);
+      if (result?.error) {
+        return NextResponse.json({ error: result.error }, { status: 400 });
+      }
+      return NextResponse.json({ share: result }, { status: 201 });
+    }
     default:
       return NextResponse.json({ error: "Type de partage invalide" }, { status: 400 });
   }

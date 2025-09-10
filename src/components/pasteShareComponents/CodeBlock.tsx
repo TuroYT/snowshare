@@ -55,11 +55,11 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
   React.useEffect(() => setValue(code), [code]);
 
   return (
-    <div className="text-left text-sm rounded-2xl overflow-hidden border-2 border-[#232a38] bg-[#232a38] p-2 h-full">
+    <div className="text-left text-sm rounded-2xl overflow-hidden border-2 border-[#232a38] bg-[#232a38] p-2 h-full w-full">
       <CodeMirror
         value={value}
-        height="calc(100vh - 12rem)"
-        minWidth="100%"
+        height="100%"
+        width="100%"
         readOnly={readOnly}
         theme={atomoneInit({
           settings: {

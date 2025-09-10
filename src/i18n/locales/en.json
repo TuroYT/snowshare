@@ -22,9 +22,12 @@
     "expiration_7_days": "7 days",
     "expiration_30_days": "30 days",
     "expiration_custom": "Custom",
-    "advanced": "Advanced settings",
+    "advanced": "Advanced settings (optional)",
     "login_for_more": "Log in for longer durations or no expiration",
-    "language_placeholder": "Select a language"
+    "language_placeholder": "Select a language",
+    "custom_slug": "Custom link",
+    "slug_hint": "Letters, numbers, dashes and underscores only",
+    "never_expires_desc": "This paste will remain available indefinitely"
   },
   "fileshare": {
     "title": "FileShare",

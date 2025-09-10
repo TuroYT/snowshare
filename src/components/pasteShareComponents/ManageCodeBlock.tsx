@@ -4,6 +4,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 
+const MAX_DAYS_ANON = 7;
+const MAX_DAYS_AUTH = 365;
+
 const LANGUAGES = [
   { value: "plaintext", label: "Plain" },
   { value: "javascript", label: "JavaScript" },
@@ -23,52 +26,100 @@ const ManageCodeBlock: React.FC<{
   onCodeChange?: (v: string) => void;
   language: string;
   onLanguageChange: (lang: string) => void;
-}> = ({ language, onLanguageChange }) => {
+}> = ({ code, onCodeChange, language, onLanguageChange }) => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
-  const [title, setTitle] = React.useState("");
   const [slug, setSlug] = React.useState("");
-  const [expiration, setExpiration] = React.useState(() => (isAuthenticated ? "30" : "7"));
+  const [expiresDays, setExpiresDays] = React.useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
+  const [neverExpires, setNeverExpires] = React.useState(false);
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    setExpiration((prev) => {
-      if (prev === "7" && isAuthenticated) return "30";
-      if (prev === "30" && !isAuthenticated) return "7";
-      return prev;
+  const getDurationText = () => {
+    const days = expiresDays;
+    if (isAuthenticated && neverExpires) return t("linkshare.duration_never", "Ce paste n'expirera jamais");
+    if (days === 1) return t("linkshare.duration_in_1_day", "Ce paste expirera dans 1 jour");
+    if (days < 7) return t("linkshare.duration_in_x_days", "Ce paste expirera dans {{count}} jours", { count: days });
+    if (days === 7) return t("linkshare.duration_in_1_week", "Ce paste expirera dans 1 semaine");
+    if (days < 30)
+      return t("linkshare.duration_in_x_weeks", "Ce paste expirera dans {{count}} semaines", {
+        count: Math.round(days / 7)
+      });
+    if (days === 30) return t("linkshare.duration_in_1_month", "Ce paste expirera dans 1 mois");
+    if (days < 365)
+      return t("linkshare.duration_in_x_months", "Ce paste expirera dans {{count}} mois", {
+        count: Math.round(days / 30)
+      });
+    return t("linkshare.duration_in_x_years", "Ce paste expirera dans {{count}} an(s)", {
+      count: Math.round(days / 365)
     });
-  }, [isAuthenticated]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    let expiresAt: Date | undefined = undefined;
+    if (!neverExpires) {
+      const now = new Date();
+      now.setDate(now.getDate() + expiresDays);
+      expiresAt = now;
+    }
+    try {
+      const res = await fetch("/api/shares", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PASTE",
+          paste: code,
+          pastelanguage: language.toUpperCase(),
+          expiresAt,
+          slug,
+          password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data?.error) {
+        setError(data?.error || t("pasteshare_ui.creation_error", "Erreur lors de la création du partage"));
+      } else {
+        const pasteShare = data?.share?.pasteShare;
+        if (pasteShare?.slug) setSuccess(`${window.location.origin}/s/${pasteShare.slug}`);
+        else if (pasteShare?.id) setSuccess(`${window.location.origin}/s/${pasteShare.id}`);
+        else setSuccess(t("pasteshare_ui.created", "Partage créé"));
+      }
+    } catch (err) {
+      setError(t("pasteshare_ui.network_error", "Erreur réseau — impossible de créer le partage"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-      }}
-      className="space-y-4"
-    >
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("pasteshare_ui.label_title")}</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="input-paste w-full"
-          placeholder={t("pasteshare_ui.label_title") as string}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Slug</label>
-        <input
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          className="input-paste w-full"
-          placeholder="ex: mon-slug-personnalisé"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("pasteshare_ui.label_language")}</label>
+    <form onSubmit={handleSubmit} className="space-y-8">
+      {error && (
+        <div className="bg-red-900/80 text-red-200 border border-red-700 rounded p-3 mb-2 text-sm">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="bg-green-900/80 text-green-200 border border-green-700 rounded p-3 mb-2 text-sm">
+          <span>{t("pasteshare_ui.success", "Partage créé !")}</span>
+          <br />
+          <a href={success} className="underline break-all" target="_blank" rel="noopener noreferrer">{success}</a>
+        </div>
+      )}
+      {loading && (
+        <div className="text-blue-300 mb-2 text-sm">{t("pasteshare_ui.loading", "Création en cours...")}</div>
+      )}
+    {/* Sélection du langage */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-300">
+          {t("pasteshare_ui.label_language")}
+        </label>
         <select value={language} onChange={(e) => onLanguageChange(e.target.value)} className="input-paste w-full">
           <option value="">{t("pasteshare_ui.language_placeholder")}</option>
           {LANGUAGES.map((l) => (
@@ -79,29 +130,160 @@ const ManageCodeBlock: React.FC<{
         </select>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("pasteshare_ui.label_expiration")}</label>
-        <select value={expiration} onChange={(e) => setExpiration(e.target.value)} className="input-paste w-full">
-          {!isAuthenticated && <option value="7">{t("pasteshare_ui.expiration_7_days")}</option>}
-          <option value="30">{t("pasteshare_ui.expiration_30_days")}</option>
-          <option value="never">{t("pasteshare_ui.expiration_never")}</option>
-        </select>
-        {!isAuthenticated && <p className="text-xs text-muted mt-1">{t("linkshare.login_for_more", { max: 365 })}</p>}
+      {/* Gestion de la durée d'expiration */}
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-gray-300">
+          {t("pasteshare_ui.label_expiration")}
+        </label>
+
+        {isAuthenticated && (
+          <div className="bg-gray-750 p-3 rounded-lg border border-gray-600">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={neverExpires}
+                onChange={(e) => setNeverExpires(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-0"
+              />
+              <div>
+                <div className="text-sm font-medium text-gray-200">
+                  {t("pasteshare_ui.expiration_never")}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {t("pasteshare_ui.never_expires_desc")}
+                </div>
+              </div>
+            </label>
+          </div>
+        )}
+
+        <div className={`flex items-center gap-3 ${isAuthenticated && neverExpires ? "opacity-50" : ""}`}>
+          <div className="flex-1">
+            <input
+              type="number"
+              min={1}
+              max={isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON}
+              value={expiresDays}
+              onChange={(e) => setExpiresDays(Number(e.target.value))}
+              disabled={isAuthenticated && neverExpires}
+              className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+          <span className="text-sm text-gray-400 min-w-0">{t("linkshare.days", "jours")}</span>
+        </div>
+
+        <div className="text-xs text-gray-400 bg-gray-750 p-2 rounded border border-gray-600">
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-3 h-3 text-blue-400 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{getDurationText()}</span>
+          </div>
+        </div>
+
+        {!isAuthenticated && (
+          <p className="text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded p-2">
+            💡{" "}
+            {t(
+              "linkshare.login_for_more",
+              "Connectez-vous pour des durées plus longues (jusqu'à {{max}} jours) ou sans expiration",
+              { max: MAX_DAYS_AUTH }
+            )}
+          </p>
+        )}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("pasteshare_ui.label_password")}</label>
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          className="input-paste w-full"
-          placeholder={t("pasteshare_ui.placeholder_password") as string}
-        />
+      {/* Paramètres avancés */}
+      <div className="bg-gray-750 p-4 rounded-lg border border-gray-600 space-y-4">
+        <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+            />
+          </svg>
+          {t("pasteshare_ui.advanced")}
+        </h3>
+
+        <div className="space-y-3">
+          {/* Slug personnalisé */}
+          <div>
+            <label htmlFor="paste-slug" className="block text-sm font-medium text-gray-300 mb-2">
+              {t("pasteshare_ui.custom_slug")}
+            </label>
+            <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
+              {/* hide origin on very small screens to avoid overflow */}
+              <span className="text-sm text-gray-400 whitespace-nowrap hidden xs:inline-block sm:inline-block md:inline-block lg:inline-block">
+                {typeof window !== "undefined" ? window.location.origin + "/s/" : "/s/"}
+              </span>
+              <div className="flex-1 min-w-0">
+                <input
+                  id="paste-slug"
+                  type="text"
+                  placeholder="mon-paste-code"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  pattern="[a-zA-Z0-9-_]+"
+                  className="input-paste w-full truncate"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              {t("pasteshare_ui.slug_hint")}
+            </p>
+          </div>
+
+          {/* Protection par mot de passe */}
+          <div>
+            <label htmlFor="paste-password" className="block text-sm font-medium text-gray-300 mb-2">
+              {t("pasteshare_ui.label_password")}
+            </label>
+            <div className="relative">
+              <input
+                id="paste-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                className="input-paste w-full pr-10"
+                placeholder={t("pasteshare_ui.placeholder_password") as string}
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end">
-        <button type="submit" className="btn-paste px-5 py-2 text-sm">
+        <button type="submit" className="btn-paste px-6 py-3 text-sm inline-flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+            />
+          </svg>
           {t("pasteshare_ui.submit")}
         </button>
       </div>
