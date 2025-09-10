@@ -3,7 +3,8 @@
     "hello": "Bonjour, {{email}}",
     "signout": "Déconnexion",
     "signin": "Connexion",
-    "signup": "Inscription"
+    "signup": "Inscription",
+    "language": "Langue"
   },
   "loading": "Chargement..."
   ,
@@ -27,7 +28,12 @@
     "language_placeholder": "Sélectionnez un langage",
     "custom_slug": "Lien personnalisé",
     "slug_hint": "Lettres, chiffres, tirets et underscores uniquement",
-    "never_expires_desc": "Ce paste restera disponible indéfiniment"
+    "never_expires_desc": "Ce paste restera disponible indéfiniment",
+    "loading": "Création en cours...",
+    "success": "Partage créé !",
+    "created": "Paste créé avec succès !",
+    "creation_error": "Erreur lors de la création du paste",
+    "network_error": "Erreur réseau — impossible de créer le paste"
   },
   "fileshare": {
     "title": "FileShare",
@@ -66,7 +72,22 @@
     "shortcut_tail": "pour créer rapidement",
     "error_title": "Erreur",
     "success_title": "Lien créé avec succès !",
-    "copy_title": "Copier le lien"
+    "copy_title": "Copier le lien",
+    "validity_label": "Durée de validité",
+    "submit": "Créer le lien partagé",
+    "creating": "Création en cours...",
+    "creation_error": "Erreur lors de la création du partage",
+    "copied": "✓ Copié dans le presse-papiers",
+    "placeholder_slug": "mon-lien-custom",
+    "qr_info": "Scanner ce QR code pour accéder au lien",
+    "duration_never": "Ce lien n'expirera jamais",
+    "duration_in_1_day": "Ce lien expirera dans 1 jour",
+    "duration_in_x_days": "Ce lien expirera dans {{count}} jours",
+    "duration_in_1_week": "Ce lien expirera dans 1 semaine",
+    "duration_in_x_weeks": "Ce lien expirera dans {{count}} semaines",
+    "duration_in_1_month": "Ce lien expirera dans 1 mois",
+    "duration_in_x_months": "Ce lien expirera dans {{count}} mois",
+    "duration_in_x_years": "Ce lien expirera dans {{count}} an(s)"
   },
   "footer": {
     "made_with": "Made with",
