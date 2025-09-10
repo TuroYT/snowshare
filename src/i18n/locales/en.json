@@ -3,7 +3,8 @@
     "hello": "Hello, {{email}}",
     "signout": "Sign out",
     "signin": "Sign in",
-    "signup": "Sign up"
+    "signup": "Sign up",
+    "language": "Language"
   },
   "loading": "Loading..."
   ,
@@ -27,7 +28,12 @@
     "language_placeholder": "Select a language",
     "custom_slug": "Custom link",
     "slug_hint": "Letters, numbers, dashes and underscores only",
-    "never_expires_desc": "This paste will remain available indefinitely"
+    "never_expires_desc": "This paste will remain available indefinitely",
+    "loading": "Creating...",
+    "success": "Share created!",
+    "created": "Paste created successfully!",
+    "creation_error": "Error creating paste",
+    "network_error": "Network error — could not create paste"
   },
   "fileshare": {
     "title": "FileShare",
@@ -67,6 +73,13 @@
     "error_title": "Error",
     "success_title": "Link created successfully!",
     "copy_title": "Copy link",
+    "validity_label": "Validity duration",
+    "submit": "Create shared link",
+    "creating": "Creating...",
+    "creation_error": "Error creating share",
+    "copied": "✓ Copied to clipboard",
+    "placeholder_slug": "my-custom-link",
+    "qr_info": "Scan this QR code to access the link",
     "duration_never": "This link will never expire",
     "duration_in_1_day": "This link will expire in 1 day",
     "duration_in_x_days": "This link will expire in {{count}} days",
