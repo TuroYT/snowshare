@@ -130,6 +130,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [NextAuth.js](https://next-auth.js.org/) - Authentication for Next.js
 - [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
 
-## Contributors 👥
-
-[![](https://opencollective.com/html-react-parser/contributors.svg?width=890&button=false)](https://github.com/TuroYT/snowshare/graphs/contributors)
