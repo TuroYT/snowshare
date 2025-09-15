@@ -7,8 +7,8 @@ import { QRCodeSVG } from "qrcode.react";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
-const MAX_FILE_SIZE_ANON = 50 * 1024 * 1024; // 50MB
-const MAX_FILE_SIZE_AUTH = 500 * 1024 * 1024; // 500MB
+const MAX_FILE_SIZE_ANON = 50 * 1024 * 1024; // 50MB (deprecated - FileShare requires auth)
+const MAX_FILE_SIZE_AUTH = 50 * 1024 * 1024 * 1024; // 50GB for authenticated users
 
 const FileShare: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -28,7 +28,7 @@ const FileShare: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
 
-  const maxFileSize = isAuthenticated ? MAX_FILE_SIZE_AUTH : MAX_FILE_SIZE_ANON;
+  const maxFileSize = MAX_FILE_SIZE_AUTH; // Only authenticated users can use FileShare
 
   // Format file size
   const formatFileSize = (bytes: number): string => {
@@ -42,8 +42,8 @@ const FileShare: React.FC = () => {
   // Validate file
   const validateFile = (file: File): string | null => {
     if (file.size > maxFileSize) {
-      const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
-      return t("fileshare.file_too_large", "File is too large (max {{max}}MB)", { max: maxSizeMB });
+      const maxSizeGB = Math.round(maxFileSize / (1024 * 1024 * 1024));
+      return t("fileshare.file_too_large", "File is too large (max {{max}}GB)", { max: maxSizeGB });
     }
     return null;
   };
@@ -103,7 +103,7 @@ const FileShare: React.FC = () => {
   // Get duration text
   const getDurationText = () => {
     const days = expiresDays;
-    if (isAuthenticated && neverExpires) return t("fileshare.duration_never", "This file will never expire");
+    if (neverExpires) return t("fileshare.duration_never", "This file will never expire");
     if (days === 1) return t("fileshare.duration_in_1_day", "This file will expire in 1 day");
     if (days < 7) return t("fileshare.duration_in_x_days", "This file will expire in {{count}} days", { count: days });
     if (days === 7) return t("fileshare.duration_in_1_week", "This file will expire in 1 week");
@@ -165,9 +165,8 @@ const FileShare: React.FC = () => {
       formData.append("file", file);
 
       // Add optional parameters
-      if (!isAuthenticated || !neverExpires) {
-        const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-        const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
+      if (!neverExpires) {
+        const days = Math.max(1, Math.min(Number(expiresDays) || 1, MAX_DAYS_AUTH));
         const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
         formData.append("expiresAt", expiresAt);
       }
@@ -253,7 +252,39 @@ const FileShare: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Authentication Required Message */}
+      {!isAuthenticated && (
+        <div className="bg-amber-900/20 border border-amber-800 rounded-lg p-6 mb-6">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <h3 className="text-amber-300 font-medium mb-2">
+                {t("fileshare.auth_required_title", "Authentication Required")}
+              </h3>
+              <p className="text-amber-200 text-sm mb-3">
+                {t("fileshare.auth_required_message", "FileShare requires authentication. Please log in to upload and share files (up to 50GB).")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => window.location.href = '/api/auth/signin'}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  {t("fileshare.sign_in", "Sign In")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FileShare Form - Only show for authenticated users */}
+      {isAuthenticated && (
+        <form onSubmit={handleSubmit} className="space-y-6">
         {/* File Upload Area */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-300">
@@ -290,9 +321,7 @@ const FileShare: React.FC = () => {
                   </p>
                 </div>
                 <p className="text-xs text-gray-500">
-                  {isAuthenticated
-                    ? t("fileshare.max_size_auth", "500MB maximum for authenticated users")
-                    : t("fileshare.max_size_anon", "50MB maximum for anonymous users")}
+                  {t("fileshare.max_size_auth", "50GB maximum for authenticated users")}
                 </p>
               </div>
             </div>
@@ -365,37 +394,35 @@ const FileShare: React.FC = () => {
             {t("fileshare.validity_label", "Validity duration")}
           </label>
 
-          {isAuthenticated && (
-            <div className="bg-gray-750 p-3 rounded-lg border border-gray-600">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={neverExpires}
-                  onChange={(e) => setNeverExpires(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-2 focus:ring-offset-0"
-                />
-                <div>
-                  <div className="text-sm font-medium text-gray-200">
-                    {t("fileshare.never_expires", "Never expires")}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {t("fileshare.never_expires_desc", "This file will remain available indefinitely")}
-                  </div>
+          <div className="bg-gray-750 p-3 rounded-lg border border-gray-600">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={neverExpires}
+                onChange={(e) => setNeverExpires(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-2 focus:ring-offset-0"
+              />
+              <div>
+                <div className="text-sm font-medium text-gray-200">
+                  {t("fileshare.never_expires", "Never expires")}
                 </div>
-              </label>
-            </div>
-          )}
+                <div className="text-xs text-gray-400">
+                  {t("fileshare.never_expires_desc", "This file will remain available indefinitely")}
+                </div>
+              </div>
+            </label>
+          </div>
 
-          <div className={`flex items-center gap-3 ${isAuthenticated && neverExpires ? "opacity-50" : ""}`}>
+          <div className={`flex items-center gap-3 ${neverExpires ? "opacity-50" : ""}`}>
             <div className="flex-1">
               <input
                 id="expires"
                 type="number"
                 min={1}
-                max={isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON}
+                max={MAX_DAYS_AUTH}
                 value={expiresDays}
                 onChange={(e) => setExpiresDays(Number(e.target.value))}
-                disabled={isAuthenticated && neverExpires}
+                disabled={neverExpires}
                 className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
@@ -420,17 +447,6 @@ const FileShare: React.FC = () => {
               <span>{getDurationText()}</span>
             </div>
           </div>
-
-          {!isAuthenticated && (
-            <p className="text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded p-2">
-              💡{" "}
-              {t(
-                "fileshare.login_for_more",
-                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to 500MB)",
-                { max: MAX_DAYS_AUTH }
-              )}
-            </p>
-          )}
         </div>
 
         {/* Advanced Settings */}
@@ -533,8 +549,10 @@ const FileShare: React.FC = () => {
           </button>
         </div>
       </form>
+      )}
 
-      {error && (
+      {/* Error and Success messages - show for authenticated users only */}
+      {isAuthenticated && error && (
         <div role="alert" className="mt-6 bg-red-900/20 border border-red-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <svg
@@ -558,7 +576,7 @@ const FileShare: React.FC = () => {
         </div>
       )}
 
-      {success && (
+      {isAuthenticated && success && (
         <div role="status" className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <svg

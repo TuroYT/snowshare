@@ -99,7 +99,7 @@ export async function GET(request: Request) {
         // For API requests, return file info
         return jsonResponse({
             filename: fileResult.originalFilename,
-            downloadUrl: `/api/download/${slug}`,
+            url: `/api/download/${slug}`,
             ownerId: share.ownerId,
             createdAt: share.createdAt,
             expiresAt: share.expiresAt,
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
             }
             return jsonResponse({
                 filename: fileResult.originalFilename,
-                downloadUrl: `/api/download/${slug}`,
+                url: `/api/download/${slug}`,
             });
         }
         return jsonResponse({ error: "Type de partage non géré" }, 400);
@@ -188,7 +188,7 @@ export async function POST(request: Request) {
         }
         return jsonResponse({
             filename: fileResult.originalFilename,
-            downloadUrl: `/api/download/${slug}`,
+            url: `/api/download/${slug}`,
         });
     }
     return jsonResponse({ error: "Type de partage non géré" }, 400);

@@ -20,7 +20,7 @@ const ALLOWED_FILE_TYPES = [
 
 // File size limits (in bytes)
 const MAX_FILE_SIZE_ANON = 50 * 1024 * 1024; // 50MB for anonymous users
-const MAX_FILE_SIZE_AUTH = 500 * 1024 * 1024; // 500MB for authenticated users
+const MAX_FILE_SIZE_AUTH = 50 * 1024 * 1024 * 1024; // 50GB for authenticated users
 
 // Utility function to validate file
 function validateFile(file: File, isAuthenticated: boolean) {
@@ -65,6 +65,11 @@ export const createFileShare = async (
   const session = await getServerSession(authOptions);
   const isAuthenticated = !!session;
 
+  // FileShare is disabled for anonymous users - authentication required
+  if (!isAuthenticated) {
+    return { error: "L'authentification est requise pour partager des fichiers." };
+  }
+
   // Validate file
   const validation = validateFile(file, isAuthenticated);
   if (validation.error) {
@@ -85,19 +90,6 @@ export const createFileShare = async (
   if (password) {
     if (password.length < 6 || password.length > 100) {
       return { error: "Le mot de passe doit contenir entre 6 et 100 caractères." };
-    }
-  }
-
-  // Check anonymous user restrictions
-  if (!session) {
-    if (expiresAt) {
-      const maxExpiry = new Date();
-      maxExpiry.setDate(maxExpiry.getDate() + 7);
-      if (new Date(expiresAt) > maxExpiry) {
-        return { error: "Les utilisateurs non authentifiés ne peuvent pas créer de partages expirant au-delà de 7 jours." };
-      }
-    } else {
-      return { error: "Les utilisateurs non authentifiés doivent fournir une date d'expiration." };
     }
   }
 
