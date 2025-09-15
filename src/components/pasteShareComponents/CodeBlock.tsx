@@ -12,6 +12,7 @@ import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { sql } from "@codemirror/lang-sql";
 import { json } from "@codemirror/lang-json";
+import { markdown } from "@codemirror/lang-markdown";
 
 type Props = {
   code: string;
@@ -44,6 +45,8 @@ function getExtension(language: string) {
       return sql();
     case "json":
       return json();
+    case "markdown":
+      return markdown();
     default:
       return [];
   }
