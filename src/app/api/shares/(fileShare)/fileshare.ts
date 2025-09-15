@@ -19,8 +19,8 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 // File size limits (in bytes)
-const MAX_FILE_SIZE_ANON = 50 * 1024 * 1024; // 50MB for anonymous users
-const MAX_FILE_SIZE_AUTH = 500 * 1024 * 1024; // 500MB for authenticated users
+const MAX_FILE_SIZE_ANON = 0; // ANON disabled
+const MAX_FILE_SIZE_AUTH = 50 * 1024 * 1024 * 1024; // 50GB for authenticated users
 
 // Utility function to validate file
 function validateFile(file: File, isAuthenticated: boolean) {
