@@ -69,7 +69,44 @@ export async function GET(request: Request) {
         return Response.redirect(share.urlOriginal, 302);
     }
 
-    // Gestion FILE (à compléter si besoin)
+    // Gestion FILE
+    if (share.type === "FILE") {
+        const { getFileShare } = await import("@/app/api/shares/(fileShare)/fileshare");
+        
+        // If protected, redirect to password page for browsers
+        if (share.password) {
+            const accept = request.headers.get("accept") || "";
+            if (accept.includes("text/html")) {
+                const viewUrl = new URL(`/protected?slug=${slug}`, url.origin);
+                return Response.redirect(viewUrl.toString(), 302);
+            }
+            return jsonResponse({ error: "Ce partage est protégé" }, 403);
+        }
+        
+        // Get file for download
+        const fileResult = await getFileShare(slug);
+        if (fileResult.error) {
+            return jsonResponse({ error: fileResult.error }, 404);
+        }
+        
+        // For browser requests, redirect to download endpoint
+        const accept = request.headers.get("accept") || "";
+        if (accept.includes("text/html")) {
+            const downloadUrl = new URL(`/api/download/${slug}`, url.origin);
+            return Response.redirect(downloadUrl.toString(), 302);
+        }
+        
+        // For API requests, return file info
+        return jsonResponse({
+            filename: fileResult.originalFilename,
+            downloadUrl: `/api/download/${slug}`,
+            ownerId: share.ownerId,
+            createdAt: share.createdAt,
+            expiresAt: share.expiresAt,
+            slug: share.slug,
+        });
+    }
+
     return jsonResponse({ error: "Type de partage non géré" }, 400);
 }
 
@@ -108,6 +145,17 @@ export async function POST(request: Request) {
         if (share.type === "URL") {
             return jsonResponse({ url: share.urlOriginal });
         }
+        if (share.type === "FILE") {
+            const { getFileShare } = await import("@/app/api/shares/(fileShare)/fileshare");
+            const fileResult = await getFileShare(slug);
+            if (fileResult.error) {
+                return jsonResponse({ error: fileResult.error }, 404);
+            }
+            return jsonResponse({
+                filename: fileResult.originalFilename,
+                downloadUrl: `/api/download/${slug}`,
+            });
+        }
         return jsonResponse({ error: "Type de partage non géré" }, 400);
     }
 
@@ -130,6 +178,18 @@ export async function POST(request: Request) {
         // decript url
         const decrypted = decrypt(share.urlOriginal || "", password);
         return jsonResponse({ url: decrypted });
+    }
+    // Si FILE protégé
+    if (share.type === "FILE") {
+        const { getFileShare } = await import("@/app/api/shares/(fileShare)/fileshare");
+        const fileResult = await getFileShare(slug, password);
+        if (fileResult.error) {
+            return jsonResponse({ error: fileResult.error }, fileResult.requiresPassword ? 403 : 404);
+        }
+        return jsonResponse({
+            filename: fileResult.originalFilename,
+            downloadUrl: `/api/download/${slug}`,
+        });
     }
     return jsonResponse({ error: "Type de partage non géré" }, 400);
 }
