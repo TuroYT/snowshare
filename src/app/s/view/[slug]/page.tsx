@@ -14,7 +14,9 @@ import "prismjs/components/prism-cpp";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-go";
 import "prismjs/components/prism-rust";
+import "prismjs/components/prism-markdown";
 import { useParams } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 const PasteViewPage = () => {
   const params = useParams();
@@ -111,11 +113,20 @@ const PasteViewPage = () => {
             </svg>
             <span className="text-xs">{copied ? "Copié !" : "Copier"}</span>
           </button>
-          <pre
-            className={`rounded p-4 text-sm overflow-x-auto whitespace-pre-wrap language-${language?.toLowerCase()}`}
-            style={{ background: "var(--input)", color: "var(--foreground)" }}
-            dangerouslySetInnerHTML={{ __html: highlighted || paste }}
-          />
+          {language?.toLowerCase() === "markdown" ? (
+            <div 
+              className="rounded p-4 text-sm overflow-x-auto prose max-w-none"
+              style={{ background: "var(--input)", color: "var(--foreground)" }}
+            >
+              <ReactMarkdown>{paste}</ReactMarkdown>
+            </div>
+          ) : (
+            <pre
+              className={`rounded p-4 text-sm overflow-x-auto whitespace-pre-wrap language-${language?.toLowerCase()}`}
+              style={{ background: "var(--input)", color: "var(--foreground)" }}
+              dangerouslySetInnerHTML={{ __html: highlighted || paste }}
+            />
+          )}
           <div className="mt-2 text-xs" style={{ color: "var(--muted-foreground)" }}>Langage : {language}</div>
         </div>
       )}
