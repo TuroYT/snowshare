@@ -13,6 +13,7 @@ const MAX_FILE_SIZE_AUTH = 500 * 1024 * 1024; // 500MB
 const FileShare: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [file, setFile] = useState<File | null>(null);
@@ -30,6 +31,8 @@ const FileShare: React.FC = () => {
 
   const maxFileSize = isAuthenticated ? MAX_FILE_SIZE_AUTH : MAX_FILE_SIZE_ANON;
 
+
+  
   // Format file size
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -231,6 +234,20 @@ const FileShare: React.FC = () => {
       setUploadProgress(0);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-[#181f2a] p-8 rounded-2xl shadow-xl border border-[#232a38] w-full max-w-2xl mx-auto text-center">
+        <h2 className="text-lg font-semibold text-gray-100 mb-2">
+          {t("fileshare.locked_title", "File sharing is locked")}
+        </h2>
+        <p className="text-gray-400 mb-4">
+          {t("fileshare.locked_message", "You must be logged in to share files.")}
+        </p>
+        {/* Optionally, add a login button or link */}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#181f2a] p-8 rounded-2xl shadow-xl border border-[#232a38] w-full max-w-2xl mx-auto">
