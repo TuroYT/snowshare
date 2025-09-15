@@ -80,74 +80,25 @@ describe('FileShare API', () => {
       });
     });
 
-    it('creates file share for anonymous user with expiration', async () => {
-      mockGetServerSession.mockResolvedValue(null);
-      
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day from now
-
-      mockPrisma.share.findUnique.mockResolvedValue(null);
-      mockPrisma.share.create.mockResolvedValue({
-        id: 'share-123',
-        slug: 'test-slug',
-        type: 'FILE',
-        filePath: null,
-        ownerId: null,
-        createdAt: new Date(),
-        expiresAt,
-        password: null,
-      } as any);
-
-      mockPrisma.share.update.mockResolvedValue({
-        id: 'share-123',
-        slug: 'test-slug',
-        type: 'FILE',
-        filePath: 'share-123_test.txt',
-        ownerId: null,
-        createdAt: new Date(),
-        expiresAt,
-        password: null,
-      } as any);
-
-      const result = await createFileShare(mockFile, expiresAt);
-
-      expect(result.fileShare).toBeDefined();
-      expect(mockPrisma.share.create).toHaveBeenCalledWith({
-        data: {
-          type: 'FILE',
-          slug: expect.any(String),
-          password: null,
-          expiresAt,
-          ownerId: null,
-          filePath: null,
-        },
-      });
-    });
-
-    it('validates file size for anonymous users', async () => {
+    it('rejects file share for anonymous user (authentication required)', async () => {
       mockGetServerSession.mockResolvedValue(null);
 
-      const largeFile = {
-        name: 'large.txt',
-        size: 51 * 1024 * 1024, // 51MB
-        type: 'text/plain',
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(51 * 1024 * 1024)),
-      } as unknown as File;
+      const result = await createFileShare(mockFile);
 
-      const result = await createFileShare(largeFile, new Date(Date.now() + 24 * 60 * 60 * 1000));
-
-      expect(result.error).toContain('La taille du fichier dépasse la limite');
+      expect(result.error).toBe("L'authentification est requise pour partager des fichiers.");
+      expect(mockPrisma.share.create).not.toHaveBeenCalled();
     });
 
-    it('validates file size for authenticated users', async () => {
+    it('validates file size for authenticated users (now 50GB limit)', async () => {
       mockGetServerSession.mockResolvedValue({
         user: { id: 'user-123', email: 'test@example.com' },
       } as any);
 
       const largeFile = {
         name: 'large.txt',
-        size: 501 * 1024 * 1024, // 501MB
+        size: 51 * 1024 * 1024 * 1024, // 51GB - should exceed the 50GB limit
         type: 'text/plain',
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(501 * 1024 * 1024)),
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(1024)), // Mock smaller buffer for test
       } as unknown as File;
 
       const result = await createFileShare(largeFile);
@@ -173,24 +124,6 @@ describe('FileShare API', () => {
       const result = await createFileShare(mockFile, undefined, undefined, '12345'); // Too short
 
       expect(result.error).toContain('Le mot de passe doit contenir entre 6 et 100 caractères');
-    });
-
-    it('requires expiration for anonymous users', async () => {
-      mockGetServerSession.mockResolvedValue(null);
-
-      const result = await createFileShare(mockFile);
-
-      expect(result.error).toContain('Les utilisateurs non authentifiés doivent fournir une date d\'expiration');
-    });
-
-    it('limits expiration period for anonymous users', async () => {
-      mockGetServerSession.mockResolvedValue(null);
-
-      const farFutureDate = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000); // 8 days from now
-
-      const result = await createFileShare(mockFile, farFutureDate);
-
-      expect(result.error).toContain('Les utilisateurs non authentifiés ne peuvent pas créer de partages expirant au-delà de 7 jours');
     });
 
     it('hashes password when provided', async () => {

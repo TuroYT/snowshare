@@ -15,6 +15,23 @@ jest.mock('qrcode.react', () => ({
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 const mockUseTranslation = useTranslation as jest.MockedFunction<typeof useTranslation>;
 
+// Helper functions for creating mock auth states
+const createMockAuthenticatedUser = () => ({
+  isAuthenticated: true,
+  session: { user: { id: 'user-123', email: 'test@example.com' } },
+  status: 'authenticated' as const,
+  isLoading: false,
+  user: { id: 'user-123', email: 'test@example.com' }
+});
+
+const createMockAnonymousUser = () => ({
+  isAuthenticated: false,
+  session: null,
+  status: 'unauthenticated' as const,
+  isLoading: false,
+  user: undefined
+});
+
 // Mock fetch
 global.fetch = jest.fn();
 
@@ -58,24 +75,35 @@ describe('FileShare', () => {
     jest.clearAllMocks();
   });
 
-  it('renders FileShare component for anonymous users', () => {
-    mockUseAuth.mockReturnValue({ isAuthenticated: false });
+  it('shows authentication required message for anonymous users', () => {
+    mockUseAuth.mockReturnValue({ 
+      isAuthenticated: false,
+      session: null,
+      status: 'unauthenticated',
+      isLoading: false,
+      user: undefined
+    });
 
     render(<FileShare />);
 
     expect(screen.getByText('FileShare')).toBeInTheDocument();
     expect(screen.getByText('Upload and share your files easily')).toBeInTheDocument();
-    expect(screen.getByText('Drag & drop your file here')).toBeInTheDocument();
-    expect(screen.getByText('50MB maximum for anonymous users')).toBeInTheDocument();
+    expect(screen.getByText('Authentication Required')).toBeInTheDocument();
+    expect(screen.getByText(/FileShare requires authentication/)).toBeInTheDocument();
+    expect(screen.getByText('Sign In')).toBeInTheDocument();
+    
+    // Should not show the file upload form
+    expect(screen.queryByText('Drag & drop your file here')).not.toBeInTheDocument();
   });
 
   it('renders FileShare component for authenticated users', () => {
-    mockUseAuth.mockReturnValue({ isAuthenticated: true });
+    mockUseAuth.mockReturnValue(createMockAuthenticatedUser());
 
     render(<FileShare />);
 
-    expect(screen.getByText('500MB maximum for authenticated users')).toBeInTheDocument();
+    expect(screen.getByText('50GB maximum for authenticated users')).toBeInTheDocument();
     expect(screen.getByText('Never expires')).toBeInTheDocument();
+    expect(screen.getByText('Drag & drop your file here')).toBeInTheDocument();
   });
 
   it('handles file selection via click', () => {
