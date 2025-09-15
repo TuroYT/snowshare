@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
+import { QRCodeSVG } from "qrcode.react";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -106,10 +107,18 @@ const ManageCodeBlock: React.FC<{
         </div>
       )}
       {success && (
-        <div className="bg-green-900/80 text-green-200 border border-green-700 rounded p-3 mb-2 text-sm">
-          <span>{t("pasteshare_ui.success", "Partage créé !")}</span>
-          <br />
-          <a href={success} className="underline break-all" target="_blank" rel="noopener noreferrer">{success}</a>
+        <div className="bg-green-900/80 text-green-200 border border-green-700 rounded p-4 mb-2 text-sm">
+          <div className="text-center space-y-3">
+            <span>{t("pasteshare_ui.success", "Partage créé !")}</span>
+            <div>
+              <a href={success} className="underline break-all hover:text-green-100 transition-colors" target="_blank" rel="noopener noreferrer">
+          {success}
+              </a>
+            </div>
+            <div className="flex justify-center">
+              <QRCodeSVG value={success} size={128} bgColor="#181f2a" fgColor="#e2e8f0" className="border-white rounded border-4" />
+            </div>
+          </div>
         </div>
       )}
       {loading && (

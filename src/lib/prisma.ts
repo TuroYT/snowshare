@@ -1,7 +1,26 @@
 import { PrismaClient } from "@/generated/prisma"
+import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3';
+import Database from 'better-sqlite3';
+import path from 'path';
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
+type BetterSqliteDb = InstanceType<typeof Database>;
+const globalForPrisma = globalThis as unknown as {
+    prisma?: PrismaClient;
+    sqliteDb?: BetterSqliteDb;
+};
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+const sqlitePath = path.resolve(process.cwd(), 'prisma', 'dev.db');
+const db: BetterSqliteDb = globalForPrisma.sqliteDb ?? new Database(sqlitePath);
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+// Pass both db and url to the adapter!
+const adapter = new PrismaBetterSQLite3({
+    db,
+    url: `file:${sqlitePath}`,
+});
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = prisma;
+    globalForPrisma.sqliteDb = db;
+}

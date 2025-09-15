@@ -1,5 +1,6 @@
 import React from "react";
 // ...existing code...
+
 import CodeBlock from "./pasteShareComponents/CodeBlock";
 import ManageCodeBlock from "./pasteShareComponents/ManageCodeBlock";
 
@@ -9,6 +10,8 @@ const PasteShare: React.FC = () => {
     console.log("Hello, world!");
   }`);
   const [language, setLanguage] = React.useState("javascript");
+
+  // Génération du lien (à adapter selon la logique réelle)
 
   return (
     <div className="w-full min-h-screen flex flex-col lg:flex-row gap-6 p-4 lg:p-6">
@@ -26,6 +29,8 @@ const PasteShare: React.FC = () => {
             language={language}
             onLanguageChange={setLanguage}
           />
+
+      
         </div>
       </div>
       

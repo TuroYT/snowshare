@@ -1,6 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-json";
+import "prismjs/components/prism-markup";
+import "prismjs/components/prism-bash";
+import "prismjs/components/prism-c";
+import "prismjs/components/prism-cpp";
+import "prismjs/components/prism-java";
+import "prismjs/components/prism-go";
+import "prismjs/components/prism-rust";
 import { useParams } from "next/navigation";
 
 const PasteViewPage = () => {
@@ -44,22 +57,66 @@ const PasteViewPage = () => {
     fetchPaste();
   }, [slug]);
 
+  const [copied, setCopied] = useState(false);
+  const [highlighted, setHighlighted] = useState("");
+  const handleCopy = () => {
+    if (paste) {
+      navigator.clipboard.writeText(paste);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  useEffect(() => {
+    if (paste && language) {
+      // PrismJS language mapping
+      let lang = language.toLowerCase();
+      if (lang === "js") lang = "javascript";
+      if (lang === "ts") lang = "typescript";
+      if (lang === "c++") lang = "cpp";
+      if (lang === "html") lang = "markup";
+      if (!Prism.languages[lang]) lang = "plaintext";
+      const html = Prism.highlight(paste, Prism.languages[lang] || Prism.languages.plaintext, lang);
+      setHighlighted(html);
+    }
+  }, [paste, language]);
+
   return (
-    <div className="max-w-2xl mx-auto py-12 px-4">
-      <h1 className="text-2xl font-bold mb-6 text-gray-100">Paste</h1>
-      {loading && <div className="text-blue-300 text-sm">Chargement...</div>}
-      {error && <div className="text-red-400 text-sm mb-4">{error}</div>}
+    <div
+      className="max-w-2xl mx-auto py-12 px-4"
+      style={{ background: "var(--background)", color: "var(--foreground)" }}
+    >
+      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>Paste</h1>
+      {loading && <div className="text-sm" style={{ color: "var(--primary)" }}>Chargement...</div>}
+      {error && <div className="text-sm mb-4" style={{ color: "var(--destructive)" }}>{error}</div>}
       {!paste && error && error === "Ce partage est protégé" && (
         <ProtectedForm slug={slug} onSuccess={(p, lang) => { setPaste(p); setLanguage(lang); setError(null); }} />
       )}
 
       {paste && (
-        <div className="bg-[#181f2a] rounded-xl p-6 border border-[#232a38] mt-6">
-          <h2 className="text-lg font-semibold mb-2 text-gray-100">Contenu du paste</h2>
-          <pre className="bg-[#232a38] rounded p-4 text-sm text-gray-200 overflow-x-auto whitespace-pre-wrap">
-            {paste}
-          </pre>
-          <div className="mt-2 text-xs text-gray-400">Langage : {language}</div>
+        <div
+          className="rounded-xl p-6 border mt-6 relative"
+          style={{ background: "var(--muted)", borderColor: "var(--border)" }}
+        >
+          <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--primary)" }}>Contenu du paste</h2>
+          <button
+            onClick={handleCopy}
+            title="Copier"
+            className="absolute top-6 right-6 flex items-center gap-1 px-2 py-1 rounded hover:bg-[var(--input)]"
+            style={{ background: copied ? "var(--primary)" : "var(--input)", color: copied ? "var(--primary-foreground)" : "var(--foreground)", border: "none" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="6" width="10" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+              <rect x="2" y="2" width="10" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.5" />
+            </svg>
+            <span className="text-xs">{copied ? "Copié !" : "Copier"}</span>
+          </button>
+          <pre
+            className={`rounded p-4 text-sm overflow-x-auto whitespace-pre-wrap language-${language?.toLowerCase()}`}
+            style={{ background: "var(--input)", color: "var(--foreground)" }}
+            dangerouslySetInnerHTML={{ __html: highlighted || paste }}
+          />
+          <div className="mt-2 text-xs" style={{ color: "var(--muted-foreground)" }}>Langage : {language}</div>
         </div>
       )}
     </div>
@@ -99,12 +156,30 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (paste: string, lang: s
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4 bg-[#0b1220] p-4 rounded">
-      <label className="block text-gray-300">Mot de passe</label>
-      <input className="input-paste w-full" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-      {error && <div className="text-red-400 text-sm">{error}</div>}
+    <form
+      onSubmit={submit}
+      className="space-y-4 p-4 rounded"
+      style={{ background: "var(--muted)" }}
+    >
+      <label className="block" style={{ color: "var(--foreground)" }}>Mot de passe</label>
+      <input
+        className="w-full px-3 py-2 rounded border focus:outline-none"
+        style={{ background: "var(--input)", color: "var(--foreground)", borderColor: "var(--border)" }}
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      {error && <div className="text-sm" style={{ color: "var(--destructive)" }}>{error}</div>}
       <div className="flex justify-end">
-        <button type="submit" className="btn-paste px-4 py-2" disabled={loading}>{loading ? "..." : "Voir"}</button>
+        <button
+          type="submit"
+          className="px-4 py-2 rounded font-semibold"
+          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+          disabled={loading}
+        >
+          {loading ? "..." : "Voir"}
+        </button>
       </div>
     </form>
   );
