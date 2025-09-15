@@ -19,7 +19,8 @@ const LANGUAGES = [
   { value: "html", label: "HTML" },
   { value: "css", label: "CSS" },
   { value: "sql", label: "SQL" },
-  { value: "json", label: "JSON" }
+  { value: "json", label: "JSON" },
+  { value: "markdown", label: "Markdown" }
 ];
 
 const ManageCodeBlock: React.FC<{
@@ -27,7 +28,7 @@ const ManageCodeBlock: React.FC<{
   onCodeChange?: (v: string) => void;
   language: string;
   onLanguageChange: (lang: string) => void;
-}> = ({ code, onCodeChange, language, onLanguageChange }) => {
+}> = ({ code, language, onLanguageChange }) => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
@@ -92,7 +93,7 @@ const ManageCodeBlock: React.FC<{
         else if (pasteShare?.id) setSuccess(`${window.location.origin}/s/${pasteShare.id}`);
         else setSuccess(t("pasteshare_ui.created", "Partage créé"));
       }
-    } catch (err) {
+    } catch {
       setError(t("pasteshare_ui.network_error", "Erreur réseau — impossible de créer le partage"));
     } finally {
       setLoading(false);

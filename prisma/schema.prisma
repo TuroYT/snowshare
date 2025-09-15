@@ -99,4 +99,5 @@ enum pasteType {
   CSS
   SQL
   BASH
+  MARKDOWN
 }
