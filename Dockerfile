@@ -30,6 +30,9 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 ENV NODE_ENV=production
 # Disable Next.js telemetry during runtime
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -56,6 +59,10 @@ COPY --from=builder /app/src/generated ./src/generated
 # Copy production environment
 COPY --from=builder /app/.env.production .env
 
+# Copy and set up entrypoint script
+COPY --from=builder /app/scripts/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Create directories for data persistence
 RUN mkdir -p /app/data /app/uploads
 RUN chown -R nextjs:nodejs /app/data /app/uploads
@@ -67,5 +74,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Run database migrations and start the application
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "server.js"]

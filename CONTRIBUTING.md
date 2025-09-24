@@ -26,9 +26,9 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 Before you begin, ensure you have the following installed:
 
 - **Node.js** 18+ and npm/yarn
-- **PostgreSQL** database
 - **Git** for version control
 - A code editor (we recommend VS Code)
+- **Optional**: Docker and Docker Compose for containerized development
 
 ### Fork and Clone
 
@@ -56,8 +56,8 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/snowshare"
+# Database (SQLite)
+DATABASE_URL="file:./prisma/dev.db"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
@@ -84,6 +84,20 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:3000`.
+
+### Alternative: Docker Development
+
+If you prefer using Docker for development:
+
+```bash
+# Start development environment with Docker
+docker-compose -f docker-compose.dev.yml up
+
+# Or using the Makefile
+make dev
+```
+
+This will start the development server with hot reloading in a Docker container.
 
 ## Making Changes
 

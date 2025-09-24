@@ -12,6 +12,7 @@ build
 # Environment files
 .env*
 !.env.example
+!.env.production
 
 # Testing
 coverage
