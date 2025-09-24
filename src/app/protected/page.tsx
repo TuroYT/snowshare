@@ -1,9 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 
-export default function ProtectedPage() {
+function ProtectedContent() {
     const searchParams = useSearchParams();
     const slug = searchParams.get("slug");
     const [password, setPassword] = useState("");
@@ -107,5 +107,17 @@ export default function ProtectedPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function ProtectedPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-gray-500">Chargement...</div>
+            </div>
+        }>
+            <ProtectedContent />
+        </Suspense>
     );
 }

@@ -6,9 +6,9 @@ import path from "path";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = params;
+  const { slug } = await params;
   
   if (!slug) {
     return NextResponse.json({ error: "Slug manquant" }, { status: 400 });
@@ -28,7 +28,7 @@ export async function GET(
 
     const { filePath: fullPath, originalFilename } = result;
     
-    if (!existsSync(fullPath)) {
+    if (!fullPath || !existsSync(fullPath)) {
       return NextResponse.json({ error: "Fichier introuvable" }, { status: 404 });
     }
 
@@ -74,7 +74,7 @@ export async function GET(
       headers.set('Content-Disposition', `${disposition}; filename="${originalFilename}"`);
     }
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers,
     });
