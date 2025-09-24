@@ -27,7 +27,7 @@ jest.mock('@uiw/react-codemirror', () => {
         readOnly={readOnly}
         data-theme={typeof theme === 'object' ? 'atomone' : 'default'}
         data-extensions={JSON.stringify(extensions.map(ext => 
-          typeof ext === 'function' ? ext.name || 'extension' : 'static-extension'
+          typeof ext === 'object' && ext !== null && 'name' in ext ? ext.name : 'static-extension'
         ))}
       />
     ),
@@ -36,7 +36,7 @@ jest.mock('@uiw/react-codemirror', () => {
 
 // Mock all CodeMirror language extensions
 jest.mock('@codemirror/lang-javascript', () => ({
-  javascript: jest.fn(() => ({ name: 'javascript' })),
+  javascript: jest.fn((options) => ({ name: 'javascript', options })),
 }));
 
 jest.mock('@codemirror/lang-python', () => ({
@@ -106,7 +106,7 @@ describe('CodeBlock Component', () => {
     
     render(
       <CodeBlock 
-        code="# Hello World\n\nThis is **markdown** content."
+        code={"# Hello World\n\nThis is **markdown** content."}
         language="markdown"
         onChange={mockOnChange}
       />
@@ -208,7 +208,7 @@ describe('CodeBlock Component', () => {
       );
       
       const textarea = screen.getByTestId('codemirror');
-      expect(textarea.getAttribute('data-extensions')).toContain('static-extension');
+      expect(textarea.getAttribute('data-extensions')).toContain(language);
       
       unmount();
     });

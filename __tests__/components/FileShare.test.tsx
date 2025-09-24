@@ -122,7 +122,7 @@ describe('FileShare', () => {
       render(<FileShare />);
 
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
-      const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement;
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
       fireEvent.change(fileInput, { target: { files: [file] } });
 
@@ -136,7 +136,7 @@ describe('FileShare', () => {
       const largeFile = new File(['x'.repeat(1000)], 'large.txt', { type: 'text/plain' });
       Object.defineProperty(largeFile, 'size', { value: 600 * 1024 * 1024 }); // 600MB
 
-      const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement;
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       fireEvent.change(fileInput, { target: { files: [largeFile] } });
 
       expect(screen.getByText(/File is too large/)).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('FileShare', () => {
     it('handles drag and drop events', () => {
       render(<FileShare />);
 
-      const dropZone = screen.getByText(/Drag and drop your file here/i).closest('div');
+      const dropZone = screen.getByText(/Drag & drop your file here/i).closest('div');
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
 
       // Simulate drag over
@@ -221,7 +221,7 @@ describe('FileShare', () => {
       render(<FileShare />);
 
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
-      const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement;
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
       fireEvent.change(fileInput, { target: { files: [file] } });
       expect(screen.getByText('test.txt')).toBeInTheDocument();
@@ -245,7 +245,7 @@ describe('FileShare', () => {
       render(<FileShare />);
 
       const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
-      const fileInput = screen.getByRole('textbox', { hidden: true }) as HTMLInputElement;
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
       fireEvent.change(fileInput, { target: { files: [file] } });
       
