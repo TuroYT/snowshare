@@ -34,21 +34,47 @@ const createMockAuthResponse = (isAuthenticated: boolean) => ({
 
 const createMockTranslation = () => ({
   t: (key: string, defaultValue?: string, options?: Record<string, unknown>) => {
-    // Always return the English default if provided, otherwise use the key
-    if (defaultValue) {
-      // Handle interpolation with named parameters
-      if (options && typeof options === 'object') {
-        let result = defaultValue;
-        for (const [param, value] of Object.entries(options)) {
-          if (typeof value === 'number' || typeof value === 'string') {
-            result = result.replace(`{{${param}}}`, String(value));
-          }
+    // Provide English translations for the component keys to override French defaults
+    const englishTranslations: Record<string, string> = {
+      'pasteshare_ui.label_language': 'Language',
+      'pasteshare_ui.language_placeholder': 'Select a language',
+      'pasteshare_ui.label_expiration': 'Expiration',
+      'pasteshare_ui.submit': 'Create Paste',
+      'pasteshare_ui.advanced': 'Advanced Settings',
+      'pasteshare_ui.custom_slug': 'Custom Slug',
+      'pasteshare_ui.label_password': 'Password',
+      'pasteshare_ui.placeholder_password': 'Optional password',
+      'pasteshare_ui.slug_hint': 'Leave empty for auto-generated slug',
+      'pasteshare_ui.never_expires': 'Never expires',
+      'pasteshare_ui.never_expires_desc': 'This paste will remain available indefinitely',
+      'pasteshare_ui.creating': 'Creating paste...',
+      'pasteshare_ui.error_title': 'Error',
+      'pasteshare_ui.success_title': 'Success!',
+      'pasteshare_ui.success_message': 'Your paste has been created successfully!',
+      'linkshare.days': 'days',
+      'linkshare.duration_never': 'This paste will never expire',
+      'linkshare.duration_in_1_day': 'This paste will expire in 1 day',
+      'linkshare.duration_in_x_days': 'This paste will expire in {{count}} days',
+      'linkshare.duration_in_1_week': 'This paste will expire in 1 week',
+      'linkshare.duration_in_x_weeks': 'This paste will expire in {{count}} weeks',
+      'linkshare.duration_in_1_month': 'This paste will expire in 1 month',
+      'linkshare.duration_in_x_months': 'This paste will expire in {{count}} months',
+      'linkshare.duration_in_1_year': 'This paste will expire in 1 year',
+    };
+    
+    // Use English translation if available, otherwise use default or key
+    let result = englishTranslations[key] || defaultValue || key;
+    
+    // Handle interpolation with named parameters
+    if (options && typeof options === 'object') {
+      for (const [param, value] of Object.entries(options)) {
+        if (typeof value === 'number' || typeof value === 'string') {
+          result = result.replace(`{{${param}}}`, String(value));
         }
-        return result;
       }
-      return defaultValue;
     }
-    return key;
+    
+    return result;
   },
   i18n: {
     changeLanguage: jest.fn(),

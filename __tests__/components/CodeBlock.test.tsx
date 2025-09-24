@@ -195,20 +195,28 @@ describe('CodeBlock Component', () => {
 
   it('supports all language extensions', () => {
     const languages = [
-      'javascript', 'typescript', 'python', 'java', 
-      'php', 'go', 'html', 'css', 'sql', 'json'
+      { lang: 'javascript', expected: 'javascript' },
+      { lang: 'typescript', expected: 'javascript' }, // TypeScript uses javascript extension
+      { lang: 'python', expected: 'python' },
+      { lang: 'java', expected: 'java' },
+      { lang: 'php', expected: 'php' },
+      { lang: 'go', expected: 'go' },
+      { lang: 'html', expected: 'html' },
+      { lang: 'css', expected: 'css' },
+      { lang: 'sql', expected: 'sql' },
+      { lang: 'json', expected: 'json' }
     ];
 
-    languages.forEach(language => {
+    languages.forEach(({ lang, expected }) => {
       const { unmount } = render(
         <CodeBlock 
-          code={`// ${language} code`}
-          language={language}
+          code={`// ${lang} code`}
+          language={lang}
         />
       );
       
       const textarea = screen.getByTestId('codemirror');
-      expect(textarea.getAttribute('data-extensions')).toContain(language);
+      expect(textarea.getAttribute('data-extensions')).toContain(expected);
       
       unmount();
     });

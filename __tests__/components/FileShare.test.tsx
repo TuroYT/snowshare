@@ -59,21 +59,48 @@ const createMockAuthResponse = (isAuthenticated: boolean) => ({
 
 const createMockTranslation = () => ({
   t: (key: string, defaultValue?: string, options?: Record<string, unknown>) => {
-    // Always return the English default if provided, otherwise use the key
-    if (defaultValue) {
-      // Handle interpolation with named parameters
-      if (options && typeof options === 'object') {
-        let result = defaultValue;
-        for (const [param, value] of Object.entries(options)) {
-          if (typeof value === 'number' || typeof value === 'string') {
-            result = result.replace(`{{${param}}}`, String(value));
-          }
+    // Provide English translations for the component keys to override French defaults
+    const englishTranslations: Record<string, string> = {
+      'fileshare.locked_title': 'File sharing is locked',
+      'fileshare.locked_message': 'You must be logged in to share files.',
+      'fileshare.title': 'FileShare',
+      'fileshare.subtitle': 'Upload and share your files easily',
+      'fileshare.drag_drop': 'Drag & drop your file here',
+      'fileshare.click_to_select': 'or click to select a file',
+      'fileshare.file_selected': 'Selected file:',
+      'fileshare.file_size': 'Size:',
+      'fileshare.file_type': 'Type:',
+      'fileshare.change_file': 'Change file',
+      'fileshare.file_too_large': 'File is too large (max {{max}}MB)',
+      'fileshare.file_required': 'Please select a file',
+      'fileshare.submit': 'Upload File',
+      'fileshare.uploading': 'Uploading...',
+      'fileshare.upload_progress': 'Progress: {{progress}}%',
+      'fileshare.advanced': 'Advanced Settings',
+      'fileshare.custom_slug': 'Custom Slug',
+      'fileshare.password_protect': 'Password protection',
+      'fileshare.password_placeholder': 'Optional - leave empty for open access',
+      'fileshare.never_expires': 'Never expires',
+      'fileshare.validity_label': 'Expiration',
+      'fileshare.days': 'days',
+      'fileshare.success_title': 'Success!',
+      'fileshare.creation_error': 'Error creating file share',
+      'fileshare.network_error': 'Network error — could not create share',
+    };
+    
+    // Use English translation if available, otherwise use default or key
+    let result = englishTranslations[key] || defaultValue || key;
+    
+    // Handle interpolation with named parameters
+    if (options && typeof options === 'object') {
+      for (const [param, value] of Object.entries(options)) {
+        if (typeof value === 'number' || typeof value === 'string') {
+          result = result.replace(`{{${param}}}`, String(value));
         }
-        return result;
       }
-      return defaultValue;
     }
-    return key;
+    
+    return result;
   },
   i18n: {
     changeLanguage: jest.fn(),
