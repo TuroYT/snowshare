@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  snowshare-dev:
+    build: 
+      context: .
+      target: deps
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:./prisma/dev.db
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=development-secret-key
+      - ALLOW_SIGNUP=true
+    volumes:
+      # Mount source code for development
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    restart: unless-stopped

@@ -9,7 +9,9 @@ const globalForPrisma = globalThis as unknown as {
     sqliteDb?: BetterSqliteDb;
 };
 
-const sqlitePath = path.resolve(process.cwd(), 'prisma', 'dev.db');
+const sqlitePath = process.env.NODE_ENV === 'production' 
+    ? path.resolve(process.cwd(), 'data', 'snowshare.db')
+    : path.resolve(process.cwd(), 'prisma', 'dev.db');
 const db: BetterSqliteDb = globalForPrisma.sqliteDb ?? new Database(sqlitePath);
 
 // Pass both db and url to the adapter!

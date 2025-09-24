@@ -40,20 +40,15 @@
 
 - **Frontend**: Next.js 15.5, React 19.1, TailwindCSS 4
 - **Backend**: Next.js API Routes
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: SQLite with Prisma ORM
 - **Authentication**: NextAuth.js with bcrypt password hashing
 - **Special Features**: QR code generation, custom URL slugs
 
 ## Getting Started 🚀
 
-- Node.js 18+ and npm/yarn
-- PostgreSQL database
 ### Prerequisites ✅
 - Node.js 18+ and npm/yarn
-- PostgreSQL database
-
-- Node.js 18+ and npm/yarn
-- PostgreSQL database
+- Or Docker and Docker Compose for containerized deployment
 
 ### Installation 🛠️
 
@@ -71,8 +66,8 @@
 3. Set up environment variables
    Create a `.env` file in the root directory with the following variables:
    ```
-   # Database
-   DATABASE_URL="postgresql://username:password@localhost:5432/snowshare"
+   # Database (SQLite)
+   DATABASE_URL="file:./prisma/dev.db"
    
    # NextAuth
    NEXTAUTH_URL="http://localhost:3000"
@@ -93,6 +88,61 @@
    ```
 
 6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Docker Deployment 🐳
+
+For production deployment using Docker:
+
+### Using Docker Compose (Recommended)
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/TuroYT/snowshare
+   cd snowshare
+   ```
+
+2. Create environment file
+   ```bash
+   cp .env.example .env.production
+   # Edit .env.production with your production values:
+   # NEXTAUTH_SECRET="your-production-secret-key"
+   # NEXTAUTH_URL="https://your-domain.com"
+   ```
+
+3. Deploy with Docker Compose
+   ```bash
+   docker-compose up -d
+   ```
+
+The application will be available at `http://localhost:3000`. Data is persisted in Docker volumes:
+- SQLite database: `snowshare_data` volume
+- Uploaded files: `snowshare_uploads` volume
+
+### Manual Docker Build
+
+1. Build the Docker image
+   ```bash
+   docker build -t snowshare .
+   ```
+
+2. Run the container
+   ```bash
+   docker run -d \
+     --name snowshare \
+     -p 3000:3000 \
+     -v snowshare_data:/app/data \
+     -v snowshare_uploads:/app/uploads \
+     -e NEXTAUTH_SECRET="your-secret-key" \
+     -e NEXTAUTH_URL="http://localhost:3000" \
+     snowshare
+   ```
+
+### Development with Docker
+
+For development with Docker:
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
 
 ## Project Structure 🗂️
 

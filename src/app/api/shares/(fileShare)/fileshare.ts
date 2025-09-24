@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
+import { getUploadsDir } from "@/lib/config";
 
 // File type validation
 const ALLOWED_FILE_TYPES = [
@@ -131,7 +132,7 @@ export const createFileShare = async (
     });
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'uploads');
+    const uploadsDir = getUploadsDir();
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
@@ -188,7 +189,7 @@ export const getFileShare = async (slug: string, password?: string) => {
     return { error: "Fichier introuvable." };
   }
 
-  const filePath = path.join(process.cwd(), 'uploads', share.filePath);
+  const filePath = path.join(getUploadsDir(), share.filePath);
   if (!existsSync(filePath)) {
     return { error: "Fichier physique introuvable." };
   }
