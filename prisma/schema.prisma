@@ -85,20 +85,16 @@ enum ShareType {
 }
 
 enum pasteType {
-  PLAIN
+  PLAINTEXT
   JAVASCRIPT
   TYPESCRIPT
   PYTHON
   JAVA
-  CSHARP
-  RUBY
   PHP
   GO
-  SWIFT
-  KOTLIN
   HTML
   CSS
   SQL
-  BASH
+  JSON
   MARKDOWN
 }
