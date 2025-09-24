@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: snowshare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: snowshare
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - snownetwork
+
+  app:
+    build:
+      context: .
+    container_name: snowshare-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Connexion directe à Postgres (pas de Data Proxy)
+      DATABASE_URL: postgres://postgres:postgres@db:5432/snowshare
+      PRISMA_CLIENT_ENGINE_TYPE: library
+      ALLOW_SIGNUP: true
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: changeme-in-prod
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
+    command: >-
+      sh -c "npx prisma migrate deploy && npm start"
+    networks:
+      - snownetwork
+
+volumes:
+  db-data:
+    driver: local
+  uploads:
+    driver: local
+
+networks:
+  snownetwork:
+    driver: bridge

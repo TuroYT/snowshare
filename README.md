@@ -33,14 +33,8 @@
 
 ### User Management 👥
 - User registration and authentication via NextAuth 🔑
-- Extended privileges for registered users (longer expiration times, more storage)
-- Track and manage your shared content
-
-## Tech Stack 🧰
 
 - **Frontend**: Next.js 15.5, React 19.1, TailwindCSS 4
-- **Backend**: Next.js API Routes
-- **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js with bcrypt password hashing
 - **Special Features**: QR code generation, custom URL slugs
 
@@ -80,6 +74,21 @@
 
    # Auth (allow or disallow user signups)
    ALLOW_SIGNUP=true
+
+## Docker
+
+You can run the app and a PostgreSQL database locally using Docker Compose.
+
+1. Copy `.env.example` to `.env` and adjust values as needed.
+2. Build and start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+The app will be available at http://localhost:3000 and PostgreSQL at port 5432. Data persists in the `db-data` volume and uploaded files in the local `uploads/` folder.
+
+On startup, the app runs `prisma migrate deploy` to ensure the database schema is up to date.
    ```
 
 4. Initialize the database
