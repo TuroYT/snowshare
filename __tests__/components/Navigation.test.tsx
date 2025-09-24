@@ -49,19 +49,14 @@ describe('Navigation Component', () => {
 
     mockUseTranslation.mockReturnValue({
       t: (key: string, defaultValue?: string) => {
-        const translations: Record<string, string> = {
-          'loading': 'Loading...',
-          'nav.sign_in': 'Sign In',
-          'nav.sign_up': 'Sign Up',
-          'nav.sign_out': 'Sign Out',
-          'nav.hello': 'Hello, {{email}}',
-          'nav.open_menu': 'Open menu',
-          'nav.close_menu': 'Close menu',
-        };
-        if (key === 'nav.hello' && defaultValue) {
-          return defaultValue.replace('{{email}}', 'test@example.com');
+        // Always return the fallback (English default) if provided
+        if (defaultValue) {
+          if (key === 'nav.hello' && defaultValue) {
+            return defaultValue.replace('{{email}}', 'test@example.com');
+          }
+          return defaultValue;
         }
-        return translations[key] || defaultValue || key;
+        return key;
       },
       i18n: {
         changeLanguage: jest.fn(),

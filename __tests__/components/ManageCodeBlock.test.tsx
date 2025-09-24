@@ -34,43 +34,21 @@ const createMockAuthResponse = (isAuthenticated: boolean) => ({
 
 const createMockTranslation = () => ({
   t: (key: string, defaultValue?: string, options?: Record<string, unknown>) => {
-    const translations: Record<string, string> = {
-      'pasteshare_ui.label_language': 'Language',
-      'pasteshare_ui.language_placeholder': 'Select a language',
-      'pasteshare_ui.label_expiration': 'Expiration',
-      'pasteshare_ui.submit': 'Create Paste',
-      'pasteshare_ui.advanced': 'Advanced Settings',
-      'pasteshare_ui.custom_slug': 'Custom Slug',
-      'pasteshare_ui.label_password': 'Password',
-      'pasteshare_ui.placeholder_password': 'Optional password',
-      'pasteshare_ui.slug_hint': 'Leave empty for auto-generated slug',
-      'linkshare.days': 'days',
-      'linkshare.duration_never': 'This paste will never expire',
-      'linkshare.duration_in_1_day': 'This paste will expire in 1 day',
-      'linkshare.duration_in_x_days': 'This paste will expire in {{count}} days',
-      'linkshare.duration_in_1_week': 'This paste will expire in 1 week',
-      'linkshare.duration_in_x_weeks': 'This paste will expire in {{count}} weeks',
-      'linkshare.duration_in_1_month': 'This paste will expire in 1 month',
-      'linkshare.duration_in_x_months': 'This paste will expire in {{count}} months',
-      'linkshare.duration_in_1_year': 'This paste will expire in 1 year',
-      'pasteshare_ui.creating': 'Creating paste...',
-      'pasteshare_ui.error_title': 'Error',
-      'pasteshare_ui.success_title': 'Success!',
-      'pasteshare_ui.success_message': 'Your paste has been created successfully!',
-    };
-    
-    // Handle interpolation with named parameters
-    if (options && typeof options === 'object') {
-      let result = translations[key] || defaultValue || key;
-      for (const [param, value] of Object.entries(options)) {
-        if (typeof value === 'number' || typeof value === 'string') {
-          result = result.replace(`{{${param}}}`, String(value));
+    // Always return the English default if provided, otherwise use the key
+    if (defaultValue) {
+      // Handle interpolation with named parameters
+      if (options && typeof options === 'object') {
+        let result = defaultValue;
+        for (const [param, value] of Object.entries(options)) {
+          if (typeof value === 'number' || typeof value === 'string') {
+            result = result.replace(`{{${param}}}`, String(value));
+          }
         }
+        return result;
       }
-      return result;
+      return defaultValue;
     }
-    
-    return translations[key] || defaultValue || key;
+    return key;
   },
   i18n: {
     changeLanguage: jest.fn(),

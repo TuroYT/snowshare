@@ -41,14 +41,17 @@ const createMockAuthResponse = (isAuthenticated: boolean) => ({
 
 const createMockTranslation = () => ({
   t: (key: string, defaultValue?: string, options?: Record<string, unknown>) => {
-    const translations: Record<string, string> = {
-      'linkshare.url_label': 'URL to share',
-      'linkshare.url_placeholder': 'https://example.com',
+    // Provide English translations for the component keys to override French defaults
+    const englishTranslations: Record<string, string> = {
+      'linkshare.title': 'Share a link',
+      'linkshare.subtitle': 'Create a shareable link for any URL',
+      'linkshare.label_url': 'URL to share',
+      'linkshare.placeholder_url': 'https://example.com',
       'linkshare.url_error': 'Invalid URL format',
-      'linkshare.expiration_label': 'Expiration',
+      'linkshare.validity_label': 'Expiration',
       'linkshare.advanced': 'Advanced Settings',
       'linkshare.custom_slug': 'Custom Slug',
-      'linkshare.password_label': 'Password',
+      'linkshare.password_protect': 'Password',
       'linkshare.password_placeholder': 'Optional password',
       'linkshare.slug_hint': 'Leave empty for auto-generated slug',
       'linkshare.submit': 'Create Link',
@@ -69,18 +72,19 @@ const createMockTranslation = () => ({
       'linkshare.duration_in_x_months': 'This link will expire in {{count}} months',
     };
     
+    // Use English translation if available, otherwise use default or key
+    let result = englishTranslations[key] || defaultValue || key;
+    
     // Handle interpolation with named parameters
     if (options && typeof options === 'object') {
-      let result = translations[key] || defaultValue || key;
       for (const [param, value] of Object.entries(options)) {
         if (typeof value === 'number' || typeof value === 'string') {
           result = result.replace(`{{${param}}}`, String(value));
         }
       }
-      return result;
     }
     
-    return translations[key] || defaultValue || key;
+    return result;
   },
   i18n: {
     changeLanguage: jest.fn(),

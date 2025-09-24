@@ -59,17 +59,21 @@ const createMockAuthResponse = (isAuthenticated: boolean) => ({
 
 const createMockTranslation = () => ({
   t: (key: string, defaultValue?: string, options?: Record<string, unknown>) => {
-    // Handle interpolation with named parameters
-    if (options && typeof options === 'object') {
-      let result = defaultValue || key;
-      for (const [param, value] of Object.entries(options)) {
-        if (typeof value === 'number' || typeof value === 'string') {
-          result = result.replace(`{{${param}}}`, String(value));
+    // Always return the English default if provided, otherwise use the key
+    if (defaultValue) {
+      // Handle interpolation with named parameters
+      if (options && typeof options === 'object') {
+        let result = defaultValue;
+        for (const [param, value] of Object.entries(options)) {
+          if (typeof value === 'number' || typeof value === 'string') {
+            result = result.replace(`{{${param}}}`, String(value));
+          }
         }
+        return result;
       }
-      return result;
+      return defaultValue;
     }
-    return defaultValue || key;
+    return key;
   },
   i18n: {
     changeLanguage: jest.fn(),

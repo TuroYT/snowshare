@@ -15,13 +15,8 @@ describe('Footer Component', () => {
   beforeEach(() => {
     mockUseTranslation.mockReturnValue({
       t: (key: string, fallback?: string) => {
-        const translations: Record<string, string> = {
-          'footer.made_with': 'Made with',
-          'footer.by': 'by Romain',
-          'footer.github': 'GitHub',
-          'footer.license': 'License',
-        };
-        return translations[key] || fallback || key;
+        // Always return the fallback (English default) if provided
+        return fallback || key;
       },
       i18n: {
         changeLanguage: jest.fn(),
