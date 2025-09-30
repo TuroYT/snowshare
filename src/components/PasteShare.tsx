@@ -14,60 +14,49 @@ const PasteShare: React.FC = () => {
   // Génération du lien (à adapter selon la logique réelle)
 
   return (
-    <div className="w-full min-h-screen flex flex-col lg:flex-row gap-6 p-4 lg:p-6">
+    <div className="w-full flex flex-col lg:flex-row gap-8">
+      {/* Header avec icône */}
+      <div className="flex items-center gap-4 mb-6 lg:hidden">
+        <div className="modern-icon-green">
+          <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-100">Partager du code</h2>
+          <p className="text-sm text-gray-400">Créez un snippet de code partageable</p>
+        </div>
+      </div>
+
       {/* Grand éditeur de code */}
-      <div className="flex-1 bg-[#181f2a] rounded-2xl shadow-xl border border-[#232a38] p-4 lg:p-6 min-h-[60vh] lg:min-h-[70vh]">
-        <CodeBlock code={code} language={language} onChange={setCode} />
+      <div className="flex-1">
+        <div className="modern-card p-6 min-h-[60vh] lg:min-h-[70vh]">
+          <div className="hidden lg:flex items-center gap-4 mb-6">
+            <div className="modern-icon-green">
+              <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-100">Partager du code</h2>
+              <p className="text-sm text-gray-400">Créez un snippet de code partageable</p>
+            </div>
+          </div>
+          <CodeBlock code={code} language={language} onChange={setCode} />
+        </div>
       </div>
       
       {/* Formulaire à droite sur desktop, en bas sur mobile */}
-  <div className="w-full lg:w-96 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
-        <div className="bg-[#181f2a] rounded-2xl shadow-xl border border-[#232a38] p-4 lg:p-6">
+      <div className="w-full lg:w-96 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
+        <div className="modern-card p-6">
           <ManageCodeBlock
             code={code}
             onCodeChange={setCode}
             language={language}
             onLanguageChange={setLanguage}
           />
-
-      
         </div>
       </div>
-      
-      <style jsx global>{`
-        .input-paste {
-          border: 1px solid #232a38;
-          border-radius: 0.75rem;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.97rem;
-          background: #232a38;
-          color: #e2e8f0;
-          transition: border-color 0.2s, background 0.2s;
-        }
-        .input-paste:focus {
-          outline: none;
-          border-color: #2563eb;
-          background: #181f2a;
-        }
-        .input-paste::placeholder {
-          color: #64748b;
-          opacity: 1;
-        }
-        .btn-paste {
-          background: linear-gradient(90deg,#2563eb 60%,#1e40af 100%);
-          color: #fff;
-          border-radius: 0.75rem;
-          font-weight: 500;
-          box-shadow: 0 2px 8px 0 #232a38;
-          transition: background 0.2s;
-        }
-        .btn-paste:hover {
-          background: linear-gradient(90deg,#1e40af 60%,#2563eb 100%);
-        }
-        label {
-          color: #e2e8f0;
-        }
-      `}</style>
     </div>
   );
 };

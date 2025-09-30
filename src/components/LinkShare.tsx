@@ -157,10 +157,10 @@ const LinkShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#181f2a] p-8 rounded-2xl shadow-xl border border-[#232a38] w-full max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6 justify-center">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-gray-700/50 w-full max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-8 justify-center">
+        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-700/50 flex items-center justify-center">
+          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -170,7 +170,7 @@ const LinkShare: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-100">{t("linkshare.title", "Partager un lien")}</h2>
+          <h2 className="text-xl font-bold text-gray-100">{t("linkshare.title", "Partager un lien")}</h2>
           <p className="text-sm text-gray-400">
             {t("linkshare.subtitle", "Créez un lien partageable pour n'importe quelle URL")}
           </p>
@@ -210,7 +210,7 @@ const LinkShare: React.FC = () => {
           </label>
 
           {isAuthenticated && (
-            <div className="bg-gray-750 p-3 rounded-lg border border-gray-600">
+            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600/50">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -246,7 +246,7 @@ const LinkShare: React.FC = () => {
             <span className="text-sm text-gray-400 min-w-0">{t("linkshare.days", "jours")}</span>
           </div>
 
-          <div className="text-xs text-gray-400 bg-gray-750 p-2 rounded border border-gray-600">
+          <div className="text-xs text-gray-400 bg-gray-800/30 p-3 rounded-xl border border-gray-600/30">
             <div className="flex items-center gap-2">
               <svg
                 className="w-3 h-3 text-blue-400 flex-shrink-0"
@@ -277,7 +277,7 @@ const LinkShare: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-gray-750 p-4 rounded-lg border border-gray-600 space-y-4">
+        <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-600/50 space-y-4">
           <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -470,7 +470,7 @@ const LinkShare: React.FC = () => {
                 </div>
               </div>
               <div className="mt-4 flex justify-center">
-                <div className="flex flex-col items-center bg-gray-750 p-3 rounded-lg border border-gray-600">
+                <div className="flex flex-col items-center bg-gray-800/50 p-4 rounded-xl border border-gray-600/50">
                   <p className="text-sm text-gray-300 mb-2 text-center">
                     {t("linkshare.qr_info", "Scanner ce QR code pour accéder au lien")}
                   </p>
@@ -485,36 +485,40 @@ const LinkShare: React.FC = () => {
       )}
       <style jsx global>{`
         .input-paste {
-          border: 1px solid #232a38;
+          border: 1px solid #374151;
           border-radius: 0.75rem;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.97rem;
-          background: #232a38;
-          color: #e2e8f0;
-          transition: border-color 0.2s, background 0.2s;
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+          background: #1f2937;
+          color: #f3f4f6;
+          transition: all 0.2s ease;
         }
         .input-paste:focus {
           outline: none;
-          border-color: #2563eb;
-          background: #181f2a;
+          border-color: #3b82f6;
+          background: #111827;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
         .input-paste::placeholder {
-          color: #64748b;
+          color: #9ca3af;
           opacity: 1;
         }
         .btn-paste {
-          background: linear-gradient(90deg,#2563eb 60%,#1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
           color: #fff;
           border-radius: 0.75rem;
-          font-weight: 500;
-          box-shadow: 0 2px 8px 0 #232a38;
-          transition: background 0.2s;
+          font-weight: 600;
+          box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
         }
         .btn-paste:hover {
-          background: linear-gradient(90deg,#1e40af 60%,#2563eb 100%);
+          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
         }
         label {
-          color: #e2e8f0;
+          color: #f3f4f6;
+          font-weight: 500;
         }
       `}</style>
     </div>

@@ -237,7 +237,7 @@ const FileShare: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="bg-[#181f2a] p-8 rounded-2xl shadow-xl border border-[#232a38] w-full max-w-2xl mx-auto text-center">
+      <div className="modern-card p-8 w-full max-w-2xl mx-auto text-center">
         <h2 className="text-lg font-semibold text-gray-100 mb-2">
           {t("fileshare.locked_title", "File sharing is locked")}
         </h2>
@@ -250,10 +250,10 @@ const FileShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#181f2a] p-8 rounded-2xl shadow-xl border border-[#232a38] w-full max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6 justify-center">
-        <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="modern-card p-8 w-full max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-8 justify-center">
+        <div className="modern-icon-purple">
+          <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -263,9 +263,9 @@ const FileShare: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-100">{t("fileshare.title", "FileShare")}</h2>
+          <h2 className="text-xl font-bold text-gray-100">{t("fileshare.title", "Partager un fichier")}</h2>
           <p className="text-sm text-gray-400">
-            {t("fileshare.subtitle", "Upload and share your files easily")}
+            {t("fileshare.subtitle", "Uploadez et partagez vos fichiers facilement")}
           </p>
         </div>
       </div>
@@ -279,10 +279,10 @@ const FileShare: React.FC = () => {
           
           {!file ? (
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
                 dragOver
-                  ? "border-blue-400 bg-blue-900/20"
-                  : "border-gray-600 hover:border-gray-500 hover:bg-gray-800/50"
+                  ? "border-purple-400 bg-purple-900/20 scale-105"
+                  : "border-gray-600/50 hover:border-gray-500 hover:bg-gray-800/30 hover:scale-102"
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -314,9 +314,9 @@ const FileShare: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-gray-750 border border-gray-600 rounded-lg p-4">
+            <div className="modern-section p-4">
               <div className="flex items-start gap-3">
-                <svg className="w-8 h-8 text-green-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-purple-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -367,9 +367,9 @@ const FileShare: React.FC = () => {
               <span>{t("fileshare.uploading", "Uploading...")}</span>
               <span>{t("fileshare.upload_progress", "Progress: {{progress}}%", { progress: uploadProgress })}</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-700/50 rounded-full h-3">
               <div
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all duration-300 shadow-lg shadow-purple-500/25"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -383,13 +383,13 @@ const FileShare: React.FC = () => {
           </label>
 
           {isAuthenticated && (
-            <div className="bg-gray-750 p-3 rounded-lg border border-gray-600">
+            <div className="modern-section p-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={neverExpires}
                   onChange={(e) => setNeverExpires(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-green-600 focus:ring-green-500 focus:ring-2 focus:ring-offset-0"
+                  className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-2 focus:ring-offset-0"
                 />
                 <div>
                   <div className="text-sm font-medium text-gray-200">
@@ -419,10 +419,10 @@ const FileShare: React.FC = () => {
             <span className="text-sm text-gray-400 min-w-0">{t("fileshare.days", "days")}</span>
           </div>
 
-          <div className="text-xs text-gray-400 bg-gray-750 p-2 rounded border border-gray-600">
+          <div className="text-xs text-gray-400 modern-section p-3">
             <div className="flex items-center gap-2">
               <svg
-                className="w-3 h-3 text-green-400 flex-shrink-0"
+                className="w-3 h-3 text-purple-400 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -451,7 +451,7 @@ const FileShare: React.FC = () => {
         </div>
 
         {/* Advanced Settings */}
-        <div className="bg-gray-750 p-4 rounded-lg border border-gray-600 space-y-4">
+        <div className="modern-section p-6 space-y-4">
           <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -476,11 +476,11 @@ const FileShare: React.FC = () => {
                 <input
                   id="slug"
                   type="text"
-                  placeholder={t("fileshare.placeholder_slug", "my-custom-file")}
+                  placeholder={t("fileshare.placeholder_slug", "mon-fichier-custom")}
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
-                  className="input-paste flex-1"
+                  className="modern-input flex-1"
                 />
               </div>
               <p className="text-xs text-gray-400 mt-1">
@@ -496,10 +496,10 @@ const FileShare: React.FC = () => {
                 <input
                   id="password"
                   type="password"
-                  placeholder={t("fileshare.password_placeholder", "Optional - leave empty for open access")}
+                  placeholder={t("fileshare.password_placeholder", "Optionnel - laissez vide pour un accès libre")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-paste w-full pr-10"
+                  className="modern-input w-full pr-12"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -532,7 +532,7 @@ const FileShare: React.FC = () => {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {t("fileshare.creating", "Creating share...")}
+                {t("fileshare.creating", "Création en cours...")}
               </>
             ) : (
               <>
@@ -544,7 +544,7 @@ const FileShare: React.FC = () => {
                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                   />
                 </svg>
-                {t("fileshare.submit", "Share file")}
+                {t("fileshare.submit", "Partager le fichier")}
               </>
             )}
           </button>
@@ -615,8 +615,8 @@ const FileShare: React.FC = () => {
                 <div className="flex-shrink-0 flex items-start gap-2">
                   <button
                     onClick={() => copyToClipboard(success)}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-                    title={t("fileshare.copy_title", "Copy link")}
+                    className="p-3 text-gray-400 hover:text-purple-400 hover:bg-gray-700/50 rounded-lg transition-all duration-200 hover:scale-110"
+                    title={t("fileshare.copy_title", "Copier le lien")}
                   >
                     {copied ? (
                       <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -636,7 +636,7 @@ const FileShare: React.FC = () => {
                 </div>
               </div>
               <div className="mt-4 flex justify-center">
-                <div className="flex flex-col items-center bg-gray-750 p-3 rounded-lg border border-gray-600">
+                <div className="flex flex-col items-center modern-section p-4">
                   <p className="text-sm text-gray-300 mb-2 text-center">
                     {t("fileshare.qr_info", "Scan this QR code to download the file")}
                   </p>
@@ -652,36 +652,43 @@ const FileShare: React.FC = () => {
       
       <style jsx global>{`
         .input-paste {
-          border: 1px solid #232a38;
+          border: 1px solid rgba(75, 85, 99, 0.5);
           border-radius: 0.75rem;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.97rem;
-          background: #232a38;
-          color: #e2e8f0;
-          transition: border-color 0.2s, background 0.2s;
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+          background: rgba(31, 41, 55, 0.5);
+          color: #f3f4f6;
+          transition: all 0.2s ease;
         }
         .input-paste:focus {
           outline: none;
-          border-color: #059669;
-          background: #181f2a;
+          border-color: #8b5cf6;
+          background: rgba(17, 24, 39, 0.5);
+          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
         .input-paste::placeholder {
-          color: #64748b;
+          color: #9ca3af;
           opacity: 1;
         }
         .btn-paste {
-          background: linear-gradient(90deg,#059669 60%,#047857 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
           color: #fff;
           border-radius: 0.75rem;
-          font-weight: 500;
-          box-shadow: 0 2px 8px 0 #232a38;
-          transition: background 0.2s;
+          font-weight: 600;
+          box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
         }
-        .btn-paste:hover {
-          background: linear-gradient(90deg,#047857 60%,#059669 100%);
+        .btn-paste:hover:not(:disabled) {
+          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
         }
         label {
-          color: #e2e8f0;
+          color: #f3f4f6;
+          font-weight: 500;
+        }
+        .hover\:scale-102:hover {
+          transform: scale(1.02);
         }
       `}</style>
     </div>

@@ -117,7 +117,7 @@ const ManageCodeBlock: React.FC<{
               </a>
             </div>
             <div className="flex justify-center">
-              <QRCodeSVG value={success} size={128} bgColor="#181f2a" fgColor="#e2e8f0" className="border-white rounded border-4" />
+              <QRCodeSVG value={success} size={128} bgColor="#ffffff" fgColor="#1f2937" className="rounded-xl shadow-2xl" />
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ const ManageCodeBlock: React.FC<{
         <label className="block text-sm font-medium text-gray-300">
           {t("pasteshare_ui.label_language")}
         </label>
-        <select value={language} onChange={(e) => onLanguageChange(e.target.value)} className="input-paste w-full">
+        <select value={language} onChange={(e) => onLanguageChange(e.target.value)} className="modern-input w-full">
           <option value="">{t("pasteshare_ui.language_placeholder")}</option>
           {LANGUAGES.map((l) => (
             <option key={l.value} value={l.value}>
@@ -147,13 +147,13 @@ const ManageCodeBlock: React.FC<{
         </label>
 
         {isAuthenticated && (
-          <div className="bg-gray-750 p-3 rounded-lg border border-gray-600">
+          <div className="modern-section p-4">
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={neverExpires}
                 onChange={(e) => setNeverExpires(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-0"
+                className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-2 focus:ring-offset-0"
               />
               <div>
                 <div className="text-sm font-medium text-gray-200">
@@ -176,16 +176,16 @@ const ManageCodeBlock: React.FC<{
               value={expiresDays}
               onChange={(e) => setExpiresDays(Number(e.target.value))}
               disabled={isAuthenticated && neverExpires}
-              className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="modern-input w-full disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
           <span className="text-sm text-gray-400 min-w-0">{t("linkshare.days", "jours")}</span>
         </div>
 
-        <div className="text-xs text-gray-400 bg-gray-750 p-2 rounded border border-gray-600">
+        <div className="text-xs text-gray-400 modern-section p-3">
           <div className="flex items-center gap-2">
             <svg
-              className="w-3 h-3 text-blue-400 flex-shrink-0"
+              className="w-3 h-3 text-purple-400 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -214,7 +214,7 @@ const ManageCodeBlock: React.FC<{
       </div>
 
       {/* Paramètres avancés */}
-      <div className="bg-gray-750 p-4 rounded-lg border border-gray-600 space-y-4">
+      <div className="modern-section p-6 space-y-4">
         <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -246,7 +246,7 @@ const ManageCodeBlock: React.FC<{
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
-                  className="input-paste w-full truncate"
+                  className="modern-input w-full truncate"
                 />
               </div>
             </div>
@@ -266,7 +266,7 @@ const ManageCodeBlock: React.FC<{
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
-                className="input-paste w-full pr-10"
+                className="modern-input w-full pr-12"
                 placeholder={t("pasteshare_ui.placeholder_password") as string}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -284,19 +284,55 @@ const ManageCodeBlock: React.FC<{
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <button type="submit" className="btn-paste px-6 py-3 text-sm inline-flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-            />
-          </svg>
-          {t("pasteshare_ui.submit")}
+      <div className="pt-2">
+        <button 
+          type="submit" 
+          disabled={loading || !code.trim()}
+          className="btn-paste w-full inline-flex items-center justify-center gap-2 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              {t("pasteshare_ui.creating", "Création en cours...")}
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                />
+              </svg>
+              {t("pasteshare_ui.submit", "Créer le paste")}
+            </>
+          )}
         </button>
       </div>
+      
+      <style jsx global>{`
+        .btn-paste {
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          color: #fff;
+          border-radius: 0.75rem;
+          font-weight: 600;
+          box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+          transition: all 0.3s ease;
+        }
+        .btn-paste:hover:not(:disabled) {
+          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+        }
+      `}</style>
     </form>
   );
 };
