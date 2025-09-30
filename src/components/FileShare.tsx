@@ -210,9 +210,9 @@ const FileShare: React.FC = () => {
       } else {
         const fileShare = data?.share?.fileShare;
         if (fileShare?.slug) {
-          setSuccess(`${window.location.origin}/s/${fileShare.slug}`);
+          setSuccess(`${window.location.origin}/f/${fileShare.slug}`);
         } else if (fileShare?.id) {
-          setSuccess(`${window.location.origin}/s/${fileShare.id}`);
+          setSuccess(`${window.location.origin}/f/${fileShare.id}`);
         } else {
           setSuccess(t("fileshare.success_title", "File shared successfully!"));
         }
@@ -471,7 +471,7 @@ const FileShare: React.FC = () => {
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
                 <span className="text-sm text-gray-400 whitespace-nowrap">
-                  {typeof window !== "undefined" ? window.location.origin + "/s/" : "/s/"}
+                  {typeof window !== "undefined" ? window.location.origin + "/f/" : "/f/"}
                 </span>
                 <input
                   id="slug"

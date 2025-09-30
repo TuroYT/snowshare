@@ -89,8 +89,8 @@ const ManageCodeBlock: React.FC<{
         setError(data?.error || t("pasteshare_ui.creation_error", "Erreur lors de la création du partage"));
       } else {
         const pasteShare = data?.share?.pasteShare;
-        if (pasteShare?.slug) setSuccess(`${window.location.origin}/s/${pasteShare.slug}`);
-        else if (pasteShare?.id) setSuccess(`${window.location.origin}/s/${pasteShare.id}`);
+        if (pasteShare?.slug) setSuccess(`${window.location.origin}/p/${pasteShare.slug}`);
+        else if (pasteShare?.id) setSuccess(`${window.location.origin}/p/${pasteShare.id}`);
         else setSuccess(t("pasteshare_ui.created", "Partage créé"));
       }
     } catch {
@@ -236,7 +236,7 @@ const ManageCodeBlock: React.FC<{
             <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
               {/* hide origin on very small screens to avoid overflow */}
               <span className="text-sm text-gray-400 whitespace-nowrap hidden xs:inline-block sm:inline-block md:inline-block lg:inline-block">
-                {typeof window !== "undefined" ? window.location.origin + "/s/" : "/s/"}
+                {typeof window !== "undefined" ? window.location.origin + "/p/" : "/p/"}
               </span>
               <div className="flex-1 min-w-0">
                 <input

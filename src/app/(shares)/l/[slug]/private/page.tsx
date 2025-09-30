@@ -1,18 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Link from "next/link"
-import { useTranslation } from "react-i18next"
 
-export default function SignIn() {
-  const [email, setEmail] = useState("")
+export default function PrivateLinkPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { t } = useTranslation()
+  const params = useParams()
+  const slug = params.slug as string
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,23 +17,32 @@ export default function SignIn() {
     setError("")
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch(`/l/${slug}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          slug,
+          password
+        })
       })
 
-      if (result?.error) {
-        setError("Email ou mot de passe incorrect")
-      } else {
-        // Vérifier si la session est créée
-        const session = await getSession()
-        if (session) {
-          router.push("/")
-        }
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || "Une erreur est survenue")
+        return
       }
-    } catch (error) {
-      setError("Une erreur est survenue : " + (error as Error).message)
+
+      if (data.url) {
+        // Rediriger vers l'URL décryptée
+        window.location.href = data.url
+      } else {
+        setError("URL introuvable")
+      }
+    } catch {
+      setError("Erreur de connexion")
     } finally {
       setLoading(false)
     }
@@ -57,52 +63,34 @@ export default function SignIn() {
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
                 strokeWidth={2} 
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
               />
             </svg>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
-            {t('auth.signin_title','Connexion à votre compte')}
+            Lien protégé
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Connectez-vous pour accéder à vos partages
+            Ce lien est protégé par un mot de passe
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Adresse email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Entrez votre email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Entrez votre mot de passe"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              Mot de passe
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
+              placeholder="Entrez le mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
 
           {error && (
@@ -128,23 +116,32 @@ export default function SignIn() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('auth.signin_loading','Connexion...')}
+                  Vérification...
                 </div>
               ) : (
-                t('auth.signin_button','Se connecter')
+                "Accéder au lien"
               )}
             </button>
 
             <div className="text-center">
               <Link
-                href="/auth/signup"
-                className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                href="/"
+                className="inline-flex items-center text-sm text-gray-400 hover:text-gray-300 transition-colors"
               >
-                {t('auth.no_account','Pas de compte ? Créer un compte')}
+                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Retour à l&apos;accueil
               </Link>
             </div>
           </div>
         </form>
+
+        <div className="mt-6 text-center text-xs text-gray-500">
+          <p>
+            En accédant à ce lien, vous acceptez que celui-ci soit décrypté et que vous soyez redirigé vers sa destination.
+          </p>
+        </div>
       </div>
     </div>
   )

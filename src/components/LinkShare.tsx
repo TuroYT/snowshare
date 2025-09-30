@@ -139,8 +139,8 @@ const LinkShare: React.FC = () => {
         setError(data?.error || t("linkshare.creation_error", "Erreur lors de la création du partage"));
       } else {
         const linkShare = data?.share?.linkShare;
-        if (linkShare?.slug) setSuccess(`${window.location.origin}/s/${linkShare.slug}`);
-        else if (linkShare?.id) setSuccess(`${window.location.origin}/s/${linkShare.id}`);
+        if (linkShare?.slug) setSuccess(`${window.location.origin}/l/${linkShare.slug}`);
+        else if (linkShare?.id) setSuccess(`${window.location.origin}/l/${linkShare.id}`);
         else setSuccess(t("linkshare.created", "Partage créé"));
         setUrl("");
         setSlug("");
@@ -297,7 +297,7 @@ const LinkShare: React.FC = () => {
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
                 <span className="text-sm text-gray-400 whitespace-nowrap">
-                  {typeof window !== "undefined" ? window.location.origin + "/s/" : "/s/"}
+                  {typeof window !== "undefined" ? window.location.origin + "/l/" : "/l/"}
                 </span>
                 <input
                   id="slug"
