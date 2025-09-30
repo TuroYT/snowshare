@@ -157,8 +157,8 @@ const LinkShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-800/30 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-gray-700/50 w-full max-w-2xl mx-auto">
-      <div className="flex items-center gap-4 mb-8 justify-center">
+    <div className="bg-gray-800/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700/50 w-full max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-6 justify-center">
         <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-700/50 flex items-center justify-center">
           <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -211,18 +211,23 @@ const LinkShare: React.FC = () => {
 
           {isAuthenticated && (
             <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600/50">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={neverExpires}
-                  onChange={(e) => setNeverExpires(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-0"
-                />
-                <div>
-                  <div className="text-sm font-medium text-gray-200">
+              <label className="flex items-center gap-4 cursor-pointer hover:bg-gray-700/30 rounded-lg p-3 -m-3 transition-colors">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={neverExpires}
+                    onChange={(e) => setNeverExpires(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`toggle-slider ${neverExpires ? 'toggle-slider-active' : ''}`}>
+                    <div className={`toggle-slider-thumb ${neverExpires ? 'toggle-slider-thumb-active' : ''}`}></div>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-100 mb-1">
                     {t("linkshare.never_expires", "Aucune expiration")}
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-400 leading-relaxed">
                     {t("linkshare.never_expires_desc", "Ce lien restera actif indéfiniment")}
                   </div>
                 </div>
@@ -277,7 +282,7 @@ const LinkShare: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-600/50 space-y-4">
+        <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600/50 space-y-4">
           <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -519,6 +524,33 @@ const LinkShare: React.FC = () => {
         label {
           color: #f3f4f6;
           font-weight: 500;
+        }
+        .toggle-slider {
+          width: 2.75rem;
+          height: 1.5rem;
+          background-color: #374151;
+          border-radius: 0.75rem;
+          position: relative;
+          transition: all 0.3s ease;
+          border: 2px solid #4b5563;
+        }
+        .toggle-slider-active {
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          border-color: #8b5cf6;
+        }
+        .toggle-slider-thumb {
+          width: 1rem;
+          height: 1rem;
+          background-color: #ffffff;
+          border-radius: 50%;
+          position: absolute;
+          top: 0.125rem;
+          left: 0.125rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-slider-thumb-active {
+          transform: translateX(1.25rem);
         }
       `}</style>
     </div>

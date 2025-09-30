@@ -14,32 +14,32 @@ const PasteShare: React.FC = () => {
   // Génération du lien (à adapter selon la logique réelle)
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-8">
+    <div className="w-full flex flex-col lg:flex-row gap-6">
       {/* Header avec icône */}
-      <div className="flex items-center gap-4 mb-6 lg:hidden">
-        <div className="modern-icon-green">
+      <div className="flex items-center gap-4 mb-6 lg:hidden justify-center">
+        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-700/50 flex items-center justify-center">
           <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-100">Partager du code</h2>
-          <p className="text-sm text-gray-400">Créez un snippet de code partageable</p>
+          <p className="text-sm text-gray-400">Créez et partagez vos snippets de code</p>
         </div>
       </div>
 
       {/* Grand éditeur de code */}
       <div className="flex-1">
-        <div className="modern-card p-6 min-h-[60vh] lg:min-h-[70vh]">
-          <div className="hidden lg:flex items-center gap-4 mb-6">
-            <div className="modern-icon-green">
+        <div className="modern-card p-4 min-h-[60vh] lg:min-h-[70vh]">
+          <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-700/50 flex items-center justify-center">
               <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-100">Partager du code</h2>
-              <p className="text-sm text-gray-400">Créez un snippet de code partageable</p>
+              <p className="text-sm text-gray-400">Créez et partagez vos snippets de code</p>
             </div>
           </div>
           <CodeBlock code={code} language={language} onChange={setCode} />
@@ -48,7 +48,7 @@ const PasteShare: React.FC = () => {
       
       {/* Formulaire à droite sur desktop, en bas sur mobile */}
       <div className="w-full lg:w-96 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
-        <div className="modern-card p-6">
+        <div className="modern-card p-4">
           <ManageCodeBlock
             code={code}
             onCodeChange={setCode}

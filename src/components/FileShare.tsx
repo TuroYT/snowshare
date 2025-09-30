@@ -237,7 +237,7 @@ const FileShare: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="modern-card p-8 w-full max-w-2xl mx-auto text-center">
+      <div className="modern-card p-6 w-full max-w-2xl mx-auto text-center">
         <h2 className="text-lg font-semibold text-gray-100 mb-2">
           {t("fileshare.locked_title", "File sharing is locked")}
         </h2>
@@ -250,9 +250,9 @@ const FileShare: React.FC = () => {
   }
 
   return (
-    <div className="modern-card p-8 w-full max-w-2xl mx-auto">
-      <div className="flex items-center gap-4 mb-8 justify-center">
-        <div className="modern-icon-purple">
+    <div className="modern-card p-6 w-full max-w-2xl mx-auto">
+      <div className="flex items-center gap-4 mb-6 justify-center">
+        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-700/50 flex items-center justify-center">
           <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -265,7 +265,7 @@ const FileShare: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-gray-100">{t("fileshare.title", "Partager un fichier")}</h2>
           <p className="text-sm text-gray-400">
-            {t("fileshare.subtitle", "Uploadez et partagez vos fichiers facilement")}
+            {t("fileshare.subtitle", "Uploadez et partagez vos fichiers en toute sécurité")}
           </p>
         </div>
       </div>
@@ -279,7 +279,7 @@ const FileShare: React.FC = () => {
           
           {!file ? (
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
+              className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 ${
                 dragOver
                   ? "border-purple-400 bg-purple-900/20 scale-105"
                   : "border-gray-600/50 hover:border-gray-500 hover:bg-gray-800/30 hover:scale-102"
@@ -384,19 +384,24 @@ const FileShare: React.FC = () => {
 
           {isAuthenticated && (
             <div className="modern-section p-4">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={neverExpires}
-                  onChange={(e) => setNeverExpires(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-2 focus:ring-offset-0"
-                />
-                <div>
-                  <div className="text-sm font-medium text-gray-200">
-                    {t("fileshare.never_expires", "Never expires")}
+              <label className="flex items-center gap-4 cursor-pointer hover:bg-gray-800/30 rounded-lg p-3 -m-3 transition-colors">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={neverExpires}
+                    onChange={(e) => setNeverExpires(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`toggle-slider ${neverExpires ? 'toggle-slider-active' : ''}`}>
+                    <div className={`toggle-slider-thumb ${neverExpires ? 'toggle-slider-thumb-active' : ''}`}></div>
                   </div>
-                  <div className="text-xs text-gray-400">
-                    {t("fileshare.never_expires_desc", "This file will remain available indefinitely")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-100 mb-1">
+                    {t("fileshare.never_expires", "Aucune expiration")}
+                  </div>
+                  <div className="text-xs text-gray-400 leading-relaxed">
+                    {t("fileshare.never_expires_desc", "Ce fichier restera disponible indéfiniment")}
                   </div>
                 </div>
               </label>
@@ -451,7 +456,7 @@ const FileShare: React.FC = () => {
         </div>
 
         {/* Advanced Settings */}
-        <div className="modern-section p-6 space-y-4">
+        <div className="modern-section p-4 space-y-4">
           <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -689,6 +694,33 @@ const FileShare: React.FC = () => {
         }
         .hover\:scale-102:hover {
           transform: scale(1.02);
+        }
+        .toggle-slider {
+          width: 2.75rem;
+          height: 1.5rem;
+          background-color: #374151;
+          border-radius: 0.75rem;
+          position: relative;
+          transition: all 0.3s ease;
+          border: 2px solid #4b5563;
+        }
+        .toggle-slider-active {
+          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          border-color: #8b5cf6;
+        }
+        .toggle-slider-thumb {
+          width: 1rem;
+          height: 1rem;
+          background-color: #ffffff;
+          border-radius: 50%;
+          position: absolute;
+          top: 0.125rem;
+          left: 0.125rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-slider-thumb-active {
+          transform: translateX(1.25rem);
         }
       `}</style>
     </div>
