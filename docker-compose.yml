@@ -39,8 +39,7 @@ services:
       - "3000:3000"
     volumes:
       - uploads:/app/uploads
-    command: >-
-      sh -c "npx prisma migrate deploy && npm start"
+      - /var/log/snowshare:/var/log  # Mount pour les logs de cron
     networks:
       - snownetwork
 

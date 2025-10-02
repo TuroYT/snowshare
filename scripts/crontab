@@ -1,0 +1,2 @@
+# Cleanup expired shares every hour
+0 * * * * /app/scripts/cleanup.sh >> /var/log/cleanup-expired-shares.log 2>&1
