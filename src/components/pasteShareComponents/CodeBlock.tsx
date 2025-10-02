@@ -58,24 +58,33 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
   React.useEffect(() => setValue(code), [code]);
 
   return (
-    <div className="text-left text-sm rounded-2xl overflow-hidden border-2 border-[#232a38] bg-[#232a38] p-2 h-full w-full">
-      <CodeMirror
-        value={value}
-        height="100%"
-        width="100%"
-        readOnly={readOnly}
-        theme={atomoneInit({
-          settings: {
-            caret: "#c6c6c6",
-            fontFamily: "monospace",
-          },
-        })}
-        extensions={[getExtension(language)]}
-        onChange={(v) => {
-          setValue(v);
-          if (onChange) onChange(v);
-        }}
-      />
+    <div className="codemirror-scroll-fix codemirror-container text-left text-sm rounded-2xl border-2 border-[#232a38] bg-[#232a38] p-2 h-full w-full">
+      <div className="w-full h-full overflow-x-auto overflow-y-auto max-w-full">
+        <CodeMirror
+          value={value}
+          height="100%"
+          width="100%"
+          readOnly={readOnly}
+          basicSetup={{
+            lineNumbers: true,
+            foldGutter: false,
+            dropCursor: false,
+            allowMultipleSelections: false,
+            searchKeymap: false,
+          }}
+          theme={atomoneInit({
+            settings: {
+              caret: "#c6c6c6",
+              fontFamily: "monospace",
+            },
+          })}
+          extensions={[getExtension(language)]}
+          onChange={(v) => {
+            setValue(v);
+            if (onChange) onChange(v);
+          }}
+        />
+      </div>
     </div>
   );
 };
