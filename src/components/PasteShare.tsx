@@ -1,11 +1,12 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 // ...existing code...
 
 import CodeBlock from "./pasteShareComponents/CodeBlock";
 import ManageCodeBlock from "./pasteShareComponents/ManageCodeBlock";
 
 const PasteShare: React.FC = () => {
-  // translation not needed here
+  const { t } = useTranslation();
   const [code, setCode] = React.useState(`function helloWorld() {
     console.log("Hello, world!");
   }`);
@@ -23,8 +24,8 @@ const PasteShare: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-100">Partager du code</h2>
-          <p className="text-sm text-gray-400">Créez et partagez vos snippets de code</p>
+          <h2 className="text-xl font-bold text-gray-100">{t('pasteshare.share_code_title')}</h2>
+          <p className="text-sm text-gray-400">{t('pasteshare.share_code_description')}</p>
         </div>
       </div>
 
@@ -38,8 +39,8 @@ const PasteShare: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-100">Partager du code</h2>
-              <p className="text-sm text-gray-400">Créez et partagez vos snippets de code</p>
+              <h2 className="text-xl font-bold text-gray-100">{t('pasteshare.share_code_title')}</h2>
+              <p className="text-sm text-gray-400">{t('pasteshare.share_code_description')}</p>
             </div>
           </div>
           <CodeBlock code={code} language={language} onChange={setCode} />

@@ -10,7 +10,9 @@
   ,
   "pasteshare": {
     "title": "PasteShare",
-    "description": "Partagez vos extraits de texte en toute sécurité et simplicité."
+    "description": "Partagez vos extraits de texte en toute sécurité et simplicité.",
+    "share_code_title": "Partager du code",
+    "share_code_description": "Créez et partagez vos snippets de code"
   },
   "pasteshare_ui": {
     "label_title": "Titre",
