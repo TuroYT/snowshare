@@ -14,6 +14,38 @@ export default function SignUp() {
   const router = useRouter()
   const { t } = useTranslation()
 
+  // Check if signup is allowed
+  const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
+
+  // Redirect to signin if signup is disabled
+  if (!allowSignup) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-900/20 border border-red-800">
+            <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+            </svg>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
+            {t('auth.signup_disabled_title', 'Inscription désactivée')}
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-400">
+            {t('auth.signup_disabled_message', 'Les nouvelles inscriptions ne sont actuellement pas autorisées.')}
+          </p>
+          <div className="mt-6">
+            <Link
+              href="/auth/signin"
+              className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              {t('nav.signin')}
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)

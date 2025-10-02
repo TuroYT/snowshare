@@ -167,6 +167,8 @@
     "error_passwords_mismatch": "Passwörter stimmen nicht überein",
     "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",
     "success_account_created": "Konto erfolgreich erstellt",
-    "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu."
+    "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.",
+    "signup_disabled_title": "Registrierung deaktiviert",
+    "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt."
   }
 }

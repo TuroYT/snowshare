@@ -167,6 +167,8 @@
     "error_passwords_mismatch": "Les mots de passe ne correspondent pas",
     "error_password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
     "success_account_created": "Compte créé avec succès",
-    "terms_notice": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité."
+    "terms_notice": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
+    "signup_disabled_title": "Inscription désactivée",
+    "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées."
   }
 }

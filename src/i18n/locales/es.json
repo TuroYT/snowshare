@@ -167,6 +167,8 @@
     "error_passwords_mismatch": "Las contraseñas no coinciden",
     "error_password_too_short": "La contraseña debe tener al menos 6 caracteres",
     "success_account_created": "Cuenta creada con éxito",
-    "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad."
+    "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad.",
+    "signup_disabled_title": "Registro deshabilitado",
+    "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente."
   }
 }

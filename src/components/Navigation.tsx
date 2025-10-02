@@ -12,6 +12,9 @@ export default function Navigation() {
   const router = useRouter()
   const { t, i18n } = useTranslation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  
+  // Check if signup is allowed via environment variable
+  const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
 
   const handleSignOut = async () => {
   setMobileOpen(false)
@@ -119,12 +122,14 @@ export default function Navigation() {
                   >
                     {t('nav.signin')}
                   </Link>
-                  <Link
-                    href="/auth/signup"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition-all hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {t('nav.signup')}
-                  </Link>
+                  {allowSignup && (
+                    <Link
+                      href="/auth/signup"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition-all hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {t('nav.signup')}
+                    </Link>
+                  )}
                 </>
               )}
             </div>
@@ -176,13 +181,15 @@ export default function Navigation() {
                 >
                   {t('nav.signin')}
                 </Link>
-                <Link
-                  href="/auth/signup"
-                  onClick={() => setMobileOpen(false)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white block px-4 py-3 rounded-xl text-sm font-medium transition-all text-center"
-                >
-                  {t('nav.signup')}
-                </Link>
+                {allowSignup && (
+                  <Link
+                    href="/auth/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white block px-4 py-3 rounded-xl text-sm font-medium transition-all text-center"
+                  >
+                    {t('nav.signup')}
+                  </Link>
+                )}
               </div>
             )}
           </div>
