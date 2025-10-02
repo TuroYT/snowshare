@@ -146,12 +146,27 @@
   },
   "auth": {
     "signin_title": "Sign in to your account",
+    "signin_subtitle": "Sign in to access your shares",
     "signin_loading": "Signing in...",
     "signin_button": "Sign in",
     "no_account": "No account? Create one",
     "signup_title": "Create an account",
+    "signup_subtitle": "Join SnowShare to start sharing securely",
     "signup_loading": "Creating...",
     "signup_button": "Create account",
-    "already_account": "Already have an account? Sign in"
+    "already_account": "Already have an account? Sign in",
+    "email_label": "Email address",
+    "email_placeholder": "Enter your email",
+    "password_label": "Password",
+    "password_placeholder": "Enter your password",
+    "password_new_placeholder": "Choose a password",
+    "confirm_password_label": "Confirm password",
+    "confirm_password_placeholder": "Confirm your password",
+    "error_invalid_credentials": "Invalid email or password",
+    "error_generic": "An error occurred: ",
+    "error_passwords_mismatch": "Passwords do not match",
+    "error_password_too_short": "Password must be at least 6 characters long",
+    "success_account_created": "Account created successfully",
+    "terms_notice": "By creating an account, you agree to our terms of use and privacy policy."
   }
 }

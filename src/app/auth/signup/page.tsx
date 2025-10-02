@@ -20,13 +20,13 @@ export default function SignUp() {
     setError("")
 
     if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas")
+      setError(t('auth.error_passwords_mismatch'))
       setLoading(false)
       return
     }
 
     if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères")
+      setError(t('auth.error_password_too_short'))
       setLoading(false)
       return
     }
@@ -43,12 +43,12 @@ export default function SignUp() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push("/auth/signin?message=Compte créé avec succès")
+        router.push(`/auth/signin?message=${encodeURIComponent(t('auth.success_account_created'))}`)
       } else {
-        setError(data.error || "Une erreur est survenue")
+        setError(data.error || t('auth.error_generic').replace(' : ', ''))
       }
     } catch {
-      setError("Une erreur est survenue")
+      setError(t('auth.error_generic').replace(' : ', ''))
     } finally {
       setLoading(false)
     }
@@ -74,10 +74,10 @@ export default function SignUp() {
             </svg>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
-            {t('auth.signup_title','Créer un compte')}
+            {t('auth.signup_title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Rejoignez SnowShare pour commencer à partager en sécurité
+            {t('auth.signup_subtitle')}
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export default function SignUp() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Adresse email
+                {t('auth.email_label')}
               </label>
               <input
                 id="email"
@@ -94,14 +94,14 @@ export default function SignUp() {
                 autoComplete="email"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Entrez votre email"
+                placeholder={t('auth.email_placeholder') as string}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Mot de passe
+                {t('auth.password_label')}
               </label>
               <input
                 id="password"
@@ -110,14 +110,14 @@ export default function SignUp() {
                 autoComplete="new-password"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Choisissez un mot de passe"
+                placeholder={t('auth.password_new_placeholder') as string}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300 mb-2">
-                Confirmer le mot de passe
+                {t('auth.confirm_password_label')}
               </label>
               <input
                 id="confirm-password"
@@ -126,7 +126,7 @@ export default function SignUp() {
                 autoComplete="new-password"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Confirmez votre mot de passe"
+                placeholder={t('auth.confirm_password_placeholder') as string}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -156,10 +156,10 @@ export default function SignUp() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('auth.signup_loading','Création...')}
+                  {t('auth.signup_loading')}
                 </div>
               ) : (
-                t('auth.signup_button','Créer un compte')
+                t('auth.signup_button')
               )}
             </button>
 
@@ -168,7 +168,7 @@ export default function SignUp() {
                 href="/auth/signin"
                 className="inline-flex items-center text-sm text-green-400 hover:text-green-300 transition-colors"
               >
-                {t('auth.already_account','Déjà un compte ? Se connecter')}
+                {t('auth.already_account')}
               </Link>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function SignUp() {
 
         <div className="mt-6 text-center text-xs text-gray-500">
           <p>
-            En créant un compte, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité.
+            {t('auth.terms_notice')}
           </p>
         </div>
       </div>

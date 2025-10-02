@@ -21,8 +21,10 @@ export default function Navigation() {
 
   // Supported languages. Add more entries here if needed.
   const languages = [
-    { code: 'en', label: 'EN' },
     { code: 'fr', label: 'FR' },
+    { code: 'en', label: 'EN' },
+    { code: 'es', label: 'ES' },
+    { code: 'de', label: 'DE' },
   ]
 
   // changeLang optionally closes the mobile menu and persists choice to localStorage.

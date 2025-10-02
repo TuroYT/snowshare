@@ -27,7 +27,7 @@ export default function SignIn() {
       })
 
       if (result?.error) {
-        setError("Email ou mot de passe incorrect")
+        setError(t('auth.error_invalid_credentials'))
       } else {
         // Vérifier si la session est créée
         const session = await getSession()
@@ -36,7 +36,7 @@ export default function SignIn() {
         }
       }
     } catch (error) {
-      setError("Une erreur est survenue : " + (error as Error).message)
+      setError(t('auth.error_generic') + (error as Error).message)
     } finally {
       setLoading(false)
     }
@@ -62,10 +62,10 @@ export default function SignIn() {
             </svg>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
-            {t('auth.signin_title','Connexion à votre compte')}
+            {t('auth.signin_title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Connectez-vous pour accéder à vos partages
+            {t('auth.signin_subtitle')}
           </p>
         </div>
 
@@ -73,7 +73,7 @@ export default function SignIn() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Adresse email
+                {t('auth.email_label')}
               </label>
               <input
                 id="email"
@@ -82,14 +82,14 @@ export default function SignIn() {
                 autoComplete="email"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Entrez votre email"
+                placeholder={t('auth.email_placeholder') as string}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Mot de passe
+                {t('auth.password_label')}
               </label>
               <input
                 id="password"
@@ -98,7 +98,7 @@ export default function SignIn() {
                 autoComplete="current-password"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
-                placeholder="Entrez votre mot de passe"
+                placeholder={t('auth.password_placeholder') as string}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -128,10 +128,10 @@ export default function SignIn() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('auth.signin_loading','Connexion...')}
+                  {t('auth.signin_loading')}
                 </div>
               ) : (
-                t('auth.signin_button','Se connecter')
+                t('auth.signin_button')
               )}
             </button>
 
@@ -140,7 +140,7 @@ export default function SignIn() {
                 href="/auth/signup"
                 className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
-                {t('auth.no_account','Pas de compte ? Créer un compte')}
+                {t('auth.no_account')}
               </Link>
             </div>
           </div>

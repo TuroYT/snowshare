@@ -146,12 +146,27 @@
   },
   "auth": {
     "signin_title": "Connexion à votre compte",
+    "signin_subtitle": "Connectez-vous pour accéder à vos partages",
     "signin_loading": "Connexion...",
     "signin_button": "Se connecter",
     "no_account": "Pas de compte ? Créer un compte",
     "signup_title": "Créer un compte",
+    "signup_subtitle": "Rejoignez SnowShare pour commencer à partager en sécurité",
     "signup_loading": "Création...",
     "signup_button": "Créer un compte",
-    "already_account": "Déjà un compte ? Se connecter"
+    "already_account": "Déjà un compte ? Se connecter",
+    "email_label": "Adresse email",
+    "email_placeholder": "Entrez votre email",
+    "password_label": "Mot de passe",
+    "password_placeholder": "Entrez votre mot de passe",
+    "password_new_placeholder": "Choisissez un mot de passe",
+    "confirm_password_label": "Confirmer le mot de passe",
+    "confirm_password_placeholder": "Confirmez votre mot de passe",
+    "error_invalid_credentials": "Email ou mot de passe incorrect",
+    "error_generic": "Une erreur est survenue : ",
+    "error_passwords_mismatch": "Les mots de passe ne correspondent pas",
+    "error_password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
+    "success_account_created": "Compte créé avec succès",
+    "terms_notice": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité."
   }
 }
