@@ -30,6 +30,7 @@
     "slug_hint": "Letters, numbers, dashes and underscores only",
     "never_expires_desc": "This paste will remain available indefinitely",
     "loading": "Creating...",
+    "creating": "Creating...",
     "success": "Share created!",
     "created": "Paste created successfully!",
     "creation_error": "Error creating paste",
@@ -80,7 +81,9 @@
     "duration_in_x_weeks": "This file will expire in {{count}} weeks",
     "duration_in_1_month": "This file will expire in 1 month",
     "duration_in_x_months": "This file will expire in {{count}} months",
-    "duration_in_x_years": "This file will expire in {{count}} year(s)"
+    "duration_in_x_years": "This file will expire in {{count}} year(s)",
+    "locked_title": "File sharing is locked",
+    "locked_message": "You must be logged in to share files."
   }
   ,
   "home": {
@@ -136,7 +139,8 @@
     "made_with": "Made with",
     "by": "by Romain",
     "github": "GitHub",
-    "license": "License"
+    "license": "License",
+    "rights": "All rights reserved."
   },
   "auth": {
     "signin_title": "Sign in to your account",
