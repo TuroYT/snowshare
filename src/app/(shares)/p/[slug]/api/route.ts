@@ -27,7 +27,7 @@ export async function OPTIONS() {
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
         const { slug } = await params;
@@ -97,7 +97,7 @@ export async function GET(
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
         const { slug } = await params;
