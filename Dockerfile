@@ -22,4 +22,4 @@ RUN npm run build
 
 
 # Default command; migrations can be handled by compose command override
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
