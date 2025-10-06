@@ -6,17 +6,6 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
 
-// File type validation
-const ALLOWED_FILE_TYPES = [
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-  'text/plain', 'text/csv', 'text/html', 'text/css', 'text/javascript',
-  'application/json', 'application/xml', 'application/javascript',
-  'application/pdf', 'application/zip', 'application/x-zip-compressed',
-  'application/octet-stream',
-  'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-];
 
 // File size limits (in bytes)
 const MAX_FILE_SIZE_ANON = 0; // ANON disabled
@@ -31,10 +20,6 @@ function validateFile(file: File, isAuthenticated: boolean) {
     return { error: `La taille du fichier dépasse la limite autorisée de ${maxSizeMB}MB.` };
   }
 
-  // Check file type
-  if (!ALLOWED_FILE_TYPES.includes(file.type) && file.type !== '') {
-    return { error: "Type de fichier non autorisé." };
-  }
 
   // Check filename length and characters
   if (file.name.length > 255) {
