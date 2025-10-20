@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Footer from "@/components/Footer";
 import Link from "next/link";
 
 interface FileInfo {
@@ -134,6 +135,7 @@ export default function FileSharePage() {
     }
 
     return (
+        <>
         <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
                 <div className="text-center">
@@ -306,7 +308,12 @@ export default function FileSharePage() {
                 <div className="mt-6 text-center text-xs text-gray-500">
                     <p>En téléchargeant ce fichier, vous acceptez qu&apos;il provient d&apos;une source tierce.</p>
                 </div>
+
+
             </div>
+            
         </div>
+    <Footer />
+    </>
     );
 }
