@@ -4,10 +4,12 @@
     "signout": "Cerrar sesión",
     "signin": "Iniciar sesión",
     "signup": "Registrarse",
-    "language": "Idioma"
+    "language": "Idioma",
+    "profile": "Mi Perfil",
+    "profile_desc": "Gestionar mi información",
+    "signout_desc": "Cerrar sesión"
   },
-  "loading": "Cargando..."
-  ,
+  "loading": "Cargando...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Comparte tus fragmentos de texto de forma segura y fácil.",
@@ -86,8 +88,7 @@
     "duration_in_x_years": "Este archivo expirará en {{count}} año(s)",
     "locked_title": "Compartir archivos bloqueado",
     "locked_message": "Debes estar conectado para compartir archivos."
-  }
-  ,
+  },
   "home": {
     "title": "Bienvenido a SnowShare",
     "description": "Comparte tus archivos, código y URLs de forma segura y fácil."
@@ -133,7 +134,7 @@
     "duration_in_x_days": "Este enlace expirará en {{count}} días",
     "duration_in_1_week": "Este enlace expirará en 1 semana",
     "duration_in_x_weeks": "Este enlace expirará en {{count}} semanas",
-    "duration_in_1_month": "Este enlace expirará en 1 mes",
+    "duration_in_1_month": "Este enlace expirará en 1 mois",
     "duration_in_x_months": "Este enlace expirará en {{count}} meses",
     "duration_in_x_years": "Este enlace expirará en {{count}} año(s)"
   },
@@ -170,5 +171,55 @@
     "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad.",
     "signup_disabled_title": "Registro deshabilitado",
     "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente."
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "subtitle": "Gestiona tu información personal y tus compartidos",
+    "loading": "Cargando...",
+    "tab_info": "Información personal",
+    "tab_shares": "Mis compartidos",
+    "info_title": "Información personal",
+    "info_subtitle": "Gestiona la información de tu cuenta",
+    "label_name": "Nombre",
+    "placeholder_name": "Tu nombre",
+    "label_email": "Correo electrónico",
+    "label_current_password": "Contraseña actual",
+    "label_new_password": "Nueva contraseña",
+    "label_confirm_password": "Confirmar contraseña",
+    "placeholder_password": "••••••••",
+    "change_password": "Cambiar contraseña",
+    "save_changes": "Guardar cambios",
+    "saving": "Guardando...",
+    "success_update": "Perfil actualizado con éxito",
+    "error_passwords_mismatch": "Las contraseñas no coinciden",
+    "error_current_password_required": "Por favor ingresa tu contraseña actual",
+    "error_update": "Error al actualizar el perfil",
+    "stats_total": "Total",
+    "stats_files": "Archivos",
+    "stats_pastes": "Pastes",
+    "stats_links": "Enlaces",
+    "stats_active": "Activos",
+    "stats_expired": "Expirados",
+    "no_shares": "Sin compartidos",
+    "no_shares_desc": "Aún no has creado ningún compartido",
+    "shares_count": "{{count}} compartido",
+    "shares_count_plural": "{{count}} compartidos",
+    "created_on": "Creado el",
+    "copy_link": "Copiar enlace",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm_delete": "¿Estás seguro de que quieres eliminar este compartido?",
+    "error_delete": "Error al eliminar el compartido",
+    "error_update_share": "Error al actualizar el compartido",
+    "label_content": "Contenido",
+    "label_language": "Lenguaje",
+    "label_url": "URL",
+    "label_password": "Contraseña (opcional)",
+    "placeholder_password_optional": "Dejar en blanco para sin contraseña",
+    "label_expiration": "Expiración",
+    "expires_on": "Expira el",
+    "protected": "Protegido"
   }
 }

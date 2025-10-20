@@ -5,19 +5,36 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 
 export default function Navigation() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { t, i18n } = useTranslation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
   
   // Check if signup is allowed via environment variable
   const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setProfileMenuOpen(false)
+      }
+    }
+
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [profileMenuOpen])
+
   const handleSignOut = async () => {
   setMobileOpen(false)
+  setProfileMenuOpen(false)
   await signOut({ redirect: false })
   router.push("/")
   }
@@ -99,20 +116,77 @@ export default function Navigation() {
 
               {session ? (
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">
-                        {session.user?.email?.[0]?.toUpperCase()}
-                      </span>
-                    </div>
-                    <span className="text-gray-300 text-sm">{t('nav.hello', { email: session.user?.email })}</span>
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                      className="flex items-center space-x-2 hover:bg-gray-700/50 px-3 py-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">
+                          {session.user?.email?.[0]?.toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="text-gray-300 text-sm max-w-[120px] truncate">{session.user?.email}</span>
+                      <svg
+                        className={`w-4 h-4 text-gray-400 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {profileMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-56 rounded-xl bg-gray-800 border border-gray-700/50 shadow-xl backdrop-blur-md overflow-hidden z-50">
+                        <div className="py-2">
+                          <Link
+                            href="/profile"
+                            onClick={() => setProfileMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700/50 hover:text-white transition-all group"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-700/50 flex items-center justify-center group-hover:border-blue-600/70 transition-colors">
+                              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                            </div>
+                            <div className="flex-1">
+                              <div className="text-sm font-medium">{t('nav.profile', 'Mon Profil')}</div>
+                              <div className="text-xs text-gray-500">{t('nav.profile_desc', 'Gérer mes infos')}</div>
+                            </div>
+                          </Link>
+
+                          <div className="border-t border-gray-700/50 my-2"></div>
+
+                          <button
+                            onClick={handleSignOut}
+                            className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-all w-full group"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center group-hover:border-red-600/70 transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                />
+                              </svg>
+                            </div>
+                            <div className="flex-1 text-left">
+                              <div className="text-sm font-medium">{t('nav.signout', 'Déconnexion')}</div>
+                              <div className="text-xs text-gray-500">{t('nav.signout_desc', 'Se déconnecter')}</div>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="bg-red-600/90 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all hover:shadow-lg hover:shadow-red-500/25 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    {t('nav.signout')}
-                  </button>
                 </div>
               ) : (
                 <>
@@ -163,13 +237,38 @@ export default function Navigation() {
                       {session.user?.email?.[0]?.toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-gray-300">{t('nav.hello', { email: session.user?.email })}</span>
+                  <span className="text-gray-300 text-sm truncate">{session.user?.email}</span>
                 </div>
+
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-700/50 hover:text-white transition-all"
+                >
+                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">{t('nav.profile', 'Mon Profil')}</span>
+                </Link>
+
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-left bg-red-600/90 hover:bg-red-700 text-white px-4 py-3 rounded-xl text-sm font-medium transition-all"
+                  className="w-full text-left flex items-center gap-3 bg-red-600/90 hover:bg-red-700 text-white px-4 py-3 rounded-xl text-sm font-medium transition-all"
                 >
-                  {t('nav.signout')}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  <span>{t('nav.signout', 'Déconnexion')}</span>
                 </button>
               </>
             ) : (
