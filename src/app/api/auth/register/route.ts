@@ -7,11 +7,26 @@ import { env } from "process"
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const { email, password, isFirstUser } = await request.json()
 
-    if (env.ALLOW_SIGNUP !== "true") {
+    // Check if this is the first user setup
+    const userCount = await prisma.user.count()
+    const isActuallyFirstUser = userCount === 0
+
+    // Allow registration if:
+    // 1. ALLOW_SIGNUP is true, OR
+    // 2. This is the first user being created (database is empty)
+    if (env.ALLOW_SIGNUP !== "true" && !isActuallyFirstUser) {
       return NextResponse.json(
         { error: "L'inscription est désactivée" },
+        { status: 403 }
+      )
+    }
+
+    // If claiming to be first user but database has users, reject
+    if (isFirstUser && !isActuallyFirstUser) {
+      return NextResponse.json(
+        { error: "Des utilisateurs existent déjà" },
         { status: 403 }
       )
     }

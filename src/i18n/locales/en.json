@@ -221,5 +221,14 @@
     "label_expiration": "Expiration",
     "expires_on": "Expires on",
     "protected": "Protected"
+  },
+  "setup": {
+    "title": "Initial Setup",
+    "description": "Welcome! No users exist yet. Create the first administrator account to start using SnowShare.",
+    "info": "This account will be the first administrator of SnowShare.",
+    "submit": "Create administrator account",
+    "creating": "Creating...",
+    "success_message": "First account created successfully! You can now sign in.",
+    "admin_notice": "This account will have all administrator privileges."
   }
 }
