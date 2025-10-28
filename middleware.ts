@@ -1,6 +1,6 @@
-import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -30,23 +30,18 @@ export default async function middleware(request: NextRequest) {
     console.error('Error checking setup status:', error)
   }
 
-  // Continue with NextAuth middleware for protected routes
+  // Check authentication for protected routes
   const protectedPaths = ['/dashboard', '/profile', '/api/protected']
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
-  
+
   if (isProtectedPath) {
-     
-    return withAuth(
-      function middleware() {
-        return NextResponse.next()
-      },
-      {
-        callbacks: {
-          authorized: ({ token }) => !!token,
-        },
-      }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    )(request as any, {} as any)
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+
+    if (!token) {
+      const signInUrl = new URL('/auth/signin', request.url)
+      signInUrl.searchParams.set('callbackUrl', pathname)
+      return NextResponse.redirect(signInUrl)
+    }
   }
 
   return NextResponse.next()
