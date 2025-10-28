@@ -74,7 +74,7 @@
 
    # Auth (allow or disallow user signups)
    ALLOW_SIGNUP=true
-
+   ```
 ## Docker
 
 You can run the app and a PostgreSQL database locally using Docker Compose.
