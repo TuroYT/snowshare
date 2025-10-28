@@ -35,6 +35,7 @@ export default async function middleware(request: NextRequest) {
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
   
   if (isProtectedPath) {
+     
     return withAuth(
       function middleware() {
         return NextResponse.next()
@@ -44,6 +45,7 @@ export default async function middleware(request: NextRequest) {
           authorized: ({ token }) => !!token,
         },
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     )(request as any, {} as any)
   }
 
