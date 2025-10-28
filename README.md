@@ -89,7 +89,7 @@ docker compose up -d --build
 The app will be available at http://localhost:3000 and PostgreSQL at port 5432. Data persists in the `db-data` volume and uploaded files in the local `uploads/` folder.
 
 On startup, the app runs `prisma migrate deploy` to ensure the database schema is up to date.
-   ```
+
 
 4. Initialize the database
    ```
