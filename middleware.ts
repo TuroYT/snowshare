@@ -20,6 +20,13 @@ export default async function middleware(request: NextRequest) {
     const baseUrl = request.nextUrl.origin
     const checkUrl = new URL('/api/setup/check', baseUrl)
     const response = await fetch(checkUrl.toString())
+    
+    if (!response.ok) {
+      // If we can't check setup status, fail open to avoid lockout
+      console.error('Setup check failed with status:', response.status)
+      return NextResponse.next()
+    }
+    
     const data = await response.json()
 
     if (data.needsSetup) {
@@ -27,7 +34,9 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/setup', request.url))
     }
   } catch (error) {
+    // If setup check fails due to network/database issues, fail open to avoid lockout
     console.error('Error checking setup status:', error)
+    return NextResponse.next()
   }
 
   // Check authentication for protected routes
