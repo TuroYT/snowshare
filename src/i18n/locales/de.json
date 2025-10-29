@@ -221,5 +221,14 @@
     "label_expiration": "Ablauf",
     "expires_on": "Läuft ab am",
     "protected": "Geschützt"
+  },
+  "setup": {
+    "title": "Ersteinrichtung",
+    "description": "Willkommen! Es existieren noch keine Benutzer. Erstellen Sie das erste Administratorkonto, um SnowShare zu verwenden.",
+    "info": "Dieses Konto wird der erste Administrator von SnowShare sein.",
+    "submit": "Administratorkonto erstellen",
+    "creating": "Wird erstellt...",
+    "success_message": "Erstes Konto erfolgreich erstellt! Sie können sich jetzt anmelden.",
+    "admin_notice": "Dieses Konto wird alle Administratorrechte haben."
   }
 }
