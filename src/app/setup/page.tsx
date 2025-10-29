@@ -126,18 +126,19 @@ export default function Setup() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                {t('auth.email_label')}
+              {t('auth.email_label')}
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
-                placeholder={t('auth.email_placeholder') as string}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+              placeholder={t('auth.email_placeholder') as string}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
