@@ -17,7 +17,7 @@ export default function Navigation() {
   
   // Check if signup is allowed via environment variable
   const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
-
+ 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -63,7 +63,6 @@ export default function Navigation() {
   if (status === "loading") {
     return <div className="bg-gray-800 text-gray-300 p-4">{t('loading')}</div>
   }
-
   return (
     <nav className="bg-gray-800/90 backdrop-blur-md border-b border-gray-700/50 shadow-2xl sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -123,10 +122,10 @@ export default function Navigation() {
                     >
                       <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {session.user?.email?.[0]?.toUpperCase()}
+                          {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
                         </span>
                       </div>
-                      <span className="text-gray-300 text-sm max-w-[120px] truncate">{session.user?.email}</span>
+                      <span className="text-gray-300 text-sm max-w-[120px] truncate">{session.user?.name || session.user?.email}</span>
                       <svg
                         className={`w-4 h-4 text-gray-400 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`}
                         fill="none"
@@ -234,10 +233,10 @@ export default function Navigation() {
                 <div className="flex items-center space-x-3 py-2">
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
                     <span className="text-white font-medium">
-                      {session.user?.email?.[0]?.toUpperCase()}
+                      {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-gray-300 text-sm truncate">{session.user?.email}</span>
+                  <span className="text-gray-300 text-sm truncate">{ session.user?.name || session.user?.email}</span>
                 </div>
 
                 <Link
