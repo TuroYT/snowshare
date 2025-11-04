@@ -132,6 +132,10 @@ On startup, the app runs `prisma migrate deploy` to ensure the database schema i
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=TuroYT/snowshare&type=date&legend=top-left)](https://www.star-history.com/#TuroYT/snowshare&type=date&legend=top-left)
+
 ## Acknowledgments / Credits 🙌
 
 - [Next.js](https://nextjs.org/) - The React Framework
