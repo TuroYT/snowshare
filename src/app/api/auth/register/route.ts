@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
       data: {
         email,
         password: hashedPassword,
+        isAdmin: isActuallyFirstUser ? true : false,
       }
     })
 

@@ -12,20 +12,20 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-
 }
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? 
-  access_token      String? 
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? 
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -50,6 +50,7 @@ model User {
   password      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  isAdmin       Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
   shares        Share[]
@@ -64,18 +65,31 @@ model VerificationToken {
 }
 
 model Share {
-  id          String   @id @default(cuid())
-  type        ShareType
-  ownerId     String?
-  owner       User?     @relation(fields: [ownerId], references: [id])
-  filePath    String?
-  paste       String?
+  id            String     @id @default(cuid())
+  type          ShareType
+  ownerId       String?
+  owner         User?      @relation(fields: [ownerId], references: [id])
+  filePath      String?
+  paste         String?
   pastelanguage pasteType?
-  urlOriginal String?
-  slug        String  @unique
-  password    String?
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime?
+  urlOriginal   String?
+  slug          String     @unique
+  password      String?
+  createdAt     DateTime   @default(now())
+  expiresAt     DateTime?
+  ipSource      String?
+}
+
+model Settings {
+  id            Int  @id @default(autoincrement())
+  allowSignin   Boolean @default(true)
+  // TODO - add S3 support
+  // TODO - Implements quota
+  anoMaxUpload  Int     @default(2048) // 2Go
+  authMaxUpload Int     @default(51200) // ~50Go
+  anoIpQuota    Int     @default(4096) // 4Go
+  authIpQuota   Int     @default(102400) // ~100Go
+
 }
 
 enum ShareType {

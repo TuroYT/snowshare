@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { signIn, type SignInResponse } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
@@ -75,7 +76,20 @@ export default function SignUp() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push(`/auth/signin?message=${encodeURIComponent(t('auth.success_account_created'))}`)
+        // Auto-login after successful registration using NextAuth credentials provider
+        const signInResult = (await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })) as SignInResponse | undefined
+
+        if (signInResult?.ok) {
+          // Redirect to home after successful sign-in
+          router.push("/")
+        } else {
+          // If auto-login failed, redirect to sign-in with a message
+          router.push(`/auth/signin?message=${encodeURIComponent(t('auth.success_account_created'))}`)
+        }
       } else {
         setError(data.error || t('auth.error_generic').replace(' : ', ''))
       }

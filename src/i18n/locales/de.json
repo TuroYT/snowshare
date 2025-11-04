@@ -7,7 +7,9 @@
     "language": "Sprache",
     "profile": "Mein Profil",
     "profile_desc": "Meine Infos verwalten",
-    "signout_desc": "Abmelden"
+    "signout_desc": "Abmelden",
+    "admin": "Admin",
+    "admin_desc": "Admin-Bereich"
   },
   "loading": "Lädt...",
   "pasteshare": {

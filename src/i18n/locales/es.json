@@ -7,7 +7,9 @@
     "language": "Idioma",
     "profile": "Mi Perfil",
     "profile_desc": "Gestionar mi información",
-    "signout_desc": "Cerrar sesión"
+    "signout_desc": "Cerrar sesión",
+    "admin": "Administración",
+    "admin_desc": "Panel de administración"
   },
   "loading": "Cargando...",
   "pasteshare": {

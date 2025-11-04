@@ -3,10 +3,21 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const userCount = await prisma.user.count()
+    const USER_COUNT = await prisma.user.count()
+    const NEED_SETUP = USER_COUNT === 0
+
+    if (NEED_SETUP) {
+      await prisma.settings.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+          id: 1
+        }
+      })
+    }
     
     return NextResponse.json({
-      needsSetup: userCount === 0
+      needsSetup: NEED_SETUP
     })
   } catch (error) {
     console.error("Error checking setup status:", error)

@@ -7,7 +7,9 @@
     "language": "Language",
     "profile": "My Profile",
     "profile_desc": "Manage my info",
-    "signout_desc": "Sign out"
+    "signout_desc": "Sign out",
+    "admin": "Admin",
+    "admin_desc": "Administration panel"
   },
   "loading": "Loading...",
   "pasteshare": {

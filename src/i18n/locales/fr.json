@@ -7,7 +7,9 @@
     "language": "Langue",
     "profile": "Mon Profil",
     "profile_desc": "Gérer mes infos",
-    "signout_desc": "Se déconnecter"
+    "signout_desc": "Se déconnecter",
+    "admin": "Administration",
+    "admin_desc": "Panneau d'administration"
   },
   "loading": "Chargement..."
   ,
