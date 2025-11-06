@@ -90,7 +90,11 @@
     "duration_in_x_months": "Ce fichier expirera dans {{count}} mois",
     "duration_in_x_years": "Ce fichier expirera dans {{count}} an(s)",
     "locked_title": "Partage de fichiers verrouillé",
-    "locked_message": "Vous devez être connecté pour partager des fichiers."
+    "locked_message": "Vous devez être connecté pour partager des fichiers.",
+    "quota_info": "Quota: {{used}} MB / {{total}} MB utilisés",
+    "quota_remaining": "{{remaining}} MB disponibles",
+    "quota_exceeded": "Quota dépassé",
+    "quota_warning": "Attention: vous avez utilisé {{percent}}% de votre quota"
   }
   ,
   "home": {

@@ -89,7 +89,11 @@
     "duration_in_x_months": "This file will expire in {{count}} months",
     "duration_in_x_years": "This file will expire in {{count}} year(s)",
     "locked_title": "File sharing locked",
-    "locked_message": "You must be signed in to share files."
+    "locked_message": "You must be signed in to share files.",
+    "quota_info": "Quota: {{used}} MB / {{total}} MB used",
+    "quota_remaining": "{{remaining}} MB available",
+    "quota_exceeded": "Quota exceeded",
+    "quota_warning": "Warning: you have used {{percent}}% of your quota"
   },
   "home": {
     "title": "Welcome to SnowShare",
