@@ -14,10 +14,26 @@ export default function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
+  const [allowSignup, setAllowSignup] = useState(true)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
-  // Check if signup is allowed via environment variable
-  const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
+  // Fetch signup status from database
+  useEffect(() => {
+    const fetchSignupStatus = async () => {
+      try {
+        const response = await fetch("/api/setup/check")
+        if (response.ok) {
+          const data = await response.json()
+          setAllowSignup(data.allowSignup ?? true)
+        }
+      } catch (error) {
+        console.error("Error fetching signup status:", error)
+        setAllowSignup(true) // Default to true on error
+      }
+    }
+
+    fetchSignupStatus()
+  }, [])
 
   // Close dropdown when clicking outside
   useEffect(() => {

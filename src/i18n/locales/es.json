@@ -232,5 +232,64 @@
     "creating": "Creando...",
     "success_message": "¡Primera cuenta creada con éxito! Ahora puedes iniciar sesión.",
     "admin_notice": "Esta cuenta tendrá todos los privilegios de administrador."
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Gestiona tu instancia de SnowShare",
+    "loading": "Cargando...",
+    "error_access_denied": "Acceso denegado. No tienes permiso para ver esta página.",
+    "error_load_data": "Error al cargar los datos",
+    "save_success": "Cambios guardados exitosamente",
+    "save_error": "Error al guardar los cambios",
+    "confirm_action": "¿Estás seguro?",
+    "tabs": {
+      "users": "Usuarios",
+      "settings": "Configuración"
+    },
+    "users": {
+      "title": "Gestión de Usuarios",
+      "total_users": "Total de Usuarios",
+      "active_users": "Usuarios Activos",
+      "admin_users": "Administradores",
+      "table_headers": {
+        "email": "Correo",
+        "name": "Nombre",
+        "created": "Creado",
+        "role": "Rol",
+        "shares": "Compartidos",
+        "actions": "Acciones"
+      },
+      "role_user": "Usuario",
+      "role_admin": "Admin",
+      "action_make_admin": "Promover a Admin",
+      "action_remove_admin": "Remover Admin",
+      "action_delete": "Eliminar",
+      "confirm_delete": "¿Eliminar usuario {{email}}?",
+      "confirm_make_admin": "¿Hacer que {{email}} sea administrador?",
+      "confirm_remove_admin": "¿Remover privilegios de administrador de {{email}}?",
+      "no_users": "No se encontraron usuarios",
+      "search_placeholder": "Buscar usuarios..."
+    },
+    "settings": {
+      "title": "Configuración",
+      "allow_signup": "Permitir Registro",
+      "allow_signup_desc": "Permitir que nuevos usuarios creen cuentas",
+      "section_general": "General",
+      "section_storage": "Almacenamiento",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios"
+    },
+    "quotas": {
+      "title": "Cuotas de Carga",
+      "section_anonymous": "Usuarios Anónimos",
+      "section_authenticated": "Usuarios Autenticados",
+      "max_file_size": "Tamaño Máximo de Archivo",
+      "max_file_size_hint": "Tamaño máximo de archivo en MB",
+      "ip_quota": "Cuota IP",
+      "ip_quota_hint": "Tamaño máximo total de carga por IP en MB",
+      "current_value": "Actual: {{value}} MB",
+      "saving": "Guardando...",
+      "save": "Guardar Cambios"
+    }
   }
 }

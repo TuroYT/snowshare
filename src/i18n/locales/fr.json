@@ -234,5 +234,64 @@
     "creating": "Création en cours...",
     "success_message": "Premier compte créé avec succès ! Vous pouvez maintenant vous connecter.",
     "admin_notice": "Ce compte aura tous les privilèges administrateur."
+  },
+  "admin": {
+    "title": "Tableau de bord administrateur",
+    "subtitle": "Gérez votre instance SnowShare",
+    "loading": "Chargement...",
+    "error_access_denied": "Accès refusé. Vous n'avez pas la permission de voir cette page.",
+    "error_load_data": "Erreur lors du chargement des données",
+    "save_success": "Modifications enregistrées avec succès",
+    "save_error": "Erreur lors de l'enregistrement",
+    "confirm_action": "Êtes-vous sûr ?",
+    "tabs": {
+      "users": "Utilisateurs",
+      "settings": "Paramètres"
+    },
+    "users": {
+      "title": "Gestion des utilisateurs",
+      "total_users": "Utilisateurs total",
+      "active_users": "Utilisateurs actifs",
+      "admin_users": "Administrateurs",
+      "table_headers": {
+        "email": "Email",
+        "name": "Nom",
+        "created": "Créé",
+        "role": "Rôle",
+        "shares": "Partages",
+        "actions": "Actions"
+      },
+      "role_user": "Utilisateur",
+      "role_admin": "Admin",
+      "action_make_admin": "Promouvoir en admin",
+      "action_remove_admin": "Retirer admin",
+      "action_delete": "Supprimer",
+      "confirm_delete": "Supprimer l'utilisateur {{email}} ?",
+      "confirm_make_admin": "Faire de {{email}} un administrateur ?",
+      "confirm_remove_admin": "Retirer les droits admin à {{email}} ?",
+      "no_users": "Aucun utilisateur trouvé",
+      "search_placeholder": "Rechercher des utilisateurs..."
+    },
+    "settings": {
+      "title": "Paramètres",
+      "allow_signup": "Autoriser les inscriptions",
+      "allow_signup_desc": "Autoriser les nouveaux utilisateurs à créer des comptes",
+      "section_general": "Général",
+      "section_storage": "Stockage",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer les modifications"
+    },
+    "quotas": {
+      "title": "Quotas d'upload",
+      "section_anonymous": "Utilisateurs anonymes",
+      "section_authenticated": "Utilisateurs authentifiés",
+      "max_file_size": "Taille max du fichier",
+      "max_file_size_hint": "Taille maximale du fichier en MB",
+      "ip_quota": "Quota IP",
+      "ip_quota_hint": "Taille maximale totale de l'upload par IP en MB",
+      "current_value": "Actuel : {{value}} MB",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer les modifications"
+    }
   }
 }

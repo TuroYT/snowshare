@@ -232,5 +232,64 @@
     "creating": "Creating...",
     "success_message": "First account created successfully! You can now sign in.",
     "admin_notice": "This account will have all administrator privileges."
+  },
+  "admin": {
+    "title": "Administration Dashboard",
+    "subtitle": "Manage your SnowShare instance",
+    "loading": "Loading...",
+    "error_access_denied": "Access Denied. You do not have permission to view this page.",
+    "error_load_data": "Error loading data",
+    "save_success": "Changes saved successfully",
+    "save_error": "Error saving changes",
+    "confirm_action": "Are you sure?",
+    "tabs": {
+      "users": "Users",
+      "settings": "Settings"
+    },
+    "users": {
+      "title": "User Management",
+      "total_users": "Total Users",
+      "active_users": "Active Users",
+      "admin_users": "Admin Users",
+      "table_headers": {
+        "email": "Email",
+        "name": "Name",
+        "created": "Created",
+        "role": "Role",
+        "shares": "Shares",
+        "actions": "Actions"
+      },
+      "role_user": "User",
+      "role_admin": "Admin",
+      "action_make_admin": "Make Admin",
+      "action_remove_admin": "Remove Admin",
+      "action_delete": "Delete",
+      "confirm_delete": "Delete user {{email}}?",
+      "confirm_make_admin": "Make {{email}} an administrator?",
+      "confirm_remove_admin": "Remove admin privileges from {{email}}?",
+      "no_users": "No users found",
+      "search_placeholder": "Search users..."
+    },
+    "settings": {
+      "title": "Settings",
+      "allow_signup": "Allow Signup",
+      "allow_signup_desc": "Allow new users to create accounts",
+      "section_general": "General",
+      "section_storage": "Storage",
+      "saving": "Saving...",
+      "save": "Save Changes"
+    },
+    "quotas": {
+      "title": "Upload Quotas",
+      "section_anonymous": "Anonymous Users",
+      "section_authenticated": "Authenticated Users",
+      "max_file_size": "Max File Size",
+      "max_file_size_hint": "Maximum file size in MB",
+      "ip_quota": "IP Quota",
+      "ip_quota_hint": "Maximum total upload size per IP in MB",
+      "current_value": "Current: {{value}} MB",
+      "saving": "Saving...",
+      "save": "Save Changes"
+    }
   }
 }

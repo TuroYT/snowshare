@@ -1,22 +1,33 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { env } from "process"
 
 
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password, isFirstUser } = await request.json()
-
+    
     // Check if this is the first user setup
     const userCount = await prisma.user.count()
     const isActuallyFirstUser = userCount === 0
+    
+    // Get DB settings
+    let allowSignup = true // Default to true
+    const settings = await prisma.settings.findFirst({
+      select: {
+        allowSignin: true
+      }
+    })
+    
+    if (settings) {
+      allowSignup = settings.allowSignin
+    }
 
     // Allow registration if:
-    // 1. ALLOW_SIGNUP is true, OR
+    // 1. Settings allow signup (allowSignin), OR
     // 2. This is the first user being created (database is empty)
-    if (env.ALLOW_SIGNUP !== "true" && !isActuallyFirstUser) {
+    if (!allowSignup && !isActuallyFirstUser) {
       return NextResponse.json(
         { error: "L'inscription est désactivée" },
         { status: 403 }

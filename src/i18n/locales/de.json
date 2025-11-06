@@ -232,5 +232,64 @@
     "creating": "Wird erstellt...",
     "success_message": "Erstes Konto erfolgreich erstellt! Sie können sich jetzt anmelden.",
     "admin_notice": "Dieses Konto wird alle Administratorrechte haben."
+  },
+  "admin": {
+    "title": "Verwaltungs-Dashboard",
+    "subtitle": "Verwalte deine SnowShare-Instanz",
+    "loading": "Laden...",
+    "error_access_denied": "Zugriff verweigert. Du hast keine Berechtigung, diese Seite zu sehen.",
+    "error_load_data": "Fehler beim Laden der Daten",
+    "save_success": "Änderungen erfolgreich gespeichert",
+    "save_error": "Fehler beim Speichern der Änderungen",
+    "confirm_action": "Bist du sicher?",
+    "tabs": {
+      "users": "Benutzer",
+      "settings": "Einstellungen"
+    },
+    "users": {
+      "title": "Benutzerverwaltung",
+      "total_users": "Gesamtzahl der Benutzer",
+      "active_users": "Aktive Benutzer",
+      "admin_users": "Administratoren",
+      "table_headers": {
+        "email": "E-Mail",
+        "name": "Name",
+        "created": "Erstellt",
+        "role": "Rolle",
+        "shares": "Shares",
+        "actions": "Aktionen"
+      },
+      "role_user": "Benutzer",
+      "role_admin": "Admin",
+      "action_make_admin": "Zum Admin machen",
+      "action_remove_admin": "Admin entfernen",
+      "action_delete": "Löschen",
+      "confirm_delete": "Benutzer {{email}} löschen?",
+      "confirm_make_admin": "{{email}} zum Administrator machen?",
+      "confirm_remove_admin": "Adminrechte von {{email}} entfernen?",
+      "no_users": "Keine Benutzer gefunden",
+      "search_placeholder": "Benutzer durchsuchen..."
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "allow_signup": "Registrierung Zulassen",
+      "allow_signup_desc": "Erlaube neuen Benutzern, Konten zu erstellen",
+      "section_general": "Allgemein",
+      "section_storage": "Speicher",
+      "saving": "Wird gespeichert...",
+      "save": "Änderungen Speichern"
+    },
+    "quotas": {
+      "title": "Upload-Quoten",
+      "section_anonymous": "Anonyme Benutzer",
+      "section_authenticated": "Authentifizierte Benutzer",
+      "max_file_size": "Maximale Dateigröße",
+      "max_file_size_hint": "Maximale Dateigröße in MB",
+      "ip_quota": "IP-Quote",
+      "ip_quota_hint": "Maximale Gesamtupload-Größe pro IP in MB",
+      "current_value": "Aktuell: {{value}} MB",
+      "saving": "Wird gespeichert...",
+      "save": "Änderungen Speichern"
+    }
   }
 }
