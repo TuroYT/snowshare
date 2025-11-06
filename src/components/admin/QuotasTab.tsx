@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 interface Settings {
@@ -19,11 +19,7 @@ export default function QuotasTab() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch("/api/admin/settings")
@@ -37,9 +33,13 @@ export default function QuotasTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
 
-  const handleChange = (key: keyof Settings, value: any) => {
+  useEffect(() => {
+    fetchSettings()
+  }, [fetchSettings])
+
+  const handleChange = (key: keyof Settings, value: number) => {
     if (settings) {
       setSettings({
         ...settings,

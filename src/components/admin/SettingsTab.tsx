@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 interface Settings {
@@ -20,11 +20,7 @@ export default function SettingsTab() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch("/api/admin/settings")
@@ -38,7 +34,11 @@ export default function SettingsTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
+
+  useEffect(() => {
+    fetchSettings()
+  }, [fetchSettings])
 
   const handleToggle = (key: keyof Settings) => {
     if (settings && typeof settings[key] === "boolean") {
@@ -49,7 +49,7 @@ export default function SettingsTab() {
     }
   }
 
-  const handleChange = (key: keyof Settings, value: any) => {
+  const handleChange = (key: keyof Settings, value: number) => {
     if (settings) {
       setSettings({
         ...settings,

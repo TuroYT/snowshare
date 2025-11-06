@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
@@ -19,18 +19,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<Tab>("users")
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin")
-      return
-    }
-
-    if (status === "authenticated") {
-      checkAdminStatus()
-    }
-  }, [status, router])
-
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     try {
       const response = await fetch("/api/user/profile")
       if (!response.ok) {
@@ -48,7 +37,18 @@ export default function AdminPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin")
+      return
+    }
+
+    if (status === "authenticated") {
+      checkAdminStatus()
+    }
+  }, [status, router, checkAdminStatus])
 
   if (loading) {
     return (

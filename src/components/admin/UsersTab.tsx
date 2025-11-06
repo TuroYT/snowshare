@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 interface User {
@@ -22,11 +22,7 @@ export default function UsersTab() {
   const [searchTerm, setSearchTerm] = useState("")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch("/api/admin/users")
@@ -40,7 +36,11 @@ export default function UsersTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const handleAction = async (userId: string, action: "promote" | "demote" | "delete") => {
     let confirmKey = "admin.users.confirm_delete"
