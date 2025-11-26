@@ -1,0 +1,38 @@
+name: Create Version File on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create-version-file:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+      
+      - name: Create version file
+        run: |
+          # Extract version from tag (removes 'v' prefix if present)
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          
+          # Create version file
+          echo "${VERSION}" > snowshare_version.txt
+          
+          echo "Created snowshare_version.txt with version: ${VERSION}"
+      
+      - name: Upload version file as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./snowshare_version.txt
+          asset_name: snowshare_version.txt
+          asset_content_type: text/plain

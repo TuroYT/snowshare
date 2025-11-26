@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
+export const runtime = 'nodejs';
+
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -17,8 +19,9 @@ export default async function middleware(request: NextRequest) {
 
   // Check if setup is needed
   try {
-    const baseUrl = request.nextUrl.origin
+    const baseUrl = "http://localhost:" + process.env.PORT || "3000"
     const checkUrl = new URL('/api/setup/check', baseUrl)
+    console.log(checkUrl.toString())
     const response = await fetch(checkUrl.toString())
     
     if (!response.ok) {
