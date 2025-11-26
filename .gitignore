@@ -45,3 +45,4 @@ next-env.d.ts
 dev.db
 uploads/*
 uploads/
+.vscode
