@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";
 import { join } from "path";
 import bcrypt from "bcryptjs";
-import { isValidPasteLanguage, MAX_PASTE_SIZE, MAX_URL_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
+import { isValidPasteLanguage, isValidUrl, MAX_PASTE_SIZE, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
@@ -117,9 +117,10 @@ export async function PATCH(
     }
 
     if (share.type === "URL" && urlOriginal !== undefined) {
-      // Basic URL validation
-      if (typeof urlOriginal !== 'string' || urlOriginal.length > MAX_URL_LENGTH) {
-        return NextResponse.json({ error: "URL invalide" }, { status: 400 });
+      // Validate URL format and protocol
+      const urlValidation = isValidUrl(urlOriginal);
+      if (!urlValidation.valid) {
+        return NextResponse.json({ error: urlValidation.error || "URL invalide" }, { status: 400 });
       }
       updateData.urlOriginal = urlOriginal;
     }

@@ -39,15 +39,41 @@ export const PASSWORD_MIN_LENGTH = 6;
 export const PASSWORD_MAX_LENGTH = 100;
 
 /**
- * Email validation regex (RFC 5322 simplified)
+ * Email validation regex (simplified, safer version)
+ * Allows alphanumeric, dots, hyphens, underscores, plus signs
+ * Does not allow potentially dangerous characters like backticks
  */
-export const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+export const EMAIL_REGEX = /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 /**
  * Validate email format
  */
 export function isValidEmail(email: string): boolean {
   return EMAIL_REGEX.test(email) && email.length <= MAX_EMAIL_LENGTH;
+}
+
+/**
+ * Validate URL format and restrict to safe protocols
+ */
+export function isValidUrl(url: string): { valid: boolean; error?: string } {
+  if (!url || typeof url !== 'string') {
+    return { valid: false, error: 'URL invalide' };
+  }
+  
+  if (url.length > MAX_URL_LENGTH) {
+    return { valid: false, error: 'URL trop longue' };
+  }
+  
+  try {
+    const parsed = new URL(url);
+    // Only allow http and https protocols
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return { valid: false, error: 'Seuls les protocoles HTTP et HTTPS sont autorisés' };
+    }
+    return { valid: true };
+  } catch {
+    return { valid: false, error: 'Format URL invalide' };
+  }
 }
 
 /**

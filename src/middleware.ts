@@ -14,8 +14,8 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-XSS-Protection', '1; mode=block')
   // Referrer policy
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  // Permissions policy
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  // Comprehensive permissions policy restricting potentially dangerous APIs
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=()')
   
   return response
 }

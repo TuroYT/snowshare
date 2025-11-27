@@ -4,21 +4,7 @@ import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { encrypt } from "@/lib/crypto-link";
 import crypto from "crypto";
-
-
-// Utility function to validate URLs
-function isValidUrl(url: string) {
-  const pattern = new RegExp(
-    "^(https?:\\/\\/)?" + // protocol
-      "((([a-z0-9\\-]+\\.)+[a-z]{2,})|" + // domain name
-      "localhost|" + // localhost
-      "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|" + // IP address
-      "\\[?[a-f0-9:\\.]+\\]?)" + // IPv6
-      "(\\:\\d+)?(\\/[^\\s]*)?$",
-    "i"
-  );
-  return pattern.test(url);
-}
+import { isValidUrl as validateUrl } from "@/lib/constants";
 
 export const createLinkShare = async (
   urlOriginal: string,
@@ -26,9 +12,10 @@ export const createLinkShare = async (
   slug?: string,
   password?: string
 )  => {
-    // Validate original URL
-    if (!urlOriginal || !isValidUrl(urlOriginal)) {
-        return { error: "URL originale invalide" };
+    // Validate original URL format and protocol
+    const urlValidation = validateUrl(urlOriginal);
+    if (!urlValidation.valid) {
+        return { error: urlValidation.error || "URL originale invalide" };
     }
 
     // Validate slug if provided
