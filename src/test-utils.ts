@@ -48,10 +48,7 @@ export const mockTranslation = () => {
 };
 
 // Custom render function with common providers mocked
-export const renderWithProviders = (
-  ui: React.ReactElement,
-  _options?: { session?: { user?: { name?: string; email?: string; id?: string } } | null }
-) => {
+export const renderWithProviders = (ui: React.ReactElement) => {
   return render(ui);
 };
 
