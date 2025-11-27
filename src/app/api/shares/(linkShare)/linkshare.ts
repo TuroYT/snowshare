@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { encrypt } from "@/lib/crypto-link";
+import crypto from "crypto";
 
 
 // Utility function to validate URLs
@@ -68,13 +69,13 @@ export const createLinkShare = async (
         password = hashedPassword;
     }
 
-    // generate unique slug if not provided
+    // generate unique slug if not provided using cryptographically secure random
     if (!slug) {
-        const generateSlug = () => {
-            return Math.random().toString(36).substring(2, 8);
+        const generateSecureSlug = () => {
+            return crypto.randomBytes(6).toString('base64url').substring(0, 8);
         };
         do {
-            slug = generateSlug();
+            slug = generateSecureSlug();
         } while (await prisma.share.findUnique({ where: { slug } }));
     }
 

@@ -4,6 +4,16 @@ import { readFile, stat } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
+// Helper function to sanitize filename for Content-Disposition header
+function sanitizeFilename(filename: string): string {
+  // Remove or replace characters that could cause header injection
+  const sanitized = filename
+    .replace(/[\r\n]/g, '') // Remove newlines
+    .replace(/["\\/]/g, '_') // Replace quotes and slashes
+    .replace(/[^\x20-\x7E]/g, '_'); // Replace non-ASCII printable characters
+  return sanitized;
+}
+
 function jsonResponse(body: unknown, status = 200) {
     return new Response(JSON.stringify(body), {
         status,
@@ -159,16 +169,19 @@ export async function GET(
     
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     
+    // Sanitize filename for Content-Disposition header to prevent header injection
+    const safeFilename = sanitizeFilename(originalFilename || 'download');
+    
     // Set appropriate headers
     const headers = new Headers();
     headers.set('Content-Type', contentType);
-    headers.set('Content-Disposition', `attachment; filename="${originalFilename}"`);
+    headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
     headers.set('Content-Length', fileBuffer.length.toString());
     
     // For images, PDFs, and text files, allow inline viewing
     if (contentType.startsWith('image/') || contentType === 'application/pdf' || contentType.startsWith('text/')) {
       const disposition = request.headers.get('accept')?.includes('text/html') ? 'inline' : 'attachment';
-      headers.set('Content-Disposition', `${disposition}; filename="${originalFilename}"`);
+      headers.set('Content-Disposition', `${disposition}; filename="${safeFilename}"`);
     }
 
     return new NextResponse(new Uint8Array(fileBuffer), {

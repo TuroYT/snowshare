@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";
 import { join } from "path";
+import bcrypt from "bcryptjs";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
@@ -84,20 +85,42 @@ export async function PATCH(
       updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
     }
     
+    // Hash password if provided, or set to null to remove
     if (password !== undefined) {
-      updateData.password = password || null;
+      if (password) {
+        // Validate password length
+        if (password.length < 6 || password.length > 100) {
+          return NextResponse.json({ error: "Le mot de passe doit contenir entre 6 et 100 caractères" }, { status: 400 });
+        }
+        updateData.password = await bcrypt.hash(password, 12);
+      } else {
+        updateData.password = null;
+      }
     }
 
     // Mise à jour spécifique selon le type
     if (share.type === "PASTE" && paste !== undefined) {
+      // Validate paste content length to prevent DoS
+      if (typeof paste !== 'string' || paste.length > 10000000) { // 10MB limit
+        return NextResponse.json({ error: "Contenu du paste invalide ou trop volumineux" }, { status: 400 });
+      }
       updateData.paste = paste;
     }
 
     if (share.type === "PASTE" && pastelanguage !== undefined) {
+      // Validate pastelanguage is a valid enum value
+      const validLanguages = ['PLAINTEXT', 'JAVASCRIPT', 'TYPESCRIPT', 'PYTHON', 'JAVA', 'PHP', 'GO', 'HTML', 'CSS', 'SQL', 'JSON', 'MARKDOWN'];
+      if (!validLanguages.includes(pastelanguage)) {
+        return NextResponse.json({ error: "Langage invalide" }, { status: 400 });
+      }
       updateData.pastelanguage = pastelanguage;
     }
 
     if (share.type === "URL" && urlOriginal !== undefined) {
+      // Basic URL validation
+      if (typeof urlOriginal !== 'string' || urlOriginal.length > 2048) {
+        return NextResponse.json({ error: "URL invalide" }, { status: 400 });
+      }
       updateData.urlOriginal = urlOriginal;
     }
 

@@ -49,6 +49,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate email format
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+    if (!emailRegex.test(email) || email.length > 254) {
+      return NextResponse.json(
+        { error: "Format d'email invalide" },
+        { status: 400 }
+      )
+    }
+
+    // Validate password length
+    if (password.length < 6 || password.length > 128) {
+      return NextResponse.json(
+        { error: "Le mot de passe doit contenir entre 6 et 128 caractères" },
+        { status: 400 }
+      )
+    }
+
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await prisma.user.findUnique({
       where: { email }

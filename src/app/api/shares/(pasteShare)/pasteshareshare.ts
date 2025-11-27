@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
+import crypto from "crypto";
 
 export const createPasteShare = async (
   paste: string,
@@ -15,9 +16,15 @@ export const createPasteShare = async (
     return { error: "Le contenu du paste est requis." };
   }
 
-  // Validate language
-  if (!pastelanguage || typeof pastelanguage !== "string") {
-    return { error: "La langue du paste est requise." };
+  // Validate paste size limit (10MB)
+  if (paste.length > 10000000) {
+    return { error: "Le contenu du paste est trop volumineux (max 10MB)." };
+  }
+
+  // Validate language against allowed enum values
+  const validLanguages = ['PLAINTEXT', 'JAVASCRIPT', 'TYPESCRIPT', 'PYTHON', 'JAVA', 'PHP', 'GO', 'HTML', 'CSS', 'SQL', 'JSON', 'MARKDOWN'];
+  if (!pastelanguage || typeof pastelanguage !== "string" || !validLanguages.includes(pastelanguage)) {
+    return { error: "La langue du paste est invalide." };
   }
 
   // Validate slug if provided
@@ -56,13 +63,13 @@ export const createPasteShare = async (
     password = await bcrypt.hash(password, 12);
   }
 
-  // generate unique slug if not provided
+  // generate unique slug if not provided using cryptographically secure random
   if (!slug) {
-    const generateSlug = () => {
-      return Math.random().toString(36).substring(2, 8);
+    const generateSecureSlug = () => {
+      return crypto.randomBytes(6).toString('base64url').substring(0, 8);
     };
     do {
-      slug = generateSlug();
+      slug = generateSecureSlug();
     } while (await prisma.share.findUnique({ where: { slug } }));
   }
 
