@@ -28,8 +28,31 @@ const FileShare: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
+  const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   const maxFileSize = isAuthenticated ? MAX_FILE_SIZE_AUTH : MAX_FILE_SIZE_ANON;
+
+  // Fetch settings to check if anonymous file sharing is allowed
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (response.ok) {
+          const data = await response.json();
+          setAllowAnonFileShare(data.settings?.allowAnonFileShare ?? true);
+        } else {
+          // Default to true if settings can't be fetched
+          setAllowAnonFileShare(true);
+        }
+      } catch {
+        setAllowAnonFileShare(true);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
 
   
@@ -236,17 +259,36 @@ const FileShare: React.FC = () => {
   };
 
   if (!isAuthenticated) {
-    return (
-      <div className="modern-card p-6 w-full max-w-2xl mx-auto text-center">
-        <h2 className="text-lg font-semibold text-gray-100 mb-2">
-          {t("fileshare.locked_title", "File sharing is locked")}
-        </h2>
-        <p className="text-gray-400 mb-4">
-          {t("fileshare.locked_message", "You must be logged in to share files.")}
-        </p>
-        {/* Optionally, add a login button or link */}
-      </div>
-    );
+    // Show loading while fetching settings
+    if (settingsLoading) {
+      return (
+        <div className="modern-card p-6 w-full max-w-2xl mx-auto text-center">
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-700 rounded w-1/2 mx-auto mb-4"></div>
+            <div className="h-4 bg-gray-700 rounded w-3/4 mx-auto"></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Block anonymous users if allowAnonFileShare is disabled
+    if (!allowAnonFileShare) {
+      return (
+        <div className="modern-card p-6 w-full max-w-2xl mx-auto text-center">
+          <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
+            <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-100 mb-2">
+            {t("fileshare.locked_title", "File sharing is locked")}
+          </h2>
+          <p className="text-gray-400 mb-4">
+            {t("fileshare.locked_message", "You must be logged in to share files.")}
+          </p>
+        </div>
+      );
+    }
   }
 
   return (

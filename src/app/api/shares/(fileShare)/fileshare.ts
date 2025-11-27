@@ -5,16 +5,18 @@ import { authOptions } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
-
-
-// File size limits (in bytes)
-const MAX_FILE_SIZE_ANON = 0; // ANON disabled
-const MAX_FILE_SIZE_AUTH = 50 * 1024 * 1024 * 1024; // 50GB for authenticated users
+import { NextRequest } from "next/server";
+import { checkUploadQuota, getClientIp } from "@/lib/quota";
 
 // Utility function to validate file
-function validateFile(file: File, isAuthenticated: boolean) {
+async function validateFile(file: File, isAuthenticated: boolean) {
+  // Get settings from database for max file size
+  const settings = await prisma.settings.findFirst();
+  const maxSize = isAuthenticated
+    ? (settings?.authMaxUpload || 51200) * 1024 * 1024 // Convert MB to bytes
+    : (settings?.anoMaxUpload || 2048) * 1024 * 1024;
+
   // Check file size
-  const maxSize = isAuthenticated ? MAX_FILE_SIZE_AUTH : MAX_FILE_SIZE_ANON;
   if (file.size > maxSize) {
     const maxSizeMB = Math.round(maxSize / (1024 * 1024));
     return { error: `La taille du fichier dépasse la limite autorisée de ${maxSizeMB}MB.` };
@@ -43,6 +45,7 @@ function generateSafeFilename(originalName: string, shareId: string): string {
 
 export const createFileShare = async (
   file: File,
+  request: NextRequest,
   expiresAt?: Date,
   slug?: string,
   password?: string
@@ -50,8 +53,20 @@ export const createFileShare = async (
   const session = await getServerSession(authOptions);
   const isAuthenticated = !!session;
 
+  // Get client IP for quota tracking
+  const clientIp = getClientIp(request);
+
+  // Convert file size to MB
+  const fileSizeMB = file.size / (1024 * 1024);
+
+  // Check upload quota
+  const quotaCheck = await checkUploadQuota(request, fileSizeMB);
+  if (!quotaCheck.allowed) {
+    return { error: quotaCheck.reason || "Quota d'upload dépassé." };
+  }
+
   // Validate file
-  const validation = validateFile(file, isAuthenticated);
+  const validation = await validateFile(file, isAuthenticated);
   if (validation.error) {
     return { error: validation.error };
   }
@@ -112,6 +127,7 @@ export const createFileShare = async (
         expiresAt,
         ownerId: session?.user?.id || null,
         filePath: null, // Will be updated after file save
+        ipSource: clientIp, // Store IP for quota tracking
       },
     });
 

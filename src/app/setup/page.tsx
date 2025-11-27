@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
+import { signIn, SignInResponse } from "next-auth/react"
 
 export default function Setup() {
   const [email, setEmail] = useState("")
@@ -20,7 +21,7 @@ export default function Setup() {
       try {
         const response = await fetch("/api/setup/check")
         const data = await response.json()
-        
+
         if (!data.needsSetup) {
           // Setup not needed, redirect to home
           router.push("/")
@@ -64,8 +65,19 @@ export default function Setup() {
       const data = await response.json()
 
       if (response.ok) {
-        // Redirect to signin page with success message
-        router.push(`/auth/signin?message=${encodeURIComponent(t('setup.success_message'))}`)
+        const signInResult = (await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })) as SignInResponse | undefined
+
+        if (signInResult?.ok) {
+          // Redirect to home after successful sign-in
+          router.push("/")
+        } else {
+          // If auto-login failed, redirect to sign-in with a message
+          router.push(`/auth/signin?message=${encodeURIComponent(t('auth.success_account_created'))}`)
+        }
       } else {
         setError(data.error || t('auth.error_generic').replace(' : ', ''))
       }
@@ -92,17 +104,17 @@ export default function Setup() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-blue-900/20 border-2 border-blue-800">
-            <svg 
-              className="h-10 w-10 text-blue-400" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="h-10 w-10 text-blue-400"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
           </div>
@@ -126,19 +138,19 @@ export default function Setup() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-              {t('auth.email_label')}
+                {t('auth.email_label')}
               </label>
               <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-              className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
-              placeholder={t('auth.email_placeholder') as string}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                placeholder={t('auth.email_placeholder') as string}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>

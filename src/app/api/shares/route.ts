@@ -1,11 +1,11 @@
 /** API route for creating shares */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createLinkShare } from "./(linkShare)/linkshare";
 import { createPasteShare } from "./(pasteShare)/pasteshareshare";
 import { createFileShare } from "./(fileShare)/fileshare";
 
-async function POST(req: Request) {
+async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
   
   // Handle file uploads (multipart/form-data)
@@ -29,6 +29,7 @@ async function POST(req: Request) {
       
       const result = await createFileShare(
         file,
+        req,
         expiresAt ? new Date(expiresAt) : undefined,
         slug || undefined,
         password || undefined

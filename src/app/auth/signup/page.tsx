@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { signIn, type SignInResponse } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
@@ -11,11 +12,42 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [allowSignup, setAllowSignup] = useState(true)
+  const [checkingStatus, setCheckingStatus] = useState(true)
   const router = useRouter()
   const { t } = useTranslation()
 
-  // Check if signup is allowed
-  const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
+  // Check signup status from database
+  useEffect(() => {
+    const fetchSignupStatus = async () => {
+      try {
+        const response = await fetch("/api/setup/check")
+        if (response.ok) {
+          const data = await response.json()
+          setAllowSignup(data.allowSignup ?? true)
+        }
+      } catch (error) {
+        console.error("Error fetching signup status:", error)
+        setAllowSignup(true) // Default to true on error
+      } finally {
+        setCheckingStatus(false)
+      }
+    }
+
+    fetchSignupStatus()
+  }, [])
+
+  // Show loading state while checking signup status
+  if (checkingStatus) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          <p className="mt-4 text-gray-400">{t('loading')}</p>
+        </div>
+      </div>
+    )
+  }
 
   // Redirect to signin if signup is disabled
   if (!allowSignup) {
@@ -75,7 +107,20 @@ export default function SignUp() {
       const data = await response.json()
 
       if (response.ok) {
-        router.push(`/auth/signin?message=${encodeURIComponent(t('auth.success_account_created'))}`)
+        // Auto-login after successful registration using NextAuth credentials provider
+        const signInResult = (await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })) as SignInResponse | undefined
+
+        if (signInResult?.ok) {
+          // Redirect to home after successful sign-in
+          router.push("/")
+        } else {
+          // If auto-login failed, redirect to sign-in with a message
+          router.push(`/auth/signin?message=${encodeURIComponent(t('auth.success_account_created'))}`)
+        }
       } else {
         setError(data.error || t('auth.error_generic').replace(' : ', ''))
       }

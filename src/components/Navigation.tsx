@@ -13,11 +13,28 @@ export default function Navigation() {
   const { t, i18n } = useTranslation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState<boolean>(false)
+  const [allowSignup, setAllowSignup] = useState(true)
   const profileMenuRef = useRef<HTMLDivElement>(null)
-  
-  // Check if signup is allowed via environment variable
-  const allowSignup = process.env.NEXT_PUBLIC_ALLOW_SIGNUP !== 'false'
- 
+
+  // Fetch signup status from database
+  useEffect(() => {
+    const fetchSignupStatus = async () => {
+      try {
+        const response = await fetch("/api/setup/check")
+        if (response.ok) {
+          const data = await response.json()
+          setAllowSignup(data.allowSignup ?? true)
+        }
+      } catch (error) {
+        console.error("Error fetching signup status:", error)
+        setAllowSignup(true) // Default to true on error
+      }
+    }
+
+    fetchSignupStatus()
+  }, [])
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -33,11 +50,24 @@ export default function Navigation() {
   }, [profileMenuOpen])
 
   const handleSignOut = async () => {
-  setMobileOpen(false)
-  setProfileMenuOpen(false)
-  await signOut({ redirect: false })
-  router.push("/")
+    setMobileOpen(false)
+    setProfileMenuOpen(false)
+    await signOut({ redirect: false })
+    router.push("/")
   }
+
+  // Fetch user's profile to determine admin status (endpoint returns { isAdmin })
+  useEffect(() => {
+    fetch('/api/user/profile')
+      .then((res) => {
+        if (!res.ok) return null
+        return res.json()
+      })
+      .then((data) => {
+        if (!data) return
+        setIsAdmin(data.user.isAdmin)
+      })
+  }, [status])
 
   // Supported languages. Add more entries here if needed.
   const languages = [
@@ -160,7 +190,28 @@ export default function Navigation() {
                               <div className="text-xs text-gray-500">{t('nav.profile_desc', 'Gérer mes infos')}</div>
                             </div>
                           </Link>
-
+                          
+                          {isAdmin && (
+                            <>
+                              <div className="border-t border-gray-700/50 my-2"></div>
+                              <Link
+                                href="/admin"
+                                onClick={() => setProfileMenuOpen(false)}
+                                className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700/50 hover:text-white transition-all group"
+                              >
+                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 border border-yellow-700/50 flex items-center justify-center group-hover:border-yellow-600/70 transition-colors">
+                                  <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium">{t('nav.admin', 'Admin')}</div>
+                                  <div className="text-xs text-gray-500">{t('nav.admin_desc', 'Panneau d\'administration')}</div>
+                                </div>
+                              </Link>
+                            </>
+                          )}
                           <div className="border-t border-gray-700/50 my-2"></div>
 
                           <button
@@ -236,7 +287,7 @@ export default function Navigation() {
                       {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-gray-300 text-sm truncate">{ session.user?.name || session.user?.email}</span>
+                  <span className="text-gray-300 text-sm truncate">{session.user?.name || session.user?.email}</span>
                 </div>
 
                 <Link
@@ -254,6 +305,20 @@ export default function Navigation() {
                   </svg>
                   <span className="text-sm font-medium">{t('nav.profile', 'Mon Profil')}</span>
                 </Link>
+
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-gray-700/50 hover:text-white transition-all"
+                  >
+                    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                    </svg>
+                    <span className="text-sm font-medium">{t('nav.admin', 'Panneau d\'Administration')}</span>
+                  </Link>
+                )}
 
                 <button
                   onClick={handleSignOut}
