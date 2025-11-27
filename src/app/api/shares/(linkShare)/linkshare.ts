@@ -72,7 +72,7 @@ export const createLinkShare = async (
     // generate unique slug if not provided using cryptographically secure random
     if (!slug) {
         const generateSecureSlug = () => {
-            return crypto.randomBytes(6).toString('base64url').substring(0, 8);
+            return crypto.randomBytes(6).toString('base64url');
         };
         do {
             slug = generateSecureSlug();

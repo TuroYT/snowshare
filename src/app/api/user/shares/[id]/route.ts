@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";
 import { join } from "path";
 import bcrypt from "bcryptjs";
+import { isValidPasteLanguage } from "@/lib/constants";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
@@ -109,8 +110,7 @@ export async function PATCH(
 
     if (share.type === "PASTE" && pastelanguage !== undefined) {
       // Validate pastelanguage is a valid enum value
-      const validLanguages = ['PLAINTEXT', 'JAVASCRIPT', 'TYPESCRIPT', 'PYTHON', 'JAVA', 'PHP', 'GO', 'HTML', 'CSS', 'SQL', 'JSON', 'MARKDOWN'];
-      if (!validLanguages.includes(pastelanguage)) {
+      if (!isValidPasteLanguage(pastelanguage)) {
         return NextResponse.json({ error: "Langage invalide" }, { status: 400 });
       }
       updateData.pastelanguage = pastelanguage;

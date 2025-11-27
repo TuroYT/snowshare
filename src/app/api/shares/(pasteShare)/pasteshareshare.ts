@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
+import { isValidPasteLanguage } from "@/lib/constants";
 
 export const createPasteShare = async (
   paste: string,
@@ -22,8 +23,7 @@ export const createPasteShare = async (
   }
 
   // Validate language against allowed enum values
-  const validLanguages = ['PLAINTEXT', 'JAVASCRIPT', 'TYPESCRIPT', 'PYTHON', 'JAVA', 'PHP', 'GO', 'HTML', 'CSS', 'SQL', 'JSON', 'MARKDOWN'];
-  if (!pastelanguage || typeof pastelanguage !== "string" || !validLanguages.includes(pastelanguage)) {
+  if (!pastelanguage || typeof pastelanguage !== "string" || !isValidPasteLanguage(pastelanguage)) {
     return { error: "La langue du paste est invalide." };
   }
 
@@ -66,7 +66,7 @@ export const createPasteShare = async (
   // generate unique slug if not provided using cryptographically secure random
   if (!slug) {
     const generateSecureSlug = () => {
-      return crypto.randomBytes(6).toString('base64url').substring(0, 8);
+      return crypto.randomBytes(6).toString('base64url');
     };
     do {
       slug = generateSecureSlug();
