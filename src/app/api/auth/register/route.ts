@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants"
 
 
 
@@ -45,6 +46,22 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email et mot de passe requis" },
+        { status: 400 }
+      )
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "Format d'email invalide" },
+        { status: 400 }
+      )
+    }
+
+    // Validate password length
+    if (!isValidPassword(password)) {
+      return NextResponse.json(
+        { error: `Le mot de passe doit contenir entre ${PASSWORD_MIN_LENGTH} et ${PASSWORD_MAX_LENGTH} caractères` },
         { status: 400 }
       )
     }

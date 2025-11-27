@@ -7,6 +7,7 @@ import path from "path";
 import { existsSync } from "fs";
 import { NextRequest } from "next/server";
 import { checkUploadQuota, getClientIp } from "@/lib/quota";
+import crypto from "crypto";
 
 // Utility function to validate file
 async function validateFile(file: File, isAuthenticated: boolean) {
@@ -107,13 +108,13 @@ export const createFileShare = async (
     hashedPassword = await bcrypt.hash(password, 12);
   }
 
-  // Generate unique slug if not provided
+  // Generate unique slug if not provided using cryptographically secure random
   if (!slug) {
-    const generateSlug = () => {
-      return Math.random().toString(36).substring(2, 8);
+    const generateSecureSlug = () => {
+      return crypto.randomBytes(6).toString('base64url');
     };
     do {
-      slug = generateSlug();
+      slug = generateSecureSlug();
     } while (await prisma.share.findUnique({ where: { slug } }));
   }
 
