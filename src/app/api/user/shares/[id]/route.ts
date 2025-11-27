@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";
 import { join } from "path";
 import bcrypt from "bcryptjs";
-import { isValidPasteLanguage } from "@/lib/constants";
+import { isValidPasteLanguage, MAX_PASTE_SIZE, MAX_URL_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
@@ -90,8 +90,8 @@ export async function PATCH(
     if (password !== undefined) {
       if (password) {
         // Validate password length
-        if (password.length < 6 || password.length > 100) {
-          return NextResponse.json({ error: "Le mot de passe doit contenir entre 6 et 100 caractères" }, { status: 400 });
+        if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+          return NextResponse.json({ error: `Le mot de passe doit contenir entre ${PASSWORD_MIN_LENGTH} et ${PASSWORD_MAX_LENGTH} caractères` }, { status: 400 });
         }
         updateData.password = await bcrypt.hash(password, 12);
       } else {
@@ -102,7 +102,7 @@ export async function PATCH(
     // Mise à jour spécifique selon le type
     if (share.type === "PASTE" && paste !== undefined) {
       // Validate paste content length to prevent DoS
-      if (typeof paste !== 'string' || paste.length > 10000000) { // 10MB limit
+      if (typeof paste !== 'string' || paste.length > MAX_PASTE_SIZE) {
         return NextResponse.json({ error: "Contenu du paste invalide ou trop volumineux" }, { status: 400 });
       }
       updateData.paste = paste;
@@ -118,7 +118,7 @@ export async function PATCH(
 
     if (share.type === "URL" && urlOriginal !== undefined) {
       // Basic URL validation
-      if (typeof urlOriginal !== 'string' || urlOriginal.length > 2048) {
+      if (typeof urlOriginal !== 'string' || urlOriginal.length > MAX_URL_LENGTH) {
         return NextResponse.json({ error: "URL invalide" }, { status: 400 });
       }
       updateData.urlOriginal = urlOriginal;

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
-import { isValidPasteLanguage } from "@/lib/constants";
+import { isValidPasteLanguage, MAX_PASTE_SIZE } from "@/lib/constants";
 
 export const createPasteShare = async (
   paste: string,
@@ -17,8 +17,8 @@ export const createPasteShare = async (
     return { error: "Le contenu du paste est requis." };
   }
 
-  // Validate paste size limit (10MB)
-  if (paste.length > 10000000) {
+  // Validate paste size limit
+  if (paste.length > MAX_PASTE_SIZE) {
     return { error: "Le contenu du paste est trop volumineux (max 10MB)." };
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants"
 
 
 
@@ -50,8 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-    if (!emailRegex.test(email) || email.length > 254) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: "Format d'email invalide" },
         { status: 400 }
@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate password length
-    if (password.length < 6 || password.length > 128) {
+    if (!isValidPassword(password)) {
       return NextResponse.json(
-        { error: "Le mot de passe doit contenir entre 6 et 128 caractères" },
+        { error: `Le mot de passe doit contenir entre ${PASSWORD_MIN_LENGTH} et ${PASSWORD_MAX_LENGTH} caractères` },
         { status: 400 }
       )
     }
