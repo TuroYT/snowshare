@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 interface Settings {
   id: number
   allowSignin: boolean
+  allowAnonFileShare: boolean
   anoMaxUpload: number
   authMaxUpload: number
   anoIpQuota: number
@@ -26,7 +27,12 @@ export default function SettingsTab() {
       const response = await fetch("/api/admin/settings")
       if (!response.ok) throw new Error("Failed to fetch settings")
       const data = await response.json()
-      setSettings(data.settings)
+      // Ensure all boolean fields have default values
+      setSettings({
+        ...data.settings,
+        allowSignin: data.settings.allowSignin ?? true,
+        allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
+      })
       setError(null)
     } catch (err) {
       setError(t("admin.error_load_data"))
@@ -95,8 +101,8 @@ export default function SettingsTab() {
   if (!settings) return null
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {error && (
+    <div className="space-y-6 w-full">
+      {error && ( 
         <div className="bg-red-600/10 border border-red-700/30 rounded-xl p-4 text-red-400">
           {error}
         </div>
@@ -126,6 +132,25 @@ export default function SettingsTab() {
             <span
               className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
                 settings.allowSignin ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-gray-700/20 rounded-lg border border-gray-700/50">
+          <div>
+            <label className="text-gray-200 font-medium">{t("admin.settings.allow_anon_fileshare")}</label>
+            <p className="text-sm text-gray-400 mt-1">{t("admin.settings.allow_anon_fileshare_desc")}</p>
+          </div>
+          <button
+            onClick={() => handleToggle("allowAnonFileShare")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.allowAnonFileShare ? "bg-blue-600" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.allowAnonFileShare ? "translate-x-7" : "translate-x-1"
               }`}
             />
           </button>

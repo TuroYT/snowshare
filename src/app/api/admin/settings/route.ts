@@ -27,6 +27,7 @@ export async function GET() {
       settings = await prisma.settings.create({
         data: {
           allowSignin: true,
+          allowAnonFileShare: true,
           anoMaxUpload: 2048,
           authMaxUpload: 51200,
           anoIpQuota: 4096,
@@ -70,6 +71,7 @@ export async function PATCH(request: Request) {
       settings = await prisma.settings.create({
         data: {
           allowSignin: data.allowSignin !== undefined ? data.allowSignin : true,
+          allowAnonFileShare: data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : true,
           anoMaxUpload: data.anoMaxUpload || 2048,
           authMaxUpload: data.authMaxUpload || 51200,
           anoIpQuota: data.anoIpQuota || 4096,
@@ -81,6 +83,7 @@ export async function PATCH(request: Request) {
         where: { id: settings.id },
         data: {
           allowSignin: data.allowSignin !== undefined ? data.allowSignin : settings.allowSignin,
+          allowAnonFileShare: data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : settings.allowAnonFileShare,
           anoMaxUpload: data.anoMaxUpload || settings.anoMaxUpload,
           authMaxUpload: data.authMaxUpload || settings.authMaxUpload,
           anoIpQuota: data.anoIpQuota || settings.anoIpQuota,

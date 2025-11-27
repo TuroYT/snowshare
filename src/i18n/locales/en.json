@@ -278,6 +278,8 @@
       "title": "Settings",
       "allow_signup": "Allow Signup",
       "allow_signup_desc": "Allow new users to create accounts",
+      "allow_anon_fileshare": "Anonymous File Sharing",
+      "allow_anon_fileshare_desc": "Allow unauthenticated users to share files",
       "section_general": "General",
       "section_storage": "Storage",
       "saving": "Saving...",

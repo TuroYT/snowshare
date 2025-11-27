@@ -280,6 +280,8 @@
       "title": "Paramètres",
       "allow_signup": "Autoriser les inscriptions",
       "allow_signup_desc": "Autoriser les nouveaux utilisateurs à créer des comptes",
+      "allow_anon_fileshare": "Partage de fichiers anonyme",
+      "allow_anon_fileshare_desc": "Autoriser les utilisateurs non authentifiés à partager des fichiers",
       "section_general": "Général",
       "section_storage": "Stockage",
       "saving": "Enregistrement...",
