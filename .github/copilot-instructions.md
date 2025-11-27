@@ -1,77 +1,93 @@
 <!-- Copilot / AI agent instructions for the SnowShare repository -->
 
-# Quick orientation (do this first)
+# Quick orientation
 
-- Project type: Next.js (App Router) + TypeScript + Prisma + NextAuth.
-- Root layout: `src/app/` (App Router). Server and client components used; check `"use client"` at top of files to identify client components.
-- Database: PostgreSQL with Prisma; schema in `prisma/schema.prisma`. Generated client lives at `src/generated/prisma`.
+- **Stack**: Next.js 15 (App Router) + React 19 + TypeScript + Prisma + NextAuth + TailwindCSS 4
+- **Structure**: `src/app/` (App Router), `src/components/`, `src/lib/` utilities
+- **Database**: PostgreSQL + Prisma; schema at `prisma/schema.prisma`, generated client at `src/generated/prisma`
+- **i18n**: Client-side i18next with 4 locales (fr/en/es/de) in `src/i18n/locales/`
 
-# High-level architecture
+# Architecture & data flow
 
-- Frontend and API are colocated under `src/app/`:
-  - UI pages and components: `src/app/*`, `src/components/*`.
-  - API routes: `src/app/api/*` (Next.js app-router style). Example: NextAuth handler at `src/app/api/auth/[...nextauth]/route.ts`.
-- Authentication: NextAuth configured in `src/lib/auth.ts` using the PrismaAdapter and a CredentialsProvider. Session strategy: `jwt`.
-- Persistence: Prisma models defined in `prisma/schema.prisma`. Important models: `User` (password hashed with bcryptjs), `Session`, `Account`, `Share`, `Settings`.
-- File uploads: local uploads stored in `uploads/` for dev. Watch `src/app/(shares)/f/*` routes for file download handlers.
+```
+┌─ src/app/
+│  ├─ (shares)/f|l|p/[slug]  → Share display pages (File/Link/Paste)
+│  ├─ api/shares/            → Create shares (routes to linkshare.ts, pasteshareshare.ts, fileshare.ts)
+│  ├─ api/auth/              → NextAuth handler + /register endpoint
+│  └─ api/admin|settings|quota → Admin & config APIs
+├─ src/lib/
+│  ├─ auth.ts                → NextAuth config (CredentialsProvider + JWT)
+│  ├─ prisma.ts              → Singleton PrismaClient
+│  └─ quota.ts               → Upload quota enforcement by IP
+└─ uploads/                  → Local file storage (dev)
+```
 
-# How auth works (very important)
+**Core models** (`prisma/schema.prisma`): `User` (with `password` + `isAdmin`), `Share` (FILE|PASTE|URL), `Settings` (quotas, signup toggle)
 
-- NextAuth provider: `CredentialsProvider` (see `src/lib/auth.ts`). Passwords are hashed with `bcryptjs` and stored in `User.password`.
-- Session strategy is JWT. The project adds `token.id` in the `jwt` callback and then sets `session.user.id` in the `session` callback. That means server-side code should rely on NextAuth session helpers where possible.
-- The NextAuth route is exported from `src/app/api/auth/[...nextauth]/route.ts`.
-- Signup is implemented at `src/app/api/auth/register/route.ts` and may enforce `ALLOW_SIGNUP` server-side (reads `process.env.ALLOW_SIGNUP`). The client signup page (`src/app/auth/signup/page.tsx`) calls `/api/auth/register` and then uses `next-auth/react`'s `signIn('credentials', ...)` to auto-login.
+# Authentication system (critical)
 
-# Developer workflows & commands
+- **Provider**: `CredentialsProvider` in `src/lib/auth.ts` — passwords hashed with `bcryptjs` (cost 12)
+- **Session**: JWT strategy. Token contains `id` and `name`; access via `session.user.id` in callbacks
+- **First user**: Auto-promoted to admin (`isAdmin: true`) via `src/app/api/auth/register/route.ts`
+- **Signup control**: Database `Settings.allowSignin` field (not env var). Check via `/api/setup/check`
+- **Protected routes**: Middleware in `src/middleware.ts` guards `/dashboard`, `/profile`, `/api/protected`
 
-- Local dev:
-  - Install: `npm install`
-  - Dev server: `npm run dev` (uses `next dev --turbopack`)
-  - Build: `npm run build`
-  - Start (production-like): `npm run start`
-- Database / Prisma:
-  - Generate client: `npx prisma generate` (generated client path: `src/generated/prisma`)
-  - Create/migrate DB in dev: `npx prisma migrate dev`
-  - In production, the README notes `prisma migrate deploy` runs on startup when using Docker.
-- Linting: `npm run lint` and `npm run lint:fix`.
-- Background cleanup script: `npm run cleanup:expired` (runs `scripts/cleanup-expired-shares.ts` via tsx).
-- Docker: use `docker compose up -d --build` (README includes steps and `.env` guidance).
+```typescript
+// Getting session in API routes:
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+const session = await getServerSession(authOptions);
+```
 
-# Project-specific conventions & gotchas
+# Share creation patterns
 
-- App Router everywhere — routes are under `src/app/` (not `pages/`). Remember middleware (`src/middleware.ts`) may be present.
-- Prisma client is generated to a custom path. Import paths use `@/generated/prisma` (check `src/generated/prisma` if you regenerate).
-- Environment flags:
-  - `ALLOW_SIGNUP` (server) controls whether registration is allowed. Note the client also uses `NEXT_PUBLIC_ALLOW_SIGNUP` in the signup page — keep server and client behavior aligned when changing signup rules.
-  - `NEXTAUTH_SECRET` and `NEXTAUTH_URL` are required for NextAuth.
-- Auth: Credentials provider + bcrypt hashing — do not attempt to replace sign-in behavior without updating `src/lib/auth.ts` and the prisma schema (User.password exists and is required for credentials provider).
-- Session storage: JWT strategy — changes to session shape must update both `jwt` and `session` callbacks.
+All share types follow this pattern in `src/app/api/shares/`:
+1. Validate input & check quotas (`src/lib/quota.ts`)
+2. Hash password if provided (bcrypt)
+3. Generate unique slug if not provided
+4. Create Prisma record with `ownerId` (nullable for anon)
+5. Return `{ share: ... }` or `{ error: "..." }`
 
-# Integration points & where to look
+**Anonymous restrictions**: Max 7-day expiration, must provide expiration date, lower quotas
 
-- NextAuth config: `src/lib/auth.ts` (adapter, providers, callbacks).
-- Signup API: `src/app/api/auth/register/route.ts`.
-- Sign-in page: `src/app/auth/signin/page.tsx` and signup page `src/app/auth/signup/page.tsx`.
-- Prisma models & migrations: `prisma/schema.prisma` and `prisma/migrations/`.
-- Generated client: `src/generated/prisma`.
-- File share handlers: `src/app/(shares)/f/*` and `src/app/api/download/[slug]/route.ts`.
+# Developer commands
 
-# Minimal examples for common changes
+```bash
+npm run dev          # Next.js dev with Turbopack
+npm run build        # Production build
+npm run lint:fix     # ESLint auto-fix
+npm run cleanup:expired  # Remove expired shares (cron job)
 
-- To add a new API route (App Router): create `src/app/api/<name>/route.ts` and export handlers (e.g. `export { GET, POST }`). Follow the pattern used in `src/app/api/auth/register/route.ts`.
-- To alter auth sign-in behavior: update `src/lib/auth.ts` callbacks and provider authorize methods. Example: CredentialsProvider.authorize returns `{ id, email, name }` on success.
-- To add a new Prisma migration:
-  1. Edit `prisma/schema.prisma`.
-  2. Run `npx prisma migrate dev --name your_change`.
-  3. Commit `prisma/migrations/*` and updated generated client (if needed).
+npx prisma migrate dev --name <name>  # Create migration
+npx prisma generate                    # Regenerate client → src/generated/prisma
+```
 
-# Notes for AI agents
+**Docker**: `docker compose up -d --build` — runs `prisma migrate deploy` on startup
 
-- Be conservative with changes touching auth and prisma migration files. Migration changes affect the DB and are not reversible automatically.
-- Prefer modifying UI in `src/components` and `src/app/...` and keep server-side API behavior consistent with existing API shape (returns JSON with `error` on failure and `message` on success).
-- When adding code that touches sessions, check `src/lib/auth.ts` to ensure JWT/session callbacks are compatible.
+# Project conventions
 
-# Where to ask follow-ups
+- **API responses**: Always `{ error: "message" }` on failure, `{ share|user|message: ... }` on success
+- **French error messages**: API errors are in French (e.g., "Email et mot de passe requis")
+- **Prisma imports**: Use `import { prisma } from "@/lib/prisma"` and `import { ... } from "@/generated/prisma"`
+- **Client components**: Mark with `"use client"` at top; use `useTranslation()` from react-i18next
+- **Translations**: Add keys to all 4 locale files in `src/i18n/locales/` when adding UI text
 
-- If uncertain about environment values or migration strategy, ask the maintainer which deployment flow they use (Docker or direct `next start`) and whether `prisma migrate deploy` is expected at startup.
+# Key files for common tasks
+
+| Task | Files |
+|------|-------|
+| Add API endpoint | `src/app/api/<name>/route.ts` — export `GET`/`POST`/etc |
+| Modify auth | `src/lib/auth.ts` (callbacks), `src/app/api/auth/register/route.ts` |
+| Add share type | `src/app/api/shares/`, new `(typeShare)/` folder |
+| Add UI component | `src/components/` — check Navigation.tsx for patterns |
+| Add translation | All files in `src/i18n/locales/*.json` |
+| Change quotas | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` |
+
+# AI agent guidelines
+
+- **⚠️ Migration caution**: Prisma migrations are irreversible in production. Test locally first.
+- **⚠️ Auth changes**: JWT callbacks in `src/lib/auth.ts` must stay in sync — both `jwt` and `session`
+- **Validate slugs**: Regex pattern `/^[a-zA-Z0-9_-]{3,30}$/` for share slugs
+- **IP tracking**: File uploads track IP via `getClientIp()` in `src/lib/quota.ts` for quota enforcement
+- **Setup flow**: First visit triggers setup check in middleware → redirects to `/setup` if no users exist
 
