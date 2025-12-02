@@ -132,6 +132,26 @@ On startup, the app runs `prisma migrate deploy` to ensure the database schema i
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Privacy & Analytics 🔒
+
+SnowShare uses [Plausible Analytics](https://plausible.io/) for privacy-friendly, cookie-free usage statistics. Plausible is:
+- **GDPR compliant** — No personal data collected
+- **Cookie-free** — No consent banner needed
+- **Open source** — Transparent and auditable
+
+No personally identifiable information is collected. Analytics help us understand usage patterns to improve the project.
+
+**To disable telemetry**, add to your `.env`:
+```env
+TELEMETRY=false
+```
+
+**To use your own Plausible instance**:
+```env
+PLAUSIBLE_DOMAIN=your-domain.com
+PLAUSIBLE_HOST=https://your-plausible-instance.com
+```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=TuroYT/snowshare&type=date&legend=top-left)](https://www.star-history.com/#TuroYT/snowshare&type=date&legend=top-left)

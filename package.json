@@ -35,6 +35,7 @@
     "marked": "^16.3.0",
     "next": "15.5.0",
     "next-auth": "^4.24.12",
+    "next-plausible": "^3.12.5",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0",
     "qrcode.react": "^4.2.0",
