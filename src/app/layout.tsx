@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
+import PlausibleProvider from "next-plausible";
 import "@/i18n/client";
 
 const geistSans = Geist({
@@ -24,8 +25,25 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const telemetryEnabled = process.env.TELEMETRY !== 'false' && process.env.TELEMETRY !== 'False';
+  const plausibleDomain = process.env.PLAUSIBLE_DOMAIN || 'snowshare.app';
+  const plausibleHost = process.env.PLAUSIBLE_HOST || 'https://stats.sheephost.fr';
+  
   return (
     <html lang="fr" className="dark">
+      <head>
+        {/* Privacy-friendly analytics by Plausible - no cookies, GDPR compliant */}
+        {/* Disable with TELEMETRY=false in .env */}
+
+          <PlausibleProvider 
+            domain={plausibleDomain} 
+            customDomain={plausibleHost}
+            selfHosted={true}
+            trackLocalhost={true}
+            enabled={telemetryEnabled}
+          />
+
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100 `}
       >
