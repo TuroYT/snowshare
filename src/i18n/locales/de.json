@@ -91,6 +91,23 @@
     "locked_title": "Dateifreigabe gesperrt",
     "locked_message": "Sie müssen angemeldet sein, um Dateien zu teilen."
   },
+  "file_download": {
+    "loading_error": "Fehler beim Laden der Informationen",
+    "connection_error": "Verbindungsfehler",
+    "password_required": "Passwort erforderlich",
+    "download_error": "Fehler beim Herunterladen",
+    "unknown_size": "Unbekannte Größe",
+    "file_not_found": "Datei nicht gefunden",
+    "back_to_home": "Zurück zur Startseite",
+    "download_file": "Datei herunterladen",
+    "size": "Größe",
+    "password_protected": "Diese Datei ist passwortgeschützt",
+    "password": "Passwort",
+    "password_placeholder": "Passwort eingeben",
+    "downloading": "Wird heruntergeladen...",
+    "download": "Herunterladen",
+    "disclaimer": "Mit dem Herunterladen dieser Datei erkennen Sie an, dass sie von einer Drittquelle stammt."
+  },
   "home": {
     "title": "Willkommen bei SnowShare",
     "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach."
@@ -274,6 +291,8 @@
       "title": "Einstellungen",
       "allow_signup": "Registrierung Zulassen",
       "allow_signup_desc": "Erlaube neuen Benutzern, Konten zu erstellen",
+      "allow_anon_fileshare": "Anonyme Dateifreigabe",
+      "allow_anon_fileshare_desc": "Nicht authentifizierten Benutzern das Teilen von Dateien erlauben",
       "section_general": "Allgemein",
       "section_storage": "Speicher",
       "saving": "Wird gespeichert...",
@@ -291,5 +310,39 @@
       "saving": "Wird gespeichert...",
       "save": "Änderungen Speichern"
     }
+  },
+  "paste_view": {
+    "title": "Paste",
+    "loading": "Paste wird geladen...",
+    "content_title": "Paste-Inhalt",
+    "copy": "Kopieren",
+    "copied": "Kopiert!",
+    "language": "Sprache",
+    "plain_text": "Klartext",
+    "created_on": "Erstellt am",
+    "expires_on": "Läuft ab am",
+    "protected_title": "Dieses Paste ist geschützt",
+    "protected_description": "Bitte geben Sie das Passwort ein, um auf den Inhalt zuzugreifen.",
+    "password_label": "Passwort",
+    "password_placeholder": "Passwort eingeben",
+    "password_incorrect": "Falsches Passwort",
+    "access_paste": "Paste aufrufen",
+    "verifying": "Überprüfung...",
+    "password_protected_error": "Dieses Paste ist passwortgeschützt",
+    "fetch_error": "Fehler beim Abrufen des Paste",
+    "connection_error": "Serververbindungsfehler"
+  },
+  "link_private": {
+    "title": "Geschützter Link",
+    "subtitle": "Dieser Link ist passwortgeschützt",
+    "password_label": "Passwort",
+    "password_placeholder": "Passwort eingeben",
+    "verifying": "Überprüfung...",
+    "access_link": "Link aufrufen",
+    "back_home": "Zurück zur Startseite",
+    "disclaimer": "Durch den Zugriff auf diesen Link stimmen Sie zu, dass er entschlüsselt und Sie zu seinem Ziel weitergeleitet werden.",
+    "error_generic": "Ein Fehler ist aufgetreten",
+    "error_url_not_found": "URL nicht gefunden",
+    "error_connection": "Verbindungsfehler"
   }
 }

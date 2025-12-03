@@ -17,6 +17,7 @@ import "prismjs/components/prism-rust";
 import "prismjs/components/prism-markdown";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { useTranslation } from "react-i18next";
 
 interface PasteData {
   paste: string;
@@ -35,6 +36,7 @@ interface ApiResponse {
 }
 
 const PasteViewPage = () => {
+  const { t } = useTranslation();
   const params = useParams();
   const slug = typeof params.slug === "string" ? params.slug : Array.isArray(params.slug) ? params.slug[0] : "";
   const [pasteData, setPasteData] = useState<PasteData | null>(null);
@@ -64,20 +66,20 @@ const PasteViewPage = () => {
           setPasteData(data.data);
         } else if (res.status === 403 && data.requiresPassword) {
           setRequiresPassword(true);
-          setError(data.error || "Ce paste est protégé par mot de passe");
+          setError(data.error || t("paste_view.password_protected_error"));
         } else {
-          setError(data.error || "Erreur lors de la récupération du paste");
+          setError(data.error || t("paste_view.fetch_error"));
         }
       } catch (err) {
         console.error("Erreur réseau:", err);
-        setError("Erreur de connexion au serveur");
+        setError(t("paste_view.connection_error"));
       } finally {
         setLoading(false);
       }
     };
     
     fetchPaste();
-  }, [slug]);
+  }, [slug, t]);
 
   const [copied, setCopied] = useState(false);
   const [highlighted, setHighlighted] = useState("");
@@ -115,11 +117,11 @@ const PasteViewPage = () => {
       className="max-w-2xl mx-auto py-12 px-4"
       style={{ background: "var(--background)", color: "var(--foreground)" }}
     >
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>Paste</h1>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>{t("paste_view.title")}</h1>
       
       {loading && (
         <div className="text-center py-8">
-          <div className="text-sm" style={{ color: "var(--primary)" }}>Chargement du paste...</div>
+          <div className="text-sm" style={{ color: "var(--primary)" }}>{t("paste_view.loading")}</div>
         </div>
       )}
       
@@ -138,10 +140,10 @@ const PasteViewPage = () => {
           className="rounded-xl p-6 border mt-6 relative"
           style={{ background: "var(--muted)", borderColor: "var(--border)" }}
         >
-          <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--primary)" }}>Contenu du paste</h2>
+          <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--primary)" }}>{t("paste_view.content_title")}</h2>
           <button
             onClick={handleCopy}
-            title="Copier le contenu"
+            title={t("paste_view.copy")}
             className="absolute top-6 right-6 flex items-center gap-1 px-2 py-1 rounded hover:bg-[var(--input)] transition-colors"
             style={{ 
               background: copied ? "var(--primary)" : "var(--input)", 
@@ -153,7 +155,7 @@ const PasteViewPage = () => {
               <rect x="6" y="6" width="10" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
               <rect x="2" y="2" width="10" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.5" />
             </svg>
-            <span className="text-xs">{copied ? "Copié !" : "Copier"}</span>
+            <span className="text-xs">{copied ? t("paste_view.copied") : t("paste_view.copy")}</span>
           </button>
           
           {pasteData.language?.toLowerCase() === "markdown" ? (
@@ -172,13 +174,13 @@ const PasteViewPage = () => {
           )}
           
           <div className="mt-2 text-xs flex justify-between items-center" style={{ color: "var(--muted-foreground)" }}>
-            <span>Langage : {pasteData.language || "Texte brut"}</span>
-            <span>Créé le : {new Date(pasteData.createdAt).toLocaleDateString()}</span>
+            <span>{t("paste_view.language")} : {pasteData.language || t("paste_view.plain_text")}</span>
+            <span>{t("paste_view.created_on")} : {new Date(pasteData.createdAt).toLocaleDateString()}</span>
           </div>
           
           {pasteData.expiresAt && (
             <div className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
-              Expire le : {new Date(pasteData.expiresAt).toLocaleDateString()}
+              {t("paste_view.expires_on")} : {new Date(pasteData.expiresAt).toLocaleDateString()}
             </div>
           )}
         </div>
@@ -190,6 +192,7 @@ const PasteViewPage = () => {
 export default PasteViewPage;
 
 const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => void }> = ({ slug, onSuccess }) => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -211,11 +214,11 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
       if (res.ok && response.success && response.data) {
         onSuccess(response.data);
       } else {
-        setError(response.error || "Mot de passe incorrect");
+        setError(response.error || t("paste_view.password_incorrect"));
       }
     } catch (err) {
       console.error("Erreur lors de la vérification du mot de passe:", err);
-      setError("Erreur de connexion au serveur");
+      setError(t("paste_view.connection_error"));
     } finally {
       setLoading(false);
     }
@@ -227,16 +230,16 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
       style={{ background: "var(--muted)", borderColor: "var(--border)" }}
     >
       <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--primary)" }}>
-        Ce paste est protégé
+        {t("paste_view.protected_title")}
       </h2>
       <p className="text-sm mb-4" style={{ color: "var(--muted-foreground)" }}>
-        Veuillez saisir le mot de passe pour accéder au contenu.
+        {t("paste_view.protected_description")}
       </p>
       
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: "var(--foreground)" }}>
-            Mot de passe
+            {t("paste_view.password_label")}
           </label>
           <input
             className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
@@ -248,7 +251,7 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Entrez le mot de passe"
+            placeholder={t("paste_view.password_placeholder")}
             required
             disabled={loading}
           />
@@ -281,10 +284,10 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
                     <animate attributeName="stroke-dasharray" dur="1s" values="0 32;16 16;0 32;0 32" repeatCount="indefinite"/>
                   </circle>
                 </svg>
-                Vérification...
+                {t("paste_view.verifying")}
               </span>
             ) : (
-              "Accéder au paste"
+              t("paste_view.access_paste")
             )}
           </button>
         </div>

@@ -95,6 +95,23 @@
     "quota_remaining": "{{remaining}} MB disponibles",
     "quota_exceeded": "Quota dépassé",
     "quota_warning": "Attention: vous avez utilisé {{percent}}% de votre quota"
+  },
+  "file_download": {
+    "loading_error": "Erreur lors du chargement des informations",
+    "connection_error": "Erreur de connexion",
+    "password_required": "Mot de passe requis",
+    "download_error": "Erreur lors du téléchargement",
+    "unknown_size": "Taille inconnue",
+    "file_not_found": "Fichier introuvable",
+    "back_to_home": "Retour à l'accueil",
+    "download_file": "Télécharger le fichier",
+    "size": "Taille",
+    "password_protected": "Ce fichier est protégé par un mot de passe",
+    "password": "Mot de passe",
+    "password_placeholder": "Entrez le mot de passe",
+    "downloading": "Téléchargement...",
+    "download": "Télécharger",
+    "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce."
   }
   ,
   "home": {
@@ -299,5 +316,39 @@
       "saving": "Enregistrement...",
       "save": "Enregistrer les modifications"
     }
+  },
+  "paste_view": {
+    "title": "Paste",
+    "loading": "Chargement du paste...",
+    "content_title": "Contenu du paste",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "language": "Langage",
+    "plain_text": "Texte brut",
+    "created_on": "Créé le",
+    "expires_on": "Expire le",
+    "protected_title": "Ce paste est protégé",
+    "protected_description": "Veuillez saisir le mot de passe pour accéder au contenu.",
+    "password_label": "Mot de passe",
+    "password_placeholder": "Entrez le mot de passe",
+    "password_incorrect": "Mot de passe incorrect",
+    "access_paste": "Accéder au paste",
+    "verifying": "Vérification...",
+    "password_protected_error": "Ce paste est protégé par mot de passe",
+    "fetch_error": "Erreur lors de la récupération du paste",
+    "connection_error": "Erreur de connexion au serveur"
+  },
+  "link_private": {
+    "title": "Lien protégé",
+    "subtitle": "Ce lien est protégé par un mot de passe",
+    "password_label": "Mot de passe",
+    "password_placeholder": "Entrez le mot de passe",
+    "verifying": "Vérification...",
+    "access_link": "Accéder au lien",
+    "back_home": "Retour à l'accueil",
+    "disclaimer": "En accédant à ce lien, vous acceptez que celui-ci soit décrypté et que vous soyez redirigé vers sa destination.",
+    "error_generic": "Une erreur est survenue",
+    "error_url_not_found": "URL introuvable",
+    "error_connection": "Erreur de connexion"
   }
 }

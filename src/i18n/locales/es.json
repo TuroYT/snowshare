@@ -91,6 +91,23 @@
     "locked_title": "Compartir archivos bloqueado",
     "locked_message": "Debes estar conectado para compartir archivos."
   },
+  "file_download": {
+    "loading_error": "Error al cargar la información",
+    "connection_error": "Error de conexión",
+    "password_required": "Contraseña requerida",
+    "download_error": "Error al descargar el archivo",
+    "unknown_size": "Tamaño desconocido",
+    "file_not_found": "Archivo no encontrado",
+    "back_to_home": "Volver al inicio",
+    "download_file": "Descargar archivo",
+    "size": "Tamaño",
+    "password_protected": "Este archivo está protegido con contraseña",
+    "password": "Contraseña",
+    "password_placeholder": "Introduce la contraseña",
+    "downloading": "Descargando...",
+    "download": "Descargar",
+    "disclaimer": "Al descargar este archivo, aceptas que proviene de una fuente de terceros."
+  },
   "home": {
     "title": "Bienvenido a SnowShare",
     "description": "Comparte tus archivos, código y URLs de forma segura y fácil."
@@ -274,6 +291,8 @@
       "title": "Configuración",
       "allow_signup": "Permitir Registro",
       "allow_signup_desc": "Permitir que nuevos usuarios creen cuentas",
+      "allow_anon_fileshare": "Compartir Archivos Anónimamente",
+      "allow_anon_fileshare_desc": "Permitir a usuarios no autenticados compartir archivos",
       "section_general": "General",
       "section_storage": "Almacenamiento",
       "saving": "Guardando...",
@@ -291,5 +310,39 @@
       "saving": "Guardando...",
       "save": "Guardar Cambios"
     }
+  },
+  "paste_view": {
+    "title": "Paste",
+    "loading": "Cargando paste...",
+    "content_title": "Contenido del paste",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "language": "Idioma",
+    "plain_text": "Texto plano",
+    "created_on": "Creado el",
+    "expires_on": "Expira el",
+    "protected_title": "Este paste está protegido",
+    "protected_description": "Por favor ingrese la contraseña para acceder al contenido.",
+    "password_label": "Contraseña",
+    "password_placeholder": "Ingrese la contraseña",
+    "password_incorrect": "Contraseña incorrecta",
+    "access_paste": "Acceder al paste",
+    "verifying": "Verificando...",
+    "password_protected_error": "Este paste está protegido por contraseña",
+    "fetch_error": "Error al obtener el paste",
+    "connection_error": "Error de conexión al servidor"
+  },
+  "link_private": {
+    "title": "Enlace protegido",
+    "subtitle": "Este enlace está protegido por contraseña",
+    "password_label": "Contraseña",
+    "password_placeholder": "Ingrese la contraseña",
+    "verifying": "Verificando...",
+    "access_link": "Acceder al enlace",
+    "back_home": "Volver al inicio",
+    "disclaimer": "Al acceder a este enlace, acepta que será descifrado y será redirigido a su destino.",
+    "error_generic": "Ha ocurrido un error",
+    "error_url_not_found": "URL no encontrada",
+    "error_connection": "Error de conexión"
   }
 }
