@@ -261,7 +261,8 @@
     "confirm_action": "Bist du sicher?",
     "tabs": {
       "users": "Benutzer",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "logs": "Freigabe-Logs"
     },
     "users": {
       "title": "Benutzerverwaltung",
@@ -309,6 +310,33 @@
       "current_value": "Aktuell: {{value}} MB",
       "saving": "Wird gespeichert...",
       "save": "Änderungen Speichern"
+    },
+    "logs": {
+      "title": "Freigabe-Erstellungsprotokolle",
+      "total_shares": "{{count}} Freigaben insgesamt",
+      "search_placeholder": "Nach Slug, E-Mail oder IP suchen...",
+      "filter_all": "Alle",
+      "filter_file": "Dateien",
+      "filter_paste": "Pastes",
+      "filter_url": "Links",
+      "table": {
+        "type": "Typ",
+        "slug": "Slug",
+        "owner": "Besitzer",
+        "ip": "IP-Adresse",
+        "created": "Erstellt",
+        "expires": "Läuft ab",
+        "status": "Status"
+      },
+      "anonymous": "Anonym",
+      "never": "Nie",
+      "expired": "Abgelaufen",
+      "active": "Aktiv",
+      "password_protected": "Passwortgeschützt",
+      "no_logs": "Keine Freigaben gefunden",
+      "pagination_info": "Zeige {{start}} bis {{end}} von {{total}} Freigaben",
+      "previous": "Zurück",
+      "next": "Weiter"
     }
   },
   "paste_view": {

@@ -267,7 +267,8 @@
     "confirm_action": "Êtes-vous sûr ?",
     "tabs": {
       "users": "Utilisateurs",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "logs": "Logs des partages"
     },
     "users": {
       "title": "Gestion des utilisateurs",
@@ -315,6 +316,33 @@
       "current_value": "Actuel : {{value}} MB",
       "saving": "Enregistrement...",
       "save": "Enregistrer les modifications"
+    },
+    "logs": {
+      "title": "Logs de création de partages",
+      "total_shares": "{{count}} partages au total",
+      "search_placeholder": "Rechercher par slug, email ou IP...",
+      "filter_all": "Tous",
+      "filter_file": "Fichiers",
+      "filter_paste": "Pastes",
+      "filter_url": "Liens",
+      "table": {
+        "type": "Type",
+        "slug": "Slug",
+        "owner": "Propriétaire",
+        "ip": "Adresse IP",
+        "created": "Créé",
+        "expires": "Expire",
+        "status": "Statut"
+      },
+      "anonymous": "Anonyme",
+      "never": "Jamais",
+      "expired": "Expiré",
+      "active": "Actif",
+      "password_protected": "Protégé par mot de passe",
+      "no_logs": "Aucun partage trouvé",
+      "pagination_info": "Affichage de {{start}} à {{end}} sur {{total}} partages",
+      "previous": "Précédent",
+      "next": "Suivant"
     }
   },
   "paste_view": {
