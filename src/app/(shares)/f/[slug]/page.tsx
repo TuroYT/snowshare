@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 
@@ -12,6 +13,7 @@ interface FileInfo {
 }
 
 export default function FileSharePage() {
+    const { t } = useTranslation();
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -35,23 +37,23 @@ export default function FileSharePage() {
                 if (response.ok) {
                     setFileInfo(data);
                 } else {
-                    setError(data.error || "Erreur lors du chargement des informations");
+                    setError(data.error || t("file_download.loading_error"));
                 }
             } catch {
-                setError("Erreur de connexion");
+                setError(t("file_download.connection_error"));
             } finally {
                 setLoadingInfo(false);
             }
         };
 
         fetchFileInfo();
-    }, [slug]);
+    }, [slug, t]);
 
     const handleDownload = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
 
         if (fileInfo?.requiresPassword && !password) {
-            setError("Mot de passe requis");
+            setError(t("file_download.password_required"));
             return;
         }
 
@@ -72,22 +74,27 @@ export default function FileSharePage() {
                 // Get the download URL from the response
                 const data = await response.json();
                 if (data.downloadUrl) {
-                    // Open download link in new window
-                    window.open(data.downloadUrl, "_blank");
+                    // Trigger download without popup using a hidden anchor element
+                    const link = document.createElement("a");
+                    link.href = data.downloadUrl;
+                    link.download = fileInfo?.filename || "download";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                 }
             } else {
                 const data = await response.json();
-                setError(data.error || "Erreur lors du téléchargement");
+                setError(data.error || t("file_download.download_error"));
             }
         } catch {
-            setError("Erreur de connexion");
+            setError(t("file_download.connection_error"));
         } finally {
             setLoading(false);
         }
     };
 
     const formatFileSize = (bytes?: number) => {
-        if (!bytes) return "Taille inconnue";
+        if (!bytes) return t("file_download.unknown_size");
         const sizes = ["B", "KB", "MB", "GB"];
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
         return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
@@ -98,7 +105,7 @@ export default function FileSharePage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-900">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                    <p className="text-gray-400">Chargement...</p>
+                    <p className="text-gray-400">{t("loading")}</p>
                 </div>
             </div>
         );
@@ -118,7 +125,7 @@ export default function FileSharePage() {
                             />
                         </svg>
                     </div>
-                    <h2 className="text-3xl font-extrabold text-gray-100">Fichier introuvable</h2>
+                    <h2 className="text-3xl font-extrabold text-gray-100">{t("file_download.file_not_found")}</h2>
                     <p className="text-gray-400">{error}</p>
                     <Link
                         href="/"
@@ -127,7 +134,7 @@ export default function FileSharePage() {
                         <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
-                        Retour à l&apos;accueil
+                        {t("file_download.back_to_home")}
                     </Link>
                 </div>
             </div>
@@ -149,18 +156,18 @@ export default function FileSharePage() {
                             />
                         </svg>
                     </div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">Télécharger le fichier</h2>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">{t("file_download.download_file")}</h2>
                     <div className="mt-4 bg-gray-800 rounded-lg p-4 border border-gray-700">
                         <p className="text-lg font-medium text-gray-200 truncate" title={fileInfo?.filename}>
                             {fileInfo?.filename}
                         </p>
                         {fileInfo?.fileSize && (
-                            <p className="text-sm text-gray-400 mt-1">Taille: {formatFileSize(fileInfo.fileSize)}</p>
+                            <p className="text-sm text-gray-400 mt-1">{t("file_download.size")}: {formatFileSize(fileInfo.fileSize)}</p>
                         )}
                     </div>
                     {fileInfo?.requiresPassword && (
                         <p className="mt-2 text-center text-sm text-gray-400">
-                            Ce fichier est protégé par un mot de passe
+                            {t("file_download.password_protected")}
                         </p>
                     )}
                 </div>
@@ -169,7 +176,7 @@ export default function FileSharePage() {
                     <form className="mt-8 space-y-6" onSubmit={handleDownload}>
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                                Mot de passe
+                                {t("file_download.password")}
                             </label>
                             <input
                                 id="password"
@@ -177,7 +184,7 @@ export default function FileSharePage() {
                                 type="password"
                                 required
                                 className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm transition-colors"
-                                placeholder="Entrez le mot de passe"
+                                placeholder={t("file_download.password_placeholder")}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -225,7 +232,7 @@ export default function FileSharePage() {
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                         ></path>
                                     </svg>
-                                    Téléchargement...
+                                    {t("file_download.downloading")}
                                 </div>
                             ) : (
                                 <>
@@ -237,7 +244,7 @@ export default function FileSharePage() {
                                             d="M12 10v6m0 0l-3-3m3 3l3-3M4 7h16"
                                         />
                                     </svg>
-                                    Télécharger
+                                    {t("file_download.download")}
                                 </>
                             )}
                         </button>
@@ -286,7 +293,7 @@ export default function FileSharePage() {
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                         ></path>
                                     </svg>
-                                    Téléchargement...
+                                    {t("file_download.downloading")}
                                 </div>
                             ) : (
                                 <>
@@ -298,7 +305,7 @@ export default function FileSharePage() {
                                             d="M12 10v6m0 0l-3-3m3 3l3-3M4 7h16"
                                         />
                                     </svg>
-                                    Télécharger
+                                    {t("file_download.download")}
                                 </>
                             )}
                         </button>
@@ -306,7 +313,7 @@ export default function FileSharePage() {
                 )}
 
                 <div className="mt-6 text-center text-xs text-gray-500">
-                    <p>En téléchargeant ce fichier, vous acceptez qu&apos;il provient d&apos;une source tierce.</p>
+                    <p>{t("file_download.disclaimer")}</p>
                 </div>
 
 

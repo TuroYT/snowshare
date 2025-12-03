@@ -95,6 +95,23 @@
     "quota_exceeded": "Quota exceeded",
     "quota_warning": "Warning: you have used {{percent}}% of your quota"
   },
+  "file_download": {
+    "loading_error": "Error loading information",
+    "connection_error": "Connection error",
+    "password_required": "Password required",
+    "download_error": "Error downloading file",
+    "unknown_size": "Unknown size",
+    "file_not_found": "File not found",
+    "back_to_home": "Back to home",
+    "download_file": "Download file",
+    "size": "Size",
+    "password_protected": "This file is password protected",
+    "password": "Password",
+    "password_placeholder": "Enter password",
+    "downloading": "Downloading...",
+    "download": "Download",
+    "disclaimer": "By downloading this file, you acknowledge it comes from a third-party source."
+  },
   "home": {
     "title": "Welcome to SnowShare",
     "description": "Share your files, code and URLs securely and easily."
@@ -297,5 +314,39 @@
       "saving": "Saving...",
       "save": "Save Changes"
     }
+  },
+  "paste_view": {
+    "title": "Paste",
+    "loading": "Loading paste...",
+    "content_title": "Paste content",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "language": "Language",
+    "plain_text": "Plain text",
+    "created_on": "Created on",
+    "expires_on": "Expires on",
+    "protected_title": "This paste is protected",
+    "protected_description": "Please enter the password to access the content.",
+    "password_label": "Password",
+    "password_placeholder": "Enter password",
+    "password_incorrect": "Incorrect password",
+    "access_paste": "Access paste",
+    "verifying": "Verifying...",
+    "password_protected_error": "This paste is password protected",
+    "fetch_error": "Error fetching paste",
+    "connection_error": "Server connection error"
+  },
+  "link_private": {
+    "title": "Protected link",
+    "subtitle": "This link is password protected",
+    "password_label": "Password",
+    "password_placeholder": "Enter password",
+    "verifying": "Verifying...",
+    "access_link": "Access link",
+    "back_home": "Back to home",
+    "disclaimer": "By accessing this link, you agree that it will be decrypted and you will be redirected to its destination.",
+    "error_generic": "An error occurred",
+    "error_url_not_found": "URL not found",
+    "error_connection": "Connection error"
   }
 }
