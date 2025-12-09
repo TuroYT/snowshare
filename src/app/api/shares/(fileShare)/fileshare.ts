@@ -8,6 +8,7 @@ import { existsSync } from "fs";
 import { NextRequest } from "next/server";
 import { checkUploadQuota, getClientIp } from "@/lib/quota";
 import crypto from "crypto";
+import { getUploadDir } from "@/lib/constants";
 
 // Utility function to validate file
 async function validateFile(file: File, isAuthenticated: boolean) {
@@ -133,7 +134,7 @@ export const createFileShare = async (
     });
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'uploads');
+    const uploadsDir = getUploadDir();
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
@@ -190,7 +191,7 @@ export const getFileShare = async (slug: string, password?: string) => {
     return { error: "Fichier introuvable." };
   }
 
-  const filePath = path.join(process.cwd(), 'uploads', share.filePath);
+  const filePath = path.join(getUploadDir(), share.filePath);
   if (!existsSync(filePath)) {
     return { error: "Fichier physique introuvable." };
   }

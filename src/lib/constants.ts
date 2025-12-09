@@ -1,3 +1,5 @@
+import path from 'path';
+
 /**
  * Valid paste language types - must match the pasteType enum in the Prisma schema
  */
@@ -81,4 +83,13 @@ export function isValidUrl(url: string): { valid: boolean; error?: string } {
  */
 export function isValidPassword(password: string): boolean {
   return password.length >= PASSWORD_MIN_LENGTH && password.length <= PASSWORD_MAX_LENGTH;
+}
+
+/**
+ * Upload directory path
+ * Configurable via UPLOAD_DIR environment variable
+ * Defaults to 'uploads' folder in project root
+ */
+export function getUploadDir(): string {
+  return process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
 }
