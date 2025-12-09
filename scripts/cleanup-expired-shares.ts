@@ -5,6 +5,11 @@ import path from 'path';
 
 const prisma = new PrismaClient();
 
+// Get upload directory from env or default to ./uploads
+function getUploadDir(): string {
+  return process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+}
+
 async function cleanupExpiredShares() {
   console.log('🧹 Démarrage du nettoyage des partages expirés...');
   
@@ -41,7 +46,7 @@ async function cleanupExpiredShares() {
     // Supprimer les fichiers physiques pour les partages de type FILE
     for (const share of expiredShares) {
       if (share.type === 'FILE' && share.filePath) {
-        const fullFilePath = path.join(process.cwd(), 'uploads', share.filePath);
+        const fullFilePath = path.join(getUploadDir(), share.filePath);
         
         try {
           if (fs.existsSync(fullFilePath)) {
