@@ -1,0 +1,46 @@
+# Labeler configuration: maps labels to file globs
+# When a PR touches any matching path, the corresponding label will be applied.
+
+"admin":
+  - "src/components/admin/**"
+  - "src/app/admin/**"
+  - "src/app/api/admin/**"
+
+"i18n":
+  - "src/i18n/**"
+  - "src/components/**/locales/**"
+
+"tests":
+  - "src/**/__tests__/**"
+  - "src/**/*.test.*"
+  - "jest.config.js"
+  - "jest.setup.js"
+
+"docs":
+  - "docs/**"
+  - "README.md"
+  - ".github/ISSUE_TEMPLATE/**"
+
+"ci":
+  - ".github/workflows/**"
+  - "Dockerfile"
+  - "docker-compose.yml"
+
+"deps":
+  - "package.json"
+  - "package-lock.json"
+  - "pnpm-lock.yaml"
+  - "yarn.lock"
+
+"prisma":
+  - "prisma/**"
+  - "src/generated/prisma/**"
+
+"ui":
+  - "src/components/**"
+  - "src/app/**"
+
+"security":
+  - "src/lib/auth.ts"
+  - "src/lib/quota.ts"
+  - "SECURITY.md"

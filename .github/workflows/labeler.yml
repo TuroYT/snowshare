@@ -1,0 +1,25 @@
+name: "Auto label pull requests"
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  label:
+    name: Apply labels
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run labeler
+        uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
