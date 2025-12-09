@@ -8,8 +8,9 @@ import Navigation from "@/components/Navigation"
 import Footer from "@/components/Footer"
 import UsersTab from "@/components/admin/UsersTab"
 import SettingsTab from "@/components/admin/SettingsTab"
+import LogsTab from "@/components/admin/LogsTab"
 
-type Tab = "users" | "settings"
+type Tab = "users" | "settings" | "logs"
 
 export default function AdminPage() {
   const { status } = useSession()
@@ -99,7 +100,7 @@ export default function AdminPage() {
 
           {/* Tabs */}
           <div className="flex gap-2 mb-8 border-b border-gray-700/50 overflow-x-auto">
-            {(["users", "settings"] as const).map((tab) => (
+            {(["users", "settings", "logs"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -118,6 +119,7 @@ export default function AdminPage() {
           <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm">
             {activeTab === "users" && <UsersTab />}
             {activeTab === "settings" && <SettingsTab />}
+            {activeTab === "logs" && <LogsTab />}
           </div>
         </div>
       </main>

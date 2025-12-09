@@ -265,7 +265,8 @@
     "confirm_action": "Are you sure?",
     "tabs": {
       "users": "Users",
-      "settings": "Settings"
+      "settings": "Settings",
+      "logs": "Share Logs"
     },
     "users": {
       "title": "User Management",
@@ -313,6 +314,33 @@
       "current_value": "Current: {{value}} MB",
       "saving": "Saving...",
       "save": "Save Changes"
+    },
+    "logs": {
+      "title": "Share Creation Logs",
+      "total_shares": "{{count}} shares total",
+      "search_placeholder": "Search by slug, email or IP...",
+      "filter_all": "All",
+      "filter_file": "Files",
+      "filter_paste": "Pastes",
+      "filter_url": "Links",
+      "table": {
+        "type": "Type",
+        "slug": "Slug",
+        "owner": "Owner",
+        "ip": "IP Address",
+        "created": "Created",
+        "expires": "Expires",
+        "status": "Status"
+      },
+      "anonymous": "Anonymous",
+      "never": "Never",
+      "expired": "Expired",
+      "active": "Active",
+      "password_protected": "Password protected",
+      "no_logs": "No shares found",
+      "pagination_info": "Showing {{start}} to {{end}} of {{total}} shares",
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "paste_view": {
