@@ -77,6 +77,19 @@ export default function LogsTab() {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
+  const getTypeUrl = (type: string, slug: string) => {
+    switch (type) {
+      case "FILE":
+        return `/f/${slug}`;
+      case "PASTE":
+        return `/p/${slug}`;
+      case "URL":
+        return `/l/${slug}`;
+      default:
+        return "#";
+    }
+  };
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "FILE":
@@ -232,7 +245,9 @@ export default function LogsTab() {
                   </td>
                   <td className="py-3 px-4">
                     <code className="text-sm text-[var(--foreground)] bg-[var(--surface)] px-2 py-1 rounded">
-                      {log.slug}
+                      <a href={getTypeUrl(log.type, log.slug)} target="_blank" rel="noopener noreferrer">
+                        {log.slug}
+                      </a>
                     </code>
                   </td>
                   <td className="py-3 px-4">

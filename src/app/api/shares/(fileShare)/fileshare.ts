@@ -6,7 +6,8 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
 import { NextRequest } from "next/server";
-import { checkUploadQuota, getClientIp } from "@/lib/quota";
+import { checkUploadQuota } from "@/lib/quota";
+import { getClientIp } from "@/lib/getClientIp";
 import crypto from "crypto";
 import { getUploadDir } from "@/lib/constants";
 
@@ -21,18 +22,18 @@ async function validateFile(file: File, isAuthenticated: boolean) {
   // Check file size
   if (file.size > maxSize) {
     const maxSizeMB = Math.round(maxSize / (1024 * 1024));
-    return { error: `La taille du fichier dépasse la limite autorisée de ${maxSizeMB}MB.` };
+    return { error: `File size exceeds the allowed limit of ${maxSizeMB}MB.` };
   }
 
 
   // Check filename length and characters
   if (file.name.length > 255) {
-    return { error: "Le nom du fichier est trop long (maximum 255 caractères)." };
+    return { error: "Filename is too long (maximum 255 characters)." };
   }
 
   // Basic filename validation (prevent path traversal)
   if (file.name.includes('..') || file.name.includes('/') || file.name.includes('\\')) {
-    return { error: "Nom de fichier invalide." };
+    return { error: "Invalid filename." };
   }
 
   return { valid: true };
@@ -75,18 +76,18 @@ export const createFileShare = async (
 
   // Validate slug if provided
   if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-    return { error: "Slug invalide. Il doit contenir entre 3 et 30 caractères alphanumériques, des tirets ou des underscores." };
+    return { error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores." };
   }
 
   // Validate expiration date if provided
   if (expiresAt && new Date(expiresAt) <= new Date()) {
-    return { error: "La date d'expiration doit être dans le futur." };
+    return { error: "Expiration date must be in the future." };
   }
 
   // Validate password if provided
   if (password) {
     if (password.length < 6 || password.length > 100) {
-      return { error: "Le mot de passe doit contenir entre 6 et 100 caractères." };
+      return { error: "Password must be between 6 and 100 characters." };
     }
   }
 
@@ -96,10 +97,10 @@ export const createFileShare = async (
       const maxExpiry = new Date();
       maxExpiry.setDate(maxExpiry.getDate() + 7);
       if (new Date(expiresAt) > maxExpiry) {
-        return { error: "Les utilisateurs non authentifiés ne peuvent pas créer de partages expirant au-delà de 7 jours." };
-      }
+          return { error: "Unauthenticated users cannot create shares that expire beyond 7 days." };
+        }
     } else {
-      return { error: "Les utilisateurs non authentifiés doivent fournir une date d'expiration." };
+      return { error: "Unauthenticated users must provide an expiration date." };
     }
   }
 
@@ -160,7 +161,7 @@ export const createFileShare = async (
     return { fileShare: updatedFileShare };
   } catch (error) {
     console.error("Error creating file share:", error);
-    return { error: "Erreur lors de la création du partage de fichier." };
+    return { error: "Error creating file share." };
   }
 };
 
@@ -168,32 +169,32 @@ export const getFileShare = async (slug: string, password?: string) => {
   const share = await prisma.share.findUnique({ where: { slug } });
   
   if (!share || share.type !== "FILE") {
-    return { error: "Partage de fichier introuvable." };
+    return { error: "File share not found." };
   }
 
   if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-    return { error: "Ce partage a expiré." };
+    return { error: "This share has expired." };
   }
 
   // Check password if required
   if (share.password) {
     if (!password) {
-      return { error: "Mot de passe requis.", requiresPassword: true };
+      return { error: "Password required.", requiresPassword: true };
     }
     
     const passwordValid = await bcrypt.compare(password, share.password);
     if (!passwordValid) {
-      return { error: "Mot de passe incorrect." };
+      return { error: "Incorrect password." };
     }
   }
 
   if (!share.filePath) {
-    return { error: "Fichier introuvable." };
+    return { error: "File not found." };
   }
 
   const filePath = path.join(getUploadDir(), share.filePath);
   if (!existsSync(filePath)) {
-    return { error: "Fichier physique introuvable." };
+    return { error: "Physical file not found." };
   }
 
   return { 

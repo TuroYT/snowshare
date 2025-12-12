@@ -4,42 +4,45 @@ import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
 import { isValidPasteLanguage, MAX_PASTE_SIZE } from "@/lib/constants";
+import { NextRequest } from "next/server";
+import { getClientIp } from "@/lib/getClientIp";
 
 export const createPasteShare = async (
   paste: string,
   pastelanguage: string,
+  request: NextRequest,
   expiresAt?: Date,
   slug?: string,
   password?: string
 ) => {
   // Validate paste
   if (!paste || paste.length < 1) {
-    return { error: "Le contenu du paste est requis." };
+    return { error: "Paste content is required." };
   }
 
   // Validate paste size limit
   if (paste.length > MAX_PASTE_SIZE) {
-    return { error: "Le contenu du paste est trop volumineux (max 10MB)." };
+    return { error: "Paste content is too large (max 10MB)." };
   }
 
   // Validate language against allowed enum values
   if (!pastelanguage || typeof pastelanguage !== "string" || !isValidPasteLanguage(pastelanguage)) {
-    return { error: "La langue du paste est invalide." };
+    return { error: "Paste language is invalid." };
   }
 
   // Validate slug if provided
   if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-    return { error: "Slug invalide. Il doit contenir entre 3 et 30 caractères alphanumériques, des tirets ou des underscores." };
+    return { error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores." };
   }
 
   // Validate expiration date if provided
   if (expiresAt && new Date(expiresAt) <= new Date()) {
-    return { error: "La date d'expiration doit être dans le futur." };
+    return { error: "Expiration date must be in the future." };
   }
 
   if (password) {
     if (password.length < 6 || password.length > 100) {
-      return { error: "Le mot de passe doit contenir entre 6 et 100 caractères." };
+      return { error: "Password must be between 6 and 100 characters." };
     }
   }
 
@@ -51,10 +54,10 @@ export const createPasteShare = async (
       const maxExpiry = new Date();
       maxExpiry.setDate(maxExpiry.getDate() + 7);
       if (new Date(expiresAt) > maxExpiry) {
-        return { error: "Les utilisateurs non authentifiés ne peuvent pas créer de partages expirant au-delà de 7 jours." };
+        return { error: "Unauthenticated users cannot create shares that expire beyond 7 days." };
       }
     } else {
-      return { error: "Les utilisateurs non authentifiés doivent fournir une date d'expiration." };
+      return { error: "Unauthenticated users must provide an expiration date." };
     }
   }
 
@@ -83,6 +86,7 @@ export const createPasteShare = async (
       password: password || null,
       ownerId: session?.user?.id || null,
       type: "PASTE",
+      ipSource: getClientIp(request),
     },
   });
 
