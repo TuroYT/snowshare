@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// @ts-expect-error: allow side-effect CSS import without a dedicated declaration file
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
