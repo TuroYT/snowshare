@@ -7,8 +7,6 @@ export interface Branding {
   appDescription: string
   logoUrl: string | null
   faviconUrl: string | null
-  primaryColor: string
-  accentColor: string
 }
 
 const defaultBranding: Branding = {
@@ -16,8 +14,6 @@ const defaultBranding: Branding = {
   appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
   logoUrl: null,
   faviconUrl: null,
-  primaryColor: "#3B82F6",
-  accentColor: "#8B5CF6",
 }
 
 interface BrandingContextType {
@@ -57,14 +53,6 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchBranding()
   }, [])
-
-  // Apply CSS custom properties for colors
-  useEffect(() => {
-    if (!loading) {
-      document.documentElement.style.setProperty("--color-primary", branding.primaryColor)
-      document.documentElement.style.setProperty("--color-accent", branding.accentColor)
-    }
-  }, [branding, loading])
 
   // Update favicon dynamically
   useEffect(() => {

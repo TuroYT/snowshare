@@ -109,12 +109,12 @@ export default function Navigation() {
                   <Image src="/logo.svg" alt={`${branding.appName} Logo`} width={36} height={36} className="relative z-10" />
                 )}
               </div>
-              <span 
+                <span 
                 className="text-xl font-bold bg-clip-text text-transparent group-hover:opacity-80 transition-all"
-                style={{ backgroundImage: `linear-gradient(to right, ${branding.primaryColor}, ${branding.secondaryColor})` }}
-              >
+                style={{ backgroundImage: `linear-gradient(to right, var(--primary), var(--secondary))` }}
+                >
                 {branding.appName}
-              </span>
+                </span>
             </Link>
           </div>
           <div className="flex items-center">
