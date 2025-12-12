@@ -22,7 +22,7 @@ export default function UpdateNotification() {
   useEffect(() => {
     const checkVersion = async () => {
       try {
-        const response = await fetch("/api/version")
+        const response = await fetch("/api/admin/version")
         if (response.ok) {
           const data = await response.json()
           setVersionInfo(data)
