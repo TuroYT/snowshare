@@ -32,7 +32,7 @@ export async function GET() {
           authMaxUpload: 51200,
           anoIpQuota: 4096,
           authIpQuota: 102400,
-        },
+                  },
       });
     }
 
@@ -76,6 +76,21 @@ export async function PATCH(request: Request) {
           authMaxUpload: data.authMaxUpload || 51200,
           anoIpQuota: data.anoIpQuota || 4096,
           authIpQuota: data.authIpQuota || 102400,
+          appName: data.appName || "SnowShare",
+          appDescription: data.appDescription || "Share your files, pastes and URLs securely",
+          logoUrl: data.logoUrl || null,
+          faviconUrl: data.faviconUrl || null,
+          primaryColor: data.primaryColor || "#3B82F6",
+          primaryHover: data.primaryHover || "#2563EB",
+          primaryDark: data.primaryDark || "#1E40AF",
+          secondaryColor: data.secondaryColor || "#8B5CF6",
+          secondaryHover: data.secondaryHover || "#7C3AED",
+          secondaryDark: data.secondaryDark || "#6D28D9",
+          backgroundColor: data.backgroundColor || "#111827",
+          surfaceColor: data.surfaceColor || "#1F2937",
+          textColor: data.textColor || "#F9FAFB",
+          textMuted: data.textMuted || "#D1D5DB",
+          borderColor: data.borderColor || "#374151",
         },
       });
     } else {
@@ -88,6 +103,21 @@ export async function PATCH(request: Request) {
           authMaxUpload: data.authMaxUpload || settings.authMaxUpload,
           anoIpQuota: data.anoIpQuota || settings.anoIpQuota,
           authIpQuota: data.authIpQuota || settings.authIpQuota,
+          appName: data.appName !== undefined ? data.appName : settings.appName,
+          appDescription: data.appDescription !== undefined ? data.appDescription : settings.appDescription,
+          logoUrl: data.logoUrl !== undefined ? data.logoUrl : settings.logoUrl,
+          faviconUrl: data.faviconUrl !== undefined ? data.faviconUrl : settings.faviconUrl,
+          primaryColor: data.primaryColor !== undefined ? data.primaryColor : settings.primaryColor,
+          primaryHover: data.primaryHover !== undefined ? data.primaryHover : settings.primaryHover,
+          primaryDark: data.primaryDark !== undefined ? data.primaryDark : settings.primaryDark,
+          secondaryColor: data.secondaryColor !== undefined ? data.secondaryColor : settings.secondaryColor,
+          secondaryHover: data.secondaryHover !== undefined ? data.secondaryHover : settings.secondaryHover,
+          secondaryDark: data.secondaryDark !== undefined ? data.secondaryDark : settings.secondaryDark,
+          backgroundColor: data.backgroundColor !== undefined ? data.backgroundColor : settings.backgroundColor,
+          surfaceColor: data.surfaceColor !== undefined ? data.surfaceColor : settings.surfaceColor,
+          textColor: data.textColor !== undefined ? data.textColor : settings.textColor,
+          textMuted: data.textMuted !== undefined ? data.textMuted : settings.textMuted,
+          borderColor: data.borderColor !== undefined ? data.borderColor : settings.borderColor,
         },
       });
     }

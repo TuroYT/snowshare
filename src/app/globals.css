@@ -1,25 +1,36 @@
 @import "tailwindcss";
 
 :root {
+  /* Base colors (dynamically replaceable) */
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-dark: #1e40af;
+  --secondary: #8b5cf6;
+  --secondary-hover: #7c3aed;
+  --secondary-dark: #6d28d9;
+  
+  /* Background colors (customizable) */
   --background: #111827;
   --background-secondary: rgba(17, 24, 39, 0.8);
   --surface: rgba(31, 41, 55, 0.5);
   --surface-hover: rgba(55, 65, 81, 0.5);
+  
+  /* Text colors */
   --foreground: #f9fafb;
   --foreground-muted: #d1d5db;
   --foreground-subtle: #9ca3af;
+  
+  /* Borders and inputs */
   --border: rgba(55, 65, 81, 0.5);
   --border-hover: rgba(75, 85, 99, 0.7);
   --input: #1f2937;
   --input-focus: #111827;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: rgba(59, 130, 246, 0.1);
-  --secondary: #8b5cf6;
-  --secondary-hover: #7c3aed;
-  --secondary-light: rgba(139, 92, 246, 0.1);
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
+  
+  /* Dynamically calculated colors */
+  --primary-light: color-mix(in srgb, var(--primary) 10%, transparent);
+  --secondary-light: color-mix(in srgb, var(--secondary) 10%, transparent);
+  
+  /* System accents */
   --accent-green: #10b981;
   --accent-red: #ef4444;
   --accent-yellow: #f59e0b;
@@ -27,13 +38,17 @@
   --success: #059669;
   --warning: #d97706;
   --info: #0ea5e9;
-  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-secondary: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+  
+  /* Dynamic gradients using custom colors */
+  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+  
+  /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+  --shadow-glow: 0 0 20px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 /* Force dark theme always */
@@ -98,9 +113,9 @@ body {
 
 .modern-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  background-color: rgba(17, 24, 39, 0.5);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--primary);
+  background-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 .modern-button {
@@ -129,15 +144,15 @@ body {
 }
 
 .modern-button-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background: var(--gradient-primary);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+  box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .modern-button-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  background: var(--gradient-secondary);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 20px 0 color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 .modern-button-secondary {
@@ -163,13 +178,13 @@ body {
 }
 
 .modern-icon-blue {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(30, 64, 175, 0.2) 100%);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 20%, transparent) 0%, color-mix(in srgb, var(--primary-dark) 20%, transparent) 100%);
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
 }
 
 .modern-icon-purple {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 20%, transparent) 0%, color-mix(in srgb, var(--secondary-dark) 20%, transparent) 100%);
+  border-color: color-mix(in srgb, var(--secondary) 50%, transparent);
 }
 
 .modern-icon-green {
@@ -203,9 +218,9 @@ body {
 }
 
 .modern-tab-active {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background: var(--gradient-primary);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+  box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--primary) 25%, transparent);
   transform: scale(1.05);
 }
 
@@ -246,9 +261,9 @@ body {
 }
 
 .modern-alert-info {
-  background-color: rgba(59, 130, 246, 0.2);
-  border-color: #1d4ed8;
-  color: #60a5fa;
+  background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  border-color: var(--primary-dark);
+  color: var(--primary);
 }
 
 /* Animation classes */
@@ -269,11 +284,11 @@ body {
 
 /* Glow effects */
 .glow-blue {
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+  box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .glow-purple {
-  box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--secondary) 25%, transparent);
 }
 
 .glow-green {
@@ -287,7 +302,7 @@ body {
 /* Focus visible for better accessibility */
 .focus-visible\:modern-focus:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(17, 24, 39, 1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent), 0 0 0 4px var(--background);
 }
 
 /* Backdrop blur utilities */
@@ -305,15 +320,15 @@ body {
 
 /* Custom gradient backgrounds */
 .bg-gradient-modern {
-  background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.8) 100%);
+  background: linear-gradient(135deg, var(--background-secondary) 0%, color-mix(in srgb, var(--surface) 80%, transparent) 100%);
 }
 
 .bg-gradient-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background: var(--gradient-primary);
 }
 
 .bg-gradient-secondary {
-  background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+  background: var(--gradient-secondary);
 }
 
 /* Custom prose styles for markdown rendering */

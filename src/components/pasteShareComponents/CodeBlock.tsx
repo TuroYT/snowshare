@@ -58,7 +58,7 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
   React.useEffect(() => setValue(code), [code]);
 
   return (
-    <div className="codemirror-scroll-fix codemirror-container text-left text-sm rounded-2xl border-2 border-[#232a38] bg-[#232a38] p-2 h-full w-full">
+    <div className="codemirror-scroll-fix codemirror-container text-left text-sm rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-2 h-full w-full">
       <div className="w-full h-full overflow-x-auto overflow-y-auto max-w-full">
         <CodeMirror
           value={value}

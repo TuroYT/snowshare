@@ -102,10 +102,10 @@ export default function FileSharePage() {
 
     if (loadingInfo) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                    <p className="text-gray-400">{t("loading")}</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
+                    <p className="text-[var(--foreground-muted)]">{t("loading")}</p>
                 </div>
             </div>
         );
@@ -113,7 +113,7 @@ export default function FileSharePage() {
 
     if (!fileInfo && error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8 text-center">
                     <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-900/20 border border-red-800">
                         <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,11 +125,11 @@ export default function FileSharePage() {
                             />
                         </svg>
                     </div>
-                    <h2 className="text-3xl font-extrabold text-gray-100">{t("file_download.file_not_found")}</h2>
-                    <p className="text-gray-400">{error}</p>
+                    <h2 className="text-3xl font-extrabold text-[var(--foreground)]">{t("file_download.file_not_found")}</h2>
+                    <p className="text-[var(--foreground-muted)]">{error}</p>
                     <Link
                         href="/"
-                        className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                        className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
                     >
                         <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -143,11 +143,11 @@ export default function FileSharePage() {
 
     return (
         <>
-        <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
                 <div className="text-center">
-                    <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-purple-900/20 border border-purple-800">
-                        <svg className="h-8 w-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]">
+                        <svg className="h-8 w-8 text-[var(--secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -156,17 +156,17 @@ export default function FileSharePage() {
                             />
                         </svg>
                     </div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">{t("file_download.download_file")}</h2>
-                    <div className="mt-4 bg-gray-800 rounded-lg p-4 border border-gray-700">
-                        <p className="text-lg font-medium text-gray-200 truncate" title={fileInfo?.filename}>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">{t("file_download.download_file")}</h2>
+                    <div className="mt-4 bg-[var(--surface)] rounded-lg p-4 border border-[var(--border)]">
+                        <p className="text-lg font-medium text-[var(--foreground)] truncate" title={fileInfo?.filename}>
                             {fileInfo?.filename}
                         </p>
                         {fileInfo?.fileSize && (
-                            <p className="text-sm text-gray-400 mt-1">{t("file_download.size")}: {formatFileSize(fileInfo.fileSize)}</p>
+                            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("file_download.size")}: {formatFileSize(fileInfo.fileSize)}</p>
                         )}
                     </div>
                     {fileInfo?.requiresPassword && (
-                        <p className="mt-2 text-center text-sm text-gray-400">
+                        <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
                             {t("file_download.password_protected")}
                         </p>
                     )}
@@ -175,7 +175,7 @@ export default function FileSharePage() {
                 {fileInfo?.requiresPassword ? (
                     <form className="mt-8 space-y-6" onSubmit={handleDownload}>
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                                 {t("file_download.password")}
                             </label>
                             <input
@@ -183,7 +183,7 @@ export default function FileSharePage() {
                                 name="password"
                                 type="password"
                                 required
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm transition-colors"
+                                className="appearance-none relative block w-full px-3 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--secondary)] focus:border-[var(--secondary)] focus:z-10 sm:text-sm transition-colors"
                                 placeholder={t("file_download.password_placeholder")}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -208,7 +208,7 @@ export default function FileSharePage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {loading ? (
                                 <div className="flex items-center">
@@ -269,7 +269,7 @@ export default function FileSharePage() {
                         <button
                             onClick={() => handleDownload()}
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {loading ? (
                                 <div className="flex items-center">
@@ -312,7 +312,7 @@ export default function FileSharePage() {
                     </div>
                 )}
 
-                <div className="mt-6 text-center text-xs text-gray-500">
+                <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
                     <p>{t("file_download.disclaimer")}</p>
                 </div>
 

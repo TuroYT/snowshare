@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+// @ts-expect-error: allow side-effect CSS import without a dedicated declaration file
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import PlausibleProvider from "next-plausible";
 import "@/i18n/client";
 
@@ -45,10 +47,16 @@ export default function RootLayout({
 
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100 `}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{
+          backgroundColor: "var(--background)",
+          color: "var(--foreground)",
+        }}
       >
         <NextAuthProvider>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </NextAuthProvider>
       </body>
     </html>

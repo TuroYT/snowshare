@@ -262,10 +262,10 @@ const FileShare: React.FC = () => {
     // Show loading while fetching settings
     if (settingsLoading) {
       return (
-        <div className="modern-card p-6 w-full max-w-2xl mx-auto text-center">
+        <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
           <div className="animate-pulse">
-            <div className="h-6 bg-gray-700 rounded w-1/2 mx-auto mb-4"></div>
-            <div className="h-4 bg-gray-700 rounded w-3/4 mx-auto"></div>
+            <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
+            <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
           </div>
         </div>
       );
@@ -274,16 +274,16 @@ const FileShare: React.FC = () => {
     // Block anonymous users if allowAnonFileShare is disabled
     if (!allowAnonFileShare) {
       return (
-        <div className="modern-card p-6 w-full max-w-2xl mx-auto text-center">
+        <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
           <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
             <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-gray-100 mb-2">
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
             {t("fileshare.locked_title", "File sharing is locked")}
           </h2>
-          <p className="text-gray-400 mb-4">
+          <p className="text-[var(--foreground-muted)] mb-4">
             {t("fileshare.locked_message", "You must be logged in to share files.")}
           </p>
         </div>
@@ -292,10 +292,13 @@ const FileShare: React.FC = () => {
   }
 
   return (
-    <div className="modern-card p-6 w-full max-w-2xl mx-auto">
+    <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6 justify-center">
-        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-700/50 flex items-center justify-center">
-          <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div 
+          className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
+          style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}
+        >
+          <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -305,8 +308,8 @@ const FileShare: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-100">{t("fileshare.title", "Partager un fichier")}</h2>
-          <p className="text-sm text-gray-400">
+          <h2 className="text-xl font-bold text-[var(--foreground)]">{t("fileshare.title", "Partager un fichier")}</h2>
+          <p className="text-sm text-[var(--foreground-muted)]">
             {t("fileshare.subtitle", "Uploadez et partagez vos fichiers en toute sécurité")}
           </p>
         </div>
@@ -315,7 +318,7 @@ const FileShare: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* File Upload Area */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-sm font-medium text-[var(--foreground)]">
             {t("fileshare.file_selected", "File to share")}&nbsp;<span className="text-red-400">*</span>
           </label>
           
@@ -323,16 +326,20 @@ const FileShare: React.FC = () => {
             <div
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 ${
                 dragOver
-                  ? "border-purple-400 bg-purple-900/20 scale-105"
-                  : "border-gray-600/50 hover:border-gray-500 hover:bg-gray-800/30 hover:scale-102"
+                  ? "scale-105"
+                  : "border-[var(--border)]/50 hover:bg-[var(--surface)]/30 hover:scale-102"
               }`}
+              style={dragOver ? {
+                borderColor: 'var(--secondary)',
+                background: 'rgb(from var(--secondary) r g b / 0.2)'
+              } : undefined}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
               <div className="flex flex-col items-center gap-3">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -341,14 +348,14 @@ const FileShare: React.FC = () => {
                   />
                 </svg>
                 <div>
-                  <p className="text-gray-300 font-medium">
+                  <p className="text-[var(--foreground)] font-medium">
                     {t("fileshare.drag_drop", "Drag & drop your file here")}
                   </p>
-                  <p className="text-gray-400 text-sm mt-1">
+                  <p className="text-[var(--foreground-muted)] text-sm mt-1">
                     {t("fileshare.click_to_select", "or click to select a file")}
                   </p>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[var(--foreground-muted)]">
                   {isAuthenticated
                     ? t("fileshare.max_size_auth", "500MB maximum for authenticated users")
                     : t("fileshare.max_size_anon", "50MB maximum for anonymous users")}
@@ -356,9 +363,9 @@ const FileShare: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="modern-section p-4">
+            <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
               <div className="flex items-start gap-3">
-                <svg className="w-8 h-8 text-purple-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 text-[var(--primary)] flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -367,11 +374,11 @@ const FileShare: React.FC = () => {
                   />
                 </svg>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-200 mb-1">
+                  <p className="text-sm font-medium text-[var(--foreground)] mb-1">
                     {t("fileshare.file_selected", "Selected file:")}
                   </p>
-                  <p className="text-sm text-gray-300 truncate">{file.name}</p>
-                  <div className="flex gap-4 mt-2 text-xs text-gray-400">
+                  <p className="text-sm text-[var(--foreground)] truncate">{file.name}</p>
+                  <div className="flex gap-4 mt-2 text-xs text-[var(--foreground-muted)]">
                     <span>{t("fileshare.file_size", "Size:")}&nbsp;{formatFileSize(file.size)}</span>
                     <span>{t("fileshare.file_type", "Type:")}&nbsp;{file.type || "Unknown"}</span>
                   </div>
@@ -382,7 +389,7 @@ const FileShare: React.FC = () => {
                     setFile(null);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
-                  className="text-gray-400 hover:text-white hover:bg-gray-700 rounded p-1 transition-colors"
+                  className="text-[var(--foreground-muted)] hover:text-white hover:bg-[var(--surface)] rounded p-1 transition-colors"
                   title={t("fileshare.change_file", "Change file")}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -405,14 +412,14 @@ const FileShare: React.FC = () => {
         {/* Upload Progress */}
         {loading && uploadProgress > 0 && (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-300">
+            <div className="flex justify-between text-sm text-[var(--foreground)]">
               <span>{t("fileshare.uploading", "Uploading...")}</span>
               <span>{t("fileshare.upload_progress", "Progress: {{progress}}%", { progress: uploadProgress })}</span>
             </div>
-            <div className="w-full bg-gray-700/50 rounded-full h-3">
+            <div className="w-full bg-[var(--surface)]/50 rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all duration-300 shadow-lg shadow-purple-500/25"
-                style={{ width: `${uploadProgress}%` }}
+                className="h-3 rounded-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%`, background: 'linear-gradient(to right, var(--secondary), var(--primary))', boxShadow: '0 10px 15px -3px rgb(from var(--secondary) r g b / 0.25)' }}
               />
             </div>
           </div>
@@ -420,13 +427,13 @@ const FileShare: React.FC = () => {
 
         {/* Expiration Settings */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-sm font-medium text-[var(--foreground)]">
             {t("fileshare.validity_label", "Validity duration")}
           </label>
 
           {isAuthenticated && (
-            <div className="modern-section p-4">
-              <label className="flex items-center gap-4 cursor-pointer hover:bg-gray-800/30 rounded-lg p-3 -m-3 transition-colors">
+            <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
+              <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--surface)]/30 rounded-lg p-3 -m-3 transition-colors">
                 <div className="relative flex-shrink-0">
                   <input
                     type="checkbox"
@@ -439,10 +446,10 @@ const FileShare: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-100 mb-1">
+                  <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
                     {t("fileshare.never_expires", "Aucune expiration")}
                   </div>
-                  <div className="text-xs text-gray-400 leading-relaxed">
+                  <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
                     {t("fileshare.never_expires_desc", "Ce fichier restera disponible indéfiniment")}
                   </div>
                 </div>
@@ -463,13 +470,13 @@ const FileShare: React.FC = () => {
                 className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
-            <span className="text-sm text-gray-400 min-w-0">{t("fileshare.days", "days")}</span>
+            <span className="text-sm text-[var(--foreground-muted)] min-w-0">{t("fileshare.days", "days")}</span>
           </div>
 
-          <div className="text-xs text-gray-400 modern-section p-3">
+          <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)]/30 p-3 rounded-xl border border-[var(--border)]/30">
             <div className="flex items-center gap-2">
               <svg
-                className="w-3 h-3 text-purple-400 flex-shrink-0"
+                className="w-3 h-3 text-[var(--primary)] flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -486,7 +493,7 @@ const FileShare: React.FC = () => {
           </div>
 
           {!isAuthenticated && (
-            <p className="text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded p-2">
+            <p className="text-xs bg-[var(--surface)] border border-[var(--border)] rounded p-2 text-[var(--foreground-muted)]">
               💡{" "}
               {t(
                 "fileshare.login_for_more",
@@ -498,8 +505,8 @@ const FileShare: React.FC = () => {
         </div>
 
         {/* Advanced Settings */}
-        <div className="modern-section p-4 space-y-4">
-          <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
+        <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50 space-y-4">
+          <h3 className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -513,11 +520,11 @@ const FileShare: React.FC = () => {
 
           <div className="space-y-3">
             <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t("fileshare.custom_slug", "Custom link")}
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
-                <span className="text-sm text-gray-400 whitespace-nowrap">
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">
                   {typeof window !== "undefined" ? window.location.origin + "/f/" : "/f/"}
                 </span>
                 <input
@@ -530,13 +537,13 @@ const FileShare: React.FC = () => {
                   className="modern-input flex-1"
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
                 {t("fileshare.slug_hint", "Letters, numbers, dashes and underscores only")}
               </p>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t("fileshare.password_protect", "Password protection")}
               </label>
               <div className="relative">
@@ -549,7 +556,7 @@ const FileShare: React.FC = () => {
                   className="modern-input w-full pr-12"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -642,9 +649,9 @@ const FileShare: React.FC = () => {
               <h4 className="text-sm font-medium text-green-300 mb-2">
                 {t("fileshare.success_title", "File shared successfully!")}
               </h4>
-              <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 mb-1">{t("fileshare.download_link", "Download link:")}</p>
+                  <p className="text-xs text-[var(--foreground-muted)] mb-1">{t("fileshare.download_link", "Download link:")}</p>
                   <a
                     href={success}
                     target="_blank"
@@ -662,7 +669,7 @@ const FileShare: React.FC = () => {
                 <div className="flex-shrink-0 flex items-start gap-2">
                   <button
                     onClick={() => copyToClipboard(success)}
-                    className="p-3 text-gray-400 hover:text-purple-400 hover:bg-gray-700/50 rounded-lg transition-all duration-200 hover:scale-110"
+                    className="p-3 text-[var(--foreground-muted)] hover:text-[var(--primary)] hover:bg-[var(--surface)]/50 rounded-lg transition-all duration-200 hover:scale-110"
                     title={t("fileshare.copy_title", "Copier le lien")}
                   >
                     {copied ? (
@@ -683,8 +690,8 @@ const FileShare: React.FC = () => {
                 </div>
               </div>
               <div className="mt-4 flex justify-center">
-                <div className="flex flex-col items-center modern-section p-4">
-                  <p className="text-sm text-gray-300 mb-2 text-center">
+                <div className="flex flex-col items-center bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
+                  <p className="text-sm text-[var(--foreground)] mb-2 text-center">
                     {t("fileshare.qr_info", "Scan this QR code to download the file")}
                   </p>
                   <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>
@@ -699,56 +706,56 @@ const FileShare: React.FC = () => {
       
       <style jsx global>{`
         .input-paste {
-          border: 1px solid rgba(75, 85, 99, 0.5);
+          border: 1px solid var(--border);
           border-radius: 0.75rem;
           padding: 0.75rem 1rem;
           font-size: 0.875rem;
-          background: rgba(31, 41, 55, 0.5);
-          color: #f3f4f6;
+          background: var(--surface);
+          color: var(--foreground);
           transition: all 0.2s ease;
         }
         .input-paste:focus {
           outline: none;
-          border-color: #8b5cf6;
-          background: rgba(17, 24, 39, 0.5);
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+          border-color: var(--secondary);
+          background: var(--background);
+          box-shadow: 0 0 0 3px rgb(from var(--secondary) r g b / 0.1);
         }
         .input-paste::placeholder {
-          color: #9ca3af;
+          color: var(--foreground-muted);
           opacity: 1;
         }
         .btn-paste {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
           color: #fff;
           border-radius: 0.75rem;
           font-weight: 600;
-          box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px 0 rgb(from var(--primary) r g b / 0.25);
           transition: all 0.3s ease;
         }
         .btn-paste:hover:not(:disabled) {
-          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px 0 rgb(from var(--primary) r g b / 0.4);
         }
         label {
-          color: #f3f4f6;
+          color: var(--foreground);
           font-weight: 500;
         }
-        .hover\:scale-102:hover {
+        .hover\\:scale-102:hover {
           transform: scale(1.02);
         }
         .toggle-slider {
           width: 2.75rem;
           height: 1.5rem;
-          background-color: #374151;
+          background-color: var(--surface);
           border-radius: 0.75rem;
           position: relative;
           transition: all 0.3s ease;
-          border: 2px solid #4b5563;
+          border: 2px solid var(--border);
         }
         .toggle-slider-active {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-          border-color: #8b5cf6;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          border-color: var(--secondary);
         }
         .toggle-slider-thumb {
           width: 1rem;

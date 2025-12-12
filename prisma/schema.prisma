@@ -89,7 +89,25 @@ model Settings {
   authMaxUpload Int     @default(51200) // ~50Go
   anoIpQuota    Int     @default(4096) // 4Go
   authIpQuota   Int     @default(102400) // ~100Go
-
+  
+  // Branding - Identity
+  appName       String  @default("SnowShare")
+  appDescription String @default("Share your files, pastes, and URLs securely")
+  logoUrl       String?
+  faviconUrl    String?
+  
+  // Branding - Colors (Theme System)
+  primaryColor      String  @default("#3B82F6")  // Primary color (buttons, links)
+  primaryHover      String  @default("#2563EB")  // Primary color hover state
+  primaryDark       String  @default("#1E40AF")  // Dark version of primary color
+  secondaryColor    String  @default("#8B5CF6")  // Secondary color (accents)
+  secondaryHover    String  @default("#7C3AED")  // Secondary color hover state
+  secondaryDark     String  @default("#6D28D9")  // Dark version of secondary color
+  backgroundColor   String  @default("#111827")  // Main background color
+  surfaceColor      String  @default("#1F2937")  // Surface color (cards, panels)
+  textColor         String  @default("#F9FAFB")  // Main text color
+  textMuted         String  @default("#D1D5DB")  // Secondary/muted text color
+  borderColor       String  @default("#374151")  // Border color
 }
 
 enum ShareType {
