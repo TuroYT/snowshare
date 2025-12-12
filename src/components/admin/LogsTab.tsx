@@ -246,9 +246,8 @@ export default function LogsTab() {
                   <td className="py-3 px-4">
                     <code className="text-sm text-gray-300 bg-gray-800 px-2 py-1 rounded">
                       <a href={getTypeUrl(log.type, log.slug)} target="_blank" rel="noopener noreferrer">
-                        {getTypeUrl(log.type, log.slug)}
+                        {log.slug}
                       </a>
-                      
                     </code>
                   </td>
                   <td className="py-3 px-4">

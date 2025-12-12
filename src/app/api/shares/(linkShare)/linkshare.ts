@@ -42,7 +42,7 @@ export const createLinkShare = async (
     const session = await getServerSession(authOptions);
 
     if (!session) {
-        // verif si expire supérieur à 7 jours
+        
         if (expiresAt) {
             const maxExpiry = new Date();
             maxExpiry.setDate(maxExpiry.getDate() + 7);
