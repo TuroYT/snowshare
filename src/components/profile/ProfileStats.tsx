@@ -38,7 +38,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-blue-600/20 to-blue-800/20 border-blue-700/50 text-blue-400",
+      color: "from-blue-600/20 to-blue-800/20 border-[var(--primary-dark)]/50 text-[var(--primary)]",
     },
     {
       label: t("profile.stats_files"),
@@ -53,7 +53,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-purple-600/20 to-purple-800/20 border-purple-700/50 text-purple-400",
+      color: "from-purple-600/20 to-purple-800/20 border-[var(--secondary-dark)]/50 text-[var(--secondary)]",
     },
     {
       label: t("profile.stats_pastes"),
@@ -121,8 +121,8 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
               {stat.icon}
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-100">{stat.value}</p>
-              <p className="text-xs text-gray-400 mt-1">{stat.label}</p>
+              <p className="text-2xl font-bold text-[var(--foreground)]">{stat.value}</p>
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">{stat.label}</p>
             </div>
           </div>
         </div>

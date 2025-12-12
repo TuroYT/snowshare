@@ -7,10 +7,14 @@ import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
+import { useBranding } from "@/components/BrandingProvider";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState("linkshare");
     const { t } = useTranslation();
+    const { branding } = useBranding();
+    const { colors } = useTheme();
 
     const tabs = [
         { id: "linkshare", label: t("tabs.linkshare", "LinkShare"), component: <LinkShare /> },
@@ -19,21 +23,21 @@ export default function Home() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-900">
+        <div className="min-h-screen bg-[var(--background)]">
             <Navigation />
 
             <main className="max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
                 <div className="text-center">
                     {/* Hero Section */}
                     <div className="mb-12">
-                        <h1 className="text-5xl font-extrabold sm:text-6xl md:text-7xl bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
-                            {t("home.title", "SnowShare")}
+                        <h1 
+                            className="text-5xl font-extrabold sm:text-6xl md:text-7xl bg-clip-text text-transparent"
+                            style={{ backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor}, ${colors.primaryColor})` }}
+                        >
+                            {branding.appName}
                         </h1>
-                        <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-300 leading-8">
-                            {t(
-                                "home.description",
-                                "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."
-                            )}
+                        <p className="mt-6 max-w-3xl mx-auto text-xl text-[var(--foreground)] leading-8">
+                            {branding.appDescription}
                         </p>
                     </div>
 
@@ -46,13 +50,20 @@ export default function Home() {
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`group relative px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 ${
                                         activeTab === tab.id
-                                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 scale-105"
-                                            : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/70 hover:text-gray-200 hover:scale-105 border border-gray-700/50"
+                                            ? "text-white shadow-lg scale-105"
+                                            : "bg-[var(--surface)]/50 text-[var(--foreground)] hover:bg-[var(--surface)]/70 hover:text-[var(--foreground)] hover:scale-105 border border-[var(--border)]/50"
                                     }`}
+                                    style={activeTab === tab.id ? { 
+                                        backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor})`,
+                                        boxShadow: `0 10px 15px -3px ${colors.primaryColor}40`
+                                    } : undefined}
                                 >
                                     <span className="relative z-10">{tab.label}</span>
                                     {activeTab === tab.id && (
-                                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-xl"></div>
+                                        <div 
+                                            className="absolute inset-0 rounded-xl blur-xl opacity-20"
+                                            style={{ backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor})` }}
+                                        ></div>
                                     )}
                                 </button>
                             ))}

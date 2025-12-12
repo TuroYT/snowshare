@@ -4,27 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
-
-/**
- * Extract IP address from request, checking X-Forwarded-For header first
- */
-export function getClientIp(request: NextRequest): string {
-  // Check X-Forwarded-For header (for proxies/load balancers)
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    // X-Forwarded-For can contain multiple IPs, take the first one
-    return forwardedFor.split(",")[0].trim();
-  }
-
-  // Check X-Real-IP header
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-
-  // Fallback to unknown (NextRequest doesn't expose IP directly)
-  return "unknown";
-}
+import { getClientIp } from "./getClientIp";
 
 /**
  * Get file size in MB from file path

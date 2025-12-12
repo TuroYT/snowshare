@@ -2,75 +2,126 @@
 
 # Quick orientation
 
-- **Stack**: Next.js 15 (App Router) + React 19 + TypeScript + Prisma + NextAuth + TailwindCSS 4
-- **Structure**: `src/app/` (App Router), `src/components/`, `src/lib/` utilities
-- **Database**: PostgreSQL + Prisma; schema at `prisma/schema.prisma`, generated client at `src/generated/prisma`
-- **i18n**: Client-side i18next with 4 locales (fr/en/es/de) in `src/i18n/locales/`
+**SnowShare**: Secure file/link/paste sharing platform with user auth, quotas, and expiration.
+
+- **Stack**: Next.js 15 (App Router) + React 19 + TypeScript + Prisma + NextAuth.js + TailwindCSS 4, PostgreSQL
+- **Key paths**: `src/app/` (routes), `src/components/` (UI), `src/lib/` (utilities), `src/i18n/` (i18n)
+- **Database**: PostgreSQL via Prisma; schema at `prisma/schema.prisma`, client at `src/generated/prisma/`
+- **i18n**: Client-side i18next, 4 locales (fr/en/es/de), auto-detected + localStorage cache
 
 # Architecture & data flow
 
 ```
-┌─ src/app/
-│  ├─ (shares)/f|l|p/[slug]  → Share display pages (File/Link/Paste)
-│  ├─ api/shares/            → Create shares (routes to linkshare.ts, pasteshareshare.ts, fileshare.ts)
-│  ├─ api/auth/              → NextAuth handler + /register endpoint
-│  └─ api/admin|settings|quota → Admin & config APIs
-├─ src/lib/
-│  ├─ auth.ts                → NextAuth config (CredentialsProvider + JWT)
-│  ├─ prisma.ts              → Singleton PrismaClient
-│  └─ quota.ts               → Upload quota enforcement by IP
-└─ uploads/                  → Local file storage (dev)
+Routes (App Router):
+  (shares)/f|l|p/[slug]/page.tsx  → Display share by slug (File/Link/Paste)
+  api/shares/(fileShare|linkShare|pasteShare)/route.ts → Create shares
+  api/auth/[...nextauth]/route.ts → NextAuth handler
+  api/setup/check, /admin, /profile, /quota/...  → Config & user APIs
+
+Core services:
+  src/lib/auth.ts      → NextAuth: CredentialsProvider + JWT (token: {id, name})
+  src/lib/quota.ts     → Enforce upload limits by IP/user
+  src/lib/prisma.ts    → Singleton PrismaClient
+  src/middleware.ts    → Security headers, setup redirect, route protection
 ```
 
-**Core models** (`prisma/schema.prisma`): `User` (with `password` + `isAdmin`), `Share` (FILE|PASTE|URL), `Settings` (quotas, signup toggle)
+**Models** (`prisma/schema.prisma`):
+- `User` (auth): email, password (bcrypt), isAdmin, shares
+- `Share` (core): type (FILE|PASTE|URL), slug, password, expiresAt, ipSource, owner
+- `Settings`: allowSignup, quotas (fileMax, totalMax)
+- `Account`, `Session`, `VerificationToken` (NextAuth)
 
 # Authentication system (critical)
 
-- **Provider**: `CredentialsProvider` in `src/lib/auth.ts` — passwords hashed with `bcryptjs` (cost 12)
-- **Session**: JWT strategy. Token contains `id` and `name`; access via `session.user.id` in callbacks
-- **First user**: Auto-promoted to admin (`isAdmin: true`) via `src/app/api/auth/register/route.ts`
-- **Signup control**: Database `Settings.allowSignin` field (not env var). Check via `/api/setup/check`
-- **Protected routes**: Middleware in `src/middleware.ts` guards `/dashboard`, `/profile`, `/api/protected`
+- **Provider**: CredentialsProvider (`src/lib/auth.ts`) — email/password, bcrypt hashing (cost 12)
+- **Strategy**: JWT with callbacks sync `token.id` + `token.name` to session
+- **Session access**: `const session = await getServerSession(authOptions)` in API routes
+- **First user auto-admin**: Registered via `/api/auth/register` → `isAdmin: true` (no admins yet)
+- **Signup toggle**: Database `Settings.allowSignup` (checked via `/api/setup/check`). Respects `NEXT_PUBLIC_ALLOW_SIGNUP` env
+- **Protected routes**: Middleware in `src/middleware.ts` redirects unauthenticated users from `/profile`, `/admin`, protected APIs
+- **Session module**: Extend with `interface User { id, name? }` and `interface JWT { id, name? }` in `src/lib/auth.ts`
 
 ```typescript
-// Getting session in API routes:
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+// API route: check auth & get user ID
 const session = await getServerSession(authOptions);
+if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// Now use session.user.id
 ```
 
-# Share creation patterns
+# Share creation flow
 
-All share types follow this pattern in `src/app/api/shares/`:
-1. Validate input & check quotas (`src/lib/quota.ts`)
-2. Hash password if provided (bcrypt)
-3. Generate unique slug if not provided
-4. Create Prisma record with `ownerId` (nullable for anon)
-5. Return `{ share: ... }` or `{ error: "..." }`
+All shares (File/Link/Paste) follow this pattern in `src/app/api/shares/(shareType)/route.ts`:
+1. **Validate**: Input schema, URL format (links), file size (files)
+2. **Check quota**: `checkUploadQuota(request, fileSize)` → tracks by IP + user
+3. **Auth check**: Extract session; set `ownerId` if authenticated (null for anon)
+4. **Hash password**: If provided, use `bcryptjs` cost 12
+5. **Generate slug**: Unique, alphanumeric/hyphen/underscore, 3-30 chars (or use provided)
+6. **Store**: Create `Share` record (files stored in `uploads/` with filename: `{uuid}_{originalName}`)
+7. **Return**: `{ share: { slug, expiresAt, ... } }` or `{ error: "..." }`
 
-**Anonymous restrictions**: Max 7-day expiration, must provide expiration date, lower quotas
+**Anonymous limits** (`src/lib/quota.ts`):
+- Max 7-day expiration (must set expiration)
+- Lower file/total quotas vs authenticated users
+- IP-based tracking (no session ID)
 
 # Developer commands
 
 ```bash
-npm run dev          # Next.js dev with Turbopack
-npm run build        # Production build
+npm run dev          # Next.js dev with Turbopack (default: port 3000)
+npm run build        # Production build (output: .next/)
 npm run lint:fix     # ESLint auto-fix
-npm run cleanup:expired  # Remove expired shares (cron job)
 
-npx prisma migrate dev --name <name>  # Create migration
-npx prisma generate                    # Regenerate client → src/generated/prisma
+npm run test         # Jest unit tests (jsdom environment)
+npm run test:watch   # Watch mode
+npm run test:coverage # Coverage report
+
+npm run cleanup:expired  # Remove expired shares (tsx script)
+
+npx prisma migrate dev --name <name>  # Create + apply migration
+npx prisma generate                    # Regenerate client → src/generated/prisma/
+npx prisma db seed                     # Run prisma/seed.ts (if exists)
 ```
 
-**Docker**: `docker compose up -d --build` — runs `prisma migrate deploy` on startup
+**Docker**: `docker compose up -d --build` — runs Next.js + PostgreSQL, executes `prisma migrate deploy` on startup. App at http://localhost:3000, DB at port 5432. Volumes: `db-data/` (persistent), `uploads/` (files).
+
+**Environment vars** (`.env` or `docker-compose.yml`):
+- `DATABASE_URL`: PostgreSQL connection string
+- `NEXTAUTH_URL`: Base URL (http://localhost:3000)
+- `NEXTAUTH_SECRET`: Random JWT secret (use `openssl rand -base64 32`)
+- `ALLOW_SIGNUP`: Boolean (controls `Settings.allowSignup`, exported as `NEXT_PUBLIC_ALLOW_SIGNUP`)
+- `PORT`: Dev server port (default 3000)
 
 # Project conventions
 
-- **API responses**: Always `{ error: "message" }` on failure, `{ share|user|message: ... }` on success
-- **French error messages**: API errors are in French (e.g., "Email et mot de passe requis")
-- **Prisma imports**: Use `import { prisma } from "@/lib/prisma"` and `import { ... } from "@/generated/prisma"`
-- **Client components**: Mark with `"use client"` at top; use `useTranslation()` from react-i18next
-- **Translations**: Add keys to all 4 locale files in `src/i18n/locales/` when adding UI text
+## API responses
+Always return JSON with consistent structure:
+- **Success**: `{ share: {...} }`, `{ user: {...} }`, `{ message: "..." }`, `{ data: [...] }`
+- **Error**: `{ error: "message" }` with appropriate HTTP status (400, 401, 403, 409, 429, etc.)
+
+## Imports
+- **Prisma**: `import { prisma } from "@/lib/prisma"` and `import { ... } from "@/generated/prisma"`
+- **Paths**: Always use `@/` alias, never relative imports like `../../../`
+
+## Client components
+- Mark with `"use client"` at top of file
+- Use `useTranslation()` from react-i18next for all UI text
+- Access auth with `useSession()` from next-auth/react, or `useAuth()` hook
+- State management: simple `useState` (no Redux/Zustand)
+
+## Translations
+- Add keys to ALL 4 locale files in `src/i18n/locales/` when adding UI text
+- Fallback language is French (`fr`)
+- Pattern: `t("section.key", "French default")`
+
+## Styling
+- TailwindCSS 4 only (no CSS modules unless necessary)
+- Component library: None; use semantic HTML + Tailwind utilities
+- Responsive: Mobile-first approach
+
+## File uploads
+- Store in `uploads/` directory with pattern: `{uuid}_{originalName}` (uuid via crypto)
+- Track file path in `Share.filePath` (relative to project root)
+- Clean up files when shares expire (via cleanup script)
 
 # Key files for common tasks
 
@@ -78,16 +129,20 @@ npx prisma generate                    # Regenerate client → src/generated/pri
 |------|-------|
 | Add API endpoint | `src/app/api/<name>/route.ts` — export `GET`/`POST`/etc |
 | Modify auth | `src/lib/auth.ts` (callbacks), `src/app/api/auth/register/route.ts` |
-| Add share type | `src/app/api/shares/`, new `(typeShare)/` folder |
-| Add UI component | `src/components/` — check Navigation.tsx for patterns |
-| Add translation | All files in `src/i18n/locales/*.json` |
-| Change quotas | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` |
+| Add share type | `src/app/api/shares/`, new `(typeShare)/` folder + display at `src/app/(shares)/` |
+| Add UI component | `src/components/` — check Navigation.tsx for client/server patterns |
+| Add translation | All files in `src/i18n/locales/*.json` (fr, en, es, de) |
+| Change quotas | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` enforcement |
+| Database operations | All at `src/app/api/` routes; client at `src/generated/prisma` |
 
 # AI agent guidelines
 
 - **⚠️ Migration caution**: Prisma migrations are irreversible in production. Test locally first.
-- **⚠️ Auth changes**: JWT callbacks in `src/lib/auth.ts` must stay in sync — both `jwt` and `session`
+- **⚠️ Auth changes**: JWT callbacks in `src/lib/auth.ts` must stay in sync — both `jwt` and `session` callbacks
 - **Validate slugs**: Regex pattern `/^[a-zA-Z0-9_-]{3,30}$/` for share slugs
 - **IP tracking**: File uploads track IP via `getClientIp()` in `src/lib/quota.ts` for quota enforcement
 - **Setup flow**: First visit triggers setup check in middleware → redirects to `/setup` if no users exist
+- **Testing**: Jest with jsdom environment; mocks in `src/__tests__/` follow file structure of src/
+- **Error handling**: Always validate input before DB queries; return 400 (bad), 401 (auth), 403 (forbidden), 429 (quota)
+- **Performance**: Use `next/image` for Image optimization; leverage Next.js caching and ISR where applicable
 

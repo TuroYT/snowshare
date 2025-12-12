@@ -9,8 +9,10 @@ import Footer from "@/components/Footer"
 import UsersTab from "@/components/admin/UsersTab"
 import SettingsTab from "@/components/admin/SettingsTab"
 import LogsTab from "@/components/admin/LogsTab"
+import BrandingTab from "@/components/admin/BrandingTab"
+import UpdateNotification from "@/components/admin/UpdateNotification"
 
-type Tab = "users" | "settings" | "logs"
+type Tab = "users" | "settings" | "branding" | "logs"
 
 export default function AdminPage() {
   const { status } = useSession()
@@ -53,7 +55,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -68,7 +70,7 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
@@ -86,7 +88,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
       <Navigation />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -95,19 +97,22 @@ export default function AdminPage() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
               {t("admin.title")}
             </h1>
-            <p className="text-gray-400">{t("admin.subtitle")}</p>
+            <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
           </div>
 
+          {/* Update Notification */}
+          <UpdateNotification />
+
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 border-b border-gray-700/50 overflow-x-auto">
-            {(["users", "settings", "logs"] as const).map((tab) => (
+          <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto">
+            {(["users", "settings", "branding", "logs"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-3 font-medium transition-all whitespace-nowrap border-b-2 ${
                   activeTab === tab
-                    ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-gray-400 hover:text-gray-300"
+                    ? "border-blue-500 text-[var(--primary)]"
+                    : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
                 }`}
               >
                 {t(`admin.tabs.${tab}`)}
@@ -116,9 +121,10 @@ export default function AdminPage() {
           </div>
 
           {/* Tab Content */}
-          <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-6 backdrop-blur-sm">
+          <div className="bg-[var(--surface)]/30 border border-[var(--border)]/50 rounded-2xl p-6 backdrop-blur-sm">
             {activeTab === "users" && <UsersTab />}
             {activeTab === "settings" && <SettingsTab />}
+            {activeTab === "branding" && <BrandingTab />}
             {activeTab === "logs" && <LogsTab />}
           </div>
         </div>

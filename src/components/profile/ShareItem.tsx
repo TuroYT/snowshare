@@ -105,9 +105,9 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   const getTypeColor = () => {
     switch (share.type) {
       case "FILE":
-        return "from-purple-600/20 to-purple-800/20 border-purple-700/50 text-purple-400";
+        return "from-purple-600/20 to-purple-800/20 border-[var(--secondary-dark)]/50 text-[var(--secondary)]";
       case "PASTE":
-        return "from-blue-600/20 to-blue-800/20 border-blue-700/50 text-blue-400";
+        return "from-blue-600/20 to-blue-800/20 border-[var(--primary-dark)]/50 text-[var(--primary)]";
       case "URL":
         return "from-green-600/20 to-green-800/20 border-green-700/50 text-green-400";
     }
@@ -127,7 +127,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
             <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getTypeColor()}`}>
               {share.type}
             </span>
-            <span className="text-gray-400 text-sm">
+            <span className="text-[var(--foreground-muted)] text-sm">
               {t("profile.created_on")} {new Date(share.createdAt).toLocaleDateString()}
             </span>
           </div>
@@ -135,7 +135,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
           <div className="mb-3">
             <button
               onClick={copyToClipboard}
-              className="group flex items-center gap-2 text-blue-400 hover:text-blue-300 font-mono text-sm transition-colors"
+              className="group flex items-center gap-2 text-[var(--primary)] hover:text-[var(--primary-hover)] font-mono text-sm transition-colors"
               title={t("profile.copy_link")}
             >
                 <span>
@@ -161,11 +161,11 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
           </div>
 
           {isEditing ? (
-            <div className="space-y-4 border-t border-gray-700 pt-4">
+            <div className="space-y-4 border-t border-[var(--border)] pt-4">
               {share.type === "PASTE" && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_content")}</label>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_content")}</label>
                     <textarea
                       value={editForm.paste || ""}
                       onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
@@ -174,7 +174,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_language")}</label>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_language")}</label>
                     <select
                       value={editForm.pastelanguage || "PLAINTEXT"}
                       onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
@@ -196,7 +196,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
 
               {share.type === "URL" && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_url")}</label>
+                  <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_url")}</label>
                   <input
                     type="url"
                     value={editForm.urlOriginal || ""}
@@ -207,7 +207,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_password")}</label>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_password")}</label>
                 <input
                   type="text"
                   value={editForm.password || ""}
@@ -218,7 +218,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_expiration")}</label>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_expiration")}</label>
                 <input
                   type="datetime-local"
                   value={editForm.expiresAt ? new Date(editForm.expiresAt).toISOString().slice(0, 16) : ""}
@@ -239,15 +239,15 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
           ) : (
             <>
               {share.type === "FILE" && share.filePath && (
-                <p className="text-gray-300 text-sm truncate">📄 {share.filePath.split("_").slice(1).join("_")}</p>
+                <p className="text-[var(--foreground)] text-sm truncate">📄 {share.filePath.split("_").slice(1).join("_")}</p>
               )}
               {share.type === "PASTE" && (
                 <div className="modern-section p-3">
-                  <p className="text-gray-300 font-mono text-xs truncate">{share.paste?.substring(0, 100)}...</p>
+                  <p className="text-[var(--foreground)] font-mono text-xs truncate">{share.paste?.substring(0, 100)}...</p>
                 </div>
               )}
               {share.type === "URL" && (
-                <p className="text-gray-300 text-sm truncate">→ {share.urlOriginal}</p>
+                <p className="text-[var(--foreground)] text-sm truncate">→ {share.urlOriginal}</p>
               )}
 
               <div className="flex flex-wrap gap-2 mt-3 text-xs">

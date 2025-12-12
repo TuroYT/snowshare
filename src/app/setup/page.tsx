@@ -90,22 +90,22 @@ export default function Setup() {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p className="mt-4 text-gray-400">{t('loading')}</p>
+          <p className="mt-4 text-[var(--foreground-muted)]">{t('loading')}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-blue-900/20 border-2 border-blue-800">
             <svg
-              className="h-10 w-10 text-blue-400"
+              className="h-10 w-10 text-[var(--primary)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -121,11 +121,11 @@ export default function Setup() {
           <h2 className="mt-6 text-center text-4xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
             {t('setup.title')}
           </h2>
-          <p className="mt-3 text-center text-base text-gray-300 max-w-md mx-auto">
+          <p className="mt-3 text-center text-base text-[var(--foreground)] max-w-md mx-auto">
             {t('setup.description')}
           </p>
           <div className="mt-4 p-4 bg-blue-900/20 border border-blue-800/50 rounded-lg">
-            <p className="text-sm text-blue-300">
+            <p className="text-sm text-[var(--primary-hover)]">
               <svg className="inline h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
@@ -137,7 +137,7 @@ export default function Setup() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t('auth.email_label')}
               </label>
               <input
@@ -147,14 +147,14 @@ export default function Setup() {
                 autoComplete="email"
                 required
                 pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                className="appearance-none relative block w-full px-4 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm transition-all"
                 placeholder={t('auth.email_placeholder') as string}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t('auth.password_label')}
               </label>
               <input
@@ -163,14 +163,14 @@ export default function Setup() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                className="appearance-none relative block w-full px-4 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm transition-all"
                 placeholder={t('auth.password_new_placeholder') as string}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t('auth.confirm_password_label')}
               </label>
               <input
@@ -179,7 +179,7 @@ export default function Setup() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all"
+                className="appearance-none relative block w-full px-4 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm transition-all"
                 placeholder={t('auth.confirm_password_placeholder') as string}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -202,7 +202,7 @@ export default function Setup() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/25"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/25"
             >
               {loading ? (
                 <div className="flex items-center">
@@ -219,7 +219,7 @@ export default function Setup() {
           </div>
         </form>
 
-        <div className="mt-6 text-center text-xs text-gray-500">
+        <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
           <p>
             {t('setup.admin_notice')}
           </p>
