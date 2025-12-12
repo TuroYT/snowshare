@@ -123,14 +123,14 @@ const ManageCodeBlock: React.FC<{
         </div>
       )}
       {loading && (
-        <div className="text-blue-300 mb-2 text-sm">{t("pasteshare_ui.loading", "Création en cours...")}</div>
+        <div className="text-[var(--primary-hover)] mb-2 text-sm">{t("pasteshare_ui.loading", "Création en cours...")}</div>
       )}
     {/* Sélection du langage */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-sm font-medium text-[var(--foreground)]">
           {t("pasteshare_ui.label_language")}
         </label>
-        <select value={language} onChange={(e) => onLanguageChange(e.target.value)} className="modern-input w-full">
+        <select value={language} onChange={(e) => onLanguageChange(e.target.value)} className="input-paste w-full">
           <option value="">{t("pasteshare_ui.language_placeholder")}</option>
           {LANGUAGES.map((l) => (
             <option key={l.value} value={l.value}>
@@ -142,13 +142,13 @@ const ManageCodeBlock: React.FC<{
 
       {/* Gestion de la durée d'expiration */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-300">
+        <label className="block text-sm font-medium text-[var(--foreground)]">
           {t("pasteshare_ui.label_expiration")}
         </label>
 
         {isAuthenticated && (
-          <div className="modern-section p-4">
-            <label className="flex items-center gap-4 cursor-pointer hover:bg-gray-800/30 rounded-lg p-3 -m-3 transition-colors">
+          <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
+            <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--surface)]/30 rounded-lg p-3 -m-3 transition-colors">
               <div className="relative flex-shrink-0">
                 <input
                   type="checkbox"
@@ -161,10 +161,10 @@ const ManageCodeBlock: React.FC<{
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-100 mb-1">
+                <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
                   {t("pasteshare_ui.expiration_never", "Aucune expiration")}
                 </div>
-                <div className="text-xs text-gray-400 leading-relaxed">
+                <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
                   {t("pasteshare_ui.never_expires_desc", "Ce paste n'expirera jamais")}
                 </div>
               </div>
@@ -181,16 +181,16 @@ const ManageCodeBlock: React.FC<{
               value={expiresDays}
               onChange={(e) => setExpiresDays(Number(e.target.value))}
               disabled={isAuthenticated && neverExpires}
-              className="modern-input w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
-          <span className="text-sm text-gray-400 min-w-0">{t("linkshare.days", "jours")}</span>
+          <span className="text-sm text-[var(--foreground-muted)] min-w-0">{t("linkshare.days", "jours")}</span>
         </div>
 
-        <div className="text-xs text-gray-400 modern-section p-3">
+        <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)]/30 p-3 rounded-xl border border-[var(--border)]/30">
           <div className="flex items-center gap-2">
             <svg
-              className="w-3 h-3 text-purple-400 flex-shrink-0"
+              className="w-3 h-3 text-[var(--primary)] flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -207,7 +207,7 @@ const ManageCodeBlock: React.FC<{
         </div>
 
         {!isAuthenticated && (
-          <p className="text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded p-2">
+          <p className="text-xs bg-[var(--surface)] border border-[var(--border)] rounded p-2 text-[var(--foreground-muted)]">
             💡{" "}
             {t(
               "linkshare.login_for_more",
@@ -219,8 +219,8 @@ const ManageCodeBlock: React.FC<{
       </div>
 
       {/* Paramètres avancés */}
-      <div className="modern-section p-4 space-y-4">
-        <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
+      <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50 space-y-4">
+        <h3 className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -235,12 +235,12 @@ const ManageCodeBlock: React.FC<{
         <div className="space-y-3">
           {/* Slug personnalisé */}
           <div>
-            <label htmlFor="paste-slug" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="paste-slug" className="block text-sm font-medium text-[var(--foreground)] mb-2">
               {t("pasteshare_ui.custom_slug")}
             </label>
             <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
               {/* hide origin on very small screens to avoid overflow */}
-              <span className="text-sm text-gray-400 whitespace-nowrap hidden xs:inline-block sm:inline-block md:inline-block lg:inline-block">
+              <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap hidden xs:inline-block sm:inline-block md:inline-block lg:inline-block">
                 {typeof window !== "undefined" ? window.location.origin + "/p/" : "/p/"}
               </span>
               <div className="flex-1 min-w-0">
@@ -251,18 +251,18 @@ const ManageCodeBlock: React.FC<{
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
-                  className="modern-input w-full truncate"
+                  className="input-paste w-full truncate"
                 />
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-[var(--foreground-muted)] mt-1">
               {t("pasteshare_ui.slug_hint")}
             </p>
           </div>
 
           {/* Protection par mot de passe */}
           <div>
-            <label htmlFor="paste-password" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="paste-password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
               {t("pasteshare_ui.label_password")}
             </label>
             <div className="relative">
@@ -271,11 +271,11 @@ const ManageCodeBlock: React.FC<{
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
-                className="modern-input w-full pr-12"
+                className="input-paste w-full pr-12"
                 placeholder={t("pasteshare_ui.placeholder_password") as string}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -324,31 +324,50 @@ const ManageCodeBlock: React.FC<{
       </div>
       
       <style jsx global>{`
+        .input-paste {
+          border: 1px solid var(--border);
+          border-radius: 0.75rem;
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+          background: var(--surface);
+          color: var(--foreground);
+          transition: all 0.2s ease;
+        }
+        .input-paste:focus {
+          outline: none;
+          border-color: var(--primary);
+          background: var(--background);
+          box-shadow: 0 0 0 3px rgb(from var(--primary) r g b / 0.1);
+        }
+        .input-paste::placeholder {
+          color: var(--foreground-muted);
+          opacity: 1;
+        }
         .btn-paste {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
           color: #fff;
           border-radius: 0.75rem;
           font-weight: 600;
-          box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px 0 rgb(from var(--primary) r g b / 0.25);
           transition: all 0.3s ease;
         }
         .btn-paste:hover:not(:disabled) {
-          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px 0 rgb(from var(--primary) r g b / 0.4);
         }
         .toggle-slider {
           width: 2.75rem;
           height: 1.5rem;
-          background-color: #374151;
+          background-color: var(--surface);
           border-radius: 0.75rem;
           position: relative;
           transition: all 0.3s ease;
-          border: 2px solid #4b5563;
+          border: 2px solid var(--border);
         }
         .toggle-slider-active {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-          border-color: #8b5cf6;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          border-color: var(--secondary);
         }
         .toggle-slider-thumb {
           width: 1rem;

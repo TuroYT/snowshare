@@ -118,13 +118,13 @@ export default function LogsTab() {
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
       case "FILE":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+        return "bg-[var(--secondary)]/20 text-[var(--secondary)] border-purple-500/30";
       case "PASTE":
         return "bg-green-500/20 text-green-400 border-green-500/30";
       case "URL":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        return "bg-[var(--primary)]/20 text-[var(--primary)] border-blue-500/30";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+        return "bg-gray-500/20 text-[var(--foreground-muted)] border-gray-500/30";
     }
   };
 
@@ -142,8 +142,8 @@ export default function LogsTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-100">{t("admin.logs.title")}</h2>
-          <p className="text-sm text-gray-400">
+          <h2 className="text-xl font-semibold text-[var(--foreground)]">{t("admin.logs.title")}</h2>
+          <p className="text-sm text-[var(--foreground-muted)]">
             {t("admin.logs.total_shares", { count: pagination.total })}
           </p>
         </div>
@@ -159,10 +159,10 @@ export default function LogsTab() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t("admin.logs.search_placeholder")}
-              className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-[var(--surface)]/50 border border-[var(--border)] rounded-lg px-4 py-2 pl-10 text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
             />
             <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -180,8 +180,8 @@ export default function LogsTab() {
               onClick={() => handleTypeChange(type)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 typeFilter === type
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800/50 text-gray-400 hover:text-gray-300 border border-gray-700"
+                  ? "bg-[var(--primary)] text-white"
+                  : "bg-[var(--surface)]/50 text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border)]"
               }`}
             >
               {type === "all" ? t("admin.logs.filter_all") : t(`admin.logs.filter_${type.toLowerCase()}`)}
@@ -194,26 +194,26 @@ export default function LogsTab() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-700/50">
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <tr className="border-b border-[var(--border)]/50">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.type")}
               </th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.slug")}
               </th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.owner")}
               </th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.ip")}
               </th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.created")}
               </th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.expires")}
               </th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.status")}
               </th>
             </tr>
@@ -221,7 +221,7 @@ export default function LogsTab() {
           <tbody className="divide-y divide-gray-700/30">
             {loading ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-gray-400">
+                <td colSpan={7} className="py-8 text-center text-[var(--foreground-muted)]">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
                     {t("loading")}
@@ -230,13 +230,13 @@ export default function LogsTab() {
               </tr>
             ) : logs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-gray-400">
+                <td colSpan={7} className="py-8 text-center text-[var(--foreground-muted)]">
                   {t("admin.logs.no_logs")}
                 </td>
               </tr>
             ) : (
               logs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-800/30 transition-colors">
+                <tr key={log.id} className="hover:bg-[var(--surface)]/30 transition-colors">
                   <td className="py-3 px-4">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getTypeBadgeColor(log.type)}`}>
                       {getTypeIcon(log.type)}
@@ -244,7 +244,7 @@ export default function LogsTab() {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <code className="text-sm text-gray-300 bg-gray-800 px-2 py-1 rounded">
+                    <code className="text-sm text-[var(--foreground)] bg-[var(--surface)] px-2 py-1 rounded">
                       <a href={getTypeUrl(log.type, log.slug)} target="_blank" rel="noopener noreferrer">
                         {log.slug}
                       </a>
@@ -253,25 +253,25 @@ export default function LogsTab() {
                   <td className="py-3 px-4">
                     {log.owner ? (
                       <div className="text-sm">
-                        <div className="text-gray-200">{log.owner.name || log.owner.email}</div>
+                        <div className="text-[var(--foreground)]">{log.owner.name || log.owner.email}</div>
                         {log.owner.name && (
-                          <div className="text-gray-500 text-xs">{log.owner.email}</div>
+                          <div className="text-[var(--foreground-muted)] text-xs">{log.owner.email}</div>
                         )}
                       </div>
                     ) : (
-                      <span className="text-gray-500 text-sm italic">{t("admin.logs.anonymous")}</span>
+                      <span className="text-[var(--foreground-muted)] text-sm italic">{t("admin.logs.anonymous")}</span>
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-gray-400 font-mono">
+                    <span className="text-sm text-[var(--foreground-muted)] font-mono">
                       {log.ipSource || "-"}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-gray-300">{formatDate(log.createdAt)}</span>
+                    <span className="text-sm text-[var(--foreground)]">{formatDate(log.createdAt)}</span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-gray-400">
+                    <span className="text-sm text-[var(--foreground-muted)]">
                       {log.expiresAt ? formatDate(log.expiresAt) : t("admin.logs.never")}
                     </span>
                   </td>
@@ -304,8 +304,8 @@ export default function LogsTab() {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
-          <div className="text-sm text-gray-400">
+        <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]/50">
+          <div className="text-sm text-[var(--foreground-muted)]">
             {t("admin.logs.pagination_info", {
               start: (pagination.page - 1) * pagination.limit + 1,
               end: Math.min(pagination.page * pagination.limit, pagination.total),
@@ -316,17 +316,17 @@ export default function LogsTab() {
             <button
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
               disabled={pagination.page === 1}
-              className="px-3 py-1 rounded bg-gray-800/50 border border-gray-700 text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 rounded bg-[var(--surface)]/50 border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t("admin.logs.previous")}
             </button>
-            <span className="px-3 py-1 text-gray-400">
+            <span className="px-3 py-1 text-[var(--foreground-muted)]">
               {pagination.page} / {pagination.totalPages}
             </span>
             <button
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
               disabled={pagination.page === pagination.totalPages}
-              className="px-3 py-1 rounded bg-gray-800/50 border border-gray-700 text-gray-400 hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1 rounded bg-[var(--surface)]/50 border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t("admin.logs.next")}
             </button>

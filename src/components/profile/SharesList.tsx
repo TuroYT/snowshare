@@ -30,8 +30,8 @@ export default function SharesList({ shares, onDelete, onUpdate }: SharesListPro
     return (
       <div className="modern-card p-12 text-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-gray-700/20 to-gray-800/20 border border-gray-700/50 flex items-center justify-center">
-            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-gray-700/20 to-gray-800/20 border border-[var(--border)]/50 flex items-center justify-center">
+            <svg className="w-8 h-8 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -41,8 +41,8 @@ export default function SharesList({ shares, onDelete, onUpdate }: SharesListPro
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-300 mb-1">{t("profile.no_shares")}</h3>
-            <p className="text-sm text-gray-400">{t("profile.no_shares_desc")}</p>
+            <h3 className="text-lg font-semibold text-[var(--foreground)] mb-1">{t("profile.no_shares")}</h3>
+            <p className="text-sm text-[var(--foreground-muted)]">{t("profile.no_shares_desc")}</p>
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@ export default function SharesList({ shares, onDelete, onUpdate }: SharesListPro
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-200">
+        <h3 className="text-lg font-semibold text-[var(--foreground)]">
           {t("profile.shares_count", { count: shares.length })}
         </h3>
       </div>

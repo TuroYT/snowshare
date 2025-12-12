@@ -76,7 +76,7 @@ export default function QuotasTab() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-400">{t("admin.loading")}</p>
+          <p className="mt-2 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
         </div>
       </div>
     )
@@ -101,47 +101,47 @@ export default function QuotasTab() {
       {/* Anonymous Users Quotas */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-blue-600/20 border border-blue-700/50 flex items-center justify-center">
-            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
+            <svg className="w-4 h-4 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-100">{t("admin.quotas.section_anonymous")}</h3>
+          <h3 className="text-lg font-semibold text-[var(--foreground)]">{t("admin.quotas.section_anonymous")}</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-700/20 rounded-lg border border-gray-700/50">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
           <div>
-            <label className="text-gray-200 font-medium">{t("admin.quotas.max_file_size")}</label>
-            <p className="text-sm text-gray-400 mt-1">{t("admin.quotas.max_file_size_hint")}</p>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.max_file_size")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.quotas.max_file_size_hint")}</p>
             <div className="relative mt-2">
               <input
                 type="number"
                 value={settings.anoMaxUpload}
                 onChange={(e) => handleChange("anoMaxUpload", parseInt(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 min="0"
               />
-              <span className="absolute right-3 top-2 text-gray-400 text-sm">MB</span>
+              <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[var(--foreground-muted)] mt-2">
               {t("admin.quotas.current_value", { value: settings.anoMaxUpload })}
             </p>
           </div>
 
           <div>
-            <label className="text-gray-200 font-medium">{t("admin.quotas.ip_quota")}</label>
-            <p className="text-sm text-gray-400 mt-1">{t("admin.quotas.ip_quota_hint")}</p>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.ip_quota")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.quotas.ip_quota_hint")}</p>
             <div className="relative mt-2">
               <input
                 type="number"
                 value={settings.anoIpQuota}
                 onChange={(e) => handleChange("anoIpQuota", parseInt(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 min="0"
               />
-              <span className="absolute right-3 top-2 text-gray-400 text-sm">MB</span>
+              <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[var(--foreground-muted)] mt-2">
               {t("admin.quotas.current_value", { value: settings.anoIpQuota })}
             </p>
           </div>
@@ -151,47 +151,47 @@ export default function QuotasTab() {
       {/* Authenticated Users Quotas */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-purple-600/20 border border-purple-700/50 flex items-center justify-center">
-            <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-8 w-8 rounded-lg bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]/50 flex items-center justify-center">
+            <svg className="w-4 h-4 text-[var(--secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-100">{t("admin.quotas.section_authenticated")}</h3>
+          <h3 className="text-lg font-semibold text-[var(--foreground)]">{t("admin.quotas.section_authenticated")}</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-700/20 rounded-lg border border-gray-700/50">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
           <div>
-            <label className="text-gray-200 font-medium">{t("admin.quotas.max_file_size")}</label>
-            <p className="text-sm text-gray-400 mt-1">{t("admin.quotas.max_file_size_hint")}</p>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.max_file_size")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.quotas.max_file_size_hint")}</p>
             <div className="relative mt-2">
               <input
                 type="number"
                 value={settings.authMaxUpload}
                 onChange={(e) => handleChange("authMaxUpload", parseInt(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 min="0"
               />
-              <span className="absolute right-3 top-2 text-gray-400 text-sm">MB</span>
+              <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[var(--foreground-muted)] mt-2">
               {t("admin.quotas.current_value", { value: settings.authMaxUpload })}
             </p>
           </div>
 
           <div>
-            <label className="text-gray-200 font-medium">{t("admin.quotas.ip_quota")}</label>
-            <p className="text-sm text-gray-400 mt-1">{t("admin.quotas.ip_quota_hint")}</p>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.ip_quota")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.quotas.ip_quota_hint")}</p>
             <div className="relative mt-2">
               <input
                 type="number"
                 value={settings.authIpQuota}
                 onChange={(e) => handleChange("authIpQuota", parseInt(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 min="0"
               />
-              <span className="absolute right-3 top-2 text-gray-400 text-sm">MB</span>
+              <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[var(--foreground-muted)] mt-2">
               {t("admin.quotas.current_value", { value: settings.authIpQuota })}
             </p>
           </div>
@@ -199,7 +199,7 @@ export default function QuotasTab() {
       </div>
 
       {/* Info Box */}
-      <div className="p-4 bg-blue-600/10 border border-blue-700/30 rounded-lg text-blue-300 text-sm">
+      <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg text-[var(--primary-hover)] text-sm">
         <p className="font-medium mb-1">💡 Info</p>
         <ul className="space-y-1 text-xs">
           <li>• {t("admin.quotas.max_file_size_hint")}</li>
