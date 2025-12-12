@@ -111,7 +111,7 @@ export default function Navigation() {
               </div>
               <span 
                 className="text-xl font-bold bg-clip-text text-transparent group-hover:opacity-80 transition-all"
-                style={{ backgroundImage: `linear-gradient(to right, ${branding.primaryColor}, ${branding.accentColor})` }}
+                style={{ backgroundImage: `linear-gradient(to right, ${branding.primaryColor}, ${branding.secondaryColor})` }}
               >
                 {branding.appName}
               </span>
