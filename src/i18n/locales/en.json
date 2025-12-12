@@ -396,6 +396,13 @@
       "borders_label": "Borders",
       "borders_hint": "Border color",
       "theme_preview": "Theme Preview"
+    },
+    "update": {
+      "title": "Update Available",
+      "description": "A new version of SnowShare is available.",
+      "view_release": "View Release Notes",
+      "upgrade_guide": "Upgrade Guide",
+      "dismiss": "Dismiss"
     }
   },
   "paste_view": {

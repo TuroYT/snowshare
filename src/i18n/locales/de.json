@@ -392,6 +392,13 @@
       "borders_label": "Rahmen",
       "borders_hint": "Rahmenfarbe",
       "theme_preview": "Themenvorschau"
+    },
+    "update": {
+      "title": "Update verfügbar",
+      "description": "Eine neue Version von SnowShare ist verfügbar.",
+      "view_release": "Release-Notes ansehen",
+      "upgrade_guide": "Upgrade-Anleitung",
+      "dismiss": "Schließen"
     }
   },
   "paste_view": {
