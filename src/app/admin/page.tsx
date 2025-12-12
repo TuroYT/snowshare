@@ -10,6 +10,7 @@ import UsersTab from "@/components/admin/UsersTab"
 import SettingsTab from "@/components/admin/SettingsTab"
 import LogsTab from "@/components/admin/LogsTab"
 import BrandingTab from "@/components/admin/BrandingTab"
+import UpdateNotification from "@/components/admin/UpdateNotification"
 
 type Tab = "users" | "settings" | "branding" | "logs"
 
@@ -98,6 +99,9 @@ export default function AdminPage() {
             </h1>
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
           </div>
+
+          {/* Update Notification */}
+          <UpdateNotification />
 
           {/* Tabs */}
           <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto">
