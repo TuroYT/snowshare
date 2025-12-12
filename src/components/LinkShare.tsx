@@ -157,10 +157,10 @@ const LinkShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-gray-800/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-gray-700/50 w-full max-w-2xl mx-auto">
+    <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6 justify-center">
-        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-700/50 flex items-center justify-center">
-          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}>
+          <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -170,8 +170,8 @@ const LinkShare: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-100">{t("linkshare.title", "Partager un lien")}</h2>
-          <p className="text-sm text-gray-400">
+          <h2 className="text-xl font-bold text-[var(--foreground)]">{t("linkshare.title", "Partager un lien")}</h2>
+          <p className="text-sm text-[var(--foreground-muted)]">
             {t("linkshare.subtitle", "Créez un lien partageable pour n'importe quelle URL")}
           </p>
         </div>
@@ -180,7 +180,7 @@ const LinkShare: React.FC = () => {
   <form onSubmit={handleSubmit} className="space-y-6">
         {/* Enhanced URL input */}
         <div className="space-y-2">
-          <label htmlFor="url" className="block text-sm font-medium text-gray-300">
+          <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">
             {t("linkshare.label_url", "URL à partager")}&nbsp;<span className="text-red-400">*</span>
           </label>
           <div className="relative">
@@ -205,13 +205,13 @@ const LinkShare: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-300">
+          <label className="block text-sm font-medium text-[var(--foreground)]">
             {t("linkshare.validity_label", "Durée de validité")}
           </label>
 
           {isAuthenticated && (
-            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600/50">
-              <label className="flex items-center gap-4 cursor-pointer hover:bg-gray-700/30 rounded-lg p-3 -m-3 transition-colors">
+            <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
+              <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--surface)]/30 rounded-lg p-3 -m-3 transition-colors">
                 <div className="relative flex-shrink-0">
                   <input
                     type="checkbox"
@@ -224,10 +224,10 @@ const LinkShare: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-100 mb-1">
+                  <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
                     {t("linkshare.never_expires", "Aucune expiration")}
                   </div>
-                  <div className="text-xs text-gray-400 leading-relaxed">
+                  <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
                     {t("linkshare.never_expires_desc", "Ce lien restera actif indéfiniment")}
                   </div>
                 </div>
@@ -248,13 +248,13 @@ const LinkShare: React.FC = () => {
                 className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
-            <span className="text-sm text-gray-400 min-w-0">{t("linkshare.days", "jours")}</span>
+            <span className="text-sm text-[var(--foreground-muted)] min-w-0">{t("linkshare.days", "jours")}</span>
           </div>
 
-          <div className="text-xs text-gray-400 bg-gray-800/30 p-3 rounded-xl border border-gray-600/30">
+          <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)]/30 p-3 rounded-xl border border-[var(--border)]/30">
             <div className="flex items-center gap-2">
               <svg
-                className="w-3 h-3 text-blue-400 flex-shrink-0"
+                className="w-3 h-3 text-[var(--primary)] flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -271,7 +271,7 @@ const LinkShare: React.FC = () => {
           </div>
 
           {!isAuthenticated && (
-            <p className="text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded p-2">
+            <p className="text-xs bg-[var(--surface)] border border-[var(--border)] rounded p-2 text-[var(--foreground-muted)]">
               💡{" "}
               {t(
                 "linkshare.login_for_more",
@@ -282,8 +282,8 @@ const LinkShare: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-600/50 space-y-4">
-          <h3 className="text-sm font-medium text-gray-200 flex items-center gap-2">
+        <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50 space-y-4">
+          <h3 className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -297,11 +297,11 @@ const LinkShare: React.FC = () => {
 
           <div className="space-y-3">
             <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t("linkshare.custom_slug", "Lien personnalisé")}
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
-                <span className="text-sm text-gray-400 whitespace-nowrap">
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">
                   {typeof window !== "undefined" ? window.location.origin + "/l/" : "/l/"}
                 </span>
                 <input
@@ -314,13 +314,13 @@ const LinkShare: React.FC = () => {
                   className="input-paste flex-1"
                 />
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
                 {t("linkshare.slug_hint", "Lettres, chiffres, tirets et underscores uniquement")}
               </p>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                 {t("linkshare.password_protect", "Protection par mot de passe")}
               </label>
               <div className="relative">
@@ -333,7 +333,7 @@ const LinkShare: React.FC = () => {
                   className="input-paste w-full pr-10"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -381,10 +381,10 @@ const LinkShare: React.FC = () => {
           </button>
 
           {!loading && url.trim() && !urlError && (
-            <p className="text-xs text-gray-400 text-center mt-2">
+            <p className="text-xs text-[var(--foreground-muted)] text-center mt-2">
               💡 {t("linkshare.shortcut", "Astuce :")}{" "}
-              <kbd className="px-1 py-0.5 bg-gray-700 border border-gray-600 rounded text-xs">Ctrl</kbd> +{" "}
-              <kbd className="px-1 py-0.5 bg-gray-700 border border-gray-600 rounded text-xs">Entrée</kbd>{" "}
+              <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">Ctrl</kbd> +{" "}
+              <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">Entrée</kbd>{" "}
               {t("linkshare.shortcut_tail", "pour créer rapidement")}
             </p>
           )}
@@ -435,13 +435,13 @@ const LinkShare: React.FC = () => {
               <h4 className="text-sm font-medium text-green-300 mb-2">
                 {t("linkshare.success_title", "Lien créé avec succès !")}
               </h4>
-              <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <a
                     href={success}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-blue-400 hover:text-blue-300 underline break-all"
+                    className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] underline break-all"
                   >
                     {success}
                   </a>
@@ -454,7 +454,7 @@ const LinkShare: React.FC = () => {
                 <div className="flex-shrink-0 flex items-start gap-2">
                   <button
                     onClick={() => copyToClipboard(success)}
-                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+                    className="p-2 text-[var(--foreground-muted)] hover:text-white hover:bg-[var(--surface)] rounded transition-colors"
                     title={t("linkshare.copy_title", "Copier le lien")}
                   >
                     {copied ? (
@@ -475,8 +475,8 @@ const LinkShare: React.FC = () => {
                 </div>
               </div>
               <div className="mt-4 flex justify-center">
-                <div className="flex flex-col items-center bg-gray-800/50 p-4 rounded-xl border border-gray-600/50">
-                  <p className="text-sm text-gray-300 mb-2 text-center">
+                <div className="flex flex-col items-center bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
+                  <p className="text-sm text-[var(--foreground)] mb-2 text-center">
                     {t("linkshare.qr_info", "Scanner ce QR code pour accéder au lien")}
                   </p>
                   <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>
@@ -490,53 +490,53 @@ const LinkShare: React.FC = () => {
       )}
       <style jsx global>{`
         .input-paste {
-          border: 1px solid #374151;
+          border: 1px solid var(--border);
           border-radius: 0.75rem;
           padding: 0.75rem 1rem;
           font-size: 0.875rem;
-          background: #1f2937;
-          color: #f3f4f6;
+          background: var(--surface);
+          color: var(--foreground);
           transition: all 0.2s ease;
         }
         .input-paste:focus {
           outline: none;
-          border-color: #3b82f6;
-          background: #111827;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: var(--primary);
+          background: var(--background);
+          box-shadow: 0 0 0 3px rgb(from var(--primary) r g b / 0.1);
         }
         .input-paste::placeholder {
-          color: #9ca3af;
+          color: var(--foreground-muted);
           opacity: 1;
         }
         .btn-paste {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
           color: #fff;
           border-radius: 0.75rem;
           font-weight: 600;
-          box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
+          box-shadow: 0 4px 14px 0 rgb(from var(--primary) r g b / 0.25);
           transition: all 0.3s ease;
         }
         .btn-paste:hover {
-          background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+          background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+          box-shadow: 0 6px 20px 0 rgb(from var(--primary) r g b / 0.4);
         }
         label {
-          color: #f3f4f6;
+          color: var(--foreground);
           font-weight: 500;
         }
         .toggle-slider {
           width: 2.75rem;
           height: 1.5rem;
-          background-color: #374151;
+          background-color: var(--surface);
           border-radius: 0.75rem;
           position: relative;
           transition: all 0.3s ease;
-          border: 2px solid #4b5563;
+          border: 2px solid var(--border);
         }
         .toggle-slider-active {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-          border-color: #8b5cf6;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          border-color: var(--secondary);
         }
         .toggle-slider-thumb {
           width: 1rem;

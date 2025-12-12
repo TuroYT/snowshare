@@ -83,8 +83,8 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
   return (
     <div className="modern-card p-6">
       <div className="flex items-center gap-4 mb-6">
-        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-700/50 flex items-center justify-center">
-          <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}>
+          <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -94,15 +94,15 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-100">{t("profile.info_title")}</h2>
-          <p className="text-sm text-gray-400">{t("profile.info_subtitle")}</p>
+          <h2 className="text-xl font-bold text-[var(--foreground)]">{t("profile.info_title")}</h2>
+          <p className="text-sm text-[var(--foreground-muted)]">{t("profile.info_subtitle")}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_name")}</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_name")}</label>
             <input
               type="text"
               value={name}
@@ -113,7 +113,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               {t("profile.label_email")} <span className="text-red-400">*</span>
             </label>
             <input
@@ -126,9 +126,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-6">
-          <h3 className="text-lg font-medium text-gray-200 mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="border-t border-[var(--border)] pt-6">
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-[var(--secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -141,7 +141,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_current_password")}</label>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_current_password")}</label>
               <input
                 type="password"
                 value={currentPassword}
@@ -152,7 +152,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_new_password")}</label>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_new_password")}</label>
               <input
                 type="password"
                 value={newPassword}
@@ -163,7 +163,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t("profile.label_confirm_password")}</label>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_confirm_password")}</label>
               <input
                 type="password"
                 value={confirmPassword}

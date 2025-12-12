@@ -117,7 +117,7 @@ const ProfilePage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-900">
+      <div className="min-h-screen bg-[var(--background)]">
         <Navigation />
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
@@ -134,7 +134,7 @@ const ProfilePage = () => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <p className="text-gray-300">{t("profile.loading")}</p>
+            <p className="text-[var(--foreground)]">{t("profile.loading")}</p>
           </div>
         </div>
       </div>
@@ -146,16 +146,16 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-[var(--background)]">
       <Navigation />
 
       <main className="max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold sm:text-6xl bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-extrabold sm:text-6xl bg-clip-text text-transparent mb-4" style={{ backgroundImage: 'linear-gradient(to right, var(--primary), var(--secondary), var(--primary))' }}>
             {t("profile.title")}
           </h1>
-          <p className="text-xl text-gray-300">
+          <p className="text-xl text-[var(--foreground)]">
             {t("profile.subtitle")}
           </p>
         </div>

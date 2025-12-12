@@ -51,12 +51,12 @@ export default function PrivateLinkPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-blue-900/20 border border-blue-800">
             <svg 
-              className="h-8 w-8 text-blue-400" 
+              className="h-8 w-8 text-[var(--primary)]" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -69,17 +69,17 @@ export default function PrivateLinkPage() {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-100">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
             {t("link_private.title")}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-400">
+          <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
             {t("link_private.subtitle")}
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
               {t("link_private.password_label")}
             </label>
             <input
@@ -88,7 +88,7 @@ export default function PrivateLinkPage() {
               type="password"
               autoComplete="current-password"
               required
-              className="appearance-none relative block w-full px-3 py-3 border border-gray-600 placeholder-gray-400 text-gray-100 bg-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors"
+              className="appearance-none relative block w-full px-3 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] focus:z-10 sm:text-sm transition-colors"
               placeholder={t("link_private.password_placeholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -110,7 +110,7 @@ export default function PrivateLinkPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
                 <div className="flex items-center">
@@ -128,7 +128,7 @@ export default function PrivateLinkPage() {
             <div className="text-center">
               <Link
                 href="/"
-                className="inline-flex items-center text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                className="inline-flex items-center text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -139,7 +139,7 @@ export default function PrivateLinkPage() {
           </div>
         </form>
 
-        <div className="mt-6 text-center text-xs text-gray-500">
+        <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
           <p>
             {t("link_private.disclaimer")}
           </p>

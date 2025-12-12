@@ -242,7 +242,7 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
             {t("paste_view.password_label")}
           </label>
           <input
-            className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
             style={{ 
               background: "var(--input)", 
               color: "var(--foreground)", 

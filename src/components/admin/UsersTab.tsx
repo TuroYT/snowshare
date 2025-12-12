@@ -88,7 +88,7 @@ export default function UsersTab() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-400">{t("admin.loading")}</p>
+          <p className="mt-2 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
         </div>
       </div>
     )
@@ -98,13 +98,13 @@ export default function UsersTab() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-blue-600/10 to-blue-800/10 border border-blue-700/30 rounded-xl p-4">
-          <div className="text-sm text-gray-400">{t("admin.users.total_users")}</div>
-          <div className="text-3xl font-bold text-blue-400 mt-1">{totalUsers}</div>
+        <div className="border border-[var(--primary-dark)]/30 rounded-xl p-4" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.1), rgb(from var(--primary-dark) r g b / 0.1))' }}>
+          <div className="text-sm text-[var(--foreground-muted)]">{t("admin.users.total_users")}</div>
+          <div className="text-3xl font-bold text-[var(--primary)] mt-1">{totalUsers}</div>
         </div>
-        <div className="bg-gradient-to-br from-purple-600/10 to-purple-800/10 border border-purple-700/30 rounded-xl p-4">
-          <div className="text-sm text-gray-400">{t("admin.users.admin_users")}</div>
-          <div className="text-3xl font-bold text-purple-400 mt-1">{adminUsers}</div>
+        <div className="border border-[var(--secondary-dark)]/30 rounded-xl p-4" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--secondary) r g b / 0.1), rgb(from var(--secondary-dark) r g b / 0.1))' }}>
+          <div className="text-sm text-[var(--foreground-muted)]">{t("admin.users.admin_users")}</div>
+          <div className="text-3xl font-bold text-[var(--secondary)] mt-1">{adminUsers}</div>
         </div>
       </div>
 
@@ -121,48 +121,48 @@ export default function UsersTab() {
           placeholder={t("admin.users.search_placeholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
         />
       </div>
 
       {/* Users Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-700/50">
+      <div className="overflow-x-auto rounded-lg border border-[var(--border)]/50">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-700/30 border-b border-gray-700/50">
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-300">{t("admin.users.table_headers.email")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-300">{t("admin.users.table_headers.name")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-300">{t("admin.users.table_headers.role")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-300">{t("admin.users.table_headers.shares")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-300">{t("admin.users.table_headers.created")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-300">{t("admin.users.table_headers.actions")}</th>
+            <tr className="bg-[var(--surface)]/30 border-b border-[var(--border)]/50">
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.email")}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.name")}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.role")}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.shares")}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.created")}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.actions")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700/50">
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                <td colSpan={6} className="px-6 py-8 text-center text-[var(--foreground-muted)]">
                   {t("admin.users.no_users")}
                 </td>
               </tr>
             ) : (
               filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-700/20 transition-colors">
-                  <td className="px-6 py-3 text-sm text-gray-300">{user.email}</td>
-                  <td className="px-6 py-3 text-sm text-gray-400">{user.name || "-"}</td>
+                <tr key={user.id} className="hover:bg-[var(--surface)]/20 transition-colors">
+                  <td className="px-6 py-3 text-sm text-[var(--foreground)]">{user.email}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">{user.name || "-"}</td>
                   <td className="px-6 py-3 text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         user.isAdmin
                           ? "bg-yellow-600/20 border border-yellow-700/50 text-yellow-400"
-                          : "bg-gray-700/50 border border-gray-600/50 text-gray-400"
+                          : "bg-[var(--surface)]/50 border border-[var(--border)]/50 text-[var(--foreground-muted)]"
                       }`}
                     >
                       {user.isAdmin ? t("admin.users.role_admin") : t("admin.users.role_user")}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-400">{user._count.shares}</td>
-                  <td className="px-6 py-3 text-sm text-gray-400">
+                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">{user._count.shares}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-3 text-sm">
