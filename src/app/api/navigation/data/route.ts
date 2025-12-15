@@ -12,7 +12,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
-    // Fetch settings (for allowSignup)
+    // Fetch settings (for allowSignin)
     const settings = await prisma.settings.findFirst();
     
     // If user is authenticated, fetch their profile
@@ -31,7 +31,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      allowSignup: settings?.allowSignup ?? true,
+      allowSignin: settings?.allowSignin ?? true,
       user: userData,
       isAuthenticated: !!session,
     }, {

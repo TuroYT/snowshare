@@ -12,7 +12,7 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const [allowSignup, setAllowSignup] = useState(true)
+  const [allowSignin, setallowSignin] = useState(true)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const router = useRouter()
   const { t } = useTranslation()
@@ -24,11 +24,11 @@ export default function SignUp() {
         const response = await fetch("/api/setup/check")
         if (response.ok) {
           const data = await response.json()
-          setAllowSignup(data.allowSignup ?? true)
+          setallowSignin(data.allowSignin ?? true)
         }
       } catch (error) {
         console.error("Error fetching signup status:", error)
-        setAllowSignup(true) // Default to true on error
+        setallowSignin(true) // Default to true on error
       } finally {
         setCheckingStatus(false)
       }
@@ -50,7 +50,7 @@ export default function SignUp() {
   }
 
   // Redirect to signin if signup is disabled
-  if (!allowSignup) {
+  if (!allowSignin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 text-center">

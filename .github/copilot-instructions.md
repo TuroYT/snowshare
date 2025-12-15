@@ -28,7 +28,7 @@ Core services:
 **Models** (`prisma/schema.prisma`):
 - `User` (auth): email, password (bcrypt), isAdmin, shares
 - `Share` (core): type (FILE|PASTE|URL), slug, password, expiresAt, ipSource, owner
-- `Settings`: allowSignup, quotas (fileMax, totalMax)
+- `Settings`: allowSignin, quotas (fileMax, totalMax)
 - `Account`, `Session`, `VerificationToken` (NextAuth)
 
 # Authentication system (critical)
@@ -37,7 +37,7 @@ Core services:
 - **Strategy**: JWT with callbacks sync `token.id` + `token.name` to session
 - **Session access**: `const session = await getServerSession(authOptions)` in API routes
 - **First user auto-admin**: Registered via `/api/auth/register` → `isAdmin: true` (no admins yet)
-- **Signup toggle**: Database `Settings.allowSignup` (checked via `/api/setup/check`). Respects `NEXT_PUBLIC_ALLOW_SIGNUP` env
+- **Signup toggle**: Database `Settings.allowSignin` (checked via `/api/setup/check`). Respects `NEXT_PUBLIC_ALLOW_SIGNUP` env
 - **Protected routes**: Middleware in `src/middleware.ts` redirects unauthenticated users from `/profile`, `/admin`, protected APIs
 - **Session module**: Extend with `interface User { id, name? }` and `interface JWT { id, name? }` in `src/lib/auth.ts`
 
@@ -88,7 +88,7 @@ npx prisma db seed                     # Run prisma/seed.ts (if exists)
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_URL`: Base URL (http://localhost:3000)
 - `NEXTAUTH_SECRET`: Random JWT secret (use `openssl rand -base64 32`)
-- `ALLOW_SIGNUP`: Boolean (controls `Settings.allowSignup`, exported as `NEXT_PUBLIC_ALLOW_SIGNUP`)
+- `ALLOW_SIGNUP`: Boolean (controls `Settings.allowSignin`, exported as `NEXT_PUBLIC_ALLOW_SIGNUP`)
 - `PORT`: Dev server port (default 3000)
 
 # Project conventions

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     // Get settings from database
-    let allowSignup = true; // Default value
+    let allowSignin = true; // Default value
     const settings = await prisma.settings.findFirst({
       select: {
         allowSignin: true,
@@ -12,16 +12,16 @@ export async function GET() {
     });
 
     if (settings) {
-      allowSignup = settings.allowSignin;
+      allowSignin = settings.allowSignin;
     }
 
     return NextResponse.json({
-      allowSignup,
+      allowSignin,
     });
   } catch (error) {
     console.error("Error fetching signup status:", error);
     return NextResponse.json(
-      { allowSignup: true }, // Default to true on error
+      { allowSignin: true }, // Default to true on error
       { status: 200 }
     );
   }

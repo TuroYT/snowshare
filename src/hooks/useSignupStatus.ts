@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 
 export function useSignupStatus() {
-  const [allowSignup, setAllowSignup] = useState(true)
+  const [allowSignin, setallowSignin] = useState(true)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -12,12 +12,12 @@ export function useSignupStatus() {
         const response = await fetch("/api/setup/check")
         if (response.ok) {
           const data = await response.json()
-          setAllowSignup(data.allowSignup ?? true)
+          setallowSignin(data.allowSignin ?? true)
         }
       } catch (error) {
         console.error("Error fetching signup status:", error)
         // Default to true on error
-        setAllowSignup(true)
+        setallowSignin(true)
       } finally {
         setLoading(false)
       }
@@ -26,5 +26,5 @@ export function useSignupStatus() {
     fetchSignupStatus()
   }, [])
 
-  return { allowSignup, loading }
+  return { allowSignin, loading }
 }

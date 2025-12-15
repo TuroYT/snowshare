@@ -7,7 +7,7 @@ export async function GET() {
         const NEED_SETUP = USER_COUNT === 0;
 
         // Get settings from database
-        let allowSignup = true; // Default value
+        let allowSignin = true; // Default value
         const settings = await prisma.settings.findFirst({
             select: {
                 allowSignin: true
@@ -15,7 +15,7 @@ export async function GET() {
         });
 
         if (settings) {
-            allowSignup = settings.allowSignin;
+            allowSignin = settings.allowSignin;
         } else if (NEED_SETUP) {
             // Create default settings if they don't exist during setup
             await prisma.settings.upsert({
@@ -30,7 +30,7 @@ export async function GET() {
 
         return NextResponse.json({
             needsSetup: NEED_SETUP,
-            allowSignup
+            allowSignin
         });
     } catch (error) {
         console.error("Error checking setup status:", error);

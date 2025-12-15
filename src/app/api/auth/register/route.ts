@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const isActuallyFirstUser = userCount === 0
     
     // Get DB settings
-    let allowSignup = true // Default to true
+    let allowSignin = true // Default to true
     const settings = await prisma.settings.findFirst({
       select: {
         allowSignin: true
@@ -22,13 +22,13 @@ export async function POST(request: NextRequest) {
     })
     
     if (settings) {
-      allowSignup = settings.allowSignin
+      allowSignin = settings.allowSignin
     }
 
     // Allow registration if:
     // 1. Settings allow signup (allowSignin), OR
     // 2. This is the first user being created (database is empty)
-    if (!allowSignup && !isActuallyFirstUser) {
+    if (!allowSignin && !isActuallyFirstUser) {
       return NextResponse.json(
         { error: "L'inscription est désactivée" },
         { status: 403 }

@@ -16,7 +16,7 @@ function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
-  const [allowSignup, setAllowSignup] = useState(true)
+  const [allowSignin, setallowSignin] = useState(true)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   // Combined API call for better performance (replaces 2 separate calls)
@@ -26,14 +26,14 @@ function Navigation() {
         const response = await fetch("/api/navigation/data")
         if (response.ok) {
           const data = await response.json()
-          setAllowSignup(data.allowSignup ?? true)
+          setallowSignin(data.allowSignin ?? true)
           if (data.user) {
             setIsAdmin(data.user.isAdmin ?? false)
           }
         }
       } catch (error) {
         console.error("Error fetching navigation data:", error)
-        setAllowSignup(true) // Default to true on error
+        setallowSignin(true) // Default to true on error
       }
     }
 
@@ -246,7 +246,7 @@ function Navigation() {
                   >
                     {t('nav.signin')}
                   </Link>
-                  {allowSignup && (
+                  {allowSignin && (
                     <Link
                       href="/auth/signup"
                       className="text-white px-5 py-2 rounded-xl text-sm font-medium transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
@@ -347,7 +347,7 @@ function Navigation() {
                 >
                   {t('nav.signin')}
                 </Link>
-                {allowSignup && (
+                {allowSignin && (
                   <Link
                     href="/auth/signup"
                     onClick={() => setMobileOpen(false)}
