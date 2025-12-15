@@ -85,8 +85,7 @@ body {
 
 /* Modern component classes */
 .modern-card {
-  background-color: rgba(31, 41, 55, 0.3);
-  backdrop-filter: blur(12px);
+  background-color: rgba(31, 41, 55, 0.95);
   border: 1px solid rgba(55, 65, 81, 0.5);
   border-radius: 1rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -198,8 +197,7 @@ body {
 }
 
 .modern-section {
-  background-color: rgba(31, 41, 55, 0.3);
-  backdrop-filter: blur(12px);
+  background-color: rgba(31, 41, 55, 0.95);
   padding: 1.5rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(55, 65, 81, 0.5);
@@ -305,18 +303,7 @@ body {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent), 0 0 0 4px var(--background);
 }
 
-/* Backdrop blur utilities */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-}
-
-.backdrop-blur-md {
-  backdrop-filter: blur(12px);
-}
-
-.backdrop-blur-lg {
-  backdrop-filter: blur(16px);
-}
+/* Backdrop blur utilities - Removed for performance on low-power devices */
 
 /* Custom gradient backgrounds */
 .bg-gradient-modern {

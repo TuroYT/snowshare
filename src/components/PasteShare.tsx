@@ -32,7 +32,7 @@ const PasteShare: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
         {/* Grand éditeur de code */}
         <div className="flex-1 min-w-0 max-w-full flex-container-safe">
-          <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[70vh]">
+          <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[70vh]">
             <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
               <div className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}>
                 <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +52,7 @@ const PasteShare: React.FC = () => {
         
         {/* Formulaire à droite sur desktop, en bas sur mobile */}
         <div className="w-full lg:w-96 lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
-          <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50">
+          <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50">
             <ManageCodeBlock
               code={code}
               onCodeChange={setCode}
