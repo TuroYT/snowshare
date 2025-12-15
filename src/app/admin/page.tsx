@@ -121,7 +121,7 @@ export default function AdminPage() {
           </div>
 
           {/* Tab Content */}
-          <div className="bg-[var(--surface)]/30 border border-[var(--border)]/50 rounded-2xl p-6 backdrop-blur-sm">
+          <div className="bg-[var(--surface)] bg-opacity-95 border border-[var(--border)]/50 rounded-2xl p-6">
             {activeTab === "users" && <UsersTab />}
             {activeTab === "settings" && <SettingsTab />}
             {activeTab === "branding" && <BrandingTab />}
