@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
-import { QRCodeSVG } from "qrcode.react";
+import LazyQRCode from "@/components/ui/LazyQRCode";
 import { throttle } from "@/lib/throttle";
 
 const MAX_DAYS_ANON = 7;
@@ -483,9 +483,7 @@ const LinkShare: React.FC = () => {
                   <p className="text-sm text-[var(--foreground)] mb-2 text-center">
                     {t("linkshare.qr_info", "Scanner ce QR code pour accéder au lien")}
                   </p>
-                  <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>
-                    <QRCodeSVG value={success} size={qrSize - 16} className="block" />
-                  </div>
+                  <LazyQRCode value={success} size={qrSize} />
                 </div>
               </div>
             </div>
