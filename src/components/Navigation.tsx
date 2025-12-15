@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
-import { useState, useEffect } from "react"
+import { useState, useEffect, SetStateAction } from "react"
 import { useTheme } from "@/hooks/useTheme"
 import {
   AppBar,
@@ -154,7 +154,7 @@ export default function Navigation() {
             <FormControl size="small">
               <Select
                 value={currentLang}
-                onChange={(e) => changeLang(e.target.value)}
+                onChange={(e: { target: { value: string } }) => changeLang(e.target.value)}
                 sx={{
                   bgcolor: 'rgba(31, 41, 55, 0.5)',
                   color: 'var(--foreground)',
@@ -174,7 +174,7 @@ export default function Navigation() {
             {session ? (
               <>
                 <IconButton
-                  onClick={(e) => setProfileMenuAnchor(e.currentTarget)}
+                  onClick={(e: { currentTarget: SetStateAction<HTMLElement | null> }) => setProfileMenuAnchor(e.currentTarget)}
                   sx={{ p: 0 }}
                 >
                   <Avatar
@@ -300,7 +300,7 @@ export default function Navigation() {
           <FormControl fullWidth size="small">
             <Select
               value={currentLang}
-              onChange={(e) => changeLang(e.target.value, true)}
+              onChange={(e: { target: { value: string } }) => changeLang(e.target.value, true)}
               sx={{
                 bgcolor: 'rgba(31, 41, 55, 0.5)',
                 color: 'var(--foreground)',
