@@ -31,7 +31,7 @@ export async function GET() {
     if (!user?.isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
-
+    
     // Fetch latest release from GitHub
     const response = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,

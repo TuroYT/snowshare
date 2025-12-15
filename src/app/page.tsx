@@ -7,14 +7,12 @@ import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
-import { useBranding } from "@/components/BrandingProvider";
 import { useTheme } from "@/hooks/useTheme";
 
 export default function Home() {
     const [activeTab, setActiveTab] = useState("linkshare");
     const { t } = useTranslation();
-    const { branding } = useBranding();
-    const { colors } = useTheme();
+    const { colors, branding } = useTheme();
 
     const tabs = [
         { id: "linkshare", label: t("tabs.linkshare", "LinkShare"), component: <LinkShare /> },
