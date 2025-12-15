@@ -2,9 +2,10 @@
 
 import { memo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import type { QRCodeSVG as QRCodeSVGType } from "qrcode.react";
 
 // Dynamically import QRCodeSVG only when needed
-let QRCodeSVG: any = null;
+let QRCodeSVG: typeof QRCodeSVGType | null = null;
 
 interface LazyQRCodeProps {
   value: string;

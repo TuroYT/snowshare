@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
  * Combined endpoint for navigation data (replaces /api/setup/check + /api/user/profile)
  * Reduces API calls from 2 to 1 for better mobile performance
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     

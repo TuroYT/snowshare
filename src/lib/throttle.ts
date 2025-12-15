@@ -19,10 +19,12 @@ export function throttle<T extends (...args: unknown[]) => void>(
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
+      // Ensure delay is non-negative
+      const remainingDelay = Math.max(0, delay - (now - lastRan));
       timeoutId = setTimeout(() => {
         func.apply(this, args);
         lastRan = Date.now();
-      }, delay - (now - lastRan));
+      }, remainingDelay);
     }
   };
 }
