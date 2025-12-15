@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
+import { throttle } from "@/lib/throttle";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -82,9 +83,9 @@ const LinkShare: React.FC = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [url, urlError, loading]);
 
-  // Responsive QR size
+  // Responsive QR size with throttled resize handler
   useEffect(() => {
-    const update = () => {
+    const updateQrSize = () => {
       try {
         const w = window.innerWidth;
         // Small screens: smaller QR, larger screens: up to 200
@@ -96,9 +97,12 @@ const LinkShare: React.FC = () => {
         setQrSize(150);
       }
     };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    
+    updateQrSize();
+    // Throttle resize handler to improve performance (limit to once per 200ms)
+    const throttledUpdate = throttle(updateQrSize, 200);
+    window.addEventListener("resize", throttledUpdate);
+    return () => window.removeEventListener("resize", throttledUpdate);
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -557,4 +561,4 @@ const LinkShare: React.FC = () => {
   );
 };
 
-export default LinkShare;
+export default memo(LinkShare);

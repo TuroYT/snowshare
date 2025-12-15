@@ -56,6 +56,10 @@ export async function GET() {
         textMuted: settings.textMuted,
         borderColor: settings.borderColor,
       },
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600', // Cache for 5 minutes
+      },
     });
   } catch (error) {
     console.error("Error fetching public settings:", error);

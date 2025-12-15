@@ -1,11 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 // ...existing code...
 
 import CodeBlock from "./pasteShareComponents/CodeBlock";
 import ManageCodeBlock from "./pasteShareComponents/ManageCodeBlock";
 
-const PasteShare: React.FC = () => {
+function PasteShare() {
   const { t } = useTranslation();
   const [code, setCode] = React.useState(`function helloWorld() {
     console.log("Hello, world!");
@@ -66,4 +66,4 @@ const PasteShare: React.FC = () => {
   );
 };
 
-export default PasteShare;
+export default memo(PasteShare);

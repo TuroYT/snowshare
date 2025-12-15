@@ -5,10 +5,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react"
 import { useTheme } from "@/hooks/useTheme"
 
-export default function Navigation() {
+function Navigation() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { t, i18n } = useTranslation()
@@ -19,23 +19,26 @@ export default function Navigation() {
   const [allowSignup, setAllowSignup] = useState(true)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
-  // Fetch signup status from database
+  // Combined API call for better performance (replaces 2 separate calls)
   useEffect(() => {
-    const fetchSignupStatus = async () => {
+    const fetchNavigationData = async () => {
       try {
-        const response = await fetch("/api/setup/check")
+        const response = await fetch("/api/navigation/data")
         if (response.ok) {
           const data = await response.json()
           setAllowSignup(data.allowSignup ?? true)
+          if (data.user) {
+            setIsAdmin(data.user.isAdmin ?? false)
+          }
         }
       } catch (error) {
-        console.error("Error fetching signup status:", error)
+        console.error("Error fetching navigation data:", error)
         setAllowSignup(true) // Default to true on error
       }
     }
 
-    fetchSignupStatus()
-  }, [])
+    fetchNavigationData()
+  }, [status])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -51,36 +54,24 @@ export default function Navigation() {
     }
   }, [profileMenuOpen])
 
-  const handleSignOut = async () => {
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleSignOut = useCallback(async () => {
     setMobileOpen(false)
     setProfileMenuOpen(false)
     await signOut({ redirect: false })
     router.push("/")
-  }
-
-  // Fetch user's profile to determine admin status (endpoint returns { isAdmin })
-  useEffect(() => {
-    fetch('/api/user/profile')
-      .then((res) => {
-        if (!res.ok) return null
-        return res.json()
-      })
-      .then((data) => {
-        if (!data) return
-        setIsAdmin(data.user.isAdmin)
-      })
-  }, [status])
+  }, [router])
 
   // Supported languages. Add more entries here if needed.
-  const languages = [
+  const languages = useMemo(() => [
     { code: 'fr', label: 'FR' },
     { code: 'en', label: 'EN' },
     { code: 'es', label: 'ES' },
     { code: 'de', label: 'DE' },
-  ]
+  ], [])
 
   // changeLang optionally closes the mobile menu and persists choice to localStorage.
-  const changeLang = (lng: string, closeMenu = false) => {
+  const changeLang = useCallback((lng: string, closeMenu = false) => {
     i18n.changeLanguage(lng)
     try {
       localStorage.setItem('i18nextLng', lng)
@@ -88,9 +79,9 @@ export default function Navigation() {
       // ignore if not available
     }
     if (closeMenu) setMobileOpen(false)
-  }
+  }, [i18n])
 
-  const currentLang = (i18n.language || 'en').split('-')[0]
+  const currentLang = useMemo(() => (i18n.language || 'en').split('-')[0], [i18n.language])
 
   if (status === "loading") {
     return <div className="bg-[var(--surface)] text-[var(--foreground)] p-4">{t('loading')}</div>
@@ -374,3 +365,5 @@ export default function Navigation() {
     </nav>
   )
 }
+
+export default memo(Navigation)

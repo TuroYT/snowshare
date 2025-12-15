@@ -61,6 +61,29 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   line-height: 1.6;
+  /* Optimize rendering on mobile */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Disable overscroll on mobile */
+  overscroll-behavior-y: none;
+}
+
+/* Optimize mobile performance */
+@media (max-width: 768px) {
+  * {
+    /* Reduce animation complexity on mobile */
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+}
+
+/* Optimize touch interactions on mobile */
+@media (hover: none) and (pointer: coarse) {
+  button, a {
+    /* Improve touch targets on mobile */
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 /* Modern scrollbar */

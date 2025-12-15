@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
+import { throttle } from "@/lib/throttle";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -147,9 +148,9 @@ const FileShare: React.FC = () => {
     });
   };
 
-  // Responsive QR size
+  // Responsive QR size with throttled resize handler for better performance
   useEffect(() => {
-    const update = () => {
+    const updateQrSize = () => {
       try {
         const w = window.innerWidth;
         if (w < 480) setQrSize(110);
@@ -160,9 +161,12 @@ const FileShare: React.FC = () => {
         setQrSize(150);
       }
     };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    
+    updateQrSize();
+    // Throttle resize handler to improve performance (limit to once per 200ms)
+    const throttledUpdate = throttle(updateQrSize, 200);
+    window.addEventListener("resize", throttledUpdate);
+    return () => window.removeEventListener("resize", throttledUpdate);
   }, []);
 
   // Handle form submission
@@ -776,4 +780,4 @@ const FileShare: React.FC = () => {
   );
 };
 
-export default FileShare;
+export default memo(FileShare);
