@@ -8,7 +8,7 @@ export async function GET() {
 
         // Get settings from database
         let allowSignup = true; // Default value
-        let settings = await prisma.settings.findFirst({
+        const settings = await prisma.settings.findFirst({
             select: {
                 id: true,
                 allowSignin: true,
