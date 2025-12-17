@@ -1,10 +1,12 @@
 /**
- * File upload endpoint using Pages Router to avoid Next.js App Router body buffering
- * This endpoint uses raw HTTP streams to avoid loading files into memory
+ * File upload endpoint using App Router with streaming
+ * Uses Readable.fromWeb() to convert Web API stream to Node.js stream for busboy
+ * This avoids loading files into memory
  */
 
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import Busboy from "busboy";
+import { Readable } from "node:stream";
 import { createWriteStream, existsSync, unlinkSync } from "fs";
 import { mkdir } from "fs/promises";
 import path from "path";
@@ -15,13 +17,11 @@ import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
 
-// Disable Next.js body parsing - we handle it ourselves with busboy
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: false,
-  },
-};
+// Force Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
+// Disable static optimization
+export const dynamic = "force-dynamic";
 
 interface UploadLimits {
   maxFileSizeBytes: number;
@@ -34,17 +34,14 @@ interface UploadLimits {
 }
 
 /**
- * Get client IP from request
+ * Get client IP from request headers
  */
-function getClientIp(req: NextApiRequest): string {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string") {
+function getClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  if (Array.isArray(forwarded)) {
-    return forwarded[0];
-  }
-  return req.socket?.remoteAddress || "unknown";
+  return req.headers.get("x-real-ip") || "unknown";
 }
 
 /**
@@ -85,7 +82,7 @@ async function calculateIpUploadSizeBytes(ipAddress: string): Promise<number> {
  * Get all upload limits based on authentication status and current usage
  */
 async function getUploadLimits(
-  req: NextApiRequest,
+  req: NextRequest,
   isAuthenticated: boolean
 ): Promise<UploadLimits> {
   const ipAddress = getClientIp(req);
@@ -130,21 +127,25 @@ function generateSafeFilename(originalName: string, shareId: string): string {
   return `${shareId}_${baseName}${ext}`;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+export async function POST(req: NextRequest) {
+  const contentType = req.headers.get("content-type") || "";
+  if (!contentType.includes("multipart/form-data")) {
+    return NextResponse.json(
+      { error: "Content-Type must be multipart/form-data" },
+      { status: 400 }
+    );
   }
 
-  const contentType = req.headers["content-type"] || "";
-  if (!contentType.includes("multipart/form-data")) {
-    return res.status(400).json({ error: "Content-Type must be multipart/form-data" });
+  // Check if body exists
+  if (!req.body) {
+    return NextResponse.json(
+      { error: "Request body is required" },
+      { status: 400 }
+    );
   }
 
   // Get session for auth check
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(authOptions);
   const isAuthenticated = !!session?.user;
   const clientIp = getClientIp(req);
 
@@ -154,11 +155,14 @@ export default async function handler(
   // Pre-check: if remaining quota is 0, reject immediately
   if (limits.remainingQuotaBytes <= 0) {
     const currentUsageMB = (limits.currentUsageBytes / (1024 * 1024)).toFixed(2);
-    return res.status(429).json({
-      error: isAuthenticated
-        ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
-        : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`,
-    });
+    return NextResponse.json(
+      {
+        error: isAuthenticated
+          ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
+          : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`,
+      },
+      { status: 429 }
+    );
   }
 
   // Effective max is minimum of file size limit and remaining quota
@@ -173,7 +177,7 @@ export default async function handler(
     await mkdir(uploadsDir, { recursive: true });
   }
 
-  return new Promise<void>((resolve) => {
+  return new Promise<NextResponse>((resolve) => {
     const fields: Record<string, string> = {};
     let tempFilePath: string | null = null;
     let originalFilename: string | null = null;
@@ -193,12 +197,18 @@ export default async function handler(
 
     const sendError = (status: number, message: string) => {
       cleanup();
-      res.status(status).json({ error: message });
-      resolve();
+      resolve(NextResponse.json({ error: message }, { status }));
     };
 
+    const sendSuccess = (data: object) => {
+      resolve(NextResponse.json(data, { status: 201 }));
+    };
+
+    // Convert Web API headers to plain object for busboy
+    const headers = Object.fromEntries(req.headers);
+
     const busboy = Busboy({
-      headers: req.headers as Record<string, string>,
+      headers,
       limits: {
         fileSize: effectiveMaxBytes,
         files: 1,
@@ -316,7 +326,7 @@ export default async function handler(
       });
     });
 
-    busboy.on("finish", async () => {
+    busboy.on("close", async () => {
       if (aborted) return;
 
       try {
@@ -349,36 +359,42 @@ export default async function handler(
           );
         }
 
-        let expiresAt: Date | undefined;
-        if (expiresAtStr) {
-          expiresAt = new Date(expiresAtStr);
-          if (expiresAt <= new Date()) {
-            return sendError(400, "Expiration date must be in the future.");
+        // Check slug uniqueness
+        if (slug) {
+          const existingShare = await prisma.share.findUnique({
+            where: { slug },
+          });
+          if (existingShare) {
+            return sendError(
+              409,
+              "This custom URL is already taken. Please choose another one."
+            );
           }
         }
 
-        if (password && (password.length < 6 || password.length > 100)) {
-          return sendError(
-            400,
-            "Password must be between 6 and 100 characters."
-          );
+        // Parse and validate expiration
+        let expiresAt: Date | null = null;
+        if (expiresAtStr) {
+          expiresAt = new Date(expiresAtStr);
+          if (isNaN(expiresAt.getTime())) {
+            return sendError(400, "Invalid expiration date.");
+          }
         }
 
-        // Anonymous user restrictions
-        if (!session) {
-          if (expiresAt) {
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
-            if (expiresAt > maxExpiry) {
-              return sendError(
-                400,
-                "Unauthenticated users cannot create shares that expire beyond 7 days."
-              );
-            }
-          } else {
+        // Anonymous users must set expiration (max 7 days)
+        if (!isAuthenticated) {
+          if (!expiresAt) {
             return sendError(
               400,
-              "Unauthenticated users must provide an expiration date."
+              "Anonymous uploads require an expiration date (maximum 7 days)."
+            );
+          }
+          const maxExpiry = new Date();
+          maxExpiry.setDate(maxExpiry.getDate() + 7);
+          if (expiresAt > maxExpiry) {
+            return sendError(
+              400,
+              "Anonymous uploads cannot expire more than 7 days in the future."
             );
           }
         }
@@ -389,48 +405,49 @@ export default async function handler(
           hashedPassword = await bcrypt.hash(password, 12);
         }
 
-        // Generate unique slug if not provided
-        let finalSlug = slug;
-        if (!finalSlug) {
-          do {
-            finalSlug = crypto.randomBytes(6).toString("base64url");
-          } while (await prisma.share.findUnique({ where: { slug: finalSlug } }));
-        }
+        // Generate slug if not provided
+        const finalSlug =
+          slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
 
-        // Create share in database
-        const fileShare = await prisma.share.create({
+        // Create database record
+        const share = await prisma.share.create({
           data: {
-            type: "FILE",
             slug: finalSlug,
+            type: "FILE",
+            filePath: "", // Will update after rename
             password: hashedPassword,
             expiresAt,
-            ownerId: session?.user?.id || null,
-            filePath: null,
             ipSource: clientIp,
+            ownerId: session?.user?.id || null,
           },
         });
 
-        // Rename temp file to final location
-        const safeFilename = generateSafeFilename(originalFilename, fileShare.id);
-        const finalPath = path.join(uploadsDir, safeFilename);
+        // Rename temp file to final name
+        const finalFileName = generateSafeFilename(originalFilename, share.id);
+        const finalFilePath = path.join(uploadsDir, finalFileName);
 
-        const fs = await import("fs");
-        fs.renameSync(tempFilePath, finalPath);
-        tempFilePath = null; // Don't cleanup since we renamed it
+        const fs = await import("fs/promises");
+        await fs.rename(tempFilePath, finalFilePath);
+        tempFilePath = null; // Prevent cleanup of renamed file
 
-        // Update share with file path
-        const updatedShare = await prisma.share.update({
-          where: { id: fileShare.id },
-          data: { filePath: safeFilename },
+        // Update database with final file path
+        await prisma.share.update({
+          where: { id: share.id },
+          data: { filePath: finalFileName },
         });
 
-        res.status(201).json({
-          share: { fileShare: updatedShare },
+        sendSuccess({
+          share: {
+            slug: share.slug,
+            type: share.type,
+            filename: originalFilename,
+            expiresAt: share.expiresAt,
+            hasPassword: !!share.password,
+          },
         });
-        resolve();
-      } catch (error) {
-        console.error("Error creating file share:", error);
-        sendError(500, "Error creating file share.");
+      } catch (err) {
+        console.error("Error processing upload:", err);
+        sendError(500, "Error processing upload.");
       }
     });
 
@@ -441,7 +458,11 @@ export default async function handler(
       sendError(500, "Error processing upload.");
     });
 
-    // Pipe the request directly to busboy - NO BUFFERING
-    req.pipe(busboy);
+    // Convert Web API ReadableStream to Node.js Readable and pipe to busboy
+    // Use 'as any' to work around type incompatibility between Web API and Node.js stream types
+    const nodeStream = Readable.fromWeb(
+      req.body as unknown as import("stream/web").ReadableStream
+    );
+    nodeStream.pipe(busboy);
   });
 }
