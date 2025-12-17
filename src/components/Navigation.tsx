@@ -211,22 +211,21 @@ export default function Navigation() {
                     </ListItemIcon>
                     <ListItemText primary={t('nav.profile', 'Mon Profil')} />
                   </MenuItem>
-                  {isAdmin && (
-                    <>
-                      <Divider sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />
-                      <MenuItem
-                        component={Link}
-                        href="/admin"
-                        onClick={() => setProfileMenuAnchor(null)}
-                        sx={{ color: 'var(--foreground)' }}
-                      >
-                        <ListItemIcon>
-                          <AdminIcon sx={{ color: '#f59e0b' }} />
-                        </ListItemIcon>
-                        <ListItemText primary={t('nav.admin', 'Admin')} />
-                      </MenuItem>
-                    </>
-                  )}
+                  {isAdmin && [
+                    <Divider key="admin-divider" sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />,
+                    <MenuItem
+                      key="admin-item"
+                      component={Link}
+                      href="/admin"
+                      onClick={() => setProfileMenuAnchor(null)}
+                      sx={{ color: 'var(--foreground)' }}
+                    >
+                      <ListItemIcon>
+                        <AdminIcon sx={{ color: '#f59e0b' }} />
+                      </ListItemIcon>
+                      <ListItemText primary={t('nav.admin', 'Admin')} />
+                    </MenuItem>
+                  ]}
                   <Divider sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />
                   <MenuItem
                     onClick={handleSignOut}
