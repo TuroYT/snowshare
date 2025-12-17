@@ -1,7 +1,6 @@
 import { decrypt } from "@/lib/crypto-link";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { Zen_Kaku_Gothic_Antique } from "next/font/google";
 
 
 function jsonResponse(body: unknown, status = 200) {

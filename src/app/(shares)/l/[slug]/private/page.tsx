@@ -11,7 +11,7 @@ export default function PrivateLinkPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const params = useParams()
-  const slug = params.slug as string
+  const slug = params?.slug as string
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

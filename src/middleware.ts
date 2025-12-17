@@ -36,7 +36,8 @@ export default async function middleware(request: NextRequest) {
 
   // Check if setup is needed
   try {
-    const baseUrl = "http://localhost:" + process.env.PORT || "3000"
+    const port = process.env.PORT || "3000"
+    const baseUrl = `http://localhost:${port}`
     const checkUrl = new URL('/api/setup/check', baseUrl)
     console.log(checkUrl.toString())
     const response = await fetch(checkUrl.toString())
