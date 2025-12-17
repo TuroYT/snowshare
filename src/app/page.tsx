@@ -57,12 +57,6 @@ export default function Home() {
                                     } : undefined}
                                 >
                                     <span className="relative z-10">{tab.label}</span>
-                                    {activeTab === tab.id && (
-                                        <div 
-                                            className="absolute inset-0 rounded-xl blur-xl opacity-20"
-                                            style={{ backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor})` }}
-                                        ></div>
-                                    )}
                                 </button>
                             ))}
                         </div>
