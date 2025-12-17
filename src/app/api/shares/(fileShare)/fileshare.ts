@@ -2,44 +2,14 @@ import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
-import { mkdir } from "fs/promises";
 import path from "path";
-import { existsSync, createWriteStream } from "fs";
+import { existsSync, renameSync } from "fs";
 import { NextRequest } from "next/server";
-import { checkUploadQuota } from "@/lib/quota";
 import { getClientIp } from "@/lib/getClientIp";
 import crypto from "crypto";
 import { getUploadDir } from "@/lib/constants";
-import { Readable } from "stream";
-import { pipeline } from "stream/promises";
+import type { ParsedFile } from "@/lib/multipart-parser";
 
-// Utility function to validate file
-async function validateFile(file: File, isAuthenticated: boolean) {
-  // Get settings from database for max file size
-  const settings = await prisma.settings.findFirst();
-  const maxSize = isAuthenticated
-    ? (settings?.authMaxUpload || 51200) * 1024 * 1024 // Convert MB to bytes
-    : (settings?.anoMaxUpload || 2048) * 1024 * 1024;
-
-  // Check file size
-  if (file.size > maxSize) {
-    const maxSizeMB = Math.round(maxSize / (1024 * 1024));
-    return { error: `File size exceeds the allowed limit of ${maxSizeMB}MB.` };
-  }
-
-
-  // Check filename length and characters
-  if (file.name.length > 255) {
-    return { error: "Filename is too long (maximum 255 characters)." };
-  }
-
-  // Basic filename validation (prevent path traversal)
-  if (file.name.includes('..') || file.name.includes('/') || file.name.includes('\\')) {
-    return { error: "Invalid filename." };
-  }
-
-  return { valid: true };
-}
 
 // Generate safe filename
 function generateSafeFilename(originalName: string, shareId: string): string {
@@ -48,34 +18,22 @@ function generateSafeFilename(originalName: string, shareId: string): string {
   return `${shareId}_${baseName}${ext}`;
 }
 
-export const createFileShare = async (
-  file: File,
+/**
+ * Create a file share from a streamed file (already saved to temp location)
+ * This version doesn't load the file into memory
+ * Note: File size, filename validation, and IP quota are already checked in multipart-parser.ts
+ */
+export const createFileShareFromStream = async (
+  file: ParsedFile,
   request: NextRequest,
   expiresAt?: Date,
   slug?: string,
   password?: string
 ) => {
   const session = await getServerSession(authOptions);
-  const isAuthenticated = !!session;
 
-  // Get client IP for quota tracking
+  // Get client IP for storing with the share
   const clientIp = getClientIp(request);
-
-  // Convert file size to MB
-  const fileSizeMB = file.size / (1024 * 1024);
-
-  // Check upload quota
-  const quotaCheck = await checkUploadQuota(request, fileSizeMB);
-  if (!quotaCheck.allowed) {
-    return { error: quotaCheck.reason || "Quota d'upload dépassé." };
-  }
-
-  // Validate file
-  const validation = await validateFile(file, isAuthenticated);
-  if (validation.error) {
-    return { error: validation.error };
-  }
-
   // Validate slug if provided
   if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
     return { error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores." };
@@ -99,8 +57,8 @@ export const createFileShare = async (
       const maxExpiry = new Date();
       maxExpiry.setDate(maxExpiry.getDate() + 7);
       if (new Date(expiresAt) > maxExpiry) {
-          return { error: "Unauthenticated users cannot create shares that expire beyond 7 days." };
-        }
+        return { error: "Unauthenticated users cannot create shares that expire beyond 7 days." };
+      }
     } else {
       return { error: "Unauthenticated users must provide an expiration date." };
     }
@@ -123,7 +81,7 @@ export const createFileShare = async (
   }
 
   try {
-    // Create the file share in database first
+    // Create the file share in database
     const fileShare = await prisma.share.create({
       data: {
         type: "FILE",
@@ -131,33 +89,24 @@ export const createFileShare = async (
         password: hashedPassword,
         expiresAt,
         ownerId: session?.user?.id || null,
-        filePath: null, // Will be updated after file save
+        filePath: null, // Will be updated after file rename
         ipSource: clientIp, // Store IP for quota tracking
       },
     });
 
-    // Create uploads directory if it doesn't exist
+    // Generate safe filename and rename temp file to final location
     const uploadsDir = getUploadDir();
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
-
-    // Generate safe filename and save file
-    const safeFilename = generateSafeFilename(file.name, fileShare.id);
-    const filePath = path.join(uploadsDir, safeFilename);
+    const safeFilename = generateSafeFilename(file.originalName, fileShare.id);
+    const finalPath = path.join(uploadsDir, safeFilename);
     
-
-    const writeStream = createWriteStream(filePath);
-    const webStream = file.stream();
-    const nodeStream = Readable.fromWeb(webStream as import("stream/web").ReadableStream);
-    await pipeline(nodeStream, writeStream);
+    // Rename temp file to final location (atomic operation, no memory usage)
+    renameSync(file.tempPath, finalPath);
 
     // Update the share with the file path
     const updatedFileShare = await prisma.share.update({
       where: { id: fileShare.id },
       data: { 
         filePath: safeFilename,
-        // Store original filename and size as metadata (we'll add these fields later if needed)
       },
     });
 

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
+import { Alert, AlertTitle, Snackbar, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -222,14 +224,35 @@ const FileShare: React.FC = () => {
         };
 
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            reject(new Error(xhr.responseText));
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(response);
+            } else {
+              // Server returned an error with JSON body - use the error message from API
+              resolve({ error: response.error || `Error ${xhr.status}` });
+            }
+          } catch {
+            // Failed to parse JSON - show raw response
+            resolve({ error: xhr.responseText || `Error ${xhr.status}` });
           }
         };
 
-        xhr.onerror = () => reject(new Error("Network error"));
+        // Network error - try to get response body if available
+        xhr.onerror = () => {
+          try {
+            if (xhr.responseText) {
+              const response = JSON.parse(xhr.responseText);
+              resolve({ error: response.error || xhr.responseText });
+            } else {
+              reject(new Error(t("fileshare.network_error", "Network error")));
+            }
+          } catch {
+            resolve({ error: xhr.responseText || t("fileshare.network_error", "Network error") });
+          }
+        };
+        
+        xhr.onabort = () => reject(new Error(t("fileshare.upload_cancelled", "Upload cancelled")));
         
         xhr.open("POST", "/api/shares");
         xhr.send(formData);
@@ -260,7 +283,12 @@ const FileShare: React.FC = () => {
       }
     } catch (error) {
       console.error("FileShare error:", error);
-      setError(t("fileshare.network_error", "Network error — could not create share"));
+      // Display the actual error message if available
+      if (error instanceof Error && error.message) {
+        setError(error.message);
+      } else {
+        setError(t("fileshare.network_error", "Network error — could not create share"));
+      }
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -614,29 +642,32 @@ const FileShare: React.FC = () => {
         </div>
       </form>
 
-      {error && (
-        <div role="alert" className="mt-6 bg-red-900/20 border border-red-800 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <Snackbar
+        open={!!error}
+        autoHideDuration={10000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity="error"
+          variant="filled"
+          onClose={() => setError(null)}
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => setError(null)}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <div>
-              <h4 className="text-sm font-medium text-red-300 mb-1">{t("fileshare.error_title", "Error")}</h4>
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+          sx={{ width: '100%', maxWidth: '500px' }}
+        >
+          <AlertTitle>{t("fileshare.error_title", "Error")}</AlertTitle>
+          {error}
+        </Alert>
+      </Snackbar>
 
       {success && (
         <div role="status" className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4">

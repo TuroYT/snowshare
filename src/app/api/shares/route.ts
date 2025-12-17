@@ -3,46 +3,75 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createLinkShare } from "./(linkShare)/linkshare";
 import { createPasteShare } from "./(pasteShare)/pasteshareshare";
-import { createFileShare } from "./(fileShare)/fileshare";
+import { createFileShareFromStream } from "./(fileShare)/fileshare";
+import { parseMultipartStream, cleanupTempFile, FileSizeLimitError, QuotaExceededError } from "@/lib/multipart-parser";
 
 async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type") || "";
 
-    // Handle file uploads (multipart/form-data)
+    // Handle file uploads (multipart/form-data) with streaming
     if (contentType.includes("multipart/form-data")) {
+        let tempFilePath: string | undefined;
+        
         try {
-            const formData = await req.formData();
-            const type = formData.get("type") as string;
-
+            // Parse multipart with streaming - file is written directly to disk
+            // Size limits AND IP quotas are enforced DURING streaming to prevent disk filling attacks
+            const { fields, file } = await parseMultipartStream(req);
+            
+            const type = fields.type;
             if (type !== "FILE") {
+                // Clean up temp file if type is wrong
+                if (file?.tempPath) {
+                    cleanupTempFile(file.tempPath);
+                }
                 return NextResponse.json(
-                        { error: "Invalid share type for file upload" },
-                        { status: 400 }
-                    );
+                    { error: "Invalid share type for file upload" },
+                    { status: 400 }
+                );
             }
-
-            const file = formData.get("file") as File;
-            const expiresAt = formData.get("expiresAt") as string;
-            const slug = formData.get("slug") as string;
-            const password = formData.get("password") as string;
 
             if (!file) {
                 return NextResponse.json({ error: "File required" }, { status: 400 });
             }
 
-            const result = await createFileShare(
+            tempFilePath = file.tempPath;
+
+            const result = await createFileShareFromStream(
                 file,
                 req,
-                expiresAt ? new Date(expiresAt) : undefined,
-                slug || undefined,
-                password || undefined
+                fields.expiresAt ? new Date(fields.expiresAt) : undefined,
+                fields.slug || undefined,
+                fields.password || undefined
             );
 
             if (result?.error) {
+                // Clean up temp file on error
+                if (tempFilePath) {
+                    cleanupTempFile(tempFilePath);
+                }
                 return NextResponse.json({ error: result.error }, { status: 400 });
             }
+            
             return NextResponse.json({ share: result }, { status: 201 });
         } catch (error) {
+            // Clean up temp file on error
+            if (tempFilePath) {
+                cleanupTempFile(tempFilePath);
+            }
+            
+            // Handle specific error types
+            if (error instanceof FileSizeLimitError) {
+                return NextResponse.json({ error: error.message }, { status: 413 });
+            }
+            
+            if (error instanceof QuotaExceededError) {
+                return NextResponse.json({ error: error.message }, { status: 429 });
+            }
+            
+            if (error instanceof Error && error.message.includes("filename")) {
+                return NextResponse.json({ error: error.message }, { status: 400 });
+            }
+            
             console.error("File upload error:", error);
             return NextResponse.json({ error: "Erreur lors du traitement du fichier" }, { status: 500 });
         }
