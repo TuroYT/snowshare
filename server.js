@@ -3,14 +3,15 @@
  * Handles file uploads OUTSIDE of Next.js to avoid body buffering
  */
 
-const { createServer } = require("http");
-const { parse } = require("url");
-const next = require("next");
-const Busboy = require("busboy");
-const { createWriteStream, existsSync, unlinkSync, mkdirSync } = require("fs");
-const { stat, rename } = require("fs/promises");
-const path = require("path");
-const crypto = require("crypto");
+import { createServer } from "http";
+import { parse } from "url";
+import next from "next";
+import Busboy from "busboy";
+import { createWriteStream, existsSync, unlinkSync, mkdirSync } from "fs";
+import { stat, rename } from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+import { getToken } from "next-auth/jwt";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -44,6 +45,22 @@ function generateSafeFilename(originalName, shareId) {
   return `${shareId}_${baseName}${ext}`;
 }
 
+// Parse cookies from header string
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  
+  cookieHeader.split(";").forEach((cookie) => {
+    const parts = cookie.split("=");
+    const name = parts[0]?.trim();
+    const value = parts.slice(1).join("=").trim();
+    if (name) {
+      cookies[name] = decodeURIComponent(value);
+    }
+  });
+  return cookies;
+}
+
 // Handle file upload - streams directly to disk without buffering
 async function handleUpload(req, res) {
   const contentType = req.headers["content-type"] || "";
@@ -61,47 +78,86 @@ async function handleUpload(req, res) {
   const clientIp = getClientIp(req);
 
   // Dynamic imports for Prisma and bcrypt (ESM modules)
-  const { PrismaClient } = require("./src/generated/prisma");
+  const { PrismaClient } = await import("./src/generated/prisma/index.js");
   const prisma = new PrismaClient();
   
   try {
+    // Check authentication via JWT token
+    let userId = null;
+    let isAuthenticated = false;
+    
+    try {
+      // Create a minimal request-like object for getToken
+      const token = await getToken({ 
+        req: { 
+          headers: req.headers,
+          cookies: parseCookies(req.headers.cookie || "")
+        }, 
+        secret: process.env.NEXTAUTH_SECRET 
+      });
+      
+      if (token?.id) {
+        userId = token.id;
+        isAuthenticated = true;
+      }
+    } catch (authErr) {
+      // Auth check failed, continue as anonymous
+      console.log("Auth check failed, treating as anonymous:", authErr.message);
+    }
+
     // Get settings for limits
     const settings = await prisma.settings.findFirst();
     
-    // For now, use anonymous limits (we'll add auth check later)
-    const maxFileSizeMB = settings?.anoMaxUpload || 2048;
+    // Authenticated users have NO limits (or very high limits)
+    // Anonymous users have restricted limits
+    let maxFileSizeMB, ipQuotaMB;
+    
+    if (isAuthenticated) {
+      // Authenticated users: use auth limits (essentially no practical limit)
+      maxFileSizeMB = settings?.authMaxUpload || 51200; // ~50GB
+      ipQuotaMB = settings?.authIpQuota || 102400; // ~100GB
+    } else {
+      // Anonymous users: restricted limits
+      maxFileSizeMB = settings?.anoMaxUpload || 2048;
+      ipQuotaMB = settings?.anoIpQuota || 4096;
+    }
+    
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-    const ipQuotaMB = settings?.anoIpQuota || 4096;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
 
-    // Calculate current usage for IP
-    const shares = await prisma.share.findMany({
-      where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
-      select: { filePath: true },
-    });
-    
+    // For authenticated users, skip quota check entirely
+    let effectiveMaxBytes = maxFileSizeBytes;
     let currentUsageBytes = 0;
-    for (const share of shares) {
-      if (share.filePath) {
-        const fullPath = path.join(uploadsDir, share.filePath);
-        try {
-          const stats = await stat(fullPath);
-          currentUsageBytes += stats.size;
-        } catch {}
-      }
-    }
-
-    const remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
     
-    if (remainingQuotaBytes <= 0) {
-      res.writeHead(429, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ 
-        error: `IP quota exceeded. Current usage: ${(currentUsageBytes / (1024 * 1024)).toFixed(2)} MB, Limit: ${ipQuotaMB} MB. Sign in for higher limits.`
-      }));
-      return;
-    }
+    if (!isAuthenticated) {
+      // Calculate current usage for IP (only for anonymous users)
+      const shares = await prisma.share.findMany({
+        where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
+        select: { filePath: true },
+      });
+      
+      for (const share of shares) {
+        if (share.filePath) {
+          const fullPath = path.join(uploadsDir, share.filePath);
+          try {
+            const stats = await stat(fullPath);
+            currentUsageBytes += stats.size;
+          } catch {}
+        }
+      }
 
-    const effectiveMaxBytes = Math.min(maxFileSizeBytes, remainingQuotaBytes);
+      const remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
+      
+      if (remainingQuotaBytes <= 0) {
+        res.writeHead(429, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ 
+          error: `IP quota exceeded. Current usage: ${(currentUsageBytes / (1024 * 1024)).toFixed(2)} MB, Limit: ${ipQuotaMB} MB. Sign in for higher limits.`
+        }));
+        return;
+      }
+
+      effectiveMaxBytes = Math.min(maxFileSizeBytes, remainingQuotaBytes);
+    }
 
     return new Promise((resolve) => {
       const fields = {};
@@ -250,23 +306,27 @@ async function handleUpload(req, res) {
             }
           }
 
-          // Anonymous users must set expiration (max 7 days)
-          if (!expiresAt) {
-            sendError(400, "Anonymous uploads require an expiration date (maximum 7 days).");
-            return;
-          }
-          const maxExpiry = new Date();
-          maxExpiry.setDate(maxExpiry.getDate() + 7);
-          if (expiresAt > maxExpiry) {
-            sendError(400, "Anonymous uploads cannot expire more than 7 days in the future.");
-            return;
+          // Expiration rules:
+          // - Anonymous users: MUST set expiration (max 7 days)
+          // - Authenticated users: NO limit (expiration is optional)
+          if (!isAuthenticated) {
+            if (!expiresAt) {
+              sendError(400, "Anonymous uploads require an expiration date (maximum 7 days).");
+              return;
+            }
+            const maxExpiry = new Date();
+            maxExpiry.setDate(maxExpiry.getDate() + 7);
+            if (expiresAt > maxExpiry) {
+              sendError(400, "Anonymous uploads cannot expire more than 7 days in the future.");
+              return;
+            }
           }
 
           // Hash password if provided
           let hashedPassword = null;
           if (password) {
-            const bcrypt = require("bcryptjs");
-            hashedPassword = await bcrypt.hash(password, 12);
+            const bcrypt = await import("bcryptjs");
+            hashedPassword = await bcrypt.default.hash(password, 12);
           }
 
           // Generate slug if not provided
@@ -281,7 +341,7 @@ async function handleUpload(req, res) {
               password: hashedPassword,
               expiresAt,
               ipSource: clientIp,
-              ownerId: null,
+              ownerId: userId, // Associate with authenticated user if logged in
             },
           });
 
