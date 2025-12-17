@@ -77,10 +77,10 @@ async function handleUpload(req, res) {
 
   const clientIp = getClientIp(req);
 
-  // Import singleton Prisma instance
-  const { prisma } = await import("./src/lib/prisma.js");
-  
   try {
+    // Import singleton Prisma instance
+    const { prisma } = await import("./src/lib/prisma.js");
+    
     // Check authentication via JWT token
     let userId = null;
     let isAuthenticated = false;
