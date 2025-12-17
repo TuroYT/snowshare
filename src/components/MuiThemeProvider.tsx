@@ -9,32 +9,62 @@ interface MuiThemeProviderProps {
   children: ReactNode
 }
 
+// Helper function to convert hex color to rgba
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  if (result) {
+    const r = parseInt(result[1], 16)
+    const g = parseInt(result[2], 16)
+    const b = parseInt(result[3], 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+  return hex
+}
+
 export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
   const { colors } = useTheme()
 
   const theme = useMemo(() => {
-    // Parse CSS color values
-    const primaryColor = colors.primaryColor || '#3b82f6'
-    const secondaryColor = colors.secondaryColor || '#8b5cf6'
+    // Use dynamic theme colors from ThemeContext
+    const primaryColor = colors.primaryColor
+    const primaryHover = colors.primaryHover
+    const primaryDark = colors.primaryDark
+    const secondaryColor = colors.secondaryColor
+    const backgroundColor = colors.backgroundColor
+    const surfaceColor = colors.surfaceColor
+    const textColor = colors.textColor
+    const textMuted = colors.textMuted
+    const borderColor = colors.borderColor
+
+    // Create rgba variants for transparency effects
+    const surfaceTransparent = hexToRgba(surfaceColor, 0.95)
+    const surfaceTransparentHigh = hexToRgba(surfaceColor, 0.98)
+    const surfaceTransparentLow = hexToRgba(surfaceColor, 0.5)
+    const borderTransparent = hexToRgba(borderColor, 0.5)
+    const borderTransparentHigh = hexToRgba(borderColor, 0.7)
     
     return createTheme({
       palette: {
         mode: 'dark',
         primary: {
           main: primaryColor,
+          light: primaryHover,
+          dark: primaryDark,
         },
         secondary: {
           main: secondaryColor,
+          light: colors.secondaryHover,
+          dark: colors.secondaryDark,
         },
         background: {
-          default: '#111827',
-          paper: 'rgba(31, 41, 55, 0.95)',
+          default: backgroundColor,
+          paper: surfaceTransparent,
         },
         text: {
-          primary: '#f9fafb',
-          secondary: '#d1d5db',
+          primary: textColor,
+          secondary: textMuted,
         },
-        divider: 'rgba(55, 65, 81, 0.5)',
+        divider: borderTransparent,
       },
       typography: {
         fontFamily: 'var(--font-geist-sans), Arial, Helvetica, sans-serif',
@@ -63,13 +93,13 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
           styleOverrides: {
             root: {
               '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(31, 41, 55, 0.5)',
+                backgroundColor: surfaceTransparentLow,
                 borderRadius: '12px',
                 '& fieldset': {
-                  borderColor: 'rgba(75, 85, 99, 0.5)',
+                  borderColor: borderTransparent,
                 },
                 '&:hover fieldset': {
-                  borderColor: 'rgba(75, 85, 99, 0.7)',
+                  borderColor: borderTransparentHigh,
                 },
                 '&.Mui-focused fieldset': {
                   borderColor: primaryColor,
@@ -81,16 +111,16 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiCard: {
           styleOverrides: {
             root: {
-              backgroundColor: 'rgba(31, 41, 55, 0.95)',
+              backgroundColor: surfaceTransparent,
               borderRadius: '16px',
-              border: '1px solid rgba(55, 65, 81, 0.5)',
+              border: `1px solid ${borderTransparent}`,
             },
           },
         },
         MuiAppBar: {
           styleOverrides: {
             root: {
-              backgroundColor: 'rgba(31, 41, 55, 0.95)',
+              backgroundColor: surfaceTransparent,
               boxShadow: 'none',
             },
           },
@@ -98,8 +128,8 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiMenu: {
           styleOverrides: {
             paper: {
-              backgroundColor: 'rgba(31, 41, 55, 0.98)',
-              border: '1px solid rgba(55, 65, 81, 0.5)',
+              backgroundColor: surfaceTransparentHigh,
+              border: `1px solid ${borderTransparent}`,
             },
           },
         },
@@ -107,7 +137,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
           styleOverrides: {
             root: {
               '&:hover': {
-                backgroundColor: 'rgba(55, 65, 81, 0.5)',
+                backgroundColor: borderTransparent,
               },
             },
           },
@@ -122,13 +152,13 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiDrawer: {
           styleOverrides: {
             paper: {
-              backgroundColor: 'rgba(31, 41, 55, 0.98)',
+              backgroundColor: surfaceTransparentHigh,
             },
           },
         },
       },
     })
-  }, [colors.primaryColor, colors.secondaryColor])
+  }, [colors])
 
   return (
     <ThemeProvider theme={theme}>

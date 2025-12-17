@@ -18,6 +18,7 @@ import {
   Box,
   Typography,
   Select,
+  SelectChangeEvent,
   FormControl,
   Drawer,
   List,
@@ -37,7 +38,7 @@ export default function Navigation() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { t, i18n } = useTranslation()
-  const { branding } = useTheme()
+  const { branding, colors } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null)
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
@@ -120,8 +121,8 @@ export default function Navigation() {
         position="sticky" 
         elevation={0}
         sx={{ 
-          bgcolor: 'rgba(31, 41, 55, 0.95)',
-          borderBottom: '1px solid rgba(55, 65, 81, 0.5)',
+          bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 95%, transparent)`,
+          borderBottom: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
         }}
       >
         <Toolbar sx={{ maxWidth: '1280px', width: '100%', mx: 'auto', px: { xs: 2, sm: 4 } }}>
@@ -156,11 +157,11 @@ export default function Navigation() {
             <FormControl size="small">
               <Select
                 value={currentLang}
-                onChange={(e: { target: { value: string } }) => changeLang(e.target.value)}
+                onChange={(e: SelectChangeEvent<string>) => changeLang(e.target.value)}
                 sx={{
-                  bgcolor: 'rgba(31, 41, 55, 0.5)',
+                  bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
                   color: 'var(--foreground)',
-                  border: '1px solid rgba(75, 85, 99, 0.5)',
+                  border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
                   borderRadius: '12px',
                   minWidth: '80px',
                   '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
@@ -196,7 +197,7 @@ export default function Navigation() {
                   PaperProps={{
                     sx: {
                       bgcolor: 'var(--surface)',
-                      border: '1px solid rgba(55, 65, 81, 0.5)',
+                      border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
                       borderRadius: '12px',
                       minWidth: '220px'
                     }
@@ -214,7 +215,7 @@ export default function Navigation() {
                     <ListItemText primary={t('nav.profile', 'Mon Profil')} />
                   </MenuItem>
                   {isAdmin && [
-                    <Divider key="admin-divider" sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />,
+                    <Divider key="admin-divider" sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />,
                     <MenuItem
                       key="admin-item"
                       component={Link}
@@ -228,7 +229,7 @@ export default function Navigation() {
                       <ListItemText primary={t('nav.admin', 'Admin')} />
                     </MenuItem>
                   ]}
-                  <Divider sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />
+                  <Divider sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />
                   <MenuItem
                     onClick={handleSignOut}
                     sx={{ color: '#f87171' }}
@@ -248,7 +249,7 @@ export default function Navigation() {
                   sx={{
                     color: 'var(--foreground)',
                     textTransform: 'none',
-                    '&:hover': { bgcolor: 'rgba(31, 41, 55, 0.5)' }
+                    '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` }
                   }}
                 >
                   {t('nav.signin')}
@@ -291,7 +292,7 @@ export default function Navigation() {
         onClose={() => setMobileOpen(false)}
         PaperProps={{
           sx: {
-            bgcolor: 'rgba(31, 41, 55, 0.98)',
+            bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 98%, transparent)`,
             color: 'var(--foreground)',
             width: '280px'
           }
@@ -301,11 +302,11 @@ export default function Navigation() {
           <FormControl fullWidth size="small">
             <Select
               value={currentLang}
-              onChange={(e: { target: { value: string } }) => changeLang(e.target.value, true)}
+              onChange={(e: SelectChangeEvent<string>) => changeLang(e.target.value, true)}
               sx={{
-                bgcolor: 'rgba(31, 41, 55, 0.5)',
+                bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
                 color: 'var(--foreground)',
-                border: '1px solid rgba(75, 85, 99, 0.5)',
+                border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
                 borderRadius: '12px',
                 '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
               }}
@@ -332,12 +333,12 @@ export default function Navigation() {
                 {session.user?.name || session.user?.email}
               </Typography>
             </ListItem>
-            <Divider sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />
+            <Divider sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />
             <ListItem
               component={Link}
               href="/profile"
               onClick={() => setMobileOpen(false)}
-              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(31, 41, 55, 0.5)' } }}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` } }}
             >
               <ListItemIcon>
                 <PersonIcon sx={{ color: 'var(--primary)' }} />
@@ -349,7 +350,7 @@ export default function Navigation() {
                 component={Link}
                 href="/admin"
                 onClick={() => setMobileOpen(false)}
-                sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(31, 41, 55, 0.5)' } }}
+                sx={{ cursor: 'pointer', '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` } }}
               >
                 <ListItemIcon>
                   <AdminIcon sx={{ color: '#f59e0b' }} />
@@ -357,7 +358,7 @@ export default function Navigation() {
                 <ListItemText primary={t('nav.admin', 'Admin')} />
               </ListItem>
             )}
-            <Divider sx={{ borderColor: 'rgba(55, 65, 81, 0.5)' }} />
+            <Divider sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />
             <ListItem
               onClick={handleSignOut}
               sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(220, 38, 38, 0.2)' }, color: '#f87171' }}
@@ -374,7 +375,7 @@ export default function Navigation() {
               component={Link}
               href="/auth/signin"
               onClick={() => setMobileOpen(false)}
-              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(31, 41, 55, 0.5)' } }}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` } }}
             >
               <ListItemText primary={t('nav.signin')} />
             </ListItem>
