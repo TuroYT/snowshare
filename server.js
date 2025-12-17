@@ -287,15 +287,6 @@ async function handleUpload(req, res) {
             return;
           }
 
-          // Check slug uniqueness
-          if (slug) {
-            const existing = await prisma.share.findUnique({ where: { slug } });
-            if (existing) {
-              sendError(409, "This custom URL is already taken.");
-              return;
-            }
-          }
-
           // Parse expiration
           let expiresAt = null;
           if (expiresAtStr) {
