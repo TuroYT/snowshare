@@ -102,7 +102,7 @@ async function handleUpload(req, res) {
       }
     } catch (authErr) {
       // Auth check failed, continue as anonymous
-      console.log("Auth check failed, treating as anonymous:", authErr.message);
+      console.log("Auth check failed, treating as anonymous:", authErr);
     }
 
     // Get settings for limits
