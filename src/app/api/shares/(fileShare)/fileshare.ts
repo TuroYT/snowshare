@@ -2,14 +2,16 @@ import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
+import { mkdir } from "fs/promises";
 import path from "path";
-import { existsSync } from "fs";
+import { existsSync, createWriteStream } from "fs";
 import { NextRequest } from "next/server";
 import { checkUploadQuota } from "@/lib/quota";
 import { getClientIp } from "@/lib/getClientIp";
 import crypto from "crypto";
 import { getUploadDir } from "@/lib/constants";
+import { Readable } from "stream";
+import { pipeline } from "stream/promises";
 
 // Utility function to validate file
 async function validateFile(file: File, isAuthenticated: boolean) {
@@ -144,10 +146,11 @@ export const createFileShare = async (
     const safeFilename = generateSafeFilename(file.name, fileShare.id);
     const filePath = path.join(uploadsDir, safeFilename);
     
-    // Convert File to Buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+
+    const writeStream = createWriteStream(filePath);
+    const webStream = file.stream();
+    const nodeStream = Readable.fromWeb(webStream as import("stream/web").ReadableStream);
+    await pipeline(nodeStream, writeStream);
 
     // Update the share with the file path
     const updatedFileShare = await prisma.share.update({

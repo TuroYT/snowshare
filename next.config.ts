@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Enable output as standalone to reduce runtime dependencies in Docker
   output: 'standalone',
   
+  experimental: {
+    middlewareClientMaxBodySize: '50gb',
+  },
   // Expose environment variables to the client
   env: {
     NEXT_PUBLIC_ALLOW_SIGNUP: process.env.ALLOW_SIGNUP || 'true',
