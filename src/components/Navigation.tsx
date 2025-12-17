@@ -88,6 +88,7 @@ export default function Navigation() {
     { code: 'es', label: 'ES' },
     { code: 'de', label: 'DE' },
     { code: 'pl', label: 'PL' },
+    { code: 'nl', label: 'NL' }
   ]
 
   // changeLang optionally closes the mobile menu and persists choice to localStorage.
