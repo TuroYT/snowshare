@@ -114,8 +114,8 @@ Always return JSON with consistent structure:
 - Pattern: `t("section.key", "French default")`
 
 ## Styling
-- TailwindCSS 4 only (no CSS modules unless necessary)
-- Component library: None; use semantic HTML + Tailwind utilities
+- TailwindCSS 4 and material ui
+- Component library: React Material UI
 - Responsive: Mobile-first approach
 
 ## File uploads

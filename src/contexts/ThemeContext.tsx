@@ -28,6 +28,7 @@ export interface ThemeContextType {
   branding: BrandingSettings
   isLoading: boolean
   updateTheme: (colors: Partial<ThemeColors>) => void
+  refreshSettings: () => Promise<void>
 }
 
 const defaultColors: ThemeColors = {
@@ -58,50 +59,50 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [branding, setBranding] = useState<BrandingSettings>(defaultBranding)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchTheme = async () => {
-      try {
-        const response = await fetch("/api/settings")
-        if (!response.ok) {
-          setIsLoading(false)
-          return
-        }
-
-        const data = await response.json()
-        const settings = data.settings
-
-        const newColors: ThemeColors = {
-          primaryColor: settings.primaryColor || defaultColors.primaryColor,
-          primaryHover: settings.primaryHover || defaultColors.primaryHover,
-          primaryDark: settings.primaryDark || defaultColors.primaryDark,
-          secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
-          secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
-          secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
-          backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
-          surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
-          textColor: settings.textColor || defaultColors.textColor,
-          textMuted: settings.textMuted || defaultColors.textMuted,
-          borderColor: settings.borderColor || defaultColors.borderColor,
-        }
-
-        const newBranding: BrandingSettings = {
-          appName: settings.appName || defaultBranding.appName,
-          appDescription: settings.appDescription || defaultBranding.appDescription,
-          logoUrl: settings.logoUrl || null,
-          faviconUrl: settings.faviconUrl || null,
-        }
-
-        setColors(newColors)
-        setBranding(newBranding)
-        applyThemeToDOM(newColors)
-      } catch (error) {
-        console.error("Failed to fetch theme:", error)
-      } finally {
+  const refreshSettings = async () => {
+    try {
+      const response = await fetch("/api/settings")
+      if (!response.ok) {
         setIsLoading(false)
+        return
       }
-    }
 
-    fetchTheme()
+      const data = await response.json()
+      const settings = data.settings
+
+      const newColors: ThemeColors = {
+        primaryColor: settings.primaryColor || defaultColors.primaryColor,
+        primaryHover: settings.primaryHover || defaultColors.primaryHover,
+        primaryDark: settings.primaryDark || defaultColors.primaryDark,
+        secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
+        secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
+        secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
+        backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
+        surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
+        textColor: settings.textColor || defaultColors.textColor,
+        textMuted: settings.textMuted || defaultColors.textMuted,
+        borderColor: settings.borderColor || defaultColors.borderColor,
+      }
+
+      const newBranding: BrandingSettings = {
+        appName: settings.appName || defaultBranding.appName,
+        appDescription: settings.appDescription || defaultBranding.appDescription,
+        logoUrl: settings.logoUrl || null,
+        faviconUrl: settings.faviconUrl || null,
+      }
+
+      setColors(newColors)
+      setBranding(newBranding)
+      applyThemeToDOM(newColors)
+    } catch (error) {
+      console.error("Failed to fetch theme:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    refreshSettings()
   }, [])
 
   const updateTheme = (newColors: Partial<ThemeColors>) => {
@@ -110,8 +111,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyThemeToDOM(updatedColors)
   }
 
+  // Apply branding metadata (title, favicon) when ready
+  useEffect(() => {
+    if (!isLoading) {
+      applyBrandingMeta(branding)
+    }
+  }, [branding, isLoading])
+
   return (
-    <ThemeContext.Provider value={{ colors, branding, isLoading, updateTheme }}>
+    <ThemeContext.Provider value={{ colors, branding, isLoading, updateTheme, refreshSettings }}>
       {children}
     </ThemeContext.Provider>
   )
@@ -166,6 +174,27 @@ function applyThemeToDOM(colors: ThemeColors) {
     `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.secondaryDark} 100%)`
   )
 }
+
+// Update document metadata (favicon, title) when branding changes
+function applyBrandingMeta(branding: BrandingSettings) {
+  if (branding.appName) {
+    document.title = branding.appName
+  }
+
+  if (branding.faviconUrl) {
+    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null
+    if (link) {
+      link.href = branding.faviconUrl
+    } else {
+      const newLink = document.createElement("link")
+      newLink.rel = "icon"
+      newLink.href = branding.faviconUrl
+      document.head.appendChild(newLink)
+    }
+  }
+}
+
+// (no-op outside React components)
 
 /**
  * Convert hex color to rgba

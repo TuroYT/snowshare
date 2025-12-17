@@ -30,8 +30,10 @@ const FileShare: React.FC = () => {
   const [qrSize, setQrSize] = useState<number>(150);
   const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const [maxFileSizeAnon, setMaxFileSizeAnon] = useState<number>(MAX_FILE_SIZE_ANON);
+  const [maxFileSizeAuth, setMaxFileSizeAuth] = useState<number>(MAX_FILE_SIZE_AUTH);
 
-  const maxFileSize = isAuthenticated ? MAX_FILE_SIZE_AUTH : MAX_FILE_SIZE_ANON;
+  const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
 
   // Fetch settings to check if anonymous file sharing is allowed
   useEffect(() => {
@@ -41,8 +43,15 @@ const FileShare: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setAllowAnonFileShare(data.settings?.allowAnonFileShare ?? true);
+          // Set upload limits from settings (convert MB to bytes)
+          if (data.settings?.anoMaxUpload) {
+            setMaxFileSizeAnon(data.settings.anoMaxUpload * 1024 * 1024);
+          }
+          if (data.settings?.authMaxUpload) {
+            setMaxFileSizeAuth(data.settings.authMaxUpload * 1024 * 1024);
+          }
         } else {
-          // Default to true if settings can't be fetched
+          // Default to hardcoded values if settings can't be fetched
           setAllowAnonFileShare(true);
         }
       } catch {
@@ -262,7 +271,7 @@ const FileShare: React.FC = () => {
     // Show loading while fetching settings
     if (settingsLoading) {
       return (
-        <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
+        <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
           <div className="animate-pulse">
             <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
             <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
@@ -274,7 +283,7 @@ const FileShare: React.FC = () => {
     // Block anonymous users if allowAnonFileShare is disabled
     if (!allowAnonFileShare) {
       return (
-        <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
+        <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
           <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
             <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -292,7 +301,7 @@ const FileShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-[var(--surface)]/30 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto">
+    <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6 justify-center">
         <div 
           className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
@@ -357,8 +366,8 @@ const FileShare: React.FC = () => {
                 </div>
                 <p className="text-xs text-[var(--foreground-muted)]">
                   {isAuthenticated
-                    ? t("fileshare.max_size_auth", "500MB maximum for authenticated users")
-                    : t("fileshare.max_size_anon", "50MB maximum for anonymous users")}
+                    ? t("fileshare.max_size_auth", "{{max}}MB maximum for authenticated users", { max: Math.round(maxFileSizeAuth / (1024 * 1024)) })
+                    : t("fileshare.max_size_anon", "{{max}}MB maximum for anonymous users", { max: Math.round(maxFileSizeAnon / (1024 * 1024)) })}
                 </p>
               </div>
             </div>
@@ -497,8 +506,8 @@ const FileShare: React.FC = () => {
               💡{" "}
               {t(
                 "fileshare.login_for_more",
-                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to 500MB)",
-                { max: MAX_DAYS_AUTH }
+                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}}MB)",
+                { max: MAX_DAYS_AUTH, maxSize: Math.round(maxFileSizeAuth / (1024 * 1024)) }
               )}
             </p>
           )}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import MuiThemeProvider from "@/components/MuiThemeProvider";
 import PlausibleProvider from "next-plausible";
 import "@/i18n/client";
 
@@ -54,7 +55,9 @@ export default function RootLayout({
       >
         <NextAuthProvider>
           <ThemeProvider>
-            {children}
+            <MuiThemeProvider>
+              {children}
+            </MuiThemeProvider>
           </ThemeProvider>
         </NextAuthProvider>
       </body>

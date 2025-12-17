@@ -5,19 +5,44 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, SetStateAction } from "react"
 import { useTheme } from "@/hooks/useTheme"
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Button,
+  Menu,
+  MenuItem,
+  Avatar,
+  Box,
+  Typography,
+  Select,
+  SelectChangeEvent,
+  FormControl,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+} from "@mui/material"
+import {
+  Menu as MenuIcon,
+  Person as PersonIcon,
+  AdminPanelSettings as AdminIcon,
+  ExitToApp as LogoutIcon,
+} from "@mui/icons-material"
 
 export default function Navigation() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { t, i18n } = useTranslation()
-  const { branding } = useTheme()
+  const { branding, colors } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null)
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
   const [allowSignup, setAllowSignup] = useState(true)
-  const profileMenuRef = useRef<HTMLDivElement>(null)
 
   // Fetch signup status from database
   useEffect(() => {
@@ -37,23 +62,9 @@ export default function Navigation() {
     fetchSignupStatus()
   }, [])
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setProfileMenuOpen(false)
-      }
-    }
-
-    if (profileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [profileMenuOpen])
-
   const handleSignOut = async () => {
     setMobileOpen(false)
-    setProfileMenuOpen(false)
+    setProfileMenuAnchor(null)
     await signOut({ redirect: false })
     router.push("/")
   }
@@ -77,6 +88,8 @@ export default function Navigation() {
     { code: 'en', label: 'EN' },
     { code: 'es', label: 'ES' },
     { code: 'de', label: 'DE' },
+    { code: 'pl', label: 'PL' },
+    { code: 'nl', label: 'NL' }
   ]
 
   // changeLang optionally closes the mobile menu and persists choice to localStorage.
@@ -93,284 +106,298 @@ export default function Navigation() {
   const currentLang = (i18n.language || 'en').split('-')[0]
 
   if (status === "loading") {
-    return <div className="bg-[var(--surface)] text-[var(--foreground)] p-4">{t('loading')}</div>
+    return (
+      <AppBar position="sticky" sx={{ bgcolor: 'var(--surface)', color: 'var(--foreground)' }}>
+        <Toolbar>
+          <Typography>{t('loading')}</Typography>
+        </Toolbar>
+      </AppBar>
+    )
   }
+
   return (
-    <nav className="bg-[var(--surface)]/90 backdrop-blur-md border-b border-[var(--border)]/50 shadow-2xl sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-[var(--primary)]/20 group-hover:bg-[var(--primary)]/30 transition-colors"></div>
+    <>
+      <AppBar 
+        position="sticky" 
+        elevation={0}
+        sx={{ 
+          bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 95%, transparent)`,
+          borderBottom: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
+        }}
+      >
+        <Toolbar sx={{ maxWidth: '1280px', width: '100%', mx: 'auto', px: { xs: 2, sm: 4 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+              <Box sx={{ position: 'relative' }}>
                 {branding.logoUrl ? (
-                  <Image src={branding.logoUrl} alt={`${branding.appName} Logo`} width={36} height={36} className="relative z-10 rounded-full object-contain" />
+                  <Image src={branding.logoUrl} alt={`${branding.appName} Logo`} width={36} height={36} style={{ borderRadius: '50%', objectFit: 'contain' }} />
                 ) : (
-                  <Image src="/logo.svg" alt={`${branding.appName} Logo`} width={36} height={36} className="relative z-10" />
+                  <Image src="/logo.svg" alt={`${branding.appName} Logo`} width={36} height={36} />
                 )}
-              </div>
-                <span 
-                className="text-xl font-bold bg-clip-text text-transparent group-hover:opacity-80 transition-all"
-                style={{ backgroundImage: `linear-gradient(to right, var(--primary), var(--secondary))` }}
-                >
+              </Box>
+              <Typography
+                variant="h6"
+                component="span"
+                sx={{
+                  fontWeight: 700,
+                  background: `linear-gradient(to right, var(--primary), var(--secondary))`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  '&:hover': { opacity: 0.8 }
+                }}
+              >
                 {branding.appName}
-                </span>
+              </Typography>
             </Link>
-          </div>
-          <div className="flex items-center">
-            {/* Mobile menu button */}
-            <button
-              className="sm:hidden inline-flex items-center justify-center p-2 rounded-xl text-[var(--foreground-muted)] hover:text-white hover:bg-[var(--surface)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all"
-              onClick={() => setMobileOpen((s) => !s)}
-              aria-expanded={mobileOpen}
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            >
-              {mobileOpen ? (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
+          </Box>
 
-            {/* Desktop links */}
-            <div className="hidden sm:flex items-center space-x-4 ml-6">
-              <div className="flex items-center gap-2">
-                <label htmlFor="lang-select" className="sr-only">{t('nav.language') || 'Language'}</label>
-                <select
-                  id="lang-select"
-                  value={currentLang}
-                  onChange={(e) => changeLang(e.target.value)}
-                  className="bg-[var(--surface)]/50 border border-[var(--border)]/50 text-[var(--foreground)] text-sm px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all hover:bg-[var(--surface)]/50"
-                >
-                  {languages.map((lng) => (
-                    <option key={lng.code} value={lng.code} className="bg-[var(--surface)] text-[var(--foreground)]">{lng.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {session ? (
-                <div className="flex items-center space-x-4">
-                  <div className="relative" ref={profileMenuRef}>
-                    <button
-                      onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                      className="flex items-center space-x-2 hover:bg-[var(--surface)]/50 px-3 py-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    >
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--primary), var(--secondary))' }}>
-                        <span className="text-white text-sm font-medium">
-                          {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
-                        </span>
-                      </div>
-                      <span className="text-[var(--foreground)] text-sm max-w-[120px] truncate">{session.user?.name || session.user?.email}</span>
-                      <svg
-                        className={`w-4 h-4 text-[var(--foreground-muted)] transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {profileMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-56 rounded-xl bg-[var(--surface)] border border-[var(--border)]/50 shadow-xl backdrop-blur-md overflow-hidden z-50">
-                        <div className="py-2">
-                          <Link
-                            href="/profile"
-                            onClick={() => setProfileMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 text-[var(--foreground)] hover:bg-[var(--surface)]/50 hover:text-white transition-all group"
-                          >
-                            <div className="h-8 w-8 rounded-lg border border-[var(--primary-dark)]/50 flex items-center justify-center group-hover:border-[var(--primary)]/70 transition-colors" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}>
-                              <svg className="w-4 h-4 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                              </svg>
-                            </div>
-                            <div className="flex-1">
-                              <div className="text-sm font-medium">{t('nav.profile', 'Mon Profil')}</div>
-                              <div className="text-xs text-[var(--foreground-muted)]">{t('nav.profile_desc', 'Gérer mes infos')}</div>
-                            </div>
-                          </Link>
-                          
-                          {isAdmin && (
-                            <>
-                              <div className="border-t border-[var(--border)]/50 my-2"></div>
-                              <Link
-                                href="/admin"
-                                onClick={() => setProfileMenuOpen(false)}
-                                className="flex items-center gap-3 px-4 py-3 text-[var(--foreground)] hover:bg-[var(--surface)]/50 hover:text-white transition-all group"
-                              >
-                                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 border border-yellow-700/50 flex items-center justify-center group-hover:border-yellow-600/70 transition-colors">
-                                  <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                                  </svg>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium">{t('nav.admin', 'Admin')}</div>
-                                  <div className="text-xs text-[var(--foreground-muted)]">{t('nav.admin_desc', 'Panneau d\'administration')}</div>
-                                </div>
-                              </Link>
-                            </>
-                          )}
-                          <div className="border-t border-[var(--border)]/50 my-2"></div>
-
-                          <button
-                            onClick={handleSignOut}
-                            className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-all w-full group"
-                          >
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center group-hover:border-red-600/70 transition-colors">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                                />
-                              </svg>
-                            </div>
-                            <div className="flex-1 text-left">
-                              <div className="text-sm font-medium">{t('nav.signout', 'Déconnexion')}</div>
-                              <div className="text-xs text-[var(--foreground-muted)]">{t('nav.signout_desc', 'Se déconnecter')}</div>
-                            </div>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <Link
-                    href="/auth/signin"
-                    className="text-[var(--foreground)] hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all hover:bg-[var(--surface)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  >
-                    {t('nav.signin')}
-                  </Link>
-                  {allowSignup && (
-                    <Link
-                      href="/auth/signup"
-                      className="text-white px-5 py-2 rounded-xl text-sm font-medium transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                      style={{ background: 'linear-gradient(to right, var(--primary), var(--secondary))', boxShadow: '0 10px 15px -3px rgb(from var(--primary) r g b / 0.25)' }}
-                      onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 20px 25px -5px rgb(from var(--primary) r g b / 0.3)'}
-                      onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 10px 15px -3px rgb(from var(--primary) r g b / 0.25)'}
-                    >
-                      {t('nav.signup')}
-                    </Link>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu panel */}
-      {mobileOpen && (
-        <div className="sm:hidden border-t border-[var(--border)]/50 bg-[var(--surface)]/95 backdrop-blur-md px-4 py-4">
-          <div className="flex flex-col space-y-4">
-            <div className="flex items-center gap-2">
-              <label htmlFor="lang-select-mobile" className="sr-only">{t('nav.language') || 'Language'}</label>
-              <select
-                id="lang-select-mobile"
+          {/* Desktop Navigation */}
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 2 }}>
+            <FormControl size="small">
+              <Select
                 value={currentLang}
-                onChange={(e) => changeLang(e.target.value, true)}
-                className="bg-[var(--surface)]/50 border border-[var(--border)]/50 text-[var(--foreground)] text-sm px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary)] w-full"
+                onChange={(e: SelectChangeEvent<string>) => changeLang(e.target.value)}
+                sx={{
+                  bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
+                  color: 'var(--foreground)',
+                  border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
+                  borderRadius: '12px',
+                  minWidth: '80px',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '& .MuiSelect-select': { py: 1 }
+                }}
               >
                 {languages.map((lng) => (
-                  <option key={lng.code} value={lng.code} className="bg-[var(--surface)]">{lng.label}</option>
+                  <MenuItem key={lng.code} value={lng.code}>{lng.label}</MenuItem>
                 ))}
-              </select>
-            </div>
+              </Select>
+            </FormControl>
 
             {session ? (
               <>
-                <div className="flex items-center space-x-3 py-2">
-                  <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--primary), var(--secondary))' }}>
-                    <span className="text-white font-medium">
-                      {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="text-[var(--foreground)] text-sm truncate">{session.user?.name || session.user?.email}</span>
-                </div>
-
-                <Link
-                  href="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--foreground)] hover:bg-[var(--surface)]/50 hover:text-white transition-all"
+                <IconButton
+                  onClick={(e: { currentTarget: SetStateAction<HTMLElement | null> }) => setProfileMenuAnchor(e.currentTarget)}
+                  sx={{ p: 0 }}
                 >
-                  <svg className="w-5 h-5 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium">{t('nav.profile', 'Mon Profil')}</span>
-                </Link>
-
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--foreground)] hover:bg-[var(--surface)]/50 hover:text-white transition-all"
+                  <Avatar
+                    sx={{
+                      background: 'linear-gradient(to bottom right, var(--primary), var(--secondary))',
+                      width: 36,
+                      height: 36
+                    }}
                   >
-                    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                    </svg>
-                    <span className="text-sm font-medium">{t('nav.admin', 'Panneau d\'Administration')}</span>
-                  </Link>
-                )}
-
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-left flex items-center gap-3 bg-red-600/90 hover:bg-red-700 text-white px-4 py-3 rounded-xl text-sm font-medium transition-all"
+                    {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={profileMenuAnchor}
+                  open={Boolean(profileMenuAnchor)}
+                  onClose={() => setProfileMenuAnchor(null)}
+                  PaperProps={{
+                    sx: {
+                      bgcolor: 'var(--surface)',
+                      border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
+                      borderRadius: '12px',
+                      minWidth: '220px'
+                    }
+                  }}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  <span>{t('nav.signout', 'Déconnexion')}</span>
-                </button>
+                  <MenuItem
+                    component={Link}
+                    href="/profile"
+                    onClick={() => setProfileMenuAnchor(null)}
+                    sx={{ color: 'var(--foreground)' }}
+                  >
+                    <ListItemIcon>
+                      <PersonIcon sx={{ color: 'var(--primary)' }} />
+                    </ListItemIcon>
+                    <ListItemText primary={t('nav.profile', 'Mon Profil')} />
+                  </MenuItem>
+                  {isAdmin && [
+                    <Divider key="admin-divider" sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />,
+                    <MenuItem
+                      key="admin-item"
+                      component={Link}
+                      href="/admin"
+                      onClick={() => setProfileMenuAnchor(null)}
+                      sx={{ color: 'var(--foreground)' }}
+                    >
+                      <ListItemIcon>
+                        <AdminIcon sx={{ color: '#f59e0b' }} />
+                      </ListItemIcon>
+                      <ListItemText primary={t('nav.admin', 'Admin')} />
+                    </MenuItem>
+                  ]}
+                  <Divider sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />
+                  <MenuItem
+                    onClick={handleSignOut}
+                    sx={{ color: '#f87171' }}
+                  >
+                    <ListItemIcon>
+                      <LogoutIcon sx={{ color: '#f87171' }} />
+                    </ListItemIcon>
+                    <ListItemText primary={t('nav.signout', 'Déconnexion')} />
+                  </MenuItem>
+                </Menu>
               </>
             ) : (
-              <div className="space-y-2">
-                <Link
+              <>
+                <Button
+                  component={Link}
                   href="/auth/signin"
-                  onClick={() => setMobileOpen(false)}
-                  className="text-[var(--foreground)] hover:text-white block px-4 py-3 rounded-xl text-sm font-medium transition-all hover:bg-[var(--surface)]/50"
+                  sx={{
+                    color: 'var(--foreground)',
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` }
+                  }}
                 >
                   {t('nav.signin')}
-                </Link>
+                </Button>
                 {allowSignup && (
-                  <Link
+                  <Button
+                    component={Link}
                     href="/auth/signup"
-                    onClick={() => setMobileOpen(false)}
-                    className="text-white block px-4 py-3 rounded-xl text-sm font-medium transition-all text-center"
-                    style={{ background: 'linear-gradient(to right, var(--primary), var(--secondary))' }}
+                    variant="contained"
+                    sx={{
+                      background: 'linear-gradient(to right, var(--primary), var(--secondary))',
+                      textTransform: 'none',
+                      borderRadius: '12px',
+                      '&:hover': {
+                        boxShadow: '0 20px 25px -5px rgb(from var(--primary) r g b / 0.3)'
+                      }
+                    }}
                   >
                     {t('nav.signup')}
-                  </Link>
+                  </Button>
                 )}
-              </div>
+              </>
             )}
-          </div>
-        </div>
-      )}
-    </nav>
+          </Box>
+
+          {/* Mobile Menu Button */}
+          <IconButton
+            sx={{ display: { xs: 'flex', sm: 'none' }, color: 'var(--foreground)' }}
+            onClick={() => setMobileOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 98%, transparent)`,
+            color: 'var(--foreground)',
+            width: '280px'
+          }
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <FormControl fullWidth size="small">
+            <Select
+              value={currentLang}
+              onChange={(e: SelectChangeEvent<string>) => changeLang(e.target.value, true)}
+              sx={{
+                bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
+                color: 'var(--foreground)',
+                border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
+                borderRadius: '12px',
+                '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
+              }}
+            >
+              {languages.map((lng) => (
+                <MenuItem key={lng.code} value={lng.code}>{lng.label}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        {session ? (
+          <List>
+            <ListItem sx={{ py: 2, px: 2 }}>
+              <Avatar
+                sx={{
+                  background: 'linear-gradient(to bottom right, var(--primary), var(--secondary))',
+                  mr: 2
+                }}
+              >
+                {session.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
+              </Avatar>
+              <Typography variant="body2" noWrap>
+                {session.user?.name || session.user?.email}
+              </Typography>
+            </ListItem>
+            <Divider sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />
+            <ListItem
+              component={Link}
+              href="/profile"
+              onClick={() => setMobileOpen(false)}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` } }}
+            >
+              <ListItemIcon>
+                <PersonIcon sx={{ color: 'var(--primary)' }} />
+              </ListItemIcon>
+              <ListItemText primary={t('nav.profile', 'Mon Profil')} />
+            </ListItem>
+            {isAdmin && (
+              <ListItem
+                component={Link}
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                sx={{ cursor: 'pointer', '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` } }}
+              >
+                <ListItemIcon>
+                  <AdminIcon sx={{ color: '#f59e0b' }} />
+                </ListItemIcon>
+                <ListItemText primary={t('nav.admin', 'Admin')} />
+              </ListItem>
+            )}
+            <Divider sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }} />
+            <ListItem
+              onClick={handleSignOut}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'rgba(220, 38, 38, 0.2)' }, color: '#f87171' }}
+            >
+              <ListItemIcon>
+                <LogoutIcon sx={{ color: '#f87171' }} />
+              </ListItemIcon>
+              <ListItemText primary={t('nav.signout', 'Déconnexion')} />
+            </ListItem>
+          </List>
+        ) : (
+          <List>
+            <ListItem
+              component={Link}
+              href="/auth/signin"
+              onClick={() => setMobileOpen(false)}
+              sx={{ cursor: 'pointer', '&:hover': { bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)` } }}
+            >
+              <ListItemText primary={t('nav.signin')} />
+            </ListItem>
+            {allowSignup && (
+              <ListItem
+                component={Link}
+                href="/auth/signup"
+                onClick={() => setMobileOpen(false)}
+                sx={{
+                  cursor: 'pointer',
+                  background: 'linear-gradient(to right, var(--primary), var(--secondary))',
+                  borderRadius: '12px',
+                  mx: 2,
+                  mt: 1
+                }}
+              >
+                <ListItemText primary={t('nav.signup')} sx={{ textAlign: 'center' }} />
+              </ListItem>
+            )}
+          </List>
+        )}
+      </Drawer>
+    </>
   )
 }
