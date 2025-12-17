@@ -238,18 +238,9 @@ const FileShare: React.FC = () => {
           }
         };
 
-        // Network error - try to get response body if available
+        // Network error - reject with a generic network error message
         xhr.onerror = () => {
-          try {
-            if (xhr.responseText) {
-              const response = JSON.parse(xhr.responseText);
-              resolve({ error: response.error || xhr.responseText });
-            } else {
-              reject(new Error(t("fileshare.network_error", "Network error")));
-            }
-          } catch {
-            resolve({ error: xhr.responseText || t("fileshare.network_error", "Network error") });
-          }
+          reject(new Error(t("fileshare.network_error", "Network error")));
         };
         
         xhr.onabort = () => reject(new Error(t("fileshare.upload_cancelled", "Upload cancelled")));
