@@ -243,7 +243,7 @@ const FileShare: React.FC = () => {
           reject(new Error(t("fileshare.network_error", "Network error")));
         };
         
-        xhr.onabort = () => reject(new Error(t("fileshare.upload_cancelled", "Upload cancelled")));
+        xhr.onabort = () => reject(new Error("Upload cancelled"));
         
         // Use Pages Router endpoint for true streaming (no memory buffering)
         xhr.open("POST", "/api/upload");
