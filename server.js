@@ -78,7 +78,7 @@ async function handleUpload(req, res) {
   const clientIp = getClientIp(req);
 
   // Import singleton Prisma instance
-  const { prisma } = await import("./src/lib/prisma.ts");
+  const { prisma } = await import("./src/lib/prisma.js");
   
   try {
     // Check authentication via JWT token
@@ -377,8 +377,10 @@ async function handleUpload(req, res) {
     });
   } catch (err) {
     console.error("Error in upload handler:", err);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Internal server error" }));
+    if (!res.headersSent) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Internal server error" }));
+    }
   }
 }
 
