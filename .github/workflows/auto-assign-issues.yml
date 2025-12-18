@@ -1,0 +1,35 @@
+name: "Auto assign and label issues"
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-assign:
+    name: Auto assign issue to creator
+    runs-on: self-hosted
+    permissions:
+      issues: write
+
+    steps:
+      - name: Assign issue to creator
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: [context.actor]
+            });
+
+      - name: Add label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-review']
+            });
