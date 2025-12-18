@@ -109,7 +109,6 @@ const PasteViewPage = () => {
       if (lang === "ts") lang = "typescript";
       if (lang === "c++") lang = "cpp";
       if (lang === "html") lang = "markup";
-      if (lang === "plaintext" || lang === "plain") lang = "plaintext";
       // Ensure the language exists, fallback to plaintext
       if (!Prism.languages[lang]) lang = "plaintext";
       const html = Prism.highlight(pasteData.paste, Prism.languages[lang] || Prism.languages.plaintext, lang);
