@@ -33,6 +33,7 @@
     "login_for_more": "Melden Sie sich an für längere Zeiträume oder kein Ablauf",
     "language_placeholder": "Wählen Sie eine Sprache",
     "custom_slug": "Benutzerdefinierter Link",
+    "placeholder_slug": "mein-paste",
     "slug_hint": "Nur Buchstaben, Zahlen, Bindestriche und Unterstriche",
     "never_expires_desc": "Dieser Paste bleibt unbegrenzt verfügbar",
     "loading": "Wird erstellt...",

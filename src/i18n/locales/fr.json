@@ -34,6 +34,7 @@
     "login_for_more": "Connectez-vous pour des durées plus longues ou aucune expiration",
     "language_placeholder": "Sélectionnez un langage",
     "custom_slug": "Lien personnalisé",
+    "placeholder_slug": "mon-paste",
     "slug_hint": "Lettres, chiffres, tirets et underscores uniquement",
     "never_expires_desc": "Ce paste restera disponible indéfiniment",
     "loading": "Création en cours...",

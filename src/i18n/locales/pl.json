@@ -33,6 +33,7 @@
     "login_for_more": "Zaloguj się, aby uzyskać dłuższy czas przechowywania lub brak wygaśnięcia",
     "language_placeholder": "Wybierz język",
     "custom_slug": "Własny link",
+    "placeholder_slug": "moja-wklejka",
     "slug_hint": "Tylko litery, cyfry, myślniki i podkreślenia",
     "never_expires_desc": "Ta wklejka będzie dostępna bezterminowo",
     "loading": "Tworzenie...",
