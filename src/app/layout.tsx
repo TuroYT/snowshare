@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import MuiThemeProvider from "@/components/MuiThemeProvider";
+import { ThemeInitializer } from "@/components/ThemeInitializer";
 import PlausibleProvider from "next-plausible";
+import LoadingScreen from "@/components/LoadingScreen";
+import { Suspense } from "react";
 import "@/i18n/client";
+import { getPublicSettings } from "@/lib/settings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,10 +19,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "SnowShare",
-  description: "Partagez vos fichiers, pastes et URLs en toute sécurité",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const data = await getPublicSettings();
+  const settings = data?.settings;
+
+  return {
+    title: settings?.appName || "SnowShare",
+    description: settings?.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    icons: settings?.faviconUrl
+      ? {
+          icon: [{ url: settings.faviconUrl }],
+          shortcut: [{ url: settings.faviconUrl }],
+          apple: [{ url: settings.faviconUrl }],
+        }
+      : undefined,
+  };
+}
 
 export default function RootLayout({
   children,
@@ -54,11 +68,11 @@ export default function RootLayout({
         }}
       >
         <NextAuthProvider>
-          <ThemeProvider>
-            <MuiThemeProvider>
+          <Suspense fallback={<LoadingScreen />}>
+            <ThemeInitializer>
               {children}
-            </MuiThemeProvider>
-          </ThemeProvider>
+            </ThemeInitializer>
+          </Suspense>
         </NextAuthProvider>
       </body>
     </html>

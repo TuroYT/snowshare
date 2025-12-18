@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { Snackbar, Alert as MuiAlert } from "@mui/material"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "@/hooks/useTheme"
 import Image from "next/image"
-import {  Alert } from "@/components/ui"
 import { ThemePresetSelector } from "./ThemePresetSelector"
 
 interface BrandingSettings {
@@ -27,7 +27,7 @@ interface BrandingSettings {
 
 export default function BrandingTab() {
   const { t } = useTranslation()
-  const { updateTheme } = useTheme()
+  const { updateTheme, refreshSettings } = useTheme()
   const [settings, setSettings] = useState<BrandingSettings>({
     appName: "SnowShare",
     appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
@@ -48,7 +48,66 @@ export default function BrandingTab() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastErrorOpen, setToastErrorOpen] = useState(false)
+
+  const isHexColor = (v: string) => /^#([0-9A-Fa-f]{6})$/.test(v?.trim?.() || "")
+  const isValidUrl = (v: string) => {
+    try {
+      new URL(v)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  const validateSettingsBeforeSave = (): boolean => {
+    // Required text fields
+    if (!settings.appName?.trim() || !settings.appDescription?.trim()) {
+      setError(t("admin.validation_required"))
+      setToastErrorOpen(true)
+      return false
+    }
+
+    // Validate colors
+    const colorKeys: (keyof BrandingSettings)[] = [
+      "primaryColor",
+      "primaryHover",
+      "primaryDark",
+      "secondaryColor",
+      "secondaryHover",
+      "secondaryDark",
+      "backgroundColor",
+      "surfaceColor",
+      "textColor",
+      "textMuted",
+      "borderColor",
+    ]
+
+    for (const key of colorKeys) {
+      const val = settings[key] as string
+      if (!val || !isHexColor(val)) {
+        setError(t("admin.validation_invalid_color"))
+        setToastErrorOpen(true)
+        return false
+      }
+    }
+
+    // Optional URLs when provided
+    if (settings.logoUrl && !isValidUrl(settings.logoUrl)) {
+      setError(t("admin.validation_invalid_url"))
+      setToastErrorOpen(true)
+      return false
+    }
+    if (settings.faviconUrl && !isValidUrl(settings.faviconUrl)) {
+      setError(t("admin.validation_invalid_url"))
+      setToastErrorOpen(true)
+      return false
+    }
+
+    setError(null)
+    return true
+  }
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -76,6 +135,7 @@ export default function BrandingTab() {
       setError(null)
     } catch (err) {
       setError(t("admin.error_load_data"))
+      setToastErrorOpen(true)
       console.error(err)
     } finally {
       setLoading(false)
@@ -103,6 +163,7 @@ export default function BrandingTab() {
 
   const handleSave = async () => {
     try {
+      if (!validateSettingsBeforeSave()) return
       setSaving(true)
       const response = await fetch("/api/admin/settings", {
         method: "PATCH",
@@ -112,7 +173,7 @@ export default function BrandingTab() {
 
       if (!response.ok) throw new Error("Failed to save settings")
       
-      // Update theme with new colors
+      // Update theme with new colors (live preview)
       updateTheme({
         primaryColor: settings.primaryColor,
         primaryHover: settings.primaryHover,
@@ -126,12 +187,14 @@ export default function BrandingTab() {
         textMuted: settings.textMuted,
         borderColor: settings.borderColor,
       })
-      
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+
+      // Show toast and refresh theme (metadata + favicon) without full reload
+      setToastOpen(true)
       setError(null)
+      await refreshSettings()
     } catch (err) {
       setError(t("admin.save_error"))
+      setToastErrorOpen(true)
       console.error(err)
     } finally {
       setSaving(false)
@@ -171,13 +234,27 @@ export default function BrandingTab() {
 
   return (
     <div className="space-y-6 w-full">
-      {error && (
-        <Alert variant="error">{error}</Alert>
-      )}
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={1200}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert elevation={6} variant="filled" severity="success" sx={{ width: '100%' }}>
+          {t("admin.save_success")}
+        </MuiAlert>
+      </Snackbar>
 
-      {success && (
-        <Alert variant="success">{t("admin.save_success")}</Alert>
-      )}
+      <Snackbar
+        open={toastErrorOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastErrorOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert elevation={6} variant="filled" severity="error" sx={{ width: '100%' }}>
+          {error || t("admin.save_error")}
+        </MuiAlert>
+      </Snackbar>
 
       {/* App Identity */}
       <div className="space-y-4">

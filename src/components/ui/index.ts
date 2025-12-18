@@ -6,6 +6,3 @@ export type { CardProps } from "./Card"
 
 export { Input, Textarea } from "./Input"
 export type { InputProps, TextareaProps } from "./Input"
-
-export { Alert, AlertTitle, AlertDescription } from "./Alert"
-export type { AlertProps } from "./Alert"

@@ -264,6 +264,9 @@
     "error_load_data": "Erreur lors du chargement des données",
     "save_success": "Modifications enregistrées avec succès",
     "save_error": "Erreur lors de l'enregistrement",
+    "validation_required": "Les champs requis sont manquants",
+    "validation_invalid_color": "Couleur invalide (format requis : #RRGGBB)",
+    "validation_invalid_url": "URL invalide",
     "confirm_action": "Êtes-vous sûr ?",
     "tabs": {
       "users": "Utilisateurs",

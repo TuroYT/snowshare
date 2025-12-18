@@ -261,7 +261,10 @@
     "error_access_denied": "Toegang geweigerd. Je hebt geen rechten om deze pagina te bekijken.",
     "error_load_data": "Fout bij laden van gegevens",
     "save_success": "Wijzigingen succesvol opgeslagen",
-    "save_error": "Fout bij opslaan van wijzigingen",
+    "save_error": "Fout bij opslaan",
+    "validation_required": "Vereiste velden ontbreken",
+    "validation_invalid_color": "Ongeldige kleur (verwacht formaat: #RRGGBB)",
+    "validation_invalid_url": "Ongeldige URL",
     "confirm_action": "Weet je het zeker?",
     "tabs": {
       "users": "Gebruikers",
