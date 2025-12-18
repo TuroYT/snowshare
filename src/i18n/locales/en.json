@@ -263,6 +263,9 @@
     "save_success": "Changes saved successfully",
     "save_error": "Error saving changes",
     "confirm_action": "Are you sure?",
+    "validation_required": "Required fields are missing",
+    "validation_invalid_color": "Invalid color (expected format: #RRGGBB)",
+    "validation_invalid_url": "Invalid URL",
     "tabs": {
       "users": "Users",
       "settings": "Settings",

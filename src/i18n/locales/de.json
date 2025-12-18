@@ -257,7 +257,10 @@
     "error_access_denied": "Zugriff verweigert. Du hast keine Berechtigung, diese Seite zu sehen.",
     "error_load_data": "Fehler beim Laden der Daten",
     "save_success": "Änderungen erfolgreich gespeichert",
-    "save_error": "Fehler beim Speichern der Änderungen",
+    "save_error": "Fehler beim Speichern",
+    "validation_required": "Pflichtfelder fehlen",
+    "validation_invalid_color": "Ungültige Farbe (erwartetes Format: #RRGGBB)",
+    "validation_invalid_url": "Ungültige URL",
     "confirm_action": "Bist du sicher?",
     "tabs": {
       "users": "Benutzer",

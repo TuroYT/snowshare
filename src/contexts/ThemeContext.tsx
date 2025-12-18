@@ -23,6 +23,26 @@ export interface BrandingSettings {
   faviconUrl: string | null
 }
 
+export interface ThemeData {
+  settings: {
+    primaryColor?: string
+    primaryHover?: string
+    primaryDark?: string
+    secondaryColor?: string
+    secondaryHover?: string
+    secondaryDark?: string
+    backgroundColor?: string
+    surfaceColor?: string
+    textColor?: string
+    textMuted?: string
+    borderColor?: string
+    appName?: string
+    appDescription?: string
+    logoUrl?: string | null
+    faviconUrl?: string | null
+  }
+}
+
 export interface ThemeContextType {
   colors: ThemeColors
   branding: BrandingSettings
@@ -54,10 +74,16 @@ const defaultBranding: BrandingSettings = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export function ThemeProvider({ 
+  children, 
+  initialData 
+}: { 
+  children: ReactNode
+  initialData?: ThemeData | null
+}) {
   const [colors, setColors] = useState<ThemeColors>(defaultColors)
   const [branding, setBranding] = useState<BrandingSettings>(defaultBranding)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!initialData)
 
   const refreshSettings = async () => {
     try {
@@ -94,6 +120,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setColors(newColors)
       setBranding(newBranding)
       applyThemeToDOM(newColors)
+      applyBrandingMeta(newBranding)
     } catch (error) {
       console.error("Failed to fetch theme:", error)
     } finally {
@@ -102,7 +129,37 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    refreshSettings()
+    if (initialData) {
+      const settings = initialData.settings
+      const newColors: ThemeColors = {
+        primaryColor: settings.primaryColor || defaultColors.primaryColor,
+        primaryHover: settings.primaryHover || defaultColors.primaryHover,
+        primaryDark: settings.primaryDark || defaultColors.primaryDark,
+        secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
+        secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
+        secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
+        backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
+        surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
+        textColor: settings.textColor || defaultColors.textColor,
+        textMuted: settings.textMuted || defaultColors.textMuted,
+        borderColor: settings.borderColor || defaultColors.borderColor,
+      }
+
+      const newBranding: BrandingSettings = {
+        appName: settings.appName || defaultBranding.appName,
+        appDescription: settings.appDescription || defaultBranding.appDescription,
+        logoUrl: settings.logoUrl || null,
+        faviconUrl: settings.faviconUrl || null,
+      }
+
+      setColors(newColors)
+      setBranding(newBranding)
+      applyThemeToDOM(newColors)
+      applyBrandingMeta(newBranding)
+      setIsLoading(false)
+    } else {
+      refreshSettings()
+    }
   }, [])
 
   const updateTheme = (newColors: Partial<ThemeColors>) => {
