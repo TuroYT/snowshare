@@ -18,7 +18,7 @@ export async function ThemeInitializer({ children }: { children: ReactNode }) {
 
   return (
     <div style={{
-      animation: "fadeIn 0.2s ease-in 0.2s forwards",
+      animation: "fadeIn 0.4s ease-in 0.4s forwards",
       opacity: 0,
     }}>
       <style>{`
