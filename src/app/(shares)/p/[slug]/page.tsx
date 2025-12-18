@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-typescript";
@@ -14,6 +15,9 @@ import "prismjs/components/prism-java";
 import "prismjs/components/prism-go";
 import "prismjs/components/prism-rust";
 import "prismjs/components/prism-markdown";
+import "prismjs/components/prism-php";
+import "prismjs/components/prism-css";
+import "prismjs/components/prism-sql";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
@@ -105,6 +109,8 @@ const PasteViewPage = () => {
       if (lang === "ts") lang = "typescript";
       if (lang === "c++") lang = "cpp";
       if (lang === "html") lang = "markup";
+      if (lang === "plaintext" || lang === "plain") lang = "plaintext";
+      // Ensure the language exists, fallback to plaintext
       if (!Prism.languages[lang]) lang = "plaintext";
       const html = Prism.highlight(pasteData.paste, Prism.languages[lang] || Prism.languages.plaintext, lang);
       setHighlighted(html);
