@@ -77,11 +77,10 @@ async function handleUpload(req, res) {
 
   const clientIp = getClientIp(req);
 
-  // Dynamic imports for Prisma and bcrypt (ESM modules)
-  const { PrismaClient } = await import("./src/generated/prisma/index.js");
-  const prisma = new PrismaClient();
-  
   try {
+    // Import singleton Prisma instance
+    const { prisma } = await import("./src/lib/prisma.js");
+    
     // Check authentication via JWT token
     let userId = null;
     let isAuthenticated = false;
@@ -376,8 +375,12 @@ async function handleUpload(req, res) {
       // Pipe request directly to busboy - NO NEXT.JS BUFFERING
       req.pipe(busboy);
     });
-  } finally {
-    await prisma.$disconnect();
+  } catch (err) {
+    console.error("Error in upload handler:", err);
+    if (!res.headersSent) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Internal server error" }));
+    }
   }
 }
 
