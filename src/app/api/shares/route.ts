@@ -1,51 +1,19 @@
-/** API route for creating shares */
+/** API route for creating shares (Link and Paste only)
+ * File uploads are handled by /pages/api/upload.ts for true streaming */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createLinkShare } from "./(linkShare)/linkshare";
 import { createPasteShare } from "./(pasteShare)/pasteshareshare";
-import { createFileShare } from "./(fileShare)/fileshare";
 
 async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type") || "";
 
-    // Handle file uploads (multipart/form-data)
+    // File uploads should use /api/upload (Pages Router) for true streaming
     if (contentType.includes("multipart/form-data")) {
-        try {
-            const formData = await req.formData();
-            const type = formData.get("type") as string;
-
-            if (type !== "FILE") {
-                return NextResponse.json(
-                        { error: "Invalid share type for file upload" },
-                        { status: 400 }
-                    );
-            }
-
-            const file = formData.get("file") as File;
-            const expiresAt = formData.get("expiresAt") as string;
-            const slug = formData.get("slug") as string;
-            const password = formData.get("password") as string;
-
-            if (!file) {
-                return NextResponse.json({ error: "File required" }, { status: 400 });
-            }
-
-            const result = await createFileShare(
-                file,
-                req,
-                expiresAt ? new Date(expiresAt) : undefined,
-                slug || undefined,
-                password || undefined
-            );
-
-            if (result?.error) {
-                return NextResponse.json({ error: result.error }, { status: 400 });
-            }
-            return NextResponse.json({ share: result }, { status: 201 });
-        } catch (error) {
-            console.error("File upload error:", error);
-            return NextResponse.json({ error: "Erreur lors du traitement du fichier" }, { status: 500 });
-        }
+        return NextResponse.json(
+            { error: "File uploads should use /api/upload endpoint" },
+            { status: 400 }
+        );
     }
 
     // Handle JSON data for other share types

@@ -20,7 +20,7 @@ export default function FileSharePage() {
     const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
     const [loadingInfo, setLoadingInfo] = useState(true);
     const params = useParams();
-    const slug = params.slug as string;
+    const slug = params?.slug as string;
 
     // Fetch file info on load
     useEffect(() => {

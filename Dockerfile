@@ -24,5 +24,5 @@ RUN chmod +x scripts/cleanup.sh
 RUN crontab scripts/crontab
 
 
-# Default command; migrations can be handled by compose command override
-CMD ["sh", "-c", "npx prisma migrate deploy && crond && npm start"]
+# Default command - use custom server for streaming uploads
+CMD ["sh", "-c", "npx prisma migrate deploy && crond && node server.js"]

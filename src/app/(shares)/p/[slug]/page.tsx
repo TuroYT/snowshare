@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Prism from "prismjs";
-import "prismjs/themes/prism-tomorrow.css";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-typescript";
@@ -38,7 +37,7 @@ interface ApiResponse {
 const PasteViewPage = () => {
   const { t } = useTranslation();
   const params = useParams();
-  const slug = typeof params.slug === "string" ? params.slug : Array.isArray(params.slug) ? params.slug[0] : "";
+  const slug = typeof params?.slug === "string" ? params.slug : Array.isArray(params?.slug) ? params.slug[0] : "";
   const [pasteData, setPasteData] = useState<PasteData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
