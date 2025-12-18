@@ -26,6 +26,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings?.appName || "SnowShare",
     description: settings?.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    icons: settings?.faviconUrl
+      ? {
+          icon: [{ url: settings.faviconUrl }],
+          shortcut: [{ url: settings.faviconUrl }],
+          apple: [{ url: settings.faviconUrl }],
+        }
+      : undefined,
   };
 }
 
