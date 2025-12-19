@@ -33,6 +33,7 @@
     "login_for_more": "Inicia sesión para duraciones más largas o sin expiración",
     "language_placeholder": "Selecciona un lenguaje",
     "custom_slug": "Enlace personalizado",
+    "placeholder_slug": "mi-pegar",
     "slug_hint": "Solo letras, números, guiones y guiones bajos",
     "never_expires_desc": "Este paste permanecerá disponible indefinidamente",
     "loading": "Creando...",

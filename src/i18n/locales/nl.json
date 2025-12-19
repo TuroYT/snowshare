@@ -33,6 +33,7 @@
     "login_for_more": "Log in voor langere looptijden of geen vervaldatum",
     "language_placeholder": "Selecteer een taal",
     "custom_slug": "Aangepaste link",
+    "placeholder_slug": "mijn-plak",
     "slug_hint": "Alleen letters, cijfers, streepjes en underscores",
     "never_expires_desc": "Deze paste blijft onbeperkt beschikbaar",
     "loading": "Aanmaken...",
