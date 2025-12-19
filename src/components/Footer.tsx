@@ -1,7 +1,12 @@
+"use client"
+
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function Footer() {
     const { t } = useTranslation();
+    const { branding } = useTheme();
+    const year = new Date().getFullYear();
     return (
         <footer className="mt-16 border-t border-[var(--border)] bg-[var(--surface)] bg-opacity-95">
             <div className="max-w-7xl mx-auto px-4 py-8">
@@ -44,7 +49,10 @@ export default function Footer() {
 
                 <div className="mt-6 pt-6 border-t border-[var(--border)]/30 text-center">
                     <p className="text-sm text-[var(--foreground-muted)]">
-                        © 2025 SnowShare. {t("footer.rights", "Tous droits réservés.")}
+                        © {year} {branding.appName}. {t("footer.rights", "Tous droits réservés.")} {" "}
+                        <span className="inline-flex items-center gap-1">
+                            Powered by<a href="https://github.com/TuroYT/snowshare" target="_blank" rel="noopener noreferrer" className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors underline">SnowShare</a>
+                        </span>
                     </p>
                 </div>
             </div>
