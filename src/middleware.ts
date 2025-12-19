@@ -39,7 +39,6 @@ export default async function middleware(request: NextRequest) {
     const port = process.env.PORT || "3000"
     const baseUrl = `http://localhost:${port}`
     const checkUrl = new URL('/api/setup/check', baseUrl)
-    console.log(checkUrl.toString())
     const response = await fetch(checkUrl.toString())
     
     if (!response.ok) {
