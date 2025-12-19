@@ -160,7 +160,7 @@ export function ThemeProvider({
     } else {
       refreshSettings()
     }
-  }, [])
+  }, [initialData])
 
   const updateTheme = (newColors: Partial<ThemeColors>) => {
     const updatedColors = { ...colors, ...newColors }

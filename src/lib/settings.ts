@@ -17,6 +17,36 @@ const DEFAULTS = {
 };
 
 export async function getPublicSettings() {
+  // If DATABASE_URL is not set (e.g. during static build/prerender),
+  // avoid calling Prisma and return safe defaults.
+  if (!process.env.DATABASE_URL) {
+    return {
+      settings: {
+        allowSignin: true,
+        allowAnonFileShare: true,
+        anoMaxUpload: 2048,
+        authMaxUpload: 51200,
+        anoIpQuota: 4096,
+        authIpQuota: 102400,
+        appName: DEFAULTS.appName,
+        appDescription: DEFAULTS.appDescription,
+        logoUrl: null,
+        faviconUrl: null,
+        primaryColor: DEFAULTS.primaryColor,
+        primaryHover: DEFAULTS.primaryHover,
+        primaryDark: DEFAULTS.primaryDark,
+        secondaryColor: DEFAULTS.secondaryColor,
+        secondaryHover: DEFAULTS.secondaryHover,
+        secondaryDark: DEFAULTS.secondaryDark,
+        backgroundColor: DEFAULTS.backgroundColor,
+        surfaceColor: DEFAULTS.surfaceColor,
+        textColor: DEFAULTS.textColor,
+        textMuted: DEFAULTS.textMuted,
+        borderColor: DEFAULTS.borderColor,
+      },
+    } as const;
+  }
+
   let s = await prisma.settings.findFirst();
   if (!s) {
     s = await prisma.settings.create({
@@ -58,6 +88,29 @@ export async function getPublicSettings() {
 }
 
 export async function getBrandingSettings() {
+  // If DATABASE_URL is not set, return default branding to avoid Prisma calls
+  if (!process.env.DATABASE_URL) {
+    return {
+      branding: {
+        appName: DEFAULTS.appName,
+        appDescription: DEFAULTS.appDescription,
+        logoUrl: null,
+        faviconUrl: null,
+        primaryColor: DEFAULTS.primaryColor,
+        primaryHover: DEFAULTS.primaryHover,
+        primaryDark: DEFAULTS.primaryDark,
+        secondaryColor: DEFAULTS.secondaryColor,
+        secondaryHover: DEFAULTS.secondaryHover,
+        secondaryDark: DEFAULTS.secondaryDark,
+        backgroundColor: DEFAULTS.backgroundColor,
+        surfaceColor: DEFAULTS.surfaceColor,
+        textColor: DEFAULTS.textColor,
+        textMuted: DEFAULTS.textMuted,
+        borderColor: DEFAULTS.borderColor,
+      },
+    } as const;
+  }
+
   const s = await prisma.settings.findFirst({
     select: {
       appName: true,
