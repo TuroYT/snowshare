@@ -3,7 +3,7 @@ name: "Build on self-hosted"
 on:
   push:
     branches: [main, dev]
-  pull_request:
+  pull_request_target:
     branches: [main, dev]
 
 permissions:
@@ -19,28 +19,70 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check PR approval
+        id: check_approval
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const event = context.eventName;
+            if (event !== 'pull_request_target') {
+              core.setOutput('approved', 'true');
+              return;
+            }
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setOutput('approved', 'true');
+              return;
+            }
+            const prNumber = pr.number;
+            const author = pr.user && pr.user.login;
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            const approved = reviews.some(r => r.state === 'APPROVED' && r.user && r.user.login !== author);
+            core.setOutput('approved', approved ? 'true' : 'false');
+
+      - name: "Notify PR: awaiting approval"
+        if: github.event_name == 'pull_request_target' && steps.check_approval.outputs.approved != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: "🔒 Build skipped: need approval."
+            });
+
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request_target' || steps.check_approval.outputs.approved == 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request_target' || steps.check_approval.outputs.approved == 'true' }}
         run: npm ci
 
       - name: Run linter
+        if: ${{ github.event_name != 'pull_request_target' || steps.check_approval.outputs.approved == 'true' }}
         run: npm run lint:fix
         continue-on-error: true
 
       - name: Build project
+        if: ${{ github.event_name != 'pull_request_target' || steps.check_approval.outputs.approved == 'true' }}
         run: npm run build
 
       - name: Docker build
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request_target' && steps.check_approval.outputs.approved == 'true' && github.ref == 'refs/heads/main')
         run: docker compose build
 
       - name: Comment PR with results
-        if: github.event_name == 'pull_request' && always()
+        if: github.event_name == 'pull_request_target' && always()
         uses: actions/github-script@v7
         with:
           script: |

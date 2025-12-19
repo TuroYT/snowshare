@@ -3,8 +3,6 @@ name: "Auto label pull requests"
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]
-  pull_request:
-    types: [opened, reopened, synchronize]
 
 jobs:
   label:
@@ -22,4 +20,4 @@ jobs:
       - name: Run labeler
         uses: actions/labeler@v4
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          repo-token: ${{ github.token }}
