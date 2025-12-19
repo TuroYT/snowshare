@@ -15,12 +15,14 @@ const MAX_FILE_SIZE_AUTH = 500 * 1024 * 1024; // 500MB
 const FileShare: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
+  const [expiresDays, setExpiresDays] = useState<number>(
+    isAuthenticated ? 30 : MAX_DAYS_ANON
+  );
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
@@ -30,10 +32,14 @@ const FileShare: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
-  const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(null);
+  const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(
+    null
+  );
   const [settingsLoading, setSettingsLoading] = useState(true);
-  const [maxFileSizeAnon, setMaxFileSizeAnon] = useState<number>(MAX_FILE_SIZE_ANON);
-  const [maxFileSizeAuth, setMaxFileSizeAuth] = useState<number>(MAX_FILE_SIZE_AUTH);
+  const [maxFileSizeAnon, setMaxFileSizeAnon] =
+    useState<number>(MAX_FILE_SIZE_ANON);
+  const [maxFileSizeAuth, setMaxFileSizeAuth] =
+    useState<number>(MAX_FILE_SIZE_AUTH);
 
   const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
 
@@ -65,22 +71,24 @@ const FileShare: React.FC = () => {
     fetchSettings();
   }, []);
 
-
-  
   // Format file size
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   // Validate file
   const validateFile = (file: File): string | null => {
     if (file.size > maxFileSize) {
       const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
-      return t("fileshare.file_too_large", "File is too large (max {{max}}MB)", { max: maxSizeMB });
+      return t(
+        "fileshare.file_too_large",
+        "File is too large (max {{max}}MB)",
+        { max: maxSizeMB }
+      );
     }
     return null;
   };
@@ -92,7 +100,7 @@ const FileShare: React.FC = () => {
       setError(validationError);
       return;
     }
-    
+
     setFile(selectedFile);
     setError(null);
   };
@@ -111,7 +119,7 @@ const FileShare: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFileSelect(files[0]);
@@ -140,22 +148,49 @@ const FileShare: React.FC = () => {
   // Get duration text
   const getDurationText = () => {
     const days = expiresDays;
-    if (isAuthenticated && neverExpires) return t("fileshare.duration_never", "This file will never expire");
-    if (days === 1) return t("fileshare.duration_in_1_day", "This file will expire in 1 day");
-    if (days < 7) return t("fileshare.duration_in_x_days", "This file will expire in {{count}} days", { count: days });
-    if (days === 7) return t("fileshare.duration_in_1_week", "This file will expire in 1 week");
+    if (isAuthenticated && neverExpires)
+      return t("fileshare.duration_never", "This file will never expire");
+    if (days === 1)
+      return t("fileshare.duration_in_1_day", "This file will expire in 1 day");
+    if (days < 7)
+      return t(
+        "fileshare.duration_in_x_days",
+        "This file will expire in {{count}} days",
+        { count: days }
+      );
+    if (days === 7)
+      return t(
+        "fileshare.duration_in_1_week",
+        "This file will expire in 1 week"
+      );
     if (days < 30)
-      return t("fileshare.duration_in_x_weeks", "This file will expire in {{count}} weeks", {
-        count: Math.round(days / 7)
-      });
-    if (days === 30) return t("fileshare.duration_in_1_month", "This file will expire in 1 month");
+      return t(
+        "fileshare.duration_in_x_weeks",
+        "This file will expire in {{count}} weeks",
+        {
+          count: Math.round(days / 7),
+        }
+      );
+    if (days === 30)
+      return t(
+        "fileshare.duration_in_1_month",
+        "This file will expire in 1 month"
+      );
     if (days < 365)
-      return t("fileshare.duration_in_x_months", "This file will expire in {{count}} months", {
-        count: Math.round(days / 30)
-      });
-    return t("fileshare.duration_in_x_years", "This file will expire in {{count}} year(s)", {
-      count: Math.round(days / 365)
-    });
+      return t(
+        "fileshare.duration_in_x_months",
+        "This file will expire in {{count}} months",
+        {
+          count: Math.round(days / 30),
+        }
+      );
+    return t(
+      "fileshare.duration_in_x_years",
+      "This file will expire in {{count}} year(s)",
+      {
+        count: Math.round(days / 365),
+      }
+    );
   };
 
   // Responsive QR size
@@ -205,17 +240,22 @@ const FileShare: React.FC = () => {
       if (!isAuthenticated || !neverExpires) {
         const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
         const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-        const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+        const expiresAt = new Date(
+          Date.now() + days * 24 * 60 * 60 * 1000
+        ).toISOString();
         formData.append("expiresAt", expiresAt);
       }
-      
+
       if (slug.trim()) formData.append("slug", slug.trim());
       if (password.trim()) formData.append("password", password.trim());
 
       // Create XMLHttpRequest for upload progress
       const xhr = new XMLHttpRequest();
-      
-      const uploadPromise = new Promise<{ share?: { fileShare?: { slug?: string; id?: string } }; error?: string }>((resolve, reject) => {
+
+      const uploadPromise = new Promise<{
+        share?: { slug?: string; id?: string };
+        error?: string;
+      }>((resolve, reject) => {
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded / event.total) * 100);
@@ -242,20 +282,20 @@ const FileShare: React.FC = () => {
         xhr.onerror = () => {
           reject(new Error(t("fileshare.network_error", "Network error")));
         };
-        
+
         xhr.onabort = () => reject(new Error("Upload cancelled"));
-        
+
         // Use Pages Router endpoint for true streaming (no memory buffering)
         xhr.open("POST", "/api/upload");
         xhr.send(formData);
       });
 
       const data = await uploadPromise;
-      
+
       if (data.error) {
         setError(data.error);
       } else {
-        const fileShare = data?.share?.fileShare;
+        const fileShare = data?.share;
         if (fileShare?.slug) {
           setSuccess(`${window.location.origin}/f/${fileShare.slug}`);
         } else if (fileShare?.id) {
@@ -263,14 +303,14 @@ const FileShare: React.FC = () => {
         } else {
           setSuccess(t("fileshare.success_title", "File shared successfully!"));
         }
-        
+
         // Reset form
         setFile(null);
         setSlug("");
         setPassword("");
         setNeverExpires(false);
         if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+          fileInputRef.current.value = "";
         }
       }
     } catch (error) {
@@ -279,7 +319,9 @@ const FileShare: React.FC = () => {
       if (error instanceof Error && error.message) {
         setError(error.message);
       } else {
-        setError(t("fileshare.network_error", "Network error — could not create share"));
+        setError(
+          t("fileshare.network_error", "Network error — could not create share")
+        );
       }
     } finally {
       setLoading(false);
@@ -305,15 +347,28 @@ const FileShare: React.FC = () => {
       return (
         <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
           <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
-            <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            <svg
+              className="w-6 h-6 text-red-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
             </svg>
           </div>
           <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
             {t("fileshare.locked_title", "File sharing is locked")}
           </h2>
           <p className="text-[var(--foreground-muted)] mb-4">
-            {t("fileshare.locked_message", "You must be logged in to share files.")}
+            {t(
+              "fileshare.locked_message",
+              "You must be logged in to share files."
+            )}
           </p>
         </div>
       );
@@ -323,11 +378,19 @@ const FileShare: React.FC = () => {
   return (
     <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto">
       <div className="flex items-center gap-4 mb-6 justify-center">
-        <div 
+        <div
           className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
-          style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}
+          style={{
+            background:
+              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
+          }}
         >
-          <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-6 h-6 text-[var(--primary)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -337,9 +400,14 @@ const FileShare: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">{t("fileshare.title", "Partager un fichier")}</h2>
+          <h2 className="text-xl font-bold text-[var(--foreground)]">
+            {t("fileshare.title", "Partager un fichier")}
+          </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
-            {t("fileshare.subtitle", "Uploadez et partagez vos fichiers en toute sécurité")}
+            {t(
+              "fileshare.subtitle",
+              "Uploadez et partagez vos fichiers en toute sécurité"
+            )}
           </p>
         </div>
       </div>
@@ -348,9 +416,10 @@ const FileShare: React.FC = () => {
         {/* File Upload Area */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-[var(--foreground)]">
-            {t("fileshare.file_selected", "File to share")}&nbsp;<span className="text-red-400">*</span>
+            {t("fileshare.file_selected", "File to share")}&nbsp;
+            <span className="text-red-400">*</span>
           </label>
-          
+
           {!file ? (
             <div
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-300 ${
@@ -358,17 +427,26 @@ const FileShare: React.FC = () => {
                   ? "scale-105"
                   : "border-[var(--border)]/50 hover:bg-[var(--surface)]/30 hover:scale-102"
               }`}
-              style={dragOver ? {
-                borderColor: 'var(--secondary)',
-                background: 'rgb(from var(--secondary) r g b / 0.2)'
-              } : undefined}
+              style={
+                dragOver
+                  ? {
+                      borderColor: "var(--secondary)",
+                      background: "rgb(from var(--secondary) r g b / 0.2)",
+                    }
+                  : undefined
+              }
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
               <div className="flex flex-col items-center gap-3">
-                <svg className="w-12 h-12 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-12 h-12 text-[var(--foreground-muted)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -381,20 +459,36 @@ const FileShare: React.FC = () => {
                     {t("fileshare.drag_drop", "Drag & drop your file here")}
                   </p>
                   <p className="text-[var(--foreground-muted)] text-sm mt-1">
-                    {t("fileshare.click_to_select", "or click to select a file")}
+                    {t(
+                      "fileshare.click_to_select",
+                      "or click to select a file"
+                    )}
                   </p>
                 </div>
                 <p className="text-xs text-[var(--foreground-muted)]">
                   {isAuthenticated
-                    ? t("fileshare.max_size_auth", "{{max}}MB maximum for authenticated users", { max: Math.round(maxFileSizeAuth / (1024 * 1024)) })
-                    : t("fileshare.max_size_anon", "{{max}}MB maximum for anonymous users", { max: Math.round(maxFileSizeAnon / (1024 * 1024)) })}
+                    ? t(
+                        "fileshare.max_size_auth",
+                        "{{max}}MB maximum for authenticated users",
+                        { max: Math.round(maxFileSizeAuth / (1024 * 1024)) }
+                      )
+                    : t(
+                        "fileshare.max_size_anon",
+                        "{{max}}MB maximum for anonymous users",
+                        { max: Math.round(maxFileSizeAnon / (1024 * 1024)) }
+                      )}
                 </p>
               </div>
             </div>
           ) : (
             <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
               <div className="flex items-start gap-3">
-                <svg className="w-8 h-8 text-[var(--primary)] flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-8 h-8 text-[var(--primary)] flex-shrink-0 mt-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -406,29 +500,47 @@ const FileShare: React.FC = () => {
                   <p className="text-sm font-medium text-[var(--foreground)] mb-1">
                     {t("fileshare.file_selected", "Selected file:")}
                   </p>
-                  <p className="text-sm text-[var(--foreground)] truncate">{file.name}</p>
+                  <p className="text-sm text-[var(--foreground)] truncate">
+                    {file.name}
+                  </p>
                   <div className="flex gap-4 mt-2 text-xs text-[var(--foreground-muted)]">
-                    <span>{t("fileshare.file_size", "Size:")}&nbsp;{formatFileSize(file.size)}</span>
-                    <span>{t("fileshare.file_type", "Type:")}&nbsp;{file.type || "Unknown"}</span>
+                    <span>
+                      {t("fileshare.file_size", "Size:")}&nbsp;
+                      {formatFileSize(file.size)}
+                    </span>
+                    <span>
+                      {t("fileshare.file_type", "Type:")}&nbsp;
+                      {file.type || "Unknown"}
+                    </span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
                     setFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
                   className="text-[var(--foreground-muted)] hover:text-white hover:bg-[var(--surface)] rounded p-1 transition-colors"
                   title={t("fileshare.change_file", "Change file")}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
           )}
-          
+
           <input
             ref={fileInputRef}
             type="file"
@@ -443,12 +555,22 @@ const FileShare: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-[var(--foreground)]">
               <span>{t("fileshare.uploading", "Uploading...")}</span>
-              <span>{t("fileshare.upload_progress", "Progress: {{progress}}%", { progress: uploadProgress })}</span>
+              <span>
+                {t("fileshare.upload_progress", "Progress: {{progress}}%", {
+                  progress: uploadProgress,
+                })}
+              </span>
             </div>
             <div className="w-full bg-[var(--surface)]/50 rounded-full h-3">
               <div
                 className="h-3 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%`, background: 'linear-gradient(to right, var(--secondary), var(--primary))', boxShadow: '0 10px 15px -3px rgb(from var(--secondary) r g b / 0.25)' }}
+                style={{
+                  width: `${uploadProgress}%`,
+                  background:
+                    "linear-gradient(to right, var(--secondary), var(--primary))",
+                  boxShadow:
+                    "0 10px 15px -3px rgb(from var(--secondary) r g b / 0.25)",
+                }}
               />
             </div>
           </div>
@@ -470,8 +592,16 @@ const FileShare: React.FC = () => {
                     onChange={(e) => setNeverExpires(e.target.checked)}
                     className="sr-only"
                   />
-                  <div className={`toggle-slider ${neverExpires ? 'toggle-slider-active' : ''}`}>
-                    <div className={`toggle-slider-thumb ${neverExpires ? 'toggle-slider-thumb-active' : ''}`}></div>
+                  <div
+                    className={`toggle-slider ${
+                      neverExpires ? "toggle-slider-active" : ""
+                    }`}
+                  >
+                    <div
+                      className={`toggle-slider-thumb ${
+                        neverExpires ? "toggle-slider-thumb-active" : ""
+                      }`}
+                    ></div>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -479,14 +609,21 @@ const FileShare: React.FC = () => {
                     {t("fileshare.never_expires", "Aucune expiration")}
                   </div>
                   <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
-                    {t("fileshare.never_expires_desc", "Ce fichier restera disponible indéfiniment")}
+                    {t(
+                      "fileshare.never_expires_desc",
+                      "Ce fichier restera disponible indéfiniment"
+                    )}
                   </div>
                 </div>
               </label>
             </div>
           )}
 
-          <div className={`flex items-center gap-3 ${isAuthenticated && neverExpires ? "opacity-50" : ""}`}>
+          <div
+            className={`flex items-center gap-3 ${
+              isAuthenticated && neverExpires ? "opacity-50" : ""
+            }`}
+          >
             <div className="flex-1">
               <input
                 id="expires"
@@ -499,7 +636,9 @@ const FileShare: React.FC = () => {
                 className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
-            <span className="text-sm text-[var(--foreground-muted)] min-w-0">{t("fileshare.days", "days")}</span>
+            <span className="text-sm text-[var(--foreground-muted)] min-w-0">
+              {t("fileshare.days", "days")}
+            </span>
           </div>
 
           <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)]/30 p-3 rounded-xl border border-[var(--border)]/30">
@@ -527,7 +666,10 @@ const FileShare: React.FC = () => {
               {t(
                 "fileshare.login_for_more",
                 "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}}MB)",
-                { max: MAX_DAYS_AUTH, maxSize: Math.round(maxFileSizeAuth / (1024 * 1024)) }
+                {
+                  max: MAX_DAYS_AUTH,
+                  maxSize: Math.round(maxFileSizeAuth / (1024 * 1024)),
+                }
               )}
             </p>
           )}
@@ -536,7 +678,12 @@ const FileShare: React.FC = () => {
         {/* Advanced Settings */}
         <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50 space-y-4">
           <h3 className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -549,17 +696,25 @@ const FileShare: React.FC = () => {
 
           <div className="space-y-3">
             <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              <label
+                htmlFor="slug"
+                className="block text-sm font-medium text-[var(--foreground)] mb-2"
+              >
                 {t("fileshare.custom_slug", "Custom link")}
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center items-center gap-2">
                 <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">
-                  {typeof window !== "undefined" ? window.location.origin + "/f/" : "/f/"}
+                  {typeof window !== "undefined"
+                    ? window.location.origin + "/f/"
+                    : "/f/"}
                 </span>
                 <input
                   id="slug"
                   type="text"
-                  placeholder={t("fileshare.placeholder_slug", "mon-fichier-custom")}
+                  placeholder={t(
+                    "fileshare.placeholder_slug",
+                    "mon-fichier-custom"
+                  )}
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
@@ -567,25 +722,39 @@ const FileShare: React.FC = () => {
                 />
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("fileshare.slug_hint", "Letters, numbers, dashes and underscores only")}
+                {t(
+                  "fileshare.slug_hint",
+                  "Letters, numbers, dashes and underscores only"
+                )}
               </p>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-[var(--foreground)] mb-2"
+              >
                 {t("fileshare.password_protect", "Password protection")}
               </label>
               <div className="relative">
                 <input
                   id="password"
                   type="password"
-                  placeholder={t("fileshare.password_placeholder", "Optionnel - laissez vide pour un accès libre")}
+                  placeholder={t(
+                    "fileshare.password_placeholder",
+                    "Optionnel - laissez vide pour un accès libre"
+                  )}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="modern-input w-full pr-12"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="w-4 h-4 text-[var(--foreground-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4 text-[var(--foreground-muted)]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -607,8 +776,20 @@ const FileShare: React.FC = () => {
           >
             {loading ? (
               <>
-                <svg className="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <svg
+                  className="animate-spin w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
                   <path
                     className="opacity-75"
                     fill="currentColor"
@@ -619,7 +800,12 @@ const FileShare: React.FC = () => {
               </>
             ) : (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -638,7 +824,7 @@ const FileShare: React.FC = () => {
         open={!!error}
         autoHideDuration={10000}
         onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           severity="error"
@@ -654,7 +840,7 @@ const FileShare: React.FC = () => {
               <CloseIcon fontSize="inherit" />
             </IconButton>
           }
-          sx={{ width: '100%', maxWidth: '500px' }}
+          sx={{ width: "100%", maxWidth: "500px" }}
         >
           <AlertTitle>{t("fileshare.error_title", "Error")}</AlertTitle>
           {error}
@@ -662,7 +848,10 @@ const FileShare: React.FC = () => {
       </Snackbar>
 
       {success && (
-        <div role="status" className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4">
+        <div
+          role="status"
+          className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4"
+        >
           <div className="flex items-start gap-3">
             <svg
               className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5"
@@ -683,7 +872,9 @@ const FileShare: React.FC = () => {
               </h4>
               <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-[var(--foreground-muted)] mb-1">{t("fileshare.download_link", "Download link:")}</p>
+                  <p className="text-xs text-[var(--foreground-muted)] mb-1">
+                    {t("fileshare.download_link", "Download link:")}
+                  </p>
                   <a
                     href={success}
                     target="_blank"
@@ -705,11 +896,26 @@ const FileShare: React.FC = () => {
                     title={t("fileshare.copy_title", "Copier le lien")}
                   >
                     {copied ? (
-                      <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4 text-green-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -724,10 +930,20 @@ const FileShare: React.FC = () => {
               <div className="mt-4 flex justify-center">
                 <div className="flex flex-col items-center bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
                   <p className="text-sm text-[var(--foreground)] mb-2 text-center">
-                    {t("fileshare.qr_info", "Scan this QR code to download the file")}
+                    {t(
+                      "fileshare.qr_info",
+                      "Scan this QR code to download the file"
+                    )}
                   </p>
-                  <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>
-                    <QRCodeSVG value={success} size={qrSize - 16} className="block" />
+                  <div
+                    className="bg-white rounded p-2"
+                    style={{ width: qrSize, height: qrSize }}
+                  >
+                    <QRCodeSVG
+                      value={success}
+                      size={qrSize - 16}
+                      className="block"
+                    />
                   </div>
                 </div>
               </div>
@@ -735,7 +951,7 @@ const FileShare: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <style jsx global>{`
         .input-paste {
           border: 1px solid var(--border);
@@ -757,7 +973,11 @@ const FileShare: React.FC = () => {
           opacity: 1;
         }
         .btn-paste {
-          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          background: linear-gradient(
+            135deg,
+            var(--primary) 0%,
+            var(--secondary) 100%
+          );
           color: #fff;
           border-radius: 0.75rem;
           font-weight: 600;
@@ -765,7 +985,11 @@ const FileShare: React.FC = () => {
           transition: all 0.3s ease;
         }
         .btn-paste:hover:not(:disabled) {
-          background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+          background: linear-gradient(
+            135deg,
+            var(--primary-dark) 0%,
+            var(--secondary-dark) 100%
+          );
           transform: translateY(-1px);
           box-shadow: 0 6px 20px 0 rgb(from var(--primary) r g b / 0.4);
         }
@@ -786,7 +1010,11 @@ const FileShare: React.FC = () => {
           border: 2px solid var(--border);
         }
         .toggle-slider-active {
-          background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+          background: linear-gradient(
+            135deg,
+            var(--primary) 0%,
+            var(--secondary) 100%
+          );
           border-color: var(--secondary);
         }
         .toggle-slider-thumb {

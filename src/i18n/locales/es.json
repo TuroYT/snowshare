@@ -33,6 +33,7 @@
     "login_for_more": "Inicia sesión para duraciones más largas o sin expiración",
     "language_placeholder": "Selecciona un lenguaje",
     "custom_slug": "Enlace personalizado",
+    "placeholder_slug": "mi-pegar",
     "slug_hint": "Solo letras, números, guiones y guiones bajos",
     "never_expires_desc": "Este paste permanecerá disponible indefinidamente",
     "loading": "Creando...",
@@ -258,6 +259,9 @@
     "error_load_data": "Error al cargar los datos",
     "save_success": "Cambios guardados exitosamente",
     "save_error": "Error al guardar los cambios",
+    "validation_required": "Faltan campos obligatorios",
+    "validation_invalid_color": "Color inválido (formato esperado: #RRGGBB)",
+    "validation_invalid_url": "URL inválida",
     "confirm_action": "¿Estás seguro?",
     "tabs": {
       "users": "Usuarios",

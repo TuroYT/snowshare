@@ -9,7 +9,11 @@
     "profile_desc": "Zarządzaj moimi danymi",
     "signout_desc": "Wyloguj się",
     "admin": "Administrator",
-    "admin_desc": "Panel administracyjny"
+    "admin_desc": "Panel administracyjny",
+    "save_error": "Błąd podczas zapisywania",
+    "validation_required": "Brak wymaganych pól",
+    "validation_invalid_color": "Nieprawidłowy kolor (oczekiwany format: #RRGGBB)",
+    "validation_invalid_url": "Nieprawidłowy adres URL"
   },
   "loading": "Ładowanie...",
   "pasteshare": {
@@ -33,6 +37,7 @@
     "login_for_more": "Zaloguj się, aby uzyskać dłuższy czas przechowywania lub brak wygaśnięcia",
     "language_placeholder": "Wybierz język",
     "custom_slug": "Własny link",
+    "placeholder_slug": "moja-wklejka",
     "slug_hint": "Tylko litery, cyfry, myślniki i podkreślenia",
     "never_expires_desc": "Ta wklejka będzie dostępna bezterminowo",
     "loading": "Tworzenie...",

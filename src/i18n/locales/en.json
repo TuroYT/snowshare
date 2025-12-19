@@ -33,6 +33,7 @@
     "login_for_more": "Sign in for longer durations or no expiration",
     "language_placeholder": "Select a language",
     "custom_slug": "Custom link",
+    "placeholder_slug": "my-paste",
     "slug_hint": "Letters, numbers, dashes and underscores only",
     "never_expires_desc": "This paste will remain available indefinitely",
     "loading": "Creating...",
@@ -263,6 +264,9 @@
     "save_success": "Changes saved successfully",
     "save_error": "Error saving changes",
     "confirm_action": "Are you sure?",
+    "validation_required": "Required fields are missing",
+    "validation_invalid_color": "Invalid color (expected format: #RRGGBB)",
+    "validation_invalid_url": "Invalid URL",
     "tabs": {
       "users": "Users",
       "settings": "Settings",

@@ -1,19 +1,31 @@
-name: "Build on self-hosted"
+name: "Build on Approve or Push"
 
 on:
   push:
     branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
+  # Triggers when a review is submitted
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   build:
-    name: Build and lint project
+    name: Build Project
     runs-on: [self-hosted]
-    
+    # Run if it's a push OR if the review is an approval
+    if: |
+      github.event_name == 'push' || 
+      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Critical: Checkout the PR head commit, not the base branch
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,19 +44,32 @@ jobs:
         run: npm run build
 
       - name: Docker build
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        # Run only on push to main OR approved PR targeting main
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') || 
+          (github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main')
         run: docker compose build
 
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request' && always()
+      - name: Comment PR (Success)
+        if: success() && github.event_name == 'pull_request_review'
         uses: actions/github-script@v7
         with:
           script: |
-            const status = '${{ job.status }}';
-            const emoji = status === 'success' ? '✅' : '❌';
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `${emoji} Build ${status}`
+              body: "✅ Build passed after approval."
+            });
+
+      - name: Comment PR (Failure)
+        if: failure() && github.event_name == 'pull_request_review'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "❌ Build failed."
             });

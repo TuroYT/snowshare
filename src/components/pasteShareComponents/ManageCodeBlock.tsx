@@ -247,7 +247,7 @@ const ManageCodeBlock: React.FC<{
                 <input
                   id="paste-slug"
                   type="text"
-                  placeholder="mon-paste-code"
+                  placeholder={t("pasteshare_ui.placeholder_slug", "mon-paste")}
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   pattern="[a-zA-Z0-9-_]+"
