@@ -157,6 +157,9 @@ export function ThemeProvider({
       applyThemeToDOM(newColors)
       applyBrandingMeta(newBranding)
       setIsLoading(false)
+
+      // Ensure we refresh settings on the client as well. In production
+      void refreshSettings()
     } else {
       refreshSettings()
     }
