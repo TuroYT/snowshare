@@ -2,9 +2,24 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import fs from "fs"
+import path from "path"
 
 const GITHUB_REPO = "TuroYT/snowshare"
-const CURRENT_VERSION = process.env.npm_package_version || "0.1.0"
+
+function getCurrentVersion(): string {
+  const envVersion = process.env.npm_package_version || process.env.NPM_PACKAGE_VERSION || process.env.NEXT_PUBLIC_VERSION
+  if (envVersion) return envVersion
+  try {
+    const pkgPath = path.join(process.cwd(), "package.json")
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"))
+    return pkg?.version || "0.1.0"
+  } catch (e) {
+    return "0.1.0"
+  }
+}
+
+const CURRENT_VERSION = getCurrentVersion()
 
 interface GitHubRelease {
   tag_name: string

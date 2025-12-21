@@ -6,7 +6,7 @@ on:
 
 jobs:
   update-version:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write
     
@@ -22,34 +22,32 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Extract and update version
+      - name: Update version on main and dev
         run: |
           # Extract version from tag (removes 'v' prefix if present)
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
-          
+
           echo "Updating version to: ${VERSION}"
-          
-          # Update package.json version using npm (doesn't create git tag)
-          npm version "${VERSION}" --no-git-tag-version --allow-same-version
-          
-          echo "✅ Updated package.json with version: ${VERSION}"
-      
-      - name: Commit version update
-        run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
-          
+
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
-          git add package.json
-          
-          # Only commit if there are changes
-          if git diff --staged --quiet; then
-            echo "No version changes to commit"
-          else
-            git commit -m "chore: bump version to ${VERSION} [skip ci]"
-            git push
-          fi
+
+          for BRANCH in main dev; do
+            echo "--- Processing branch: ${BRANCH} ---"
+            git fetch origin ${BRANCH}
+            git checkout ${BRANCH}
+            git pull origin ${BRANCH}
+
+            # Update package.json for this branch
+            npm version "${VERSION}" --no-git-tag-version --allow-same-version
+
+            git add package.json
+            if git diff --staged --quiet; then
+              echo "No version changes to commit on ${BRANCH}"
+            else
+              git commit -m "chore: bump version to ${VERSION} [skip ci]"
+              git push origin ${BRANCH}
+            fi
+          done
       
