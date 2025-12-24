@@ -45,13 +45,17 @@ jobs:
         continue-on-error: true
 
       - name: Build project
+        if: |
+            (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+            (github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'dev') ||
+            (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main')
         run: npm run build
 
       - name: Docker build
         # Run only on push to main OR approved PR targeting main OR PR targeting main
         if: |
           (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-          (github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'main') ||
+          (github.event_name == 'pull_request_review' && github.event.pull_request.base.ref == 'dev') ||
           (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main')
         run: docker compose build
 
