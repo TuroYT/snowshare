@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npx tsx server.js",
     "dev:next": "next dev --turbopack",
-    "build": "next build",
+    "build": "npx prisma generate && next build",
     "start": "NODE_ENV=production npx tsx server.js",
     "start:next": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
