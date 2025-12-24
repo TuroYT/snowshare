@@ -14,8 +14,10 @@ function getCurrentVersion(): string {
     const pkgPath = path.join(process.cwd(), "package.json")
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"))
     return pkg?.version || "0.1.0"
-  } catch (e) {
+  } catch (error) {
+    console.error("Error reading package.json for version:", error)
     return "0.1.0"
+
   }
 }
 

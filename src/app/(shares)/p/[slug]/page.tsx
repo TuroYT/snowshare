@@ -119,7 +119,7 @@ const PasteViewPage = () => {
 
   return (
     <div
-      className="max-w-2xl mx-auto py-12 px-4"
+      className="max-w-7xl mx-auto py-12 px-4"
       style={{ background: "var(--background)", color: "var(--foreground)" }}
     >
       <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>{t("paste_view.title")}</h1>

@@ -33,6 +33,8 @@ The container will automatically run database migrations on startup.
 
 If you installed SnowShare manually:
 
+dont forget to have node.js 24+ installed
+
 ```bash
 # Navigate to your SnowShare directory
 cd /path/to/snowshare

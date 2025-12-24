@@ -22,6 +22,8 @@ services:
   app:
     build:
       context: .
+      args:
+        DATABASE_URL: postgres://postgres:postgres@db:5432/snowshare
     container_name: snowshare-app
     restart: unless-stopped
     depends_on:

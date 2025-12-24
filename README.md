@@ -34,19 +34,19 @@
 ### User Management 👥
 - User registration and authentication via NextAuth 🔑
 
-- **Frontend**: Next.js 15.5, React 19.1, TailwindCSS 4
+- **Frontend**: Next.js 16, React 19.1, TailwindCSS 4
 - **Authentication**: NextAuth.js with bcrypt password hashing
 - **Special Features**: QR code generation, custom URL slugs
 
 ## Getting Started 🚀
 
-- Node.js 18+ and npm/yarn
+- Node.js 24+ and npm/yarn
 - PostgreSQL database
 ### Prerequisites ✅
-- Node.js 18+ and npm/yarn
+- Node.js 24+ and npm/yarn
 - PostgreSQL database
 
-- Node.js 18+ and npm/yarn
+- Node.js 24+ and npm/yarn
 - PostgreSQL database
 
 ### Installation 🛠️

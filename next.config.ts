@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   
   experimental: {
-    middlewareClientMaxBodySize: '50gb',
+    proxyClientMaxBodySize: '50gb',
   },
   // Expose environment variables to the client
   env: {
