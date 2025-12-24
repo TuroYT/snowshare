@@ -41,14 +41,14 @@
     "i18next": "^23.0.0",
     "i18next-browser-languagedetector": "^7.0.1",
     "marked": "^16.3.0",
-    "next": "15.5.9",
+    "next": "16.1.1",
     "next-auth": "^4.24.12",
     "next-plausible": "^3.12.5",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0",
     "qrcode.react": "^4.2.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-i18next": "^13.0.0",
     "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.4.0",
@@ -64,12 +64,12 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/prismjs": "^1.26.5",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "eslint": "^9",
-    "eslint-config-next": "15.5.0",
+    "eslint-config-next": "16.1.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -79,5 +79,9 @@
     "tailwindcss": "^4",
     "ts-jest": "^29.4.5",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3"
   }
 }

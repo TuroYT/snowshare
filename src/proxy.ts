@@ -2,8 +2,6 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
-export const runtime = 'nodejs';
-
 // Helper function to add security headers
 function addSecurityHeaders(response: NextResponse): NextResponse {
   // Prevent clickjacking
@@ -20,7 +18,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response
 }
 
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Skip setup check for setup page, API routes, and static assets
