@@ -21,8 +21,6 @@ export default function SettingsTab() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success")
@@ -39,9 +37,10 @@ export default function SettingsTab() {
         allowSignin: data.settings.allowSignin ?? true,
         allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
       })
-      setError(null)
     } catch (err) {
-      setError(t("admin.error_load_data"))
+      setToastMessage(t("admin.error_load_data"))
+      setToastSeverity("error")
+      setToastOpen(true)
       console.error(err)
     } finally {
       setLoading(false)

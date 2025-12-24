@@ -24,6 +24,7 @@ export default function TermsOfUse() {
                 }
             } catch (err) {
                 setError("An error occurred while loading the terms of use.");
+                console.error(err);
             } finally {
                 setLoading(false);
             }
