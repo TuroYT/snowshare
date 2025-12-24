@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import MDEditor from "@uiw/react-md-editor"
+import { Snackbar, Alert } from "@mui/material"
 
 interface Settings {
   id: number
@@ -11,6 +13,7 @@ interface Settings {
   authMaxUpload: number
   anoIpQuota: number
   authIpQuota: number
+  termsOfUses: string
 }
 
 export default function SettingsTab() {
@@ -20,6 +23,9 @@ export default function SettingsTab() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState("")
+  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success")
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -64,6 +70,19 @@ export default function SettingsTab() {
     }
   }
 
+  const handleMarkdownChange = (value: string | undefined) => {
+    if (settings) {
+      setSettings({
+        ...settings,
+        termsOfUses: value || "",
+      })
+    }
+  }
+
+  const handleToastClose = () => {
+    setToastOpen(false)
+  }
+
   const handleSave = async () => {
     try {
       setSaving(true)
@@ -76,11 +95,13 @@ export default function SettingsTab() {
       if (!response.ok) throw new Error("Failed to save settings")
       const data = await response.json()
       setSettings(data.settings)
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-      setError(null)
+      setToastMessage(t("admin.save_success"))
+      setToastSeverity("success")
+      setToastOpen(true)
     } catch (err) {
-      setError(t("admin.save_error"))
+      setToastMessage(t("admin.save_error"))
+      setToastSeverity("error")
+      setToastOpen(true)
       console.error(err)
     } finally {
       setSaving(false)
@@ -102,17 +123,12 @@ export default function SettingsTab() {
 
   return (
     <div className="space-y-6 w-full">
-      {error && ( 
-        <div className="bg-red-600/10 border border-red-700/30 rounded-xl p-4 text-red-400">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-600/10 border border-green-700/30 rounded-xl p-4 text-green-400">
-          {t("admin.save_success")}
-        </div>
-      )}
+      {/* Toast Notifications */}
+      <Snackbar open={toastOpen} autoHideDuration={3000} onClose={handleToastClose}>
+        <Alert onClose={handleToastClose} severity={toastSeverity} sx={{ width: "100%" }}>
+          {toastMessage}
+        </Alert>
+      </Snackbar>
 
       {/* General Settings */}
       <div className="space-y-4">
@@ -276,6 +292,18 @@ export default function SettingsTab() {
           <li>• {t("admin.quotas.max_file_size_hint")}</li>
           <li>• {t("admin.quotas.ip_quota_hint")}</li>
         </ul>
+      </div>
+
+      {/* Markdown Editor for Terms of Use */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--foreground)]">
+          {t("footer.terms_of_use")}
+        </h3>
+        <MDEditor
+          value={settings?.termsOfUses || ""}
+          onChange={handleMarkdownChange}
+          height={300}
+        />
       </div>
 
       {/* Save Button */}

@@ -107,6 +107,10 @@ model Settings {
   textColor         String  @default("#F9FAFB")  // Main text color
   textMuted         String  @default("#D1D5DB")  // Secondary/muted text color
   borderColor       String  @default("#374151")  // Border color
+
+  // Legal
+  termsOfUses  String?
+
 }
 
 enum ShareType {

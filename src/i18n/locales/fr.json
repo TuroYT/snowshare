@@ -169,7 +169,8 @@
     "by": "by Romain",
     "github": "GitHub",
     "license": "License",
-    "rights": "Tous droits réservés."
+    "rights": "Tous droits réservés.",
+    "terms_of_use": "Conditions d'utilisation"
   },
   "auth": {
     "signin_title": "Connexion à votre compte",
