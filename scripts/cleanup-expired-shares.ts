@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { PrismaClient } from '../src/generated/prisma';
+import { prisma } from "@/lib/prisma";
 import fs from 'fs';
 import path from 'path';
 
-const prisma = new PrismaClient();
+
 
 // Get upload directory from env or default to ./uploads
 function getUploadDir(): string {

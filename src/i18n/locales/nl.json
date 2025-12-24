@@ -167,7 +167,8 @@
     "by": "door Romain",
     "github": "GitHub",
     "license": "Licentie",
-    "rights": "Alle rechten voorbehouden."
+    "rights": "Alle rechten voorbehouden.",
+    "terms_of_use": "Gebruiksvoorwaarden"
   },
   "auth": {
     "signin_title": "Inloggen op je account",

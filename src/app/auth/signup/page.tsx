@@ -253,7 +253,10 @@ export default function SignUp() {
 
         <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
           <p>
-            {t('auth.terms_notice')}
+            {t('auth.terms_notice', 'By signing up, you agree to our')}{' '}
+            <Link href="/terms-of-use" className="text-[var(--primary)] hover:underline">
+              {t('footer.terms_of_use', 'Terms of Use')}
+            </Link>.
           </p>
         </div>
       </div>

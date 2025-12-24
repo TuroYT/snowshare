@@ -171,7 +171,8 @@
     "by": "przez Romaina",
     "github": "GitHub",
     "license": "Licencja",
-    "rights": "Wszelkie prawa zastrzeżone."
+    "rights": "Wszelkie prawa zastrzeżone.",
+    "terms_of_use": "Warunki użytkowania"
   },
   "auth": {
     "signin_title": "Zaloguj się na swoje konto",
