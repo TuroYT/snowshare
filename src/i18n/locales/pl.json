@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "confirm": "Potwierdź"
+  },
   "nav": {
     "hello": "Witaj, {{email}}",
     "signout": "Wyloguj się",
@@ -273,7 +280,27 @@
       "users": "Użytkownicy",
       "settings": "Ustawienia",
       "branding": "Branding",
-      "logs": "Logi udostępnień"
+      "logs": "Logi udostępnień",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "Dostawcy OAuth",
+      "description": "Skonfiguruj zewnętrznych dostawców uwierzytelniania. Musisz utworzyć aplikację OAuth w konsoli programisty dostawcy.",
+      "enabled": "Włączone",
+      "disabled": "Wyłączone",
+      "client_id": "ID Klienta",
+      "not_configured": "Nie skonfigurowano",
+      "edit": "Konfiguruj",
+      "setup": "Zainstaluj",
+      "configure_provider": "Konfiguruj {{provider}}",
+      "callback_url": "Adres URL zwrotny (Redirect URI)",
+      "callback_help": "Skopiuj ten adres URL do ustawień dostawcy OAuth.",
+      "display_name": "Nazwa wyświetlana",
+      "client_id_field": "ID Klienta",
+      "client_secret": "Sekret Klienta",
+      "secret_placeholder": "(Pozostaw puste, aby nie zmieniać)",
+      "secret_help": "Sekret jest szyfrowany przed zapisaniem.",
+      "enable_provider": "Włącz tego dostawcę"
     },
     "users": {
       "title": "Zarządzanie użytkownikami",

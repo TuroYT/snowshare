@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm"
+  },
   "nav": {
     "hello": "Hello, {{email}}",
     "signout": "Sign out",
@@ -272,7 +279,27 @@
       "users": "Users",
       "settings": "Settings",
       "branding": "Branding",
-      "logs": "Share Logs"
+      "logs": "Share Logs",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "OAuth Providers",
+      "description": "Configure external authentication providers. You will need to create an OAuth app on the provider's developer console.",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "client_id": "Client ID",
+      "not_configured": "Not configured",
+      "edit": "Configure",
+      "setup": "Setup",
+      "configure_provider": "Configure {{provider}}",
+      "callback_url": "Callback URL (Redirect URI)",
+      "callback_help": "Copy this URL to your OAuth provider settings.",
+      "display_name": "Display Name",
+      "client_id_field": "Client ID",
+      "client_secret": "Client Secret",
+      "secret_placeholder": "(Leave blank to keep unchanged)",
+      "secret_help": "The secret is encrypted before being stored.",
+      "enable_provider": "Enable this provider"
     },
     "users": {
       "title": "User Management",

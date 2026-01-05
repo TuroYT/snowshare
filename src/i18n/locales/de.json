@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirm": "Bestätigen"
+  },
   "nav": {
     "hello": "Hallo, {{email}}",
     "signout": "Abmelden",
@@ -268,7 +275,27 @@
       "users": "Benutzer",
       "settings": "Einstellungen",
       "branding": "Branding",
-      "logs": "Freigabe-Logs"
+      "logs": "Freigabe-Logs",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "OAuth-Anbieter",
+      "description": "Konfigurieren Sie externe Authentifizierungsanbieter. Sie müssen eine OAuth-App in der Entwicklerkonsole des Anbieters erstellen.",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "client_id": "Client-ID",
+      "not_configured": "Nicht konfiguriert",
+      "edit": "Konfigurieren",
+      "setup": "Einrichten",
+      "configure_provider": "{{provider}} konfigurieren",
+      "callback_url": "Callback-URL (Redirect URI)",
+      "callback_help": "Kopieren Sie diese URL in die Einstellungen Ihres OAuth-Anbieters.",
+      "display_name": "Anzeigename",
+      "client_id_field": "Client-ID",
+      "client_secret": "Client-Secret",
+      "secret_placeholder": "(Leer lassen, um unverändert zu bleiben)",
+      "secret_help": "Das Secret wird vor dem Speichern verschlüsselt.",
+      "enable_provider": "Diesen Anbieter aktivieren"
     },
     "users": {
       "title": "Benutzerverwaltung",

@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar"
+  },
   "nav": {
     "hello": "Hola, {{email}}",
     "signout": "Cerrar sesión",
@@ -268,7 +275,27 @@
       "users": "Usuarios",
       "settings": "Configuración",
       "branding": "Personalización",
-      "logs": "Registros de Compartidos"
+      "logs": "Registros de Compartidos",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "Proveedores OAuth",
+      "description": "Configure proveedores de autenticación externos. Deberá crear una aplicación OAuth en la consola de desarrollador del proveedor.",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado",
+      "client_id": "ID de Cliente",
+      "not_configured": "No configurado",
+      "edit": "Configurar",
+      "setup": "Instalar",
+      "configure_provider": "Configurar {{provider}}",
+      "callback_url": "URL de Callback (URI de redirección)",
+      "callback_help": "Copie esta URL en la configuración de su proveedor OAuth.",
+      "display_name": "Nombre para mostrar",
+      "client_id_field": "ID de Cliente",
+      "client_secret": "Secreto de Cliente",
+      "secret_placeholder": "(Dejar en blanco para no cambiar)",
+      "secret_help": "El secreto se cifra antes de almacenarse.",
+      "enable_provider": "Habilitar este proveedor"
     },
     "users": {
       "title": "Gestión de Usuarios",

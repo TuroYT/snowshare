@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm": "Confirmer"
+  },
   "nav": {
     "hello": "Bonjour, {{email}}",
     "signout": "Déconnexion",
@@ -274,7 +281,27 @@
       "users": "Utilisateurs",
       "settings": "Paramètres",
       "branding": "Personnalisation",
-      "logs": "Logs des partages"
+      "logs": "Logs des partages",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "Fournisseurs OAuth",
+      "description": "Configurez les fournisseurs d'authentification externes. Vous devrez créer une application OAuth sur la console développeur du fournisseur.",
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "client_id": "Client ID",
+      "not_configured": "Non configuré",
+      "edit": "Configurer",
+      "setup": "Installer",
+      "configure_provider": "Configurer {{provider}}",
+      "callback_url": "URL de Callback (Redirect URI)",
+      "callback_help": "Copiez cette URL dans les paramètres de votre fournisseur OAuth.",
+      "display_name": "Nom d'affichage",
+      "client_id_field": "Client ID",
+      "client_secret": "Client Secret",
+      "secret_placeholder": "(Laisser vide pour ne pas changer)",
+      "secret_help": "Le secret est chiffré avant d'être stocké.",
+      "enable_provider": "Activer ce fournisseur"
     },
     "users": {
       "title": "Gestion des utilisateurs",
