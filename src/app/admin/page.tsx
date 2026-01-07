@@ -10,9 +10,10 @@ import UsersTab from "@/components/admin/UsersTab"
 import SettingsTab from "@/components/admin/SettingsTab"
 import LogsTab from "@/components/admin/LogsTab"
 import BrandingTab from "@/components/admin/BrandingTab"
+import OAuthProvidersTab from "@/components/admin/OAuthProvidersTab"
 import UpdateNotification from "@/components/admin/UpdateNotification"
 
-type Tab = "users" | "settings" | "branding" | "logs"
+type Tab = "users" | "settings" | "branding" | "logs" | "oauth"
 
 export default function AdminPage() {
   const { status } = useSession()
@@ -105,7 +106,7 @@ export default function AdminPage() {
 
           {/* Tabs */}
           <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto">
-            {(["users", "settings", "branding", "logs"] as const).map((tab) => (
+            {(["users", "settings", "branding", "oauth", "logs"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -115,7 +116,7 @@ export default function AdminPage() {
                     : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
                 }`}
               >
-                {t(`admin.tabs.${tab}`)}
+                {tab === "oauth" ? "OAuth / SSO" : t(`admin.tabs.${tab}`)}
               </button>
             ))}
           </div>
@@ -125,6 +126,7 @@ export default function AdminPage() {
             {activeTab === "users" && <UsersTab />}
             {activeTab === "settings" && <SettingsTab />}
             {activeTab === "branding" && <BrandingTab />}
+            {activeTab === "oauth" && <OAuthProvidersTab />}
             {activeTab === "logs" && <LogsTab />}
           </div>
         </div>

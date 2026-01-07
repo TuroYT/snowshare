@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import ProfileInfo from "@/components/profile/ProfileInfo";
 import SharesList from "@/components/profile/SharesList";
 import ProfileStats from "@/components/profile/ProfileStats";
+import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 
@@ -37,7 +38,7 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "shares">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts">("profile");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -194,10 +195,26 @@ const ProfilePage = () => {
             </svg>
             {t("profile.tab_shares")} ({shares.length})
           </button>
+          <button
+            onClick={() => setActiveTab("accounts")}
+            className={`modern-tab ${
+              activeTab === "accounts" ? "modern-tab-active" : "modern-tab-inactive"
+            }`}
+          >
+            <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
+            </svg>
+            {t("profile.tab_accounts")}
+          </button>
         </div>
 
         {/* Content */}
-        <div className="mt-8">
+        <div className="mt-8 ">
           {activeTab === "profile" && user && (
             <ProfileInfo user={user} onUpdate={setUser} />
           )}
@@ -212,6 +229,8 @@ const ProfilePage = () => {
               />
             </>
           )}
+
+          {activeTab === "accounts" && <ConnectedAccounts />}
         </div>
       </main>
 
