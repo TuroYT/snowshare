@@ -33,6 +33,7 @@ import {
   AdminPanelSettings as AdminIcon,
   ExitToApp as LogoutIcon,
 } from "@mui/icons-material"
+import { languages } from "@/i18n/client"
 
 export default function Navigation() {
   const { data: session, status } = useSession()
@@ -81,16 +82,6 @@ export default function Navigation() {
         setIsAdmin(data.user.isAdmin)
       })
   }, [status])
-
-  // Supported languages. Add more entries here if needed.
-  const languages = [
-    { code: 'fr', label: 'FR' },
-    { code: 'en', label: 'EN' },
-    { code: 'es', label: 'ES' },
-    { code: 'de', label: 'DE' },
-    { code: 'pl', label: 'PL' },
-    { code: 'nl', label: 'NL' }
-  ]
 
   // changeLang optionally closes the mobile menu and persists choice to localStorage.
   const changeLang = (lng: string, closeMenu = false) => {
