@@ -343,7 +343,19 @@
       "confirm_make_admin": "Faire de {{email}} un administrateur ?",
       "confirm_remove_admin": "Retirer les droits admin à {{email}} ?",
       "no_users": "Aucun utilisateur trouvé",
-      "search_placeholder": "Rechercher des utilisateurs..."
+      "search_placeholder": "Rechercher des utilisateurs...",
+      "add_user": "Ajouter un utilisateur",
+      "create_user": "Créer un nouvel utilisateur",
+      "email": "Email",
+      "email_placeholder": "user@example.com",
+      "name": "Nom (optionnel)",
+      "name_placeholder": "Nom complet",
+      "password": "Mot de passe",
+      "password_placeholder": "Mot de passe sécurisé",
+      "password_hint": "Minimum 6 caractères",
+      "make_admin": "Faire un administrateur",
+      "create": "Créer l'utilisateur",
+      "creating": "Création..."
     },
     "settings": {
       "title": "Paramètres",

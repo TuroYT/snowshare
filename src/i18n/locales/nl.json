@@ -345,7 +345,19 @@
             "confirm_make_admin": "{{email}} beheerder maken?",
             "confirm_remove_admin": "Beheerdersrechten intrekken voor {{email}}?",
             "no_users": "Geen gebruikers gevonden",
-            "search_placeholder": "Zoek gebruikers..."
+            "search_placeholder": "Zoek gebruikers...",
+            "add_user": "Gebruiker Toevoegen",
+            "create_user": "Nieuwe Gebruiker Aanmaken",
+            "email": "E-mail",
+            "email_placeholder": "user@example.com",
+            "name": "Naam (optioneel)",
+            "name_placeholder": "Volledige naam",
+            "password": "Wachtwoord",
+            "password_placeholder": "Veilig wachtwoord",
+            "password_hint": "Minimaal 6 tekens",
+            "make_admin": "Beheerder Maken",
+            "create": "Gebruiker Aanmaken",
+            "creating": "Wordt aangemaakt..."
         },
         "settings": {
             "title": "Instellingen",

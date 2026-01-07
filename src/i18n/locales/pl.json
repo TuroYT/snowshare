@@ -342,7 +342,19 @@
             "confirm_make_admin": "Czy nadać użytkownikowi {{email}} uprawnienia administratora?",
             "confirm_remove_admin": "Czy usunąć uprawnienia administratora od {{email}}?",
             "no_users": "Nie znaleziono użytkowników",
-            "search_placeholder": "Szukaj użytkowników..."
+            "search_placeholder": "Szukaj użytkowników...",
+            "add_user": "Dodaj Użytkownika",
+            "create_user": "Utwórz Nowego Użytkownika",
+            "email": "E-mail",
+            "email_placeholder": "user@example.com",
+            "name": "Imię i Nazwisko (opcjonalnie)",
+            "name_placeholder": "Pełne imię i nazwisko",
+            "password": "Hasło",
+            "password_placeholder": "Bezpieczne hasło",
+            "password_hint": "Minimum 6 znaków",
+            "make_admin": "Nadaj Administratora",
+            "create": "Utwórz Użytkownika",
+            "creating": "Tworzenie..."
         },
         "settings": {
             "title": "Ustawienia",

@@ -341,7 +341,19 @@
       "confirm_make_admin": "Make {{email}} an administrator?",
       "confirm_remove_admin": "Remove admin privileges from {{email}}?",
       "no_users": "No users found",
-      "search_placeholder": "Search users..."
+      "search_placeholder": "Search users...",
+      "add_user": "Add User",
+      "create_user": "Create New User",
+      "email": "Email",
+      "email_placeholder": "user@example.com",
+      "name": "Name (optional)",
+      "name_placeholder": "Full name",
+      "password": "Password",
+      "password_placeholder": "Secure password",
+      "password_hint": "Minimum 6 characters",
+      "make_admin": "Make Administrator",
+      "create": "Create User",
+      "creating": "Creating..."
     },
     "settings": {
       "title": "Settings",
