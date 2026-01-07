@@ -13,7 +13,7 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const currentUser = await prisma.user.findUnique({
@@ -22,7 +22,7 @@ export async function DELETE(
     });
 
     if (!currentUser?.isAdmin) {
-      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const { id: shareId } = await params;
@@ -32,7 +32,7 @@ export async function DELETE(
       select: { id: true, type: true, filePath: true, slug: true },
     });
     if (!share) {
-      return NextResponse.json({ error: "Partage non trouvé" }, { status: 404 });
+      return NextResponse.json({ error: "Share not found" }, { status: 404 });
     }
 
     if (share.type === "FILE" && share.filePath) {
@@ -50,6 +50,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting share (admin):", error);
-    return NextResponse.json({ error: "Erreur lors de la suppression" }, { status: 500 });
+    return NextResponse.json({ error: "Error deleting share" }, { status: 500 });
   }
 }

@@ -33,7 +33,7 @@ interface OAuthProvider {
   updatedAt: string
 }
 
-const CALLBBACK_PATH = "/api/auth/callback/"
+const CALLBACK_PATH = "/api/auth/callback/"
 
 export default function OAuthProvidersTab() {
   const { t } = useTranslation()
@@ -214,7 +214,7 @@ export default function OAuthProvidersTab() {
                   userSelect: 'all'
                 }}
               >
-                {origin}{CALLBBACK_PATH}{editingProvider}
+                {origin}{CALLBACK_PATH}{editingProvider}
               </Box>
               <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                 {t("admin.oauth.callback_help", "Copiez cette URL dans les paramètres de votre fournisseur OAuth.")}

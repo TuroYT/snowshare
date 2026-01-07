@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { encrypt } from "@/lib/crypto-link"
 import { getServerSession } from "next-auth"
 import { getAuthOptions } from "@/lib/auth"
+import { isValidDisplayName } from "@/lib/validation"
 
 export async function GET() {
   const authOptions = await getAuthOptions()
@@ -56,6 +57,13 @@ export async function POST(request: Request) {
   try {
     const { name, displayName, enabled, clientId, clientSecret } = await request.json()
 
+    // Validate displayName
+    const dnValidation = isValidDisplayName(displayName)
+    if (!dnValidation.valid) {
+      return NextResponse.json({ error: dnValidation.error || "Invalid displayName" }, { status: 400 })
+    }
+    const safeDisplayName = (displayName as string).trim()
+
     // Encrypt secret if provided
     const encryptedSecret = clientSecret ? encrypt(clientSecret, process.env.NEXTAUTH_SECRET!) : undefined
 
@@ -63,13 +71,13 @@ export async function POST(request: Request) {
       where: { name },
       create: {
         name,
-        displayName,
+        displayName: safeDisplayName,
         enabled,
         clientId,
         clientSecret: encryptedSecret,
       },
       update: {
-        displayName,
+        displayName: safeDisplayName,
         enabled,
         clientId,
         ...(encryptedSecret && { clientSecret: encryptedSecret }),
