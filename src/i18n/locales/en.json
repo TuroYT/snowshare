@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm"
+  },
   "nav": {
     "hello": "Hello, {{email}}",
     "signout": "Sign out",
@@ -203,6 +210,7 @@
     "loading": "Loading...",
     "tab_info": "Personal information",
     "tab_shares": "My shares",
+    "tab_accounts": "Connected accounts",
     "info_title": "Personal information",
     "info_subtitle": "Manage your account information",
     "label_name": "Name",
@@ -245,7 +253,23 @@
     "placeholder_password_optional": "Leave blank for no password",
     "label_expiration": "Expiration",
     "expires_on": "Expires on",
-    "protected": "Protected"
+    "protected": "Protected",
+    "accounts": {
+      "title": "Connected OAuth Accounts",
+      "description": "Manage OAuth accounts linked to your profile. You can sign in with any of these accounts.",
+      "connected": "Connected accounts",
+      "no_connected": "No OAuth accounts connected",
+      "available": "Available accounts",
+      "no_available": "No OAuth providers available",
+      "linked": "Connected",
+      "unlink": "Unlink",
+      "confirm_unlink": "Confirm deletion",
+      "confirm_unlink_message": "Are you sure you want to unlink this {{provider}} account?",
+      "error_fetch": "Error fetching accounts",
+      "error_link": "Error linking account",
+      "error_unlink": "Error unlinking account",
+      "unlink_success": "Account unlinked successfully"
+    }
   },
   "setup": {
     "title": "Initial Setup",
@@ -272,7 +296,28 @@
       "users": "Users",
       "settings": "Settings",
       "branding": "Branding",
-      "logs": "Share Logs"
+      "logs": "Share Logs",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "OAuth Providers",
+      "description": "Configure external authentication providers. You will need to create an OAuth app on the provider's developer console.",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "client_id": "Client ID",
+      "not_configured": "Not configured",
+      "edit": "Configure",
+      "setup": "Setup",
+      "configure_provider": "Configure {{provider}}",
+      "callback_url": "Callback URL (Redirect URI)",
+      "callback_help": "Copy this URL to your OAuth provider settings.",
+      "display_name": "Display Name",
+      "client_id_field": "Client ID",
+      "client_secret": "Client Secret",
+      "secret_placeholder": "(Leave blank to keep unchanged)",
+      "secret_help": "The secret is encrypted before being stored.",
+      "documentation": "Provider documentation",
+      "enable_provider": "Enable this provider"
     },
     "users": {
       "title": "User Management",
@@ -336,13 +381,18 @@
         "ip": "IP Address",
         "created": "Created",
         "expires": "Expires",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Actions"
       },
       "anonymous": "Anonymous",
       "never": "Never",
       "expired": "Expired",
       "active": "Active",
       "password_protected": "Password protected",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "confirm_delete": "Delete share {{slug}}?",
+      "delete_error": "Error deleting share",
       "no_logs": "No shares found",
       "pagination_info": "Showing {{start}} to {{end}} of {{total}} shares",
       "previous": "Previous",
