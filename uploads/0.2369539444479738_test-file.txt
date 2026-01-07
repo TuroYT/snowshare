@@ -1,2 +1,0 @@
-This is a test file for FileShare functionality.
-It contains some sample text to test the upload and download process.
