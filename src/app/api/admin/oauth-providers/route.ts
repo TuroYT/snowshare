@@ -64,8 +64,15 @@ export async function POST(request: Request) {
     }
     const safeDisplayName = (displayName as string).trim()
 
+    // Ensure NEXTAUTH_SECRET is available when encrypting client secrets
+    if (clientSecret && !process.env.NEXTAUTH_SECRET) {
+      console.error("Missing NEXTAUTH_SECRET while attempting to encrypt an OAuth provider clientSecret")
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
     // Encrypt secret if provided
-    const encryptedSecret = clientSecret ? encrypt(clientSecret, process.env.NEXTAUTH_SECRET!) : undefined
+    const secretKey = process.env.NEXTAUTH_SECRET
+    const encryptedSecret = clientSecret && secretKey ? encrypt(clientSecret, secretKey) : undefined
 
     const provider = await prisma.oAuthProvider.upsert({
       where: { name },
