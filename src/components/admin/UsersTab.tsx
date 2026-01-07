@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import CreateUserDialog from "./CreateUserDialog"
 
 interface User {
   id: string
@@ -21,6 +22,7 @@ export default function UsersTab() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -114,15 +116,21 @@ export default function UsersTab() {
         </div>
       )}
 
-      {/* Search */}
-      <div>
+      {/* Search and Create Button */}
+      <div className="flex gap-3">
         <input
           type="text"
           placeholder={t("admin.users.search_placeholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          className="flex-1 px-4 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
         />
+        <button
+          onClick={() => setShowCreateDialog(true)}
+          className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] rounded-lg text-white font-medium transition-colors whitespace-nowrap"
+        >
+          {t("admin.users.add_user")}
+        </button>
       </div>
 
       {/* Users Table */}
@@ -199,6 +207,12 @@ export default function UsersTab() {
           </tbody>
         </table>
       </div>
+
+      <CreateUserDialog
+        isOpen={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onUserCreated={fetchUsers}
+      />
     </div>
   )
 }

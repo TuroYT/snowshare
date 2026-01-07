@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { isValidEmail, isValidPassword } from "@/lib/constants";
+import bcryptjs from "bcryptjs";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -106,6 +108,99 @@ export async function PATCH(request: Request) {
     console.error("Error updating user:", error);
     return NextResponse.json(
       { error: "Failed to update user" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || !session.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check if user is admin
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user?.isAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const { email, name, password, isAdmin: makeAdmin } = await request.json();
+
+    // Validate input
+    if (!email || typeof email !== "string") {
+      return NextResponse.json(
+        { error: "Email is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
+    if (!password || typeof password !== "string") {
+      return NextResponse.json(
+        { error: "Password is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidPassword(password)) {
+      return NextResponse.json(
+        { error: "Password must be between 6 and 100 characters" },
+        { status: 400 }
+      );
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await bcryptjs.hash(password, 12);
+
+    // Create user
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        name: name || undefined,
+        password: hashedPassword,
+        isAdmin: makeAdmin || false,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isAdmin: true,
+        createdAt: true,
+        _count: {
+          select: { shares: true },
+        },
+      },
+    });
+
+    return NextResponse.json({ user: newUser }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return NextResponse.json(
+      { error: "Failed to create user" },
       { status: 500 }
     );
   }

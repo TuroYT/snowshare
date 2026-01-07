@@ -337,7 +337,19 @@
       "confirm_make_admin": "¿Hacer que {{email}} sea administrador?",
       "confirm_remove_admin": "¿Remover privilegios de administrador de {{email}}?",
       "no_users": "No se encontraron usuarios",
-      "search_placeholder": "Buscar usuarios..."
+      "search_placeholder": "Buscar usuarios...",
+      "add_user": "Añadir Usuario",
+      "create_user": "Crear Nuevo Usuario",
+      "email": "Correo Electrónico",
+      "email_placeholder": "user@example.com",
+      "name": "Nombre (opcional)",
+      "name_placeholder": "Nombre completo",
+      "password": "Contraseña",
+      "password_placeholder": "Contraseña segura",
+      "password_hint": "Mínimo 6 caracteres",
+      "make_admin": "Hacer Administrador",
+      "create": "Crear Usuario",
+      "creating": "Creando..."
     },
     "settings": {
       "title": "Configuración",
