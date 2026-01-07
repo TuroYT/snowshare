@@ -29,6 +29,7 @@ export default function LogsTab() {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     limit: 20,
@@ -75,6 +76,37 @@ export default function LogsTab() {
   const handleTypeChange = (type: string) => {
     setTypeFilter(type);
     setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handleDelete = async (log: LogEntry) => {
+    const confirmed = window.confirm(t("admin.logs.confirm_delete", { slug: log.slug }));
+    if (!confirmed) return;
+
+    setDeletingId(log.id);
+    try {
+      const response = await fetch(`/api/admin/logs/${log.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to delete share");
+      }
+
+      setPagination((prev) => {
+        const total = Math.max(prev.total - 1, 0);
+        const totalPages = Math.max(Math.ceil(total / prev.limit), 1);
+        const page = Math.min(prev.page, totalPages);
+        return { ...prev, total, totalPages, page };
+      });
+
+      // If we stayed on the same page, refresh immediately; otherwise the pagination change triggers a fetch
+      if (!(logs.length === 1 && pagination.page > 1)) {
+        await fetchLogs();
+      }
+    } catch (error) {
+      console.error("Error deleting share:", error);
+      alert(t("admin.logs.delete_error"));
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const getTypeUrl = (type: string, slug: string) => {
@@ -216,12 +248,15 @@ export default function LogsTab() {
               <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.status")}
               </th>
+              <th className="text-right py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                {t("admin.logs.table.actions")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700/30">
             {loading ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-[var(--foreground-muted)]">
+                <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
                     {t("loading")}
@@ -230,7 +265,7 @@ export default function LogsTab() {
               </tr>
             ) : logs.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-[var(--foreground-muted)]">
+                <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
                   {t("admin.logs.no_logs")}
                 </td>
               </tr>
@@ -294,6 +329,27 @@ export default function LogsTab() {
                         </span>
                       )}
                     </div>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <button
+                      onClick={() => handleDelete(log)}
+                      disabled={deletingId === log.id}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-600/10 text-red-400 border border-red-500/30 hover:bg-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {deletingId === log.id ? (
+                        <>
+                          <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400" aria-hidden />
+                          {t("admin.logs.deleting")}
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v2M4 7h16" />
+                          </svg>
+                          {t("admin.logs.delete")}
+                        </>
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))
