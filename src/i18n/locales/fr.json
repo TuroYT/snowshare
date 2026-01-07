@@ -212,6 +212,7 @@
     "loading": "Chargement...",
     "tab_info": "Informations personnelles",
     "tab_shares": "Mes partages",
+    "tab_accounts": "Comptes connectés",
     "info_title": "Informations personnelles",
     "info_subtitle": "Gérez vos informations de compte",
     "label_name": "Nom",
@@ -254,7 +255,23 @@
     "placeholder_password_optional": "Laisser vide pour aucun mot de passe",
     "label_expiration": "Expiration",
     "expires_on": "Expire le",
-    "protected": "Protégé"
+    "protected": "Protégé",
+    "accounts": {
+      "title": "Comptes OAuth connectés",
+      "description": "Gérez les comptes OAuth liés à votre profil. Vous pouvez vous connecter avec n'importe lequel de ces comptes.",
+      "connected": "Comptes connectés",
+      "no_connected": "Aucun compte OAuth connecté",
+      "available": "Comptes disponibles",
+      "no_available": "Aucun provider OAuth disponible",
+      "linked": "Connecté",
+      "unlink": "Délier",
+      "confirm_unlink": "Confirmer la suppression",
+      "confirm_unlink_message": "Êtes-vous sûr de vouloir délier ce compte {{provider}} ?",
+      "error_fetch": "Erreur lors de la récupération des comptes",
+      "error_link": "Erreur lors de la liaison du compte",
+      "error_unlink": "Erreur lors de la suppression du compte",
+      "unlink_success": "Compte délié avec succès"
+    }
   },
   "setup": {
     "title": "Configuration initiale",
@@ -301,6 +318,7 @@
       "client_secret": "Client Secret",
       "secret_placeholder": "(Laisser vide pour ne pas changer)",
       "secret_help": "Le secret est chiffré avant d'être stocké.",
+      "documentation": "Documentation du fournisseur",
       "enable_provider": "Activer ce fournisseur"
     },
     "users": {

@@ -206,6 +206,7 @@
     "loading": "Lädt...",
     "tab_info": "Persönliche Informationen",
     "tab_shares": "Meine Freigaben",
+    "tab_accounts": "Verbundene Konten",
     "info_title": "Persönliche Informationen",
     "info_subtitle": "Verwalten Sie Ihre Kontoinformationen",
     "label_name": "Name",
@@ -248,7 +249,23 @@
     "placeholder_password_optional": "Leer lassen für kein Passwort",
     "label_expiration": "Ablauf",
     "expires_on": "Läuft ab am",
-    "protected": "Geschützt"
+    "protected": "Geschützt",
+    "accounts": {
+      "title": "Verbundene OAuth-Konten",
+      "description": "Verwalten Sie OAuth-Konten, die mit Ihrem Profil verknüpft sind. Sie können sich mit jedem dieser Konten anmelden.",
+      "connected": "Verbundene Konten",
+      "no_connected": "Keine OAuth-Konten verbunden",
+      "available": "Verfügbare Konten",
+      "no_available": "Keine OAuth-Anbieter verfügbar",
+      "linked": "Verbunden",
+      "unlink": "Trennen",
+      "confirm_unlink": "Löschung bestätigen",
+      "confirm_unlink_message": "Möchten Sie dieses {{provider}}-Konto wirklich trennen?",
+      "error_fetch": "Fehler beim Abrufen der Konten",
+      "error_link": "Fehler beim Verknüpfen des Kontos",
+      "error_unlink": "Fehler beim Trennen des Kontos",
+      "unlink_success": "Konto erfolgreich getrennt"
+    }
   },
   "setup": {
     "title": "Ersteinrichtung",
@@ -295,6 +312,7 @@
       "client_secret": "Client-Secret",
       "secret_placeholder": "(Leer lassen, um unverändert zu bleiben)",
       "secret_help": "Das Secret wird vor dem Speichern verschlüsselt.",
+      "documentation": "Anbieterdokumentation",
       "enable_provider": "Diesen Anbieter aktivieren"
     },
     "users": {

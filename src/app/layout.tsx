@@ -65,6 +65,7 @@ export default function RootLayout({
         style={{
           backgroundColor: "var(--background)",
           color: "var(--foreground)",
+          minHeight: "100vh",
         }}
       >
         <NextAuthProvider>

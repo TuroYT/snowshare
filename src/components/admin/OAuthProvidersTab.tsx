@@ -21,6 +21,8 @@ import {
   IconButton
 } from "@mui/material"
 import { Close as CloseIcon } from "@mui/icons-material"
+import { availableProviders } from "@/lib/providers"
+import Link from "next/link"
 
 interface OAuthProvider {
   id: string
@@ -30,6 +32,8 @@ interface OAuthProvider {
   clientId: string | null
   updatedAt: string
 }
+
+const CALLBBACK_PATH = "/api/auth/callback/"
 
 export default function OAuthProvidersTab() {
   const { t } = useTranslation()
@@ -45,12 +49,7 @@ export default function OAuthProvidersTab() {
   })
   const [origin, setOrigin] = useState("")
 
-  const availableProviders = [
-    { id: "github", name: "GitHub" },
-    { id: "google", name: "Google" },
-    { id: "discord", name: "Discord" }
-    //LINK - Add new providers here
-  ]
+  
 
   const fetchProviders = async () => {
     try {
@@ -136,7 +135,7 @@ export default function OAuthProvidersTab() {
             const isEnabled = configured?.enabled
 
             return (
-              <Grid item xs={12} md={6} lg={4} key={p.id}>
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={p.id}>
                 <Paper 
                   variant="outlined" 
                   sx={{ 
@@ -198,10 +197,11 @@ export default function OAuthProvidersTab() {
         
         <form onSubmit={handleSave}>
           <DialogContent dividers>
-            <Alert severity="info" sx={{ mb: 3 }}>
+            <Alert severity="info" sx={{ mb: 1 }}>
               <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
                 {t("admin.oauth.callback_url", "URL de Callback (Redirect URI)")}
               </Typography>
+              
               <Box 
                 component="code" 
                 sx={{ 
@@ -214,22 +214,29 @@ export default function OAuthProvidersTab() {
                   userSelect: 'all'
                 }}
               >
-                {origin}/api/auth/callback/{editingProvider}
+                {origin}{CALLBBACK_PATH}{editingProvider}
               </Box>
               <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                 {t("admin.oauth.callback_help", "Copiez cette URL dans les paramètres de votre fournisseur OAuth.")}
               </Typography>
             </Alert>
 
+            <Alert severity="info" sx={{ mb: 3, mt: 0 }}>
+              <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
+                {t("admin.oauth.documentation", "Documentation du fournisseur")}
+              </Typography>
+              <Link 
+                href={availableProviders.find(p => p.id === editingProvider)?.documentationUrl || "#"} 
+                target="_BLANK" 
+                rel="noopener noreferrer"
+                style={{ wordBreak: 'break-all' }}
+              >
+                {availableProviders.find(p => p.id === editingProvider)?.documentationUrl}
+              </Link>
+            </Alert>
+
             <Box display="flex" flexDirection="column" gap={2}>
-              <TextField
-                label={t("admin.oauth.display_name", "Nom d'affichage")}
-                value={formData.displayName}
-                onChange={e => setFormData({...formData, displayName: e.target.value})}
-                fullWidth
-                required
-                variant="outlined"
-              />
+              
 
               <TextField
                 label={t("admin.oauth.client_id_field", "Client ID")}

@@ -1,3 +1,7 @@
+  "save_error": "Błąd podczas zapisywania",
+  "validation_required": "Brak wymaganych pól",
+  "validation_invalid_color": "Nieprawidłowy kolor (oczekiwany format: #RRGGBB)",
+  "validation_invalid_url": "Nieprawidłowy adres URL"
 {
   "common": {
     "save": "Zapisz",
@@ -257,15 +261,32 @@
     "label_expiration": "Wygasa",
     "expires_on": "Wygasa",
     "protected": "Chronione"
+      "tab_accounts": "Połączone konta",
+      "accounts": {
+        "title": "Połączone konta OAuth",
+        "description": "Zarządzaj kontami OAuth połączonymi z Twoim profilem. Możesz się zalogować za pomocą któregokolwiek z tych kont.",
+        "connected": "Połączone konta",
+        "no_connected": "Brak połączonych kont OAuth",
+        "available": "Dostępne konta",
+        "no_available": "Brak dostępnych dostawców OAuth",
+        "linked": "Połączone",
+        "unlink": "Rozłączyć",
+        "confirm_unlink": "Potwierdź usunięcie",
+        "confirm_unlink_message": "Czy na pewno chcesz rozłączyć to konto {{provider}}?",
+        "error_fetch": "Błąd pobierania kont",
+        "error_link": "Błąd połączenia konta",
+        "error_unlink": "Błąd usuwania konta",
+        "unlink_success": "Konto rozłączone pomyślnie"
+      }
   },
   "setup": {
-    "title": "Initial Setup",
-    "description": "Welcome! No users exist yet. Create the first administrator account to start using SnowShare.",
-    "info": "This account will be the first administrator of SnowShare.",
-    "submit": "Create administrator account",
-    "creating": "Creating...",
-    "success_message": "First account created successfully! You can now sign in.",
-    "admin_notice": "This account will have all administrator privileges."
+    "title": "Konfiguracja początkowa",
+    "description": "Witamy! Żaden użytkownik nie istnieje. Utwórz pierwsze konto administratora, aby zacząć korzystać z SnowShare.",
+    "info": "To konto będzie pierwszym administratorem SnowShare.",
+    "submit": "Utwórz konto administratora",
+    "creating": "Tworzenie...",
+    "success_message": "Pierwsze konto utworzone pomyślnie! Możesz się teraz zalogować.",
+    "admin_notice": "To konto będzie mieć wszystkie uprawnienia administratora."
   },
   "admin": {
     "title": "Panel administracyjny",
@@ -300,6 +321,7 @@
       "client_secret": "Sekret Klienta",
       "secret_placeholder": "(Pozostaw puste, aby nie zmieniać)",
       "secret_help": "Sekret jest szyfrowany przed zapisaniem.",
+      "documentation": "Dokumentacja dostawcy",
       "enable_provider": "Włącz tego dostawcę"
     },
     "users": {
