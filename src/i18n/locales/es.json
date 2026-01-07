@@ -1,4 +1,11 @@
 {
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar"
+  },
   "nav": {
     "hello": "Hola, {{email}}",
     "signout": "Cerrar sesión",
@@ -199,6 +206,7 @@
     "loading": "Cargando...",
     "tab_info": "Información personal",
     "tab_shares": "Mis compartidos",
+    "tab_accounts": "Cuentas conectadas",
     "info_title": "Información personal",
     "info_subtitle": "Gestiona la información de tu cuenta",
     "label_name": "Nombre",
@@ -241,7 +249,23 @@
     "placeholder_password_optional": "Dejar en blanco para sin contraseña",
     "label_expiration": "Expiración",
     "expires_on": "Expira el",
-    "protected": "Protegido"
+    "protected": "Protegido",
+    "accounts": {
+      "title": "Cuentas OAuth conectadas",
+      "description": "Gestiona las cuentas OAuth vinculadas a tu perfil. Puedes iniciar sesión con cualquiera de estas cuentas.",
+      "connected": "Cuentas conectadas",
+      "no_connected": "No hay cuentas OAuth conectadas",
+      "available": "Cuentas disponibles",
+      "no_available": "No hay proveedores OAuth disponibles",
+      "linked": "Conectado",
+      "unlink": "Desvincular",
+      "confirm_unlink": "Confirmar eliminación",
+      "confirm_unlink_message": "¿Estás seguro de que quieres desvincular esta cuenta de {{provider}}?",
+      "error_fetch": "Error al obtener las cuentas",
+      "error_link": "Error al vincular la cuenta",
+      "error_unlink": "Error al desvincular la cuenta",
+      "unlink_success": "Cuenta desvinculada con éxito"
+    }
   },
   "setup": {
     "title": "Configuración Inicial",
@@ -268,7 +292,28 @@
       "users": "Usuarios",
       "settings": "Configuración",
       "branding": "Personalización",
-      "logs": "Registros de Compartidos"
+      "logs": "Registros de Compartidos",
+      "oauth": "OAuth / SSO"
+    },
+    "oauth": {
+      "title": "Proveedores OAuth",
+      "description": "Configure proveedores de autenticación externos. Deberá crear una aplicación OAuth en la consola de desarrollador del proveedor.",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado",
+      "client_id": "ID de Cliente",
+      "not_configured": "No configurado",
+      "edit": "Configurar",
+      "setup": "Instalar",
+      "configure_provider": "Configurar {{provider}}",
+      "callback_url": "URL de Callback (URI de redirección)",
+      "callback_help": "Copie esta URL en la configuración de su proveedor OAuth.",
+      "display_name": "Nombre para mostrar",
+      "client_id_field": "ID de Cliente",
+      "client_secret": "Secreto de Cliente",
+      "secret_placeholder": "(Dejar en blanco para no cambiar)",
+      "secret_help": "El secreto se cifra antes de almacenarse.",
+      "documentation": "Documentación del proveedor",
+      "enable_provider": "Habilitar este proveedor"
     },
     "users": {
       "title": "Gestión de Usuarios",

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { signIn, getSession, getProviders, ClientSafeProvider } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
@@ -11,8 +11,16 @@ export default function SignIn() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null)
   const router = useRouter()
   const { t } = useTranslation()
+
+  useEffect(() => {
+    (async () => {
+      const res = await getProviders()
+      setProviders(res)
+    })()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -145,6 +153,33 @@ export default function SignIn() {
             </div>
           </div>
         </form>
+
+        {providers && Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials").length > 0 && (
+          <>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[var(--border)]"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-[var(--background)] text-[var(--foreground-muted)]">
+                  {t('auth.or_continue_with', 'Or continue with')}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              {Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials").map((provider: ClientSafeProvider) => (
+                <button
+                  key={provider.name}
+                  onClick={() => signIn(provider.id, { callbackUrl: "/" })}
+                  className="flex items-center justify-center w-full px-4 py-3 border border-[var(--border)] rounded-md shadow-sm bg-[var(--surface)] text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors capitalize"
+                >
+                  {provider.name}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

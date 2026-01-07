@@ -1,4 +1,11 @@
 {
+    "common": {
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "edit": "Bewerken",
+        "delete": "Verwijderen",
+        "confirm": "Bevestigen"
+    },
     "nav": {
         "hello": "Hallo, {{email}}",
         "signout": "Uitloggen",
@@ -10,6 +17,11 @@
         "signout_desc": "Uitloggen",
         "admin": "Beheer",
         "admin_desc": "Beheerpaneel"
+        "admin_desc": "Beheerpaneel",
+        "save_error": "Fout bij opslaan",
+        "validation_required": "Vereiste velden ontbreken",
+        "validation_invalid_color": "Ongeldige kleur (verwacht formaat: #RRGGBB)",
+        "validation_invalid_url": "Ongeldige URL"
     },
     "loading": "Laden...",
     "pasteshare": {
@@ -245,7 +257,24 @@
         "placeholder_password_optional": "Leeg laten voor geen wachtwoord",
         "label_expiration": "Vervaldatum",
         "expires_on": "Verloopt op",
-        "protected": "Beveiligd"
+        "protected": "Beveiligd",
+        "tab_accounts": "Verbonden accounts",
+        "accounts": {
+            "title": "Verbonden OAuth-accounts",
+            "description": "Beheer de OAuth-accounts die aan uw profiel zijn gekoppeld. U kunt zich aanmelden met elk van deze accounts.",
+            "connected": "Verbonden accounts",
+            "no_connected": "Geen OAuth-accounts verbonden",
+            "available": "Beschikbare accounts",
+            "no_available": "Geen OAuth-providers beschikbaar",
+            "linked": "Verbonden",
+            "unlink": "Koppeling verwijderen",
+            "confirm_unlink": "Verwijdering bevestigen",
+            "confirm_unlink_message": "Weet je zeker dat je dit account {{provider}} wilt ontkoppelen?",
+            "error_fetch": "Fout bij ophalen van accounts",
+            "error_link": "Fout bij het verbinden van account",
+            "error_unlink": "Fout bij het verwijderen van account",
+            "unlink_success": "Account succesvol ontkoppeld"
+        }
     },
     "setup": {
         "title": "Eerste installatie",
@@ -272,7 +301,28 @@
             "users": "Gebruikers",
             "settings": "Instellingen",
             "branding": "Huisstijl",
-            "logs": "Share-logs"
+            "logs": "Share-logs",
+            "oauth": "OAuth / SSO"
+        },
+        "oauth": {
+            "title": "OAuth Providers",
+            "description": "Configureer externe authenticatieproviders. U moet een OAuth-app maken in de ontwikkelaarsconsole van de provider.",
+            "enabled": "Ingeschakeld",
+            "disabled": "Uitgeschakeld",
+            "client_id": "Client ID",
+            "not_configured": "Niet geconfigureerd",
+            "edit": "Configureren",
+            "setup": "Instellen",
+            "configure_provider": "Configureer {{provider}}",
+            "callback_url": "Callback URL (Redirect URI)",
+            "callback_help": "Kopieer deze URL naar de instellingen van uw OAuth-provider.",
+            "display_name": "Weergavenaam",
+            "client_id_field": "Client ID",
+            "client_secret": "Client Secret",
+            "secret_placeholder": "(Laat leeg om ongewijzigd te laten)",
+            "secret_help": "Het geheim wordt versleuteld voordat het wordt opgeslagen.",
+            "documentation": "Documentatie van de provider",
+            "enable_provider": "Schakel deze provider in"
         },
         "users": {
             "title": "Gebruikersbeheer",
@@ -318,6 +368,9 @@
             "expires": "Verloopt",
             "status": "Status",
             "actions": "Acties",
+            "max_file_size_hint": "Maximale bestandsgrootte in MB",
+            "ip_quota": "IP-quota",
+            "ip_quota_hint": "Maximale totale uploadgrootte per IP in MB",
             "current_value": "Huidig: {{value}} MB",
             "saving": "Opslaan...",
             "save": "Wijzigingen opslaan"
