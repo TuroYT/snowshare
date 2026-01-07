@@ -91,7 +91,7 @@ export async function PATCH(
       if (password) {
         // Validate password length
         if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
-          return NextResponse.json({ error: `Le mot de passe doit contenir entre ${PASSWORD_MIN_LENGTH} et ${PASSWORD_MAX_LENGTH} caractères` }, { status: 400 });
+          return NextResponse.json({ error: `The password must contain between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters` }, { status: 400 });
         }
         updateData.password = await bcrypt.hash(password, 12);
       } else {
