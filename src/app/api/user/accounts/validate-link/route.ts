@@ -38,7 +38,11 @@ export async function POST(request: NextRequest) {
 
         // Extract token information
         const parts = verificationToken.identifier.split(":");
-        if (parts[0] !== "account-link" || parts[1] !== session.user.id) {
+        if (
+            parts[0] !== "account-link" ||
+            !session.user.email ||
+            parts[1] !== session.user.email
+        ) {
             return NextResponse.json({ error: "Invalid token" }, { status: 400 });
         }
 
