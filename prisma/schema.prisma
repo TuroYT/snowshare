@@ -133,3 +133,14 @@ enum pasteType {
   JSON
   MARKDOWN
 }
+
+model OAuthProvider {
+  id            String   @id @default(cuid())
+  name          String   @unique // github, google, discord, etc.
+  displayName   String   // "GitHub", "Google", etc.
+  enabled       Boolean  @default(false)
+  clientId      String?
+  clientSecret  String?  // Encrypted
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

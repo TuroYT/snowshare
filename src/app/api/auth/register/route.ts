@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Validate password length
     if (!isValidPassword(password)) {
       return NextResponse.json(
-        { error: `Le mot de passe doit contenir entre ${PASSWORD_MIN_LENGTH} et ${PASSWORD_MAX_LENGTH} caractères` },
+        { error: `The password must contain between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters` },
         { status: 400 }
       )
     }
