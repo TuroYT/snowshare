@@ -11,7 +11,7 @@ import SettingsTab from "@/components/admin/SettingsTab"
 import LogsTab from "@/components/admin/LogsTab"
 import BrandingTab from "@/components/admin/BrandingTab"
 import OAuthProvidersTab from "@/components/admin/OAuthProvidersTab"
-import UpdateNotification from "@/components/admin/UpdateNotification"
+import UpdateNotification, { VersionInfo } from "@/components/admin/UpdateNotification"
 
 type Tab = "users" | "settings" | "branding" | "logs" | "oauth"
 
@@ -21,6 +21,7 @@ export default function AdminPage() {
   const { t } = useTranslation()
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
+   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("users")
 
   const checkAdminStatus = useCallback(async () => {
@@ -96,13 +97,13 @@ export default function AdminPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
-              {t("admin.title")}
+              {t("admin.title")} - v{versionInfo?.currentVersion ?? "loading..."}
             </h1>
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
           </div>
 
           {/* Update Notification */}
-          <UpdateNotification />
+          <UpdateNotification versionInfo={versionInfo} setVersionInfo={setVersionInfo} />
 
           {/* Tabs */}
           <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto">
