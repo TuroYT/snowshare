@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { useTranslation } from "react-i18next"
 
-interface VersionInfo {
+export interface VersionInfo {
   currentVersion: string
   latestVersion: string | null
   updateAvailable: boolean
@@ -13,11 +13,16 @@ interface VersionInfo {
   releaseNotes?: string
 }
 
-export default function UpdateNotification() {
+interface Props {
+  versionInfo: VersionInfo | null
+  setVersionInfo: Dispatch<SetStateAction<VersionInfo | null>>
+}
+
+export default function UpdateNotification({ versionInfo, setVersionInfo }: Props) {
   const { t } = useTranslation()
-  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null)
   const [dismissed, setDismissed] = useState(false)
   const [loading, setLoading] = useState(true)
+  const latestVersion = versionInfo?.latestVersion ?? versionInfo?.currentVersion
 
   useEffect(() => {
     const checkVersion = async () => {
@@ -29,7 +34,7 @@ export default function UpdateNotification() {
           
           // Check if this version was already dismissed
           const dismissedVersion = localStorage.getItem("snowshare_dismissed_version")
-          if (dismissedVersion === data.latestVersion) {
+          if (dismissedVersion === (data.latestVersion ?? data.currentVersion)) {
             setDismissed(true)
           }
         }
@@ -41,17 +46,17 @@ export default function UpdateNotification() {
     }
 
     checkVersion()
-  }, [])
+  }, [setVersionInfo])
 
   const handleDismiss = () => {
-    if (versionInfo?.latestVersion) {
-      localStorage.setItem("snowshare_dismissed_version", versionInfo.latestVersion)
+    if (latestVersion) {
+      localStorage.setItem("snowshare_dismissed_version", latestVersion)
     }
     setDismissed(true)
   }
 
   if (loading || !versionInfo?.updateAvailable || dismissed) {
-    return null
+    return 
   }
 
   return (
@@ -85,7 +90,7 @@ export default function UpdateNotification() {
               </span>
               {" → "}
               <span className="font-mono text-xs bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
-                {versionInfo.latestVersion}
+                {latestVersion}
               </span>
             </p>
             {versionInfo.releaseName && (
