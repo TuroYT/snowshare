@@ -198,15 +198,17 @@ export default function SettingsTab() {
             <div>
               <label className="text-sm text-[var(--foreground)]">{t("admin.quotas.max_file_size")}</label>
               <p className="text-xs text-[var(--foreground-muted)] mb-2">{t("admin.quotas.max_file_size_hint")}</p>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={settings.anoMaxUpload}
-                  onChange={(e) => handleChange("anoMaxUpload", parseInt(e.target.value))}
-                  className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  min="0"
-                />
-                <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    value={settings.anoMaxUpload}
+                    onChange={(e) => handleChange("anoMaxUpload", parseInt(e.target.value))}
+                    className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    min="0"
+                  />
+                </div>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
                 {t("admin.quotas.current_value", { value: settings.anoMaxUpload })}
@@ -216,15 +218,17 @@ export default function SettingsTab() {
             <div>
               <label className="text-sm text-[var(--foreground)]">{t("admin.quotas.ip_quota")}</label>
               <p className="text-xs text-[var(--foreground-muted)] mb-2">{t("admin.quotas.ip_quota_hint")}</p>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={settings.anoIpQuota}
-                  onChange={(e) => handleChange("anoIpQuota", parseInt(e.target.value))}
-                  className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  min="0"
-                />
-                <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    value={settings.anoIpQuota}
+                    onChange={(e) => handleChange("anoIpQuota", parseInt(e.target.value))}
+                    className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    min="0"
+                  />
+                </div>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
                 {t("admin.quotas.current_value", { value: settings.anoIpQuota })}
@@ -248,15 +252,17 @@ export default function SettingsTab() {
             <div>
               <label className="text-sm text-[var(--foreground)]">{t("admin.quotas.max_file_size")}</label>
               <p className="text-xs text-[var(--foreground-muted)] mb-2">{t("admin.quotas.max_file_size_hint")}</p>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={settings.authMaxUpload}
-                  onChange={(e) => handleChange("authMaxUpload", parseInt(e.target.value))}
-                  className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  min="0"
-                />
-                <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    value={settings.authMaxUpload}
+                    onChange={(e) => handleChange("authMaxUpload", parseInt(e.target.value))}
+                    className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    min="0"
+                  />
+                </div>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
                 {t("admin.quotas.current_value", { value: settings.authMaxUpload })}
@@ -266,15 +272,17 @@ export default function SettingsTab() {
             <div>
               <label className="text-sm text-[var(--foreground)]">{t("admin.quotas.ip_quota")}</label>
               <p className="text-xs text-[var(--foreground-muted)] mb-2">{t("admin.quotas.ip_quota_hint")}</p>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={settings.authIpQuota}
-                  onChange={(e) => handleChange("authIpQuota", parseInt(e.target.value))}
-                  className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  min="0"
-                />
-                <span className="absolute right-3 top-2 text-[var(--foreground-muted)] text-sm">MB</span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    value={settings.authIpQuota}
+                    onChange={(e) => handleChange("authIpQuota", parseInt(e.target.value))}
+                    className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    min="0"
+                  />
+                </div>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
                 {t("admin.quotas.current_value", { value: settings.authIpQuota })}
