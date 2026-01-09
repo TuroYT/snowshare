@@ -79,7 +79,7 @@ export default function Footer() {
 
                         {/* License - hidden if custom links exist */}
                         {!hasCustomLinks && (
-                            <Link href="/LICENSE" underline="hover" color="text.secondary">
+                            <Link href="https://github.com/TuroYT/snowshare/blob/main/LICENSE" target="_blank" underline="hover" color="text.secondary">
                                 {t("footer.license", "License")}
                             </Link>
                         )}
