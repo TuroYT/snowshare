@@ -315,6 +315,27 @@
       "documentation": "Documentación del proveedor",
       "enable_provider": "Habilitar este proveedor"
     },
+    "links": {
+      "title_add": "Añadir enlace personalizado",
+      "title_list": "Enlaces personalizados",
+      "label_name": "Nombre",
+      "placeholder_name": "p.ej. Documentación",
+      "label_url": "URL",
+      "placeholder_url": "https://example.com",
+      "button_add": "Añadir enlace",
+      "adding": "Añadiendo...",
+      "button_delete": "Eliminar",
+      "success_added": "Enlace añadido exitosamente",
+      "success_deleted": "Enlace eliminado exitosamente",
+      "error_add": "Error al añadir el enlace",
+      "error_delete": "Error al eliminar el enlace",
+      "confirm_delete": "¿Está seguro de que desea eliminar este enlace?",
+      "error_name_required": "El nombre es obligatorio",
+      "error_url_required": "La URL es obligatoria",
+      "error_url_invalid": "La URL no es válida",
+      "no_links": "No hay enlaces personalizados añadidos. Se mostrarán los enlaces de GitHub y Licencia.",
+      "info": "Los enlaces personalizados aparecerán en el pie de página. Cuando hay enlaces personalizados presentes, los enlaces de GitHub y Licencia se ocultan."
+    },
     "users": {
       "title": "Gestión de Usuarios",
       "total_users": "Total de Usuarios",

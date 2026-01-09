@@ -323,6 +323,27 @@
             "documentation": "Documentatie van de provider",
             "enable_provider": "Schakel deze provider in"
         },
+        "links": {
+            "title_add": "Aangepaste koppeling toevoegen",
+            "title_list": "Aangepaste koppelingen",
+            "label_name": "Naam",
+            "placeholder_name": "bijv. Documentatie",
+            "label_url": "URL",
+            "placeholder_url": "https://example.com",
+            "button_add": "Koppeling toevoegen",
+            "adding": "Toevoegen...",
+            "button_delete": "Verwijderen",
+            "success_added": "Koppeling succesvol toegevoegd",
+            "success_deleted": "Koppeling succesvol verwijderd",
+            "error_add": "Fout bij toevoegen van koppeling",
+            "error_delete": "Fout bij verwijderen van koppeling",
+            "confirm_delete": "Weet u zeker dat u deze koppeling wilt verwijderen?",
+            "error_name_required": "Naam is vereist",
+            "error_url_required": "URL is vereist",
+            "error_url_invalid": "URL is ongeldig",
+            "no_links": "Geen aangepaste koppelingen toegevoegd. GitHub- en licentiekoppelingen worden weergegeven.",
+            "info": "Aangepaste koppelingen worden in de voettekst weergegeven. Wanneer aangepaste koppelingen aanwezig zijn, worden GitHub- en licentiekoppelingen verborgen."
+        },
         "users": {
             "title": "Gebruikersbeheer",
             "total_users": "Totaal aantal gebruikers",
