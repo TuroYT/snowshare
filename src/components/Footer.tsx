@@ -16,7 +16,6 @@ export default function Footer() {
     const { branding } = useTheme();
     const year = new Date().getFullYear();
     const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchLinks = async () => {
@@ -28,8 +27,6 @@ export default function Footer() {
                 }
             } catch (error) {
                 console.error("Failed to fetch custom links:", error);
-            } finally {
-                setLoading(false);
             }
         };
 

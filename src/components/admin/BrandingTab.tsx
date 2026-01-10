@@ -59,7 +59,6 @@ export default function BrandingTab() {
   const [toastOpen, setToastOpen] = useState(false)
   const [toastErrorOpen, setToastErrorOpen] = useState(false)
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([])
-  const [linksLoading, setLinksLoading] = useState(true)
   const [formData, setFormData] = useState({ name: "", url: "" })
   const [errors, setErrors] = useState({ name: "", url: "" })
 
@@ -160,7 +159,6 @@ export default function BrandingTab() {
 
   const fetchLinks = useCallback(async () => {
     try {
-      setLinksLoading(true)
       const response = await fetch("/api/custom-links")
       if (response.ok) {
         const data = await response.json()
@@ -168,8 +166,6 @@ export default function BrandingTab() {
       }
     } catch (err) {
       console.error("Failed to fetch custom links:", err)
-    } finally {
-      setLinksLoading(false)
     }
   }, [])
 
