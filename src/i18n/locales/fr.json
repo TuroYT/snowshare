@@ -321,6 +321,27 @@
       "documentation": "Documentation du fournisseur",
       "enable_provider": "Activer ce fournisseur"
     },
+    "links": {
+      "title_add": "Ajouter un lien personnalisé",
+      "title_list": "Liens personnalisés",
+      "label_name": "Nom",
+      "placeholder_name": "Ex: Documentation",
+      "label_url": "URL",
+      "placeholder_url": "https://example.com",
+      "button_add": "Ajouter le lien",
+      "adding": "Ajout en cours...",
+      "button_delete": "Supprimer",
+      "success_added": "Lien ajouté avec succès",
+      "success_deleted": "Lien supprimé avec succès",
+      "error_add": "Erreur lors de l'ajout du lien",
+      "error_delete": "Erreur lors de la suppression du lien",
+      "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce lien ?",
+      "error_name_required": "Le nom est requis",
+      "error_url_required": "L'URL est requise",
+      "error_url_invalid": "L'URL n'est pas valide",
+      "no_links": "Aucun lien personnalisé ajouté. Les liens GitHub et Licence seront affichés.",
+      "info": "Les liens personnalisés apparaîtront dans le footer. Lorsque des liens personnalisés sont présents, les liens GitHub et Licence sont masqués."
+    },
     "users": {
       "title": "Gestion des utilisateurs",
       "total_users": "Utilisateurs total",

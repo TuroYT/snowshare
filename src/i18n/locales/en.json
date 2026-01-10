@@ -319,6 +319,27 @@
       "documentation": "Provider documentation",
       "enable_provider": "Enable this provider"
     },
+    "links": {
+      "title_add": "Add Custom Link",
+      "title_list": "Custom Links",
+      "label_name": "Name",
+      "placeholder_name": "e.g. Documentation",
+      "label_url": "URL",
+      "placeholder_url": "https://example.com",
+      "button_add": "Add Link",
+      "adding": "Adding...",
+      "button_delete": "Delete",
+      "success_added": "Link added successfully",
+      "success_deleted": "Link deleted successfully",
+      "error_add": "Error adding link",
+      "error_delete": "Error deleting link",
+      "confirm_delete": "Are you sure you want to delete this link?",
+      "error_name_required": "Name is required",
+      "error_url_required": "URL is required",
+      "error_url_invalid": "URL is not valid",
+      "no_links": "No custom links added. GitHub and License links will be displayed.",
+      "info": "Custom links will appear in the footer. When custom links are present, GitHub and License links are hidden."
+    },
     "users": {
       "title": "User Management",
       "total_users": "Total Users",
