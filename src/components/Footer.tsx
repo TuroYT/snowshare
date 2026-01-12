@@ -6,9 +6,9 @@ import { Box, Typography, Link, Divider, Container, Stack } from "@mui/material"
 import { useState, useEffect } from "react";
 
 interface CustomLink {
-  id: string;
-  name: string;
-  url: string;
+    id: string;
+    name: string;
+    url: string;
 }
 
 export default function Footer() {
@@ -36,7 +36,10 @@ export default function Footer() {
     const hasCustomLinks = customLinks.length > 0;
 
     return (
-        <Box component="footer" sx={{ mt: 4, borderTop: 1, borderColor: "divider", bgcolor: "background.paper", py: 4 }}>
+        <Box
+            component="footer"
+            sx={{ mt: 4, borderTop: 1, borderColor: "divider", bgcolor: "background.paper", py: 4 }}
+        >
             <Container maxWidth="lg">
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center" alignItems="center">
                     {/* Custom Links - displayed on the left if they exist */}
@@ -61,7 +64,15 @@ export default function Footer() {
                     <Stack direction="row" spacing={2}>
                         {/* GitHub - hidden if custom links exist */}
                         {!hasCustomLinks && (
-                            <Link href="https://github.com/TuroYT/snowshare" target="_blank" rel="noopener noreferrer" underline="hover" color="text.secondary" display="flex" alignItems="center">
+                            <Link
+                                href="https://github.com/TuroYT/snowshare"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                underline="hover"
+                                color="text.secondary"
+                                display="flex"
+                                alignItems="center"
+                            >
                                 <Box component="span" sx={{ display: "flex", alignItems: "center", mr: 0.5 }}>
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path
@@ -76,7 +87,12 @@ export default function Footer() {
 
                         {/* License - hidden if custom links exist */}
                         {!hasCustomLinks && (
-                            <Link href="https://github.com/TuroYT/snowshare/blob/main/LICENSE" target="_blank" underline="hover" color="text.secondary">
+                            <Link
+                                href="https://github.com/TuroYT/snowshare/blob/main/LICENSE"
+                                target="_blank"
+                                underline="hover"
+                                color="text.secondary"
+                            >
                                 {t("footer.license", "License")}
                             </Link>
                         )}
@@ -93,7 +109,16 @@ export default function Footer() {
                 <Typography variant="body2" color="text.secondary" align="center">
                     © {year} {branding.appName}. {t("footer.rights", "Tous droits réservés.")}
                     <br />
-                    Powered by <Link href="https://github.com/TuroYT/snowshare" target="_blank" rel="noopener noreferrer" underline="hover" color="text.secondary">SnowShare</Link>
+                    Powered by{" "}
+                    <Link
+                        href="https://github.com/TuroYT/snowshare"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        underline="hover"
+                        color="text.secondary"
+                    >
+                        SnowShare
+                    </Link>
                 </Typography>
             </Container>
         </Box>
