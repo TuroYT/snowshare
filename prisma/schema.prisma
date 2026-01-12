@@ -128,6 +128,7 @@ enum pasteType {
   JAVA
   PHP
   GO
+  POWERSHELL
   HTML
   CSS
   SQL

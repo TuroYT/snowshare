@@ -19,6 +19,7 @@ import "prismjs/components/prism-markdown";
 import "prismjs/components/prism-php";
 import "prismjs/components/prism-css";
 import "prismjs/components/prism-sql";
+import "prismjs/components/prism-powershell";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";

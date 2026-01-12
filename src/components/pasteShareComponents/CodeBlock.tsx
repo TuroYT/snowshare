@@ -13,6 +13,8 @@ import { css } from "@codemirror/lang-css";
 import { sql } from "@codemirror/lang-sql";
 import { json } from "@codemirror/lang-json";
 import { markdown } from "@codemirror/lang-markdown";
+import { StreamLanguage } from "@codemirror/language";
+import { powerShell } from "@codemirror/legacy-modes/mode/powershell";
 
 type Props = {
   code: string;
@@ -47,6 +49,8 @@ function getExtension(language: string) {
       return json();
     case "markdown":
       return markdown();
+    case "powershell":
+      return StreamLanguage.define(powerShell);
     default:
       return [];
   }
