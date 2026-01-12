@@ -203,6 +203,7 @@
         "error_generic": "Wystąpił błąd: ",
         "error_passwords_mismatch": "Hasła nie są takie same",
         "error_password_too_short": "Hasło musi mieć co najmniej 6 znaków",
+        "error_oauth_signin": "Do tego konta dostawcy nie jest przypisany żaden adres e-mail.",
         "success_account_created": "Konto utworzone pomyślnie",
         "terms_notice": "Tworząc konto, akceptujesz nasze zasady korzystania i politykę prywatności.",
         "signup_disabled_title": "Rejestracja wyłączona",
@@ -318,7 +319,9 @@
             "secret_placeholder": "(Pozostaw puste, aby nie zmieniać)",
             "secret_help": "Sekret jest szyfrowany przed zapisaniem.",
             "documentation": "Dokumentacja dostawcy",
-            "enable_provider": "Włącz tego dostawcę"
+            "enable_provider": "Włącz tego dostawcę",
+            "issuer": "Adres URL wydawcy (OpenID Connect)",
+            "issuer_help": "Podstawowy adres URL dostawcy OpenID Connect (np. https://auth.example.com/realms/myrealm)"
         },
         "users": {
             "title": "Zarządzanie użytkownikami",

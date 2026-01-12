@@ -30,6 +30,7 @@ interface OAuthProvider {
   displayName: string
   enabled: boolean
   clientId: string | null
+  issuer: string | null
   updatedAt: string
 }
 
@@ -45,6 +46,7 @@ export default function OAuthProvidersTab() {
     displayName: "",
     clientId: "",
     clientSecret: "",
+    issuer: "",
     enabled: false
   })
   const [origin, setOrigin] = useState("")
@@ -78,6 +80,7 @@ export default function OAuthProvidersTab() {
         displayName: provider.displayName,
         clientId: provider.clientId || "",
         clientSecret: "", // Never show secret
+        issuer: provider.issuer || "",
         enabled: provider.enabled
       })
     } else {
@@ -87,6 +90,7 @@ export default function OAuthProvidersTab() {
         displayName: defaultName,
         clientId: "",
         clientSecret: "",
+        issuer: "",
         enabled: false
       })
     }
@@ -237,6 +241,17 @@ export default function OAuthProvidersTab() {
 
             <Box display="flex" flexDirection="column" gap={2}>
               
+              {editingProvider === "oidc" && (
+                <TextField
+                  label={t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
+                  value={formData.issuer}
+                  onChange={e => setFormData({...formData, issuer: e.target.value})}
+                  fullWidth
+                  required
+                  variant="outlined"
+                  helperText={t("admin.oauth.issuer_help", "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)")}
+                />
+              )}
 
               <TextField
                 label={t("admin.oauth.client_id_field", "Client ID")}

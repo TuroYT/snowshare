@@ -141,6 +141,7 @@ model OAuthProvider {
   enabled       Boolean  @default(false)
   clientId      String?
   clientSecret  String?  // Encrypted
+  issuer        String?  // OIDC issuer URL
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
