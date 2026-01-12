@@ -11,6 +11,7 @@ export const VALID_PASTE_LANGUAGES = [
   'JAVA',
   'PHP',
   'GO',
+  'POWERSHELL',
   'HTML',
   'CSS',
   'SQL',
