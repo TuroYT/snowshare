@@ -324,7 +324,9 @@
             "documentation": "Documentatie van de provider",
             "enable_provider": "Schakel deze provider in",
             "issuer": "Issuer URL (OpenID Connect)",
-            "issuer_help": "De basis URL van uw OpenID Connect provider (bijv. https://auth.example.com/realms/myrealm)"
+            "issuer_help": "De basis URL van uw OpenID Connect provider (bijv. https://auth.example.com/realms/myrealm)",
+            "tenant_id": "Tenant ID",
+            "tenant_id_help": "De identifier van uw Azure AD-tenant"
         },
         "users": {
             "title": "Gebruikersbeheer",

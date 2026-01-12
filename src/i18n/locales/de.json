@@ -314,7 +314,9 @@
       "documentation": "Anbieterdokumentation",
       "enable_provider": "Diesen Anbieter aktivieren",
       "issuer": "Issuer-URL (OpenID Connect)",
-      "issuer_help": "Die Basis-URL Ihres OpenID Connect-Anbieters (z. B. https://auth.example.com/realms/myrealm)"
+      "issuer_help": "Die Basis-URL Ihres OpenID Connect-Anbieters (z. B. https://auth.example.com/realms/myrealm)",
+      "tenant_id": "Tenant-ID",
+      "tenant_id_help": "Die Kennung Ihres Azure AD-Mandanten"
     },
     "users": {
       "title": "Benutzerverwaltung",

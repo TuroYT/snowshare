@@ -321,7 +321,9 @@
             "documentation": "Dokumentacja dostawcy",
             "enable_provider": "Włącz tego dostawcę",
             "issuer": "Adres URL wydawcy (OpenID Connect)",
-            "issuer_help": "Podstawowy adres URL dostawcy OpenID Connect (np. https://auth.example.com/realms/myrealm)"
+            "issuer_help": "Podstawowy adres URL dostawcy OpenID Connect (np. https://auth.example.com/realms/myrealm)",
+            "tenant_id": "Identyfikator dzierżawcy",
+            "tenant_id_help": "Identyfikator Twojej dzierżawy Azure AD"
         },
         "users": {
             "title": "Zarządzanie użytkownikami",

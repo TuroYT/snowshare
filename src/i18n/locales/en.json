@@ -318,7 +318,9 @@
       "documentation": "Provider documentation",
       "enable_provider": "Enable this provider",
       "issuer": "Issuer URL (OpenID Connect)",
-      "issuer_help": "The base URL of your OpenID Connect provider (e.g. https://auth.example.com/realms/myrealm)"
+      "issuer_help": "The base URL of your OpenID Connect provider (e.g. https://auth.example.com/realms/myrealm)",
+      "tenant_id": "Tenant ID",
+      "tenant_id_help": "The identifier of your Azure AD tenant"
     },
     "users": {
       "title": "User Management",

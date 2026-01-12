@@ -316,7 +316,9 @@
       "documentation": "Documentación del proveedor",
       "enable_provider": "Habilitar este proveedor",
       "issuer": "URL del emisor (OpenID Connect)",
-      "issuer_help": "La URL base de su proveedor OpenID Connect (ej. https://auth.example.com/realms/myrealm)"
+      "issuer_help": "La URL base de su proveedor OpenID Connect (ej. https://auth.example.com/realms/myrealm)",
+      "tenant_id": "ID de inquilino",
+      "tenant_id_help": "El identificador de su inquilino de Azure AD"
     },
     "users": {
       "title": "Gestión de Usuarios",

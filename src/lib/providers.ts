@@ -1,6 +1,7 @@
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
+import AzureADProvider from "next-auth/providers/azure-ad";
 import { OAuthConfig, OAuthUserConfig } from "next-auth/providers/oauth";
 import { Provider } from "next-auth/providers/index";
 
@@ -10,6 +11,7 @@ interface ProviderConfig {
     clientId: string | null;
     clientSecret: string | null;
     issuer?: string | null;
+    tenantId?: string | null;
 }
 
 
@@ -36,8 +38,15 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
           discord: (config: ProviderConfig) =>
               DiscordProvider({
                   clientId: config.clientId!,
-                  clientSecret: decrypt(config.clientSecret!, process.env.NEXTAUTH_SECRET!)
+                  clientSecret: decrypt(config.clientSecret!, process.env.NEXTAUTH_SECRET!),
               }),
+          "azure-ad": (config: ProviderConfig) =>
+              AzureADProvider({
+                  clientId: config.clientId!,
+                  clientSecret: decrypt(config.clientSecret!, process.env.NEXTAUTH_SECRET!),
+                  tenantId: config.tenantId!
+              }),
+            
           oidc: (config: ProviderConfig) =>
               ({
                   id: "oidc",
@@ -57,7 +66,7 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
                           image: profile.picture
                       };
                   }
-              } as OAuthConfig<any>)
+              } as OAuthConfig<any>),
       }
     : {};
 
@@ -73,6 +82,11 @@ export const availableProviders = [
         documentationUrl: "https://developers.google.com/identity/protocols/oauth2"
     },
     {
+        id: "azure-ad",
+        name: "Microsoft Entra ID (Azure AD)",
+        documentationUrl: "https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc"
+    },
+    {
         id: "discord",
         name: "Discord",
         documentationUrl: "https://discord.com/developers/docs/topics/oauth2"
@@ -81,5 +95,5 @@ export const availableProviders = [
         id: "oidc",
         name: "OpenID Connect",
         documentationUrl: "https://openid.net/specs/openid-connect-core-1_0.html"
-    }
+    },
 ];

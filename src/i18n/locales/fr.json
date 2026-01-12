@@ -322,7 +322,9 @@
       "documentation": "Documentation du fournisseur",
       "enable_provider": "Activer ce fournisseur",
       "issuer": "URL de l'émetteur (OpenID Connect)",
-      "issuer_help": "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)"
+      "issuer_help": "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)",
+      "tenant_id": "Tenant ID",
+      "tenant_id_help": "L'identifiant de votre locataire Azure AD"
     },
     "users": {
       "title": "Gestion des utilisateurs",
