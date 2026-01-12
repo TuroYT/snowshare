@@ -30,6 +30,8 @@ interface OAuthProvider {
   displayName: string
   enabled: boolean
   clientId: string | null
+  issuer: string | null
+  tenantId: string | null
   updatedAt: string
 }
 
@@ -45,6 +47,8 @@ export default function OAuthProvidersTab() {
     displayName: "",
     clientId: "",
     clientSecret: "",
+    issuer: "",
+    tenantId: "",
     enabled: false
   })
   const [origin, setOrigin] = useState("")
@@ -78,6 +82,8 @@ export default function OAuthProvidersTab() {
         displayName: provider.displayName,
         clientId: provider.clientId || "",
         clientSecret: "", // Never show secret
+        issuer: provider.issuer || "",
+        tenantId: provider.tenantId || "",
         enabled: provider.enabled
       })
     } else {
@@ -87,6 +93,8 @@ export default function OAuthProvidersTab() {
         displayName: defaultName,
         clientId: "",
         clientSecret: "",
+        issuer: "",
+        tenantId: "",
         enabled: false
       })
     }
@@ -237,6 +245,29 @@ export default function OAuthProvidersTab() {
 
             <Box display="flex" flexDirection="column" gap={2}>
               
+              {editingProvider === "oidc" && (
+                <TextField
+                  label={t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
+                  value={formData.issuer}
+                  onChange={e => setFormData({...formData, issuer: e.target.value})}
+                  fullWidth
+                  required
+                  variant="outlined"
+                  helperText={t("admin.oauth.issuer_help", "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)")}
+                />
+              )}
+
+              {editingProvider === "azure-ad" && (
+                <TextField
+                  label={t("admin.oauth.tenant_id", "Tenant ID")}
+                  value={formData.tenantId}
+                  onChange={e => setFormData({...formData, tenantId: e.target.value})}
+                  fullWidth
+                  required
+                  variant="outlined"
+                  helperText={t("admin.oauth.tenant_id_help", "L'identifiant de votre locataire Azure AD (Tenant ID)")}
+                />
+              )}
 
               <TextField
                 label={t("admin.oauth.client_id_field", "Client ID")}

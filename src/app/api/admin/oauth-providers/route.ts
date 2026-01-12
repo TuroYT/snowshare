@@ -29,6 +29,8 @@ export async function GET() {
       displayName: true,
       enabled: true,
       clientId: true,
+      issuer: true,
+      tenantId: true,
       updatedAt: true,
       // Never return clientSecret
     }
@@ -55,7 +57,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, displayName, enabled, clientId, clientSecret } = await request.json()
+    const { name, displayName, enabled, clientId, clientSecret, issuer, tenantId } = await request.json()
 
     // Validate displayName
     const dnValidation = isValidDisplayName(displayName)
@@ -82,12 +84,16 @@ export async function POST(request: Request) {
         enabled,
         clientId,
         clientSecret: encryptedSecret,
+        issuer,
+        tenantId,
       },
       update: {
         displayName: safeDisplayName,
         enabled,
         clientId,
         ...(encryptedSecret && { clientSecret: encryptedSecret }),
+        issuer,
+        tenantId,
       },
     })
 

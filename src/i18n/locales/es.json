@@ -195,6 +195,7 @@
     "error_generic": "Ocurrió un error: ",
     "error_passwords_mismatch": "Las contraseñas no coinciden",
     "error_password_too_short": "La contraseña debe tener al menos 6 caracteres",
+    "error_oauth_signin": "No hay ningún correo electrónico asociado con esta cuenta de proveedor.",
     "success_account_created": "Cuenta creada con éxito",
     "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad.",
     "signup_disabled_title": "Registro deshabilitado",
@@ -313,7 +314,11 @@
       "secret_placeholder": "(Dejar en blanco para no cambiar)",
       "secret_help": "El secreto se cifra antes de almacenarse.",
       "documentation": "Documentación del proveedor",
-      "enable_provider": "Habilitar este proveedor"
+      "enable_provider": "Habilitar este proveedor",
+      "issuer": "URL del emisor (OpenID Connect)",
+      "issuer_help": "La URL base de su proveedor OpenID Connect (ej. https://auth.example.com/realms/myrealm)",
+      "tenant_id": "ID de inquilino",
+      "tenant_id_help": "El identificador de su inquilino de Azure AD"
     },
     "links": {
       "title_add": "Añadir enlace personalizado",

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { signIn, getSession, getProviders, ClientSafeProvider } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
 
@@ -13,6 +13,8 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const errorParam = searchParams.get("error")
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -21,6 +23,15 @@ export default function SignIn() {
       setProviders(res)
     })()
   }, [])
+
+  useEffect(() => {
+    if (errorParam === "OAuthSignin") {
+      setError(t('auth.error_oauth_signin', "Aucun email n'est associé à ce compte fournisseur."))
+    } else if (errorParam && providers && providers[errorParam]) {
+      // Auto-click if error param matches a provider ID (e.g. error=github)
+      signIn(errorParam, { callbackUrl: "/" })
+    }
+  }, [errorParam, providers, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

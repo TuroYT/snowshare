@@ -203,6 +203,7 @@
         "error_generic": "Er is een fout opgetreden: ",
         "error_passwords_mismatch": "Wachtwoorden komen niet overeen",
         "error_password_too_short": "Wachtwoord moet minimaal 6 tekens lang zijn",
+        "error_oauth_signin": "Er is geen e-mailadres gekoppeld aan dit provideraccount.",
         "success_account_created": "Account succesvol aangemaakt",
         "terms_notice": "Door een account aan te maken ga je akkoord met onze gebruiksvoorwaarden en privacyverklaring.",
         "signup_disabled_title": "Registreren uitgeschakeld",
@@ -321,7 +322,11 @@
             "secret_placeholder": "(Laat leeg om ongewijzigd te laten)",
             "secret_help": "Het geheim wordt versleuteld voordat het wordt opgeslagen.",
             "documentation": "Documentatie van de provider",
-            "enable_provider": "Schakel deze provider in"
+            "enable_provider": "Schakel deze provider in",
+            "issuer": "Issuer URL (OpenID Connect)",
+            "issuer_help": "De basis URL van uw OpenID Connect provider (bijv. https://auth.example.com/realms/myrealm)",
+            "tenant_id": "Tenant ID",
+            "tenant_id_help": "De identifier van uw Azure AD-tenant"
         },
         "links": {
             "title_add": "Aangepaste koppeling toevoegen",

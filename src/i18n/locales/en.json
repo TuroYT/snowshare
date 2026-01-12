@@ -198,8 +198,7 @@
     "error_invalid_credentials": "Incorrect email or password",
     "error_generic": "An error occurred: ",
     "error_passwords_mismatch": "Passwords do not match",
-    "error_password_too_short": "Password must be at least 6 characters long",
-    "success_account_created": "Account created successfully",
+    "error_password_too_short": "Password must be at least 6 characters long",    "error_oauth_signin": "No email associated with this provider account.",    "success_account_created": "Account created successfully",
     "terms_notice": "By creating an account, you agree to our terms of use and privacy policy.",
     "signup_disabled_title": "Sign up disabled",
     "signup_disabled_message": "New registrations are currently not allowed."
@@ -317,7 +316,11 @@
       "secret_placeholder": "(Leave blank to keep unchanged)",
       "secret_help": "The secret is encrypted before being stored.",
       "documentation": "Provider documentation",
-      "enable_provider": "Enable this provider"
+      "enable_provider": "Enable this provider",
+      "issuer": "Issuer URL (OpenID Connect)",
+      "issuer_help": "The base URL of your OpenID Connect provider (e.g. https://auth.example.com/realms/myrealm)",
+      "tenant_id": "Tenant ID",
+      "tenant_id_help": "The identifier of your Azure AD tenant"
     },
     "links": {
       "title_add": "Add Custom Link",
