@@ -22,6 +22,7 @@ model Account {
   refresh_token     String?
   access_token      String?
   expires_at        Int?
+  ext_expires_in    Int?
   token_type        String?
   scope             String?
   id_token          String?
@@ -110,7 +111,14 @@ model Settings {
 
   // Legal
   termsOfUses  String?
+}
 
+model CustomLink {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum ShareType {
@@ -127,6 +135,7 @@ enum pasteType {
   JAVA
   PHP
   GO
+  POWERSHELL
   HTML
   CSS
   SQL
@@ -141,6 +150,8 @@ model OAuthProvider {
   enabled       Boolean  @default(false)
   clientId      String?
   clientSecret  String?  // Encrypted
+  issuer        String?  // OIDC issuer URL
+  tenantId      String?  // Azure AD tenant ID
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

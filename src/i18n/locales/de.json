@@ -194,8 +194,7 @@
     "error_invalid_credentials": "Falsche E-Mail oder falsches Passwort",
     "error_generic": "Ein Fehler ist aufgetreten: ",
     "error_passwords_mismatch": "Passwörter stimmen nicht überein",
-    "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",
-    "success_account_created": "Konto erfolgreich erstellt",
+    "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",    "error_oauth_signin": "Diesem Anbieterkonto ist keine E-Mail-Adresse zugeordnet.",    "success_account_created": "Konto erfolgreich erstellt",
     "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.",
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt."
@@ -313,7 +312,32 @@
       "secret_placeholder": "(Leer lassen, um unverändert zu bleiben)",
       "secret_help": "Das Secret wird vor dem Speichern verschlüsselt.",
       "documentation": "Anbieterdokumentation",
-      "enable_provider": "Diesen Anbieter aktivieren"
+      "enable_provider": "Diesen Anbieter aktivieren",
+      "issuer": "Issuer-URL (OpenID Connect)",
+      "issuer_help": "Die Basis-URL Ihres OpenID Connect-Anbieters (z. B. https://auth.example.com/realms/myrealm)",
+      "tenant_id": "Tenant-ID",
+      "tenant_id_help": "Die Kennung Ihres Azure AD-Mandanten"
+    },
+    "links": {
+      "title_add": "Benutzerdefinierten Link hinzufügen",
+      "title_list": "Benutzerdefinierte Links",
+      "label_name": "Name",
+      "placeholder_name": "z.B. Dokumentation",
+      "label_url": "URL",
+      "placeholder_url": "https://example.com",
+      "button_add": "Link hinzufügen",
+      "adding": "Hinzufügen...",
+      "button_delete": "Löschen",
+      "success_added": "Link erfolgreich hinzugefügt",
+      "success_deleted": "Link erfolgreich gelöscht",
+      "error_add": "Fehler beim Hinzufügen des Links",
+      "error_delete": "Fehler beim Löschen des Links",
+      "confirm_delete": "Sind Sie sicher, dass Sie diesen Link löschen möchten?",
+      "error_name_required": "Name ist erforderlich",
+      "error_url_required": "URL ist erforderlich",
+      "error_url_invalid": "URL ist ungültig",
+      "no_links": "Keine benutzerdefinierten Links hinzugefügt. GitHub- und Lizenz-Links werden angezeigt.",
+      "info": "Benutzerdefinierte Links werden in der Fußzeile angezeigt. Wenn benutzerdefinierte Links vorhanden sind, sind GitHub- und Lizenz-Links verborgen."
     },
     "users": {
       "title": "Benutzerverwaltung",

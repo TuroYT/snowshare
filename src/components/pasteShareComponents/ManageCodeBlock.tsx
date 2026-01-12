@@ -16,6 +16,7 @@ const LANGUAGES = [
   { value: "java", label: "Java" },
   { value: "php", label: "PHP" },
   { value: "go", label: "Go" },
+  { value: "powershell", label: "PowerShell" },
   { value: "html", label: "HTML" },
   { value: "css", label: "CSS" },
   { value: "sql", label: "SQL" },

@@ -192,8 +192,12 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                       <option value="TYPESCRIPT">TypeScript</option>
                       <option value="PYTHON">Python</option>
                       <option value="JAVA">Java</option>
+                      <option value="PHP">PHP</option>
+                      <option value="GO">Go</option>
+                      <option value="POWERSHELL">PowerShell</option>
                       <option value="HTML">HTML</option>
                       <option value="CSS">CSS</option>
+                      <option value="SQL">SQL</option>
                       <option value="JSON">JSON</option>
                       <option value="MARKDOWN">Markdown</option>
                     </select>
