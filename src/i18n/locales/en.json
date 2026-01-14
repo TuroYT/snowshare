@@ -202,7 +202,8 @@
     "terms_notice": "By creating an account, you agree to our",
     "signup_disabled_title": "Sign up disabled",
     "signup_disabled_message": "New registrations are currently not allowed.",
-    "return_to_main_page": "Return to main page"
+    "return_to_main_page": "Return to main page",
+    "or_continue_with": "Or continue with"
   },
   "profile": {
     "title": "My Profile",

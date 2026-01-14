@@ -200,7 +200,8 @@
     "terms_notice": "Al crear una cuenta, aceptas nuestros",
     "signup_disabled_title": "Registro deshabilitado",
     "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente.",
-    "return_to_main_page": "Volver a la página principal"
+    "return_to_main_page": "Volver a la página principal",
+    "or_continue_with": "O continúa con"
   },
   "profile": {
     "title": "Mi Perfil",

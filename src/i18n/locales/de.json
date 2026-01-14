@@ -198,7 +198,8 @@
     "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren zu",
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt.",
-    "return_to_main_page": "Zurück zur Hauptseite"
+    "return_to_main_page": "Zurück zur Hauptseite",
+    "or_continue_with": "Oder fahren Sie fort mit"
   },
   "profile": {
     "title": "Mein Profil",

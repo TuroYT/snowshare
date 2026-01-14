@@ -208,7 +208,8 @@
         "terms_notice": "Door een account aan te maken ga je akkoord met onze",
         "signup_disabled_title": "Registreren uitgeschakeld",
         "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan.",
-        "return_to_main_page": "Terug naar hoofdpagina"
+        "return_to_main_page": "Terug naar hoofdpagina",
+        "or_continue_with": "Of ga verder met"
     },
     "profile": {
         "title": "Mijn profiel",

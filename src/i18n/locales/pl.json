@@ -208,7 +208,8 @@
         "terms_notice": "Tworząc konto, akceptujesz nasze",
         "signup_disabled_title": "Rejestracja wyłączona",
         "signup_disabled_message": "Nowe rejestracje są obecnie niedozwolone.",
-        "return_to_main_page": "Powrót na stronę główną"
+        "return_to_main_page": "Powrót na stronę główną",
+        "or_continue_with": "Lub kontynuuj za pomocą"
     },
     "profile": {
         "title": "Mój profil",
