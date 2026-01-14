@@ -195,7 +195,7 @@
     "error_generic": "Ein Fehler ist aufgetreten: ",
     "error_passwords_mismatch": "Passwörter stimmen nicht überein",
     "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",    "error_oauth_signin": "Diesem Anbieterkonto ist keine E-Mail-Adresse zugeordnet.",    "success_account_created": "Konto erfolgreich erstellt",
-    "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu.",
+    "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren zu",
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt.",
     "return_to_main_page": "Zurück zur Hauptseite"

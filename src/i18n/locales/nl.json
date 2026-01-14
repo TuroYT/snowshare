@@ -205,7 +205,7 @@
         "error_password_too_short": "Wachtwoord moet minimaal 6 tekens lang zijn",
         "error_oauth_signin": "Er is geen e-mailadres gekoppeld aan dit provideraccount.",
         "success_account_created": "Account succesvol aangemaakt",
-        "terms_notice": "Door een account aan te maken ga je akkoord met onze gebruiksvoorwaarden en privacyverklaring.",
+        "terms_notice": "Door een account aan te maken ga je akkoord met onze",
         "signup_disabled_title": "Registreren uitgeschakeld",
         "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan.",
         "return_to_main_page": "Terug naar hoofdpagina"

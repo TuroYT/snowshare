@@ -205,7 +205,7 @@
         "error_password_too_short": "Hasło musi mieć co najmniej 6 znaków",
         "error_oauth_signin": "Do tego konta dostawcy nie jest przypisany żaden adres e-mail.",
         "success_account_created": "Konto utworzone pomyślnie",
-        "terms_notice": "Tworząc konto, akceptujesz nasze zasady korzystania i politykę prywatności.",
+        "terms_notice": "Tworząc konto, akceptujesz nasze",
         "signup_disabled_title": "Rejestracja wyłączona",
         "signup_disabled_message": "Nowe rejestracje są obecnie niedozwolone.",
         "return_to_main_page": "Powrót na stronę główną"

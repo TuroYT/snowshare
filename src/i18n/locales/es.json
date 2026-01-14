@@ -197,7 +197,7 @@
     "error_password_too_short": "La contraseña debe tener al menos 6 caracteres",
     "error_oauth_signin": "No hay ningún correo electrónico asociado con esta cuenta de proveedor.",
     "success_account_created": "Cuenta creada con éxito",
-    "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad.",
+    "terms_notice": "Al crear una cuenta, aceptas nuestros",
     "signup_disabled_title": "Registro deshabilitado",
     "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente.",
     "return_to_main_page": "Volver a la página principal"

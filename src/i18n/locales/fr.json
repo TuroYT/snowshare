@@ -203,7 +203,7 @@
     "error_password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
     "error_oauth_signin": "Aucun email n'est associé à ce compte fournisseur.",
     "success_account_created": "Compte créé avec succès",
-    "terms_notice": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
+    "terms_notice": "En créant un compte, vous acceptez nos",
     "signup_disabled_title": "Inscription désactivée",
     "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées.",
     "return_to_main_page": "Retour à la page principale"
