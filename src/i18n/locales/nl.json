@@ -207,7 +207,8 @@
         "success_account_created": "Account succesvol aangemaakt",
         "terms_notice": "Door een account aan te maken ga je akkoord met onze gebruiksvoorwaarden en privacyverklaring.",
         "signup_disabled_title": "Registreren uitgeschakeld",
-        "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan."
+        "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan.",
+        "return_to_main_page": "Terug naar hoofdpagina"
     },
     "profile": {
         "title": "Mijn profiel",

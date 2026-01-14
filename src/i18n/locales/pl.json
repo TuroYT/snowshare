@@ -207,7 +207,8 @@
         "success_account_created": "Konto utworzone pomyślnie",
         "terms_notice": "Tworząc konto, akceptujesz nasze zasady korzystania i politykę prywatności.",
         "signup_disabled_title": "Rejestracja wyłączona",
-        "signup_disabled_message": "Nowe rejestracje są obecnie niedozwolone."
+        "signup_disabled_message": "Nowe rejestracje są obecnie niedozwolone.",
+        "return_to_main_page": "Powrót na stronę główną"
     },
     "profile": {
         "title": "Mój profil",

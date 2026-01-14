@@ -199,7 +199,8 @@
     "success_account_created": "Cuenta creada con éxito",
     "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad.",
     "signup_disabled_title": "Registro deshabilitado",
-    "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente."
+    "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente.",
+    "return_to_main_page": "Volver a la página principal"
   },
   "profile": {
     "title": "Mi Perfil",

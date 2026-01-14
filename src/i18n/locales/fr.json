@@ -205,7 +205,8 @@
     "success_account_created": "Compte créé avec succès",
     "terms_notice": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
     "signup_disabled_title": "Inscription désactivée",
-    "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées."
+    "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées.",
+    "return_to_main_page": "Retour à la page principale"
   },
   "profile": {
     "title": "Mon Profil",
