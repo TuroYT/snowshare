@@ -9,6 +9,8 @@ import { Suspense } from "react";
 import "@/i18n/client";
 import { getPublicSettings } from "@/lib/settings";
 
+export const revalidate = 0; // Disable caching for metadata
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

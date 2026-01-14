@@ -69,12 +69,10 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     }
   }, [branding.faviconUrl, loading])
 
-  // Update document title
+  // Update document title on every route change
   useEffect(() => {
-    if (!loading) {
-      document.title = branding.appName
-    }
-  }, [branding.appName, loading])
+    document.title = branding.appName
+  }, [branding.appName])
 
   return (
     <BrandingContext.Provider value={{ branding, loading, refreshBranding: fetchBranding }}>
