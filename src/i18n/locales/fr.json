@@ -186,7 +186,7 @@
     "signin_button": "Se connecter",
     "no_account": "Pas de compte ? Créer un compte",
     "signup_title": "Créer un compte",
-    "signup_subtitle": "Rejoignez SnowShare pour commencer à partager en sécurité",
+    "signup_subtitle": "Rejoignez {{appName}} pour commencer à partager en sécurité",
     "signup_loading": "Création...",
     "signup_button": "Créer un compte",
     "already_account": "Déjà un compte ? Se connecter",
@@ -203,9 +203,11 @@
     "error_password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
     "error_oauth_signin": "Aucun email n'est associé à ce compte fournisseur.",
     "success_account_created": "Compte créé avec succès",
-    "terms_notice": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
+    "terms_notice": "En créant un compte, vous acceptez nos",
     "signup_disabled_title": "Inscription désactivée",
-    "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées."
+    "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées.",
+    "return_to_main_page": "Retour à la page principale",
+    "or_continue_with": "Ou continuez avec"
   },
   "profile": {
     "title": "Mon Profil",

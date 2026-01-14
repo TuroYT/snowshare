@@ -184,7 +184,7 @@
     "signin_button": "Sign in",
     "no_account": "No account? Create one",
     "signup_title": "Create an account",
-    "signup_subtitle": "Join SnowShare to start sharing securely",
+    "signup_subtitle": "Join {{appName}} to start sharing securely",
     "signup_loading": "Creating...",
     "signup_button": "Create account",
     "already_account": "Already have an account? Sign in",
@@ -199,9 +199,11 @@
     "error_generic": "An error occurred: ",
     "error_passwords_mismatch": "Passwords do not match",
     "error_password_too_short": "Password must be at least 6 characters long",    "error_oauth_signin": "No email associated with this provider account.",    "success_account_created": "Account created successfully",
-    "terms_notice": "By creating an account, you agree to our terms of use and privacy policy.",
+    "terms_notice": "By creating an account, you agree to our",
     "signup_disabled_title": "Sign up disabled",
-    "signup_disabled_message": "New registrations are currently not allowed."
+    "signup_disabled_message": "New registrations are currently not allowed.",
+    "return_to_main_page": "Return to main page",
+    "or_continue_with": "Or continue with"
   },
   "profile": {
     "title": "My Profile",
