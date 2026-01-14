@@ -188,7 +188,7 @@
         "signin_button": "Zaloguj się",
         "no_account": "Nie masz konta? Załóż je",
         "signup_title": "Utwórz konto",
-        "signup_subtitle": "Dołącz do SnowShare, aby zacząć bezpiecznie udostępniać",
+        "signup_subtitle": "Dołącz do {{appName}}, aby zacząć bezpiecznie udostępniać",
         "signup_loading": "Tworzenie...",
         "signup_button": "Utwórz konto",
         "already_account": "Masz już konto? Zaloguj się",

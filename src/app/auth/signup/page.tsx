@@ -5,9 +5,11 @@ import { signIn, type SignInResponse } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
+import { useBranding } from "@/components/BrandingProvider"
 
 export default function SignUp() {
   const [email, setEmail] = useState("")
+  const { branding, loading: brandingLoading } = useBranding()
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
@@ -165,7 +167,7 @@ export default function SignUp() {
             {t('auth.signup_title')}
           </h2>
           <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-            {t('auth.signup_subtitle')}
+            {t('auth.signup_subtitle', { appName: branding.appName })}
           </p>
         </div>
 

@@ -186,7 +186,7 @@
     "signin_button": "Se connecter",
     "no_account": "Pas de compte ? Créer un compte",
     "signup_title": "Créer un compte",
-    "signup_subtitle": "Rejoignez SnowShare pour commencer à partager en sécurité",
+    "signup_subtitle": "Rejoignez {{appName}} pour commencer à partager en sécurité",
     "signup_loading": "Création...",
     "signup_button": "Créer un compte",
     "already_account": "Déjà un compte ? Se connecter",

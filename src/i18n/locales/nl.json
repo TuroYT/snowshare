@@ -188,7 +188,7 @@
         "signin_button": "Inloggen",
         "no_account": "Geen account? Maak er een aan",
         "signup_title": "Account aanmaken",
-        "signup_subtitle": "Word lid van SnowShare en begin veilig te delen",
+        "signup_subtitle": "Word lid van {{appName}} en begin veilig te delen",
         "signup_loading": "Aanmaken...",
         "signup_button": "Account aanmaken",
         "already_account": "Heb je al een account? Log in",

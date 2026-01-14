@@ -180,7 +180,7 @@
     "signin_button": "Anmelden",
     "no_account": "Kein Konto? Konto erstellen",
     "signup_title": "Konto erstellen",
-    "signup_subtitle": "Treten Sie SnowShare bei, um sicher zu teilen",
+    "signup_subtitle": "Treten Sie {{appName}} bei, um sicher zu teilen",
     "signup_loading": "Wird erstellt...",
     "signup_button": "Konto erstellen",
     "already_account": "Bereits ein Konto? Anmelden",
