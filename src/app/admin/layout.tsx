@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: settings?.appName || "SnowShare",
-    description: settings?.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    description: settings?.appDescription || "Share your files, pastes, and URLs securely",
     icons: settings?.faviconUrl
       ? {
           icon: [{ url: settings.faviconUrl }],
