@@ -9,7 +9,7 @@ import { useBranding } from "@/components/BrandingProvider"
 
 export default function SignUp() {
   const [email, setEmail] = useState("")
-  const { branding, loading: brandingLoading } = useBranding()
+  const { branding } = useBranding()
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
