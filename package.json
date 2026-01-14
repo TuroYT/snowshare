@@ -1,6 +1,7 @@
 {
   "name": "snowshare",
   "version": "1.2.8",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "npx tsx server.js",
@@ -58,7 +59,8 @@
     "tsx": "^4.21.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
@@ -86,6 +88,7 @@
   "overrides": {
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "test-exclude": "^7.0.0"
+    "test-exclude": "^7.0.0",
+    "hono": "^4.11.4"
   }
 }

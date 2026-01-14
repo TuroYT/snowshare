@@ -141,7 +141,9 @@ async function handleUpload(req, res) {
           try {
             const stats = await stat(fullPath);
             currentUsageBytes += stats.size;
-          } catch {}
+          } catch {
+            // Ignore stat errors on non-existent file paths
+        }
         }
       }
 
@@ -168,7 +170,11 @@ async function handleUpload(req, res) {
 
       const cleanup = () => {
         if (tempFilePath && existsSync(tempFilePath)) {
-          try { unlinkSync(tempFilePath); } catch {}
+          try {
+            unlinkSync(tempFilePath);
+          } catch {
+            // Ignore unlink errors for already deleted files
+          }
         }
       };
 
