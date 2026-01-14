@@ -88,6 +88,7 @@
   "overrides": {
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "test-exclude": "^7.0.0"
+    "test-exclude": "^7.0.0",
+    "hono": "^4.11.4"
   }
 }
