@@ -8,6 +8,7 @@ import { Snackbar, Alert } from "@mui/material"
 interface Settings {
   id: number
   allowSignin: boolean
+  disableCredentialsLogin: boolean
   allowAnonFileShare: boolean
   anoMaxUpload: number
   authMaxUpload: number
@@ -19,6 +20,7 @@ interface Settings {
 export default function SettingsTab() {
   const { t } = useTranslation()
   const [settings, setSettings] = useState<Settings | null>(null)
+  const [hasActiveSSO, setHasActiveSSO] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
@@ -31,10 +33,12 @@ export default function SettingsTab() {
       const response = await fetch("/api/admin/settings")
       if (!response.ok) throw new Error("Failed to fetch settings")
       const data = await response.json()
+      setHasActiveSSO(data.hasActiveSSO)
       // Ensure all boolean fields have default values
       setSettings({
         ...data.settings,
         allowSignin: data.settings.allowSignin ?? true,
+        disableCredentialsLogin: data.settings.disableCredentialsLogin ?? false,
         allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
       })
     } catch (err) {
@@ -147,6 +151,29 @@ export default function SettingsTab() {
             <span
               className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
                 settings.allowSignin ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.settings.disable_credentials_login")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.disable_credentials_login_desc")}</p>
+            {!hasActiveSSO && (
+              <p className="text-xs text-red-400 mt-1">{t("admin.settings.no_sso_active")}</p>
+            )}
+          </div>
+          <button
+            disabled={!hasActiveSSO}
+            onClick={() => handleToggle("disableCredentialsLogin")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.disableCredentialsLogin ? "bg-[var(--primary)]" : "bg-gray-600"
+            } ${!hasActiveSSO ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.disableCredentialsLogin ? "translate-x-7" : "translate-x-1"
               }`}
             />
           </button>

@@ -45,42 +45,52 @@ export async function getDynamicProviders() {
         where: { enabled: true }
     });
 
-    const providers: Provider[] = [
-        CredentialsProvider({
-            name: "credentials",
-            credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" }
-            },
-            async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    return null;
-                }
+    // Check if credentials login is disabled
+    const settings = await prisma.settings.findFirst({
+        select: { disableCredentialsLogin: true }
+    });
 
-                const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email
+    const providers: Provider[] = [];
+
+    if (!settings?.disableCredentialsLogin) {
+        providers.push(
+            CredentialsProvider({
+                name: "credentials",
+                credentials: {
+                    email: { label: "Email", type: "email" },
+                    password: { label: "Password", type: "password" }
+                },
+                async authorize(credentials) {
+                    if (!credentials?.email || !credentials?.password) {
+                        return null;
                     }
-                });
 
-                if (!user || !user.password) {
-                    return null;
+                    const user = await prisma.user.findUnique({
+                        where: {
+                            email: credentials.email
+                        }
+                    });
+
+                    if (!user || !user.password) {
+                        return null;
+                    }
+
+                    const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+
+                    if (!isPasswordValid) {
+                        return null;
+                    }
+
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name
+                    };
                 }
-
-                const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
-
-                if (!isPasswordValid) {
-                    return null;
-                }
-
-                return {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name
-                };
-            }
-        })
-    ];
+            })
+        );
+    }
+    
     for (const config of oauthProviders) {
         if (config.clientId && config.clientSecret && providerMap[config.name]) {
             try {

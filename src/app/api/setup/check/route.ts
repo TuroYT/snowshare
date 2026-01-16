@@ -12,6 +12,7 @@ export async function GET() {
             select: {
                 id: true,
                 allowSignin: true,
+                disableCredentialsLogin: true,
                 appName: true,
                 appDescription: true,
                 primaryColor: true,
@@ -100,7 +101,8 @@ export async function GET() {
 
         return NextResponse.json({
             needsSetup: NEED_SETUP,
-            allowSignup
+            allowSignup,
+            disableCredentialsLogin: settings?.disableCredentialsLogin ?? false
         });
     } catch (error) {
         console.error("Error checking setup status:", error);
