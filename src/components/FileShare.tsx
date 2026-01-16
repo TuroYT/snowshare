@@ -277,7 +277,7 @@ const FileShare: React.FC = () => {
       const upload = new tus.Upload(file, {
         endpoint: "/api/tus",
         retryDelays: [0, 1000, 3000, 5000, 10000], // Retry on failure
-        chunkSize: 5 * 1024 * 1024, // 5MB chunks (better for reliability)
+        chunkSize: 50 * 1024 * 1024, // 50MB chunks (better for reliability)
         metadata,
         removeFingerprintOnSuccess: true, // Clean up local storage after success
         onError: (error) => {
