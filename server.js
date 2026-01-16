@@ -104,23 +104,73 @@ async function handleUpload(req, res) {
       console.log("Auth check failed, treating as anonymous:", authErr);
     }
 
+    // Helper to safely parse integer headers for chunking
+    const parseChunkHeader = (headerValue, headerName) => {
+      // Reject multiple header values
+      if (Array.isArray(headerValue)) {
+        if (headerValue.length !== 1) {
+          throw new Error(`Invalid ${headerName} header`);
+        }
+        headerValue = headerValue[0];
+      }
+
+      const value = Number.parseInt(headerValue, 10);
+      if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+        throw new Error(`Invalid ${headerName} header`);
+      }
+      return value;
+    };
+
     // NEW: Chunking Headers
     const chunkIndexHeader = req.headers["x-chunk-index"];
     const totalChunksHeader = req.headers["x-total-chunks"];
     const uploadIdHeader = req.headers["x-upload-id"];
-    
-    const isChunked = chunkIndexHeader !== undefined && totalChunksHeader !== undefined && uploadIdHeader !== undefined;
-    const chunkIndex = isChunked ? parseInt(chunkIndexHeader, 10) : 0;
-    const totalChunks = isChunked ? parseInt(totalChunksHeader, 10) : 1;
-    const uploadId = isChunked ? uploadIdHeader : crypto.randomBytes(16).toString("hex");
+
+    const isChunked =
+      chunkIndexHeader !== undefined &&
+      totalChunksHeader !== undefined &&
+      uploadIdHeader !== undefined;
+
+    let chunkIndex = 0;
+    let totalChunks = 1;
+    let uploadId = crypto.randomBytes(16).toString("hex");
+
+    if (isChunked) {
+      try {
+        chunkIndex = parseChunkHeader(chunkIndexHeader, "x-chunk-index");
+        totalChunks = parseChunkHeader(totalChunksHeader, "x-total-chunks");
+      } catch (e) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid chunk header" }));
+        return;
+      }
+
+      // Validate logical ranges for chunking
+      if (totalChunks <= 0 || chunkIndex < 0 || chunkIndex >= totalChunks) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid chunk index or total chunks" }));
+        return;
+      }
+
+      // Ensure uploadIdHeader is a single string value
+      if (Array.isArray(uploadIdHeader)) {
+        if (uploadIdHeader.length !== 1) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid upload ID" }));
+          return;
+        }
+        uploadId = uploadIdHeader[0];
+      } else {
+        uploadId = uploadIdHeader;
+      }
+    }
 
     // Security: Validate uploadId
     if (isChunked && !/^[a-zA-Z0-9-]+$/.test(uploadId)) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Invalid upload ID" }));
-        return;
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid upload ID" }));
+      return;
     }
-
     // Get settings for limits
     const settings = await prisma.settings.findFirst();
     
