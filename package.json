@@ -7,7 +7,7 @@
     "dev": "npx tsx server.js",
     "dev:next": "next dev --turbopack",
     "build": "npx prisma generate && next build",
-    "start": "NODE_ENV=production npx tsx server.js",
+    "start": "NODE_ENV=production && npx prisma migrate deploy && npx tsx server.js",
     "start:next": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
