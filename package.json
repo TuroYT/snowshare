@@ -1,6 +1,6 @@
 {
   "name": "snowshare",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "type": "module",
   "private": true,
   "scripts": {
