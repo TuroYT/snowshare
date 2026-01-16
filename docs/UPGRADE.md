@@ -2,6 +2,14 @@
 
 This guide explains how to upgrade your SnowShare instance to the latest version.
 
+## Important
+
+If you cant connect after an update in ProxmoxLXC, try this in you container's console
+
+```bash
+cd /opt/snowshare && cp ../snowshare.env .env && reboot
+```
+
 ## Version Check
 
 SnowShare automatically checks for updates and displays a notification in the **Admin Panel** when a new version is available. The notification shows:
