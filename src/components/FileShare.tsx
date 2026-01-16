@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { Alert, AlertTitle, Snackbar, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import * as tus from "tus-js-client";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -211,11 +212,29 @@ const FileShare: React.FC = () => {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Handle form submission
+  // Ref to hold the active upload instance
+  const uploadRef = useRef<tus.Upload | null>(null);
+
+  // Cleanup upload on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadRef.current) {
+        uploadRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Handle form submission with tus resumable upload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    // Check if browser supports tus
+    if (!tus.isSupported) {
+      setError(t("fileshare.browser_not_supported", "Your browser does not support resumable uploads"));
+      return;
+    }
 
     if (!file) {
       setError(t("fileshare.file_required", "A file is required"));
@@ -231,116 +250,106 @@ const FileShare: React.FC = () => {
     setLoading(true);
     setUploadProgress(0);
 
-    const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB chunks
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    
-    // Generate a client-side upload ID (simple random string)
-    const uploadId = Math.random().toString(36).substring(2) + Date.now().toString(36);
-
     try {
-      let finalResult: { share?: { slug?: string; id?: string }; error?: string } | null = null;
+      // Build metadata for tus upload
+      const metadata: Record<string, string> = {
+        filename: file.name,
+        filetype: file.type || "application/octet-stream",
+      };
 
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-        const start = chunkIndex * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, file.size);
-        const chunk = file.slice(start, end);
-
-        const formData = new FormData();
-        formData.append("file", chunk, file.name); // Important: pass filename
-        
-        // Add metadata only on the last chunk
-        if (chunkIndex === totalChunks - 1) {
-            formData.append("type", "FILE");
-            // Add optional parameters
-            if (!isAuthenticated || !neverExpires) {
-                const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-                const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-                const expiresAt = new Date(
-                Date.now() + days * 24 * 60 * 60 * 1000
-                ).toISOString();
-                formData.append("expiresAt", expiresAt);
-            }
-
-            if (slug.trim()) formData.append("slug", slug.trim());
-            if (password.trim()) formData.append("password", password.trim());
-        }
-
-        const xhr = new XMLHttpRequest();
-
-        const chunkPromise = new Promise<any>((resolve, reject) => {
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              // Calculate global progress
-              const chunkProgress = event.loaded;
-              const totalProgress = start + chunkProgress;
-              const percent = Math.round((totalProgress / file.size) * 100);
-              setUploadProgress(percent);
-            }
-          };
-
-          xhr.onload = () => {
-             try {
-                const response = JSON.parse(xhr.responseText);
-                if (xhr.status >= 200 && xhr.status < 300) {
-                   resolve(response);
-                } else {
-                   resolve({ error: response.error || `Error ${xhr.status}` });
-                }
-             } catch (e) {
-                resolve({ error: xhr.responseText || `Error ${xhr.status}` });
-             }
-          };
-
-          xhr.onerror = () => reject(new Error(t("fileshare.network_error", "Network error")));
-          xhr.onabort = () => reject(new Error("Upload cancelled"));
-
-          xhr.open("POST", "/api/upload");
-          // Add chunk headers
-          xhr.setRequestHeader("X-Chunk-Index", chunkIndex.toString());
-          xhr.setRequestHeader("X-Total-Chunks", totalChunks.toString());
-          xhr.setRequestHeader("X-Upload-Id", uploadId);
-          
-          xhr.send(formData);
-        });
-
-        const result = await chunkPromise;
-
-        if (result.error) {
-           throw new Error(result.error);
-        }
-        
-        if (chunkIndex === totalChunks - 1) {
-            finalResult = result;
-        }
+      // Add optional parameters
+      if (!isAuthenticated || !neverExpires) {
+        const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
+        const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
+        const expiresAt = new Date(
+          Date.now() + days * 24 * 60 * 60 * 1000
+        ).toISOString();
+        metadata.expiresAt = expiresAt;
       }
 
-      // Process final result
-      if (finalResult) {
-        if (finalResult.error) {
-           setError(finalResult.error);
-        } else {
-            const fileShare = finalResult.share;
-            if (fileShare?.slug) {
-            setSuccess(`${window.location.origin}/f/${fileShare.slug}`);
-            } else if (fileShare?.id) {
-            setSuccess(`${window.location.origin}/f/${fileShare.id}`);
-            } else {
+      if (slug.trim()) metadata.slug = slug.trim();
+      if (password.trim()) metadata.password = password.trim();
+
+      // Track the share slug from server response
+      let shareSlug: string | null = null;
+
+      // Create tus upload
+      const upload = new tus.Upload(file, {
+        endpoint: "/api/tus",
+        retryDelays: [0, 1000, 3000, 5000, 10000], // Retry on failure
+        chunkSize: 5 * 1024 * 1024, // 5MB chunks (better for reliability)
+        metadata,
+        removeFingerprintOnSuccess: true, // Clean up local storage after success
+        onError: (error) => {
+          console.error("Tus upload error:", error);
+          // Try to parse error message from tus
+          let errorMessage = t("fileshare.network_error", "Network error — could not create share");
+          if (error && typeof error === 'object' && 'message' in error) {
+            try {
+              // tus errors might contain JSON in the message
+              const parsed = JSON.parse(error.message as string);
+              if (parsed.error) {
+                errorMessage = parsed.error;
+              }
+            } catch {
+              errorMessage = (error.message as string) || errorMessage;
+            }
+          }
+          setError(errorMessage);
+          setLoading(false);
+          setUploadProgress(0);
+        },
+        onProgress: (bytesUploaded, bytesTotal) => {
+          // Use file.size as fallback if bytesTotal is undefined
+          const total = bytesTotal || file.size;
+          if (total > 0) {
+            const percent = Math.round((bytesUploaded / total) * 100);
+            setUploadProgress(percent);
+          }
+        },
+        onAfterResponse: (_req, res) => {
+          // Capture X-Share-Slug header if present (set by server on upload finish)
+          const slugHeader = res.getHeader("X-Share-Slug");
+          if (slugHeader) {
+            shareSlug = slugHeader;
+          }
+        },
+        onSuccess: () => {
+          // Upload succeeded - the share was created in onUploadFinish on server
+          if (shareSlug) {
+            setSuccess(`${window.location.origin}/f/${shareSlug}`);
+          } else {
             setSuccess(t("fileshare.success_title", "File shared successfully!"));
-            }
+          }
 
-            // Reset form
-            setFile(null);
-            setSlug("");
-            setPassword("");
-            setNeverExpires(false);
-            if (fileInputRef.current) {
+          // Reset form
+          setFile(null);
+          setSlug("");
+          setPassword("");
+          setNeverExpires(false);
+          if (fileInputRef.current) {
             fileInputRef.current.value = "";
-            }
-        }
+          }
+          setLoading(false);
+          setUploadProgress(0);
+          uploadRef.current = null;
+        },
+      });
+
+      // Store ref
+      uploadRef.current = upload;
+
+      // Check for previous upload to resume
+      const previousUploads = await upload.findPreviousUploads();
+      if (previousUploads.length > 0) {
+        // Resume from last upload
+        upload.resumeFromPreviousUpload(previousUploads[0]);
       }
+
+      // Start upload
+      upload.start();
     } catch (error) {
       console.error("FileShare error:", error);
-      // Display the actual error message if available
       if (error instanceof Error && error.message) {
         setError(error.message);
       } else {
@@ -348,7 +357,6 @@ const FileShare: React.FC = () => {
           t("fileshare.network_error", "Network error — could not create share")
         );
       }
-    } finally {
       setLoading(false);
       setUploadProgress(0);
     }
