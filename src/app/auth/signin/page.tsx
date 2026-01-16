@@ -11,6 +11,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(true)
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -21,6 +22,12 @@ export default function SignIn() {
     (async () => {
       const res = await getProviders()
       setProviders(res)
+      
+      const setupRes = await fetch("/api/setup/check")
+      if (setupRes.ok) {
+        const data = await setupRes.json()
+        setDisableCredentialsLogin(data.disableCredentialsLogin ?? false)
+      }
     })()
   }, [])
 
@@ -99,6 +106,7 @@ export default function SignIn() {
           </p>
         </div>
 
+        {!disableCredentialsLogin && (
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -175,9 +183,11 @@ export default function SignIn() {
             </div>
           </div>
         </form>
+        )}
 
         {providers && Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials").length > 0 && (
           <>
+            {!disableCredentialsLogin && (
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-[var(--border)]"></div>
@@ -188,6 +198,7 @@ export default function SignIn() {
                 </span>
               </div>
             </div>
+            )}
 
             <div className="grid gap-3">
               {Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials").map((provider: ClientSafeProvider) => (
