@@ -7,7 +7,7 @@ import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 import Busboy from "busboy";
-import { createWriteStream, existsSync, unlinkSync, mkdirSync, statSync } from "fs";
+import { createWriteStream, existsSync, mkdirSync, statSync } from "fs";
 import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -139,6 +139,7 @@ async function handleUpload(req, res) {
       try {
         chunkIndex = parseChunkHeader(chunkIndexHeader, "x-chunk-index");
         totalChunks = parseChunkHeader(totalChunksHeader, "x-total-chunks");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Invalid chunk header" }));

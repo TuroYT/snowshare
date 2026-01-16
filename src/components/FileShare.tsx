@@ -267,7 +267,7 @@ const FileShare: React.FC = () => {
 
         const xhr = new XMLHttpRequest();
 
-        const chunkPromise = new Promise<any>((resolve, reject) => {
+        const chunkPromise = new Promise<{ share?: { slug?: string; id?: string }; error?: string }>((resolve, reject) => {
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
               // Calculate global progress
@@ -286,6 +286,7 @@ const FileShare: React.FC = () => {
                 } else {
                    resolve({ error: response.error || `Error ${xhr.status}` });
                 }
+             // eslint-disable-next-line @typescript-eslint/no-unused-vars
              } catch (e) {
                 resolve({ error: xhr.responseText || `Error ${xhr.status}` });
              }

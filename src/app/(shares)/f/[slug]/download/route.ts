@@ -124,7 +124,7 @@ export async function GET(
       headers.set("Pragma", "no-cache");
       headers.set("Expires", "0");
 
-      return new NextResponse(webStream as any, {
+      return new NextResponse(webStream as ReadableStream<Uint8Array>, {
         status: 206,
         headers,
       });
@@ -143,7 +143,7 @@ export async function GET(
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");
 
-    return new NextResponse(webStream as any, {
+    return new NextResponse(webStream as ReadableStream<Uint8Array>, {
       status: 200,
       headers,
     });
