@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { signIn, type SignInResponse } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
 import { useBranding } from "@/components/BrandingProvider"
@@ -15,6 +15,7 @@ export default function SignUp() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [allowSignup, setAllowSignup] = useState(true)
+  const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const router = useRouter()
   const { t } = useTranslation()
@@ -27,6 +28,7 @@ export default function SignUp() {
         if (response.ok) {
           const data = await response.json()
           setAllowSignup(data.allowSignup ?? true)
+          setDisableCredentialsLogin(data.disableCredentialsLogin ?? false)
         }
       } catch (error) {
         console.error("Error fetching signup status:", error)
@@ -49,6 +51,10 @@ export default function SignUp() {
         </div>
       </div>
     )
+  }
+
+  if (disableCredentialsLogin) {
+    redirect("/auth/signin")
   }
 
   // Redirect to signin if signup is disabled

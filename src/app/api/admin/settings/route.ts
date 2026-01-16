@@ -22,11 +22,16 @@ export async function GET() {
     try {
         let settings = await prisma.settings.findFirst();
 
+		const activeProvidersCount = await prisma.oAuthProvider.count({
+            where: { enabled: true }
+        });
+
         // Create default settings if not exist
         if (!settings) {
             settings = await prisma.settings.create({
                 data: {
                     allowSignin: true,
+                    disableCredentialsLogin: false,
                     allowAnonFileShare: true,
                     anoMaxUpload: 2048,
                     authMaxUpload: 51200,
@@ -68,7 +73,7 @@ Thank you for using SnowShare!`
             });
         }
 
-        return NextResponse.json({ settings });
+        return NextResponse.json({ settings, hasActiveSSO: activeProvidersCount > 0 });
     } catch (error) {
         console.error("Error fetching settings:", error);
         return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
@@ -94,12 +99,22 @@ export async function PATCH(request: Request) {
     try {
         const data = await request.json();
 
+		if (data.disableCredentialsLogin === true) {
+            const activeProvidersCount = await prisma.oAuthProvider.count({
+                where: { enabled: true }
+            });
+            if (activeProvidersCount === 0) {
+                return NextResponse.json({ error: "Cannot disable credentials login without active SSO providers" }, { status: 400 });
+            }
+        }
+
         let settings = await prisma.settings.findFirst();
 
         if (!settings) {
             settings = await prisma.settings.create({
                 data: {
                     allowSignin: data.allowSignin !== undefined ? data.allowSignin : true,
+                    disableCredentialsLogin: data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : false,
                     allowAnonFileShare: data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : true,
                     anoMaxUpload: data.anoMaxUpload || 2048,
                     authMaxUpload: data.authMaxUpload || 51200,
@@ -161,6 +176,7 @@ Thank you for using SnowShare!`
                 where: { id: settings.id },
                 data: {
                     allowSignin: data.allowSignin !== undefined ? data.allowSignin : settings.allowSignin,
+                    disableCredentialsLogin: data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : settings.disableCredentialsLogin,
                     allowAnonFileShare:
                         data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : settings.allowAnonFileShare,
                     anoMaxUpload: data.anoMaxUpload || settings.anoMaxUpload,

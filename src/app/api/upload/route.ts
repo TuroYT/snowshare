@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Busboy from "busboy";
 import { Readable } from "node:stream";
-import { createWriteStream, existsSync, unlinkSync, statSync } from "fs";
+import { createWriteStream, existsSync, statSync } from "fs";
 import { mkdir, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -370,8 +370,6 @@ export async function POST(req: NextRequest) {
            // Should ideally be present in last chunk
         }
         
-        // Use default type FILE if missing
-        const type = fields.type || "FILE";
 
         if (!tempFilePath || !originalFilename) {
           return sendError(400, "File required or upload error");
