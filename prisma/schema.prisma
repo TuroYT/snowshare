@@ -83,6 +83,7 @@ model Share {
 model Settings {
   id            Int  @id @default(autoincrement())
   allowSignin   Boolean @default(true)
+  disableCredentialsLogin Boolean @default(false)
   allowAnonFileShare Boolean @default(true)
   // TODO - add S3 support
   anoMaxUpload  Int     @default(2048) // 2Go

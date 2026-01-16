@@ -2,7 +2,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import AzureADProvider from "next-auth/providers/azure-ad";
-import { OAuthConfig, OAuthUserConfig } from "next-auth/providers/oauth";
+import { OAuthConfig } from "next-auth/providers/oauth";
 import { Provider } from "next-auth/providers/index";
 
 import { decrypt } from "./crypto-link";
@@ -58,7 +58,8 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
                   authorization: { params: { scope: "openid profile email" } },
                   checks: ["pkce", "state"],
                   idToken: true,
-                  profile(profile) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  profile(profile: any) {
                       return {
                           id: profile.sub,
                           name: profile.name,
@@ -66,7 +67,7 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
                           image: profile.picture
                       };
                   }
-              } as OAuthConfig<any>),
+              } as unknown as OAuthConfig<Record<string, unknown>>),
       }
     : {};
 

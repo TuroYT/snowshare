@@ -11,6 +11,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(true)
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -21,6 +22,12 @@ export default function SignIn() {
     (async () => {
       const res = await getProviders()
       setProviders(res)
+      
+      const setupRes = await fetch("/api/setup/check")
+      if (setupRes.ok) {
+        const data = await setupRes.json()
+        setDisableCredentialsLogin(data.disableCredentialsLogin ?? false)
+      }
     })()
   }, [])
 
@@ -64,6 +71,17 @@ export default function SignIn() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <div className="flex justify-start mb-6">
+          <Link
+            href="/"
+            className="flex items-center text-sm text-[var(--foreground-muted)] hover:text-[var(--primary)] transition-colors"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {t('auth.return_to_main_page')}
+          </Link>
+        </div>
         <div className="text-center">
           <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-blue-900/20 border border-blue-800">
             <svg 
@@ -88,6 +106,7 @@ export default function SignIn() {
           </p>
         </div>
 
+        {!disableCredentialsLogin && (
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -164,9 +183,11 @@ export default function SignIn() {
             </div>
           </div>
         </form>
+        )}
 
         {providers && Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials").length > 0 && (
           <>
+            {!disableCredentialsLogin && (
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-[var(--border)]"></div>
@@ -177,6 +198,7 @@ export default function SignIn() {
                 </span>
               </div>
             </div>
+            )}
 
             <div className="grid gap-3">
               {Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials").map((provider: ClientSafeProvider) => (

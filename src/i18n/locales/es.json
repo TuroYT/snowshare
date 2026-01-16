@@ -180,7 +180,7 @@
     "signin_button": "Iniciar sesión",
     "no_account": "¿No tienes cuenta? Crear una",
     "signup_title": "Crear una cuenta",
-    "signup_subtitle": "Únete a SnowShare para empezar a compartir de forma segura",
+    "signup_subtitle": "Únete a {{appName}} para empezar a compartir de forma segura",
     "signup_loading": "Creando...",
     "signup_button": "Crear cuenta",
     "already_account": "¿Ya tienes una cuenta? Iniciar sesión",
@@ -197,9 +197,11 @@
     "error_password_too_short": "La contraseña debe tener al menos 6 caracteres",
     "error_oauth_signin": "No hay ningún correo electrónico asociado con esta cuenta de proveedor.",
     "success_account_created": "Cuenta creada con éxito",
-    "terms_notice": "Al crear una cuenta, aceptas nuestros términos de uso y política de privacidad.",
+    "terms_notice": "Al crear una cuenta, aceptas nuestros",
     "signup_disabled_title": "Registro deshabilitado",
-    "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente."
+    "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente.",
+    "return_to_main_page": "Volver a la página principal",
+    "or_continue_with": "O continúa con"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -381,6 +383,9 @@
       "title": "Configuración",
       "allow_signup": "Permitir Registro",
       "allow_signup_desc": "Permitir que nuevos usuarios creen cuentas",
+      "disable_credentials_login": "Desactivar inicio de sesión con credenciales",
+      "disable_credentials_login_desc": "Permitir solo inicio de sesión mediante SSO. Válido solo si hay al menos un proveedor de SSO activo.",
+      "no_sso_active": "No se puede activar: No se encontró ningún proveedor de SSO activo.",
       "allow_anon_fileshare": "Compartir Archivos Anónimamente",
       "allow_anon_fileshare_desc": "Permitir a usuarios no autenticados compartir archivos",
       "section_general": "General",

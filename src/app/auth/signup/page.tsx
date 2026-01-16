@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from "react"
 import { signIn, type SignInResponse } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
+import { useBranding } from "@/components/BrandingProvider"
 
 export default function SignUp() {
   const [email, setEmail] = useState("")
+  const { branding } = useBranding()
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [allowSignup, setAllowSignup] = useState(true)
+  const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const router = useRouter()
   const { t } = useTranslation()
@@ -25,6 +28,7 @@ export default function SignUp() {
         if (response.ok) {
           const data = await response.json()
           setAllowSignup(data.allowSignup ?? true)
+          setDisableCredentialsLogin(data.disableCredentialsLogin ?? false)
         }
       } catch (error) {
         console.error("Error fetching signup status:", error)
@@ -47,6 +51,10 @@ export default function SignUp() {
         </div>
       </div>
     )
+  }
+
+  if (disableCredentialsLogin) {
+    redirect("/auth/signin")
   }
 
   // Redirect to signin if signup is disabled
@@ -134,6 +142,17 @@ export default function SignUp() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <div className="flex justify-start mb-6">
+          <Link
+            href="/"
+            className="flex items-center text-sm text-[var(--foreground-muted)] hover:text-[var(--primary)] transition-colors"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {t('auth.return_to_main_page')}
+          </Link>
+        </div>
         <div className="text-center">
           <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-green-900/20 border border-green-800">
             <svg 
@@ -154,7 +173,7 @@ export default function SignUp() {
             {t('auth.signup_title')}
           </h2>
           <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-            {t('auth.signup_subtitle')}
+            {t('auth.signup_subtitle', { appName: branding.appName })}
           </p>
         </div>
 
@@ -253,7 +272,7 @@ export default function SignUp() {
 
         <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
           <p>
-            {t('auth.terms_notice', 'By signing up, you agree to our')}{' '}
+            {t('auth.terms_notice')}{' '}
             <Link href="/terms-of-use" className="text-[var(--primary)] hover:underline">
               {t('footer.terms_of_use', 'Terms of Use')}
             </Link>.

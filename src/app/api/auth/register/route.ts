@@ -15,20 +15,23 @@ export async function POST(request: NextRequest) {
     
     // Get DB settings
     let allowSignup = true // Default to true
+    let disableCredentialsLogin = false
     const settings = await prisma.settings.findFirst({
       select: {
-        allowSignin: true
+        allowSignin: true,
+        disableCredentialsLogin: true
       }
     })
     
     if (settings) {
       allowSignup = settings.allowSignin
+      disableCredentialsLogin = settings.disableCredentialsLogin
     }
 
     // Allow registration if:
-    // 1. Settings allow signup (allowSignin), OR
-    // 2. This is the first user being created (database is empty)
-    if (!allowSignup && !isActuallyFirstUser) {
+    // 1. Settings allow signup (allowSignin), AND credentials login is NOT disabled
+    // 2. OR This is the first user being created (database is empty)
+    if ((!allowSignup || disableCredentialsLogin) && !isActuallyFirstUser) {
       return NextResponse.json(
         { error: "L'inscription est désactivée" },
         { status: 403 }

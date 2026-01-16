@@ -188,7 +188,7 @@
         "signin_button": "Inloggen",
         "no_account": "Geen account? Maak er een aan",
         "signup_title": "Account aanmaken",
-        "signup_subtitle": "Word lid van SnowShare en begin veilig te delen",
+        "signup_subtitle": "Word lid van {{appName}} en begin veilig te delen",
         "signup_loading": "Aanmaken...",
         "signup_button": "Account aanmaken",
         "already_account": "Heb je al een account? Log in",
@@ -205,9 +205,11 @@
         "error_password_too_short": "Wachtwoord moet minimaal 6 tekens lang zijn",
         "error_oauth_signin": "Er is geen e-mailadres gekoppeld aan dit provideraccount.",
         "success_account_created": "Account succesvol aangemaakt",
-        "terms_notice": "Door een account aan te maken ga je akkoord met onze gebruiksvoorwaarden en privacyverklaring.",
+        "terms_notice": "Door een account aan te maken ga je akkoord met onze",
         "signup_disabled_title": "Registreren uitgeschakeld",
-        "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan."
+        "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan.",
+        "return_to_main_page": "Terug naar hoofdpagina",
+        "or_continue_with": "Of ga verder met"
     },
     "profile": {
         "title": "Mijn profiel",
@@ -389,6 +391,9 @@
             "title": "Instellingen",
             "allow_signup": "Registreren toestaan",
             "allow_signup_desc": "Sta toe dat nieuwe gebruikers accounts aanmaken",
+            "disable_credentials_login": "Inloggen met inloggegevens uitschakelen",
+            "disable_credentials_login_desc": "Alleen inloggen via SSO toestaan. Alleen geldig als er ten minste één SSO-provider actief is.",
+            "no_sso_active": "Kan niet inschakelen: Geen actieve SSO-provider gevonden.",
             "allow_anon_fileshare": "Anoniem bestanden delen",
             "allow_anon_fileshare_desc": "Sta toe dat niet-ingelogde gebruikers bestanden delen",
             "section_general": "Algemeen",

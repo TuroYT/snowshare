@@ -1,14 +1,15 @@
 /**
  * Custom Node.js server for SnowShare
- * Handles file uploads OUTSIDE of Next.js to avoid body buffering
+ * Uses tus protocol for resumable file uploads
  */
 
 import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
-import Busboy from "busboy";
-import { createWriteStream, existsSync, unlinkSync, mkdirSync } from "fs";
-import { stat, rename } from "fs/promises";
+import { Server as TusServer } from "@tus/server";
+import { FileStore } from "@tus/file-store";
+import { existsSync, mkdirSync } from "fs";
+import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
@@ -24,6 +25,11 @@ const handle = app.getRequestHandler();
 // Get upload directory
 function getUploadDir() {
   return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
+}
+
+// Get tus temp directory
+function getTusTempDir() {
+  return path.join(getUploadDir(), ".tus-temp");
 }
 
 // Get client IP
@@ -61,32 +67,67 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-// Handle file upload - streams directly to disk without buffering
-async function handleUpload(req, res) {
-  const contentType = req.headers["content-type"] || "";
-  if (!contentType.includes("multipart/form-data")) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Content-Type must be multipart/form-data" }));
-    return;
+// Calculate IP usage for quota
+async function calculateIpUsage(prisma, clientIp, uploadsDir) {
+  const shares = await prisma.share.findMany({
+    where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
+    select: { filePath: true },
+  });
+  
+  let totalSize = 0;
+  for (const share of shares) {
+    if (share.filePath) {
+      const fullPath = path.join(uploadsDir, share.filePath);
+      try {
+        const stats = await stat(fullPath);
+        totalSize += stats.size;
+      } catch {
+        // File doesn't exist, skip
+      }
+    }
   }
+  return totalSize;
+}
 
-  const uploadsDir = getUploadDir();
-  if (!existsSync(uploadsDir)) {
-    mkdirSync(uploadsDir, { recursive: true });
-  }
+// Ensure directories exist
+const uploadsDir = getUploadDir();
+const tusTempDir = getTusTempDir();
 
-  const clientIp = getClientIp(req);
+if (!existsSync(uploadsDir)) {
+  mkdirSync(uploadsDir, { recursive: true });
+}
+if (!existsSync(tusTempDir)) {
+  mkdirSync(tusTempDir, { recursive: true });
+}
 
-  try {
-    // Import singleton Prisma instance
+// Create tus server with FileStore
+const tusServer = new TusServer({
+  path: "/api/tus",
+  datastore: new FileStore({ directory: tusTempDir }),
+  // Max file size (will be checked per-user in onUploadCreate)
+  maxSize: 1024 * 1024 * 1024 * 1024, // 1TB absolute max
+  // Expose custom headers to client
+  respectForwardedHeaders: true,
+  generateUrl(req, { proto, host, path, id }) {
+    // Return the URL without query strings to fix potential parsing issues
+    return `${proto}://${host}${path}/${id}`;
+  },
+  
+  // Called when a new upload is created
+  async onUploadCreate(req, upload) {
+    if (!upload) {
+      console.error("onUploadCreate: upload object is undefined");
+      throw { status_code: 500, body: "Internal Server Error: Upload context missing" };
+    }
+
     const { prisma } = await import("./src/lib/prisma.js");
+    const clientIp = getClientIp(req);
     
-    // Check authentication via JWT token
+    // Check authentication
     let userId = null;
     let isAuthenticated = false;
     
     try {
-      // Create a minimal request-like object for getToken
       const token = await getToken({ 
         req: { 
           headers: req.headers,
@@ -99,24 +140,18 @@ async function handleUpload(req, res) {
         userId = token.id;
         isAuthenticated = true;
       }
-    } catch (authErr) {
-      // Auth check failed, continue as anonymous
-      console.log("Auth check failed, treating as anonymous:", authErr);
+    } catch {
+      // Continue as anonymous
     }
 
-    // Get settings for limits
+    // Get settings
     const settings = await prisma.settings.findFirst();
     
-    // Authenticated users have NO limits (or very high limits)
-    // Anonymous users have restricted limits
     let maxFileSizeMB, ipQuotaMB;
-    
     if (isAuthenticated) {
-      // Authenticated users: use auth limits (essentially no practical limit)
-      maxFileSizeMB = settings?.authMaxUpload || 51200; // ~50GB
-      ipQuotaMB = settings?.authIpQuota || 102400; // ~100GB
+      maxFileSizeMB = settings?.authMaxUpload || 51200;
+      ipQuotaMB = settings?.authIpQuota || 102400;
     } else {
-      // Anonymous users: restricted limits
       maxFileSizeMB = settings?.anoMaxUpload || 2048;
       ipQuotaMB = settings?.anoIpQuota || 4096;
     }
@@ -124,264 +159,170 @@ async function handleUpload(req, res) {
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
 
-    // For authenticated users, skip quota check entirely
-    let effectiveMaxBytes = maxFileSizeBytes;
-    let currentUsageBytes = 0;
+    // Check file size limit
+    // upload.size property contains the size from the Upload-Length header
+    // It might be undefined if Upload-Defer-Length: 1 is sent
+    const uploadSize = upload.size;
     
-    if (!isAuthenticated) {
-      // Calculate current usage for IP (only for anonymous users)
-      const shares = await prisma.share.findMany({
-        where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
-        select: { filePath: true },
-      });
-      
-      for (const share of shares) {
-        if (share.filePath) {
-          const fullPath = path.join(uploadsDir, share.filePath);
-          try {
-            const stats = await stat(fullPath);
-            currentUsageBytes += stats.size;
-          } catch {}
-        }
+    // If size is available, check it against limits
+    if (uploadSize !== undefined && uploadSize !== null) {
+      if (uploadSize > maxFileSizeBytes) {
+        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeMB}MB.` };
+        throw { status_code: 413, body: JSON.stringify(body) };
       }
-
-      const remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
       
-      if (remainingQuotaBytes <= 0) {
-        res.writeHead(429, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ 
-          error: `IP quota exceeded. Current usage: ${(currentUsageBytes / (1024 * 1024)).toFixed(2)} MB, Limit: ${ipQuotaMB} MB. Sign in for higher limits.`
-        }));
-        return;
-      }
-
-      effectiveMaxBytes = Math.min(maxFileSizeBytes, remainingQuotaBytes);
-    }
-
-    return new Promise((resolve) => {
-      const fields = {};
-      let tempFilePath = null;
-      let originalFilename = null;
-      let fileSize = 0;
-      let aborted = false;
-      let writeStream = null;
-
-      const cleanup = () => {
-        if (tempFilePath && existsSync(tempFilePath)) {
-          try { unlinkSync(tempFilePath); } catch {}
-        }
-      };
-
-      const sendError = (status, message) => {
-        cleanup();
-        res.writeHead(status, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: message }));
-        resolve();
-      };
-
-      const busboy = Busboy({
-        headers: req.headers,
-        limits: { fileSize: effectiveMaxBytes, files: 1 },
-      });
-
-      busboy.on("field", (name, value) => {
-        fields[name] = value;
-      });
-
-      busboy.on("file", (name, fileStream, info) => {
-        const { filename } = info;
-
-        if (name !== "file" || !filename) {
-          fileStream.resume();
-          return;
-        }
-
-        // Validate filename
-        if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
-          fileStream.resume();
-          aborted = true;
-          sendError(400, "Invalid filename.");
-          return;
-        }
-
-        if (filename.length > 255) {
-          fileStream.resume();
-          aborted = true;
-          sendError(400, "Filename is too long (maximum 255 characters).");
-          return;
-        }
-
-        originalFilename = filename;
-
-        // Create temp file
-        const tempFileName = `temp_${crypto.randomBytes(16).toString("hex")}`;
-        tempFilePath = path.join(uploadsDir, tempFileName);
-        writeStream = createWriteStream(tempFilePath);
-
-        // Track size during streaming - NO BUFFERING
-        fileStream.on("data", (chunk) => {
-          fileSize += chunk.length;
-
-          if (fileSize > effectiveMaxBytes && !aborted) {
-            aborted = true;
-            fileStream.destroy();
-            writeStream?.destroy();
-            sendError(413, `File size exceeds the allowed limit of ${maxFileSizeMB}MB.`);
-          }
-        });
-
-        // Pipe directly to disk - TRUE STREAMING
-        fileStream.pipe(writeStream);
-
-        fileStream.on("limit", () => {
-          if (!aborted) {
-            aborted = true;
-            fileStream.destroy();
-            writeStream?.destroy();
-            sendError(413, `File size exceeds the allowed limit of ${maxFileSizeMB}MB.`);
-          }
-        });
-
-        fileStream.on("error", (err) => {
-          if (!aborted) {
-            aborted = true;
-            console.error("File stream error:", err);
-            sendError(500, "Error processing file upload.");
-          }
-        });
-
-        writeStream.on("error", (err) => {
-          if (!aborted) {
-            aborted = true;
-            console.error("Write stream error:", err);
-            sendError(500, "Error saving file.");
-          }
-        });
-      });
-
-      busboy.on("close", async () => {
-        if (aborted) return;
-
+      // Check quota for anonymous users
+      if (!isAuthenticated) {
         try {
-          // Wait for write to complete
-          if (writeStream) {
-            await new Promise((res, rej) => {
-              writeStream.on("finish", res);
-              writeStream.on("error", rej);
-            });
+          const currentUsage = await calculateIpUsage(prisma, clientIp, uploadsDir);
+          const remainingQuota = ipQuotaBytes - currentUsage;
+          
+          if (remainingQuota <= 0) {
+            const body = { error: `IP quota exceeded. Sign in for higher limits.` };
+            throw { status_code: 429, body: JSON.stringify(body) };
           }
-
-          if (!tempFilePath || !originalFilename) {
-            sendError(400, "File required");
-            return;
+          
+          if (uploadSize > remainingQuota) {
+            const body = { error: `File would exceed your quota. Remaining: ${(remainingQuota / (1024 * 1024)).toFixed(2)}MB` };
+            throw { status_code: 429, body: JSON.stringify(body) };
           }
-
-          // Validate optional fields
-          const slug = fields.slug?.trim();
-          const password = fields.password?.trim();
-          const expiresAtStr = fields.expiresAt;
-
-          if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-            sendError(400, "Invalid slug format.");
-            return;
-          }
-
-          // Parse expiration
-          let expiresAt = null;
-          if (expiresAtStr) {
-            expiresAt = new Date(expiresAtStr);
-            if (isNaN(expiresAt.getTime())) {
-              sendError(400, "Invalid expiration date.");
-              return;
-            }
-          }
-
-          // Expiration rules:
-          // - Anonymous users: MUST set expiration (max 7 days)
-          // - Authenticated users: NO limit (expiration is optional)
-          if (!isAuthenticated) {
-            if (!expiresAt) {
-              sendError(400, "Anonymous uploads require an expiration date (maximum 7 days).");
-              return;
-            }
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
-            if (expiresAt > maxExpiry) {
-              sendError(400, "Anonymous uploads cannot expire more than 7 days in the future.");
-              return;
-            }
-          }
-
-          // Hash password if provided
-          let hashedPassword = null;
-          if (password) {
-            const bcrypt = await import("bcryptjs");
-            hashedPassword = await bcrypt.default.hash(password, 12);
-          }
-
-          // Generate slug if not provided
-          const finalSlug = slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
-
-          // Create database record
-          const share = await prisma.share.create({
-            data: {
-              slug: finalSlug,
-              type: "FILE",
-              filePath: "",
-              password: hashedPassword,
-              expiresAt,
-              ipSource: clientIp,
-              ownerId: userId, // Associate with authenticated user if logged in
-            },
-          });
-
-          // Rename temp file to final name
-          const finalFileName = generateSafeFilename(originalFilename, share.id);
-          const finalFilePath = path.join(uploadsDir, finalFileName);
-
-          await rename(tempFilePath, finalFilePath);
-          tempFilePath = null;
-
-          // Update database with final file path
-          await prisma.share.update({
-            where: { id: share.id },
-            data: { filePath: finalFileName },
-          });
-
-          res.writeHead(201, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({
-            share: {
-              slug: share.slug,
-              type: share.type,
-              expiresAt: share.expiresAt,
-              hasPassword: !!share.password,
-            },
-          }));
-          resolve();
-        } catch (err) {
-          console.error("Error processing upload:", err);
-          sendError(500, "Error processing upload.");
+        } catch (error) {
+          console.error("Error calculating IP usage:", error);
+          // If quota check fails, we might want to fail open or closed. 
+          // Failing closed (prevent upload) is safer for quotas.
+          // But preventing crash is Priority #1
         }
-      });
-
-      busboy.on("error", (err) => {
-        if (!aborted) {
-          aborted = true;
-          console.error("Busboy error:", err);
-          sendError(500, "Error processing upload.");
-        }
-      });
-
-      // Pipe request directly to busboy - NO NEXT.JS BUFFERING
-      req.pipe(busboy);
-    });
-  } catch (err) {
-    console.error("Error in upload handler:", err);
-    if (!res.headersSent) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Internal server error" }));
+      }
+    } else {
+        // If size is NOT available (deferred length), checking quota is harder.
+        // For now, we allow start, but we should probably limit max content length header if possible
     }
-  }
+
+    // Store metadata in upload for later use
+    upload.metadata = upload.metadata || {};
+    upload.metadata.clientIp = clientIp;
+    upload.metadata.userId = userId || "";
+    upload.metadata.isAuthenticated = isAuthenticated ? "true" : "false";
+    
+    // Return the updated metadata
+    return { res: null, metadata: upload.metadata };
+  },
+
+  // Called when upload is complete
+  async onUploadFinish(req, upload) {
+    const { prisma } = await import("./src/lib/prisma.js");
+    
+    try {
+      const metadata = upload.metadata || {};
+      const filename = metadata.filename || "upload";
+      const slug = metadata.slug || "";
+      const password = metadata.password || "";
+      const expiresAt = metadata.expiresAt || "";
+      const clientIp = metadata.clientIp || getClientIp(req);
+      const userId = metadata.userId || null;
+      const isAuthenticated = metadata.isAuthenticated === "true";
+
+      // Validate slug if provided
+      let finalSlug = slug;
+      if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
+        finalSlug = "";
+      }
+
+      // Check slug uniqueness
+      if (finalSlug) {
+        const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
+        if (existing) {
+          finalSlug = "";
+        }
+      }
+      if (!finalSlug) {
+        finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
+      }
+
+      // Parse expiration
+      let parsedExpiresAt = null;
+      if (expiresAt) {
+        parsedExpiresAt = new Date(expiresAt);
+        if (isNaN(parsedExpiresAt.getTime())) {
+          parsedExpiresAt = null;
+        }
+      }
+
+      // Anonymous expiration rules
+      if (!isAuthenticated) {
+        const defaultExpiry = new Date();
+        defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+        
+        if (!parsedExpiresAt) {
+          parsedExpiresAt = defaultExpiry;
+        } else {
+          const maxExpiry = new Date();
+          maxExpiry.setDate(maxExpiry.getDate() + 7);
+          if (parsedExpiresAt > maxExpiry) {
+            parsedExpiresAt = maxExpiry;
+          }
+        }
+      }
+
+      // Hash password if provided
+      let hashedPassword = null;
+      if (password) {
+        const bcrypt = await import("bcryptjs");
+        hashedPassword = await bcrypt.default.hash(password, 12);
+      }
+
+      // Create database record
+      const share = await prisma.share.create({
+        data: {
+          slug: finalSlug,
+          type: "FILE",
+          filePath: "",
+          password: hashedPassword,
+          expiresAt: parsedExpiresAt,
+          ipSource: clientIp,
+          ownerId: userId || null,
+        },
+      });
+
+      // Move file from tus temp to final location
+      const tusFilePath = path.join(tusTempDir, upload.id);
+      const finalFileName = generateSafeFilename(filename, share.id);
+      const finalFilePath = path.join(uploadsDir, finalFileName);
+
+      await rename(tusFilePath, finalFilePath);
+
+      // Clean up tus metadata file
+      const tusMetaPath = `${tusFilePath}.json`;
+      if (existsSync(tusMetaPath)) {
+        await unlink(tusMetaPath);
+      }
+
+      // Update database
+      await prisma.share.update({
+        where: { id: share.id },
+        data: { filePath: finalFileName },
+      });
+
+      console.log(`Upload complete: ${filename} -> ${share.slug}`);
+
+      // Return custom headers for the client
+      return {
+        headers: {
+          "X-Share-Slug": share.slug,
+          "X-Share-Expires": share.expiresAt?.toISOString() || ""
+        }
+      };
+    } catch (err) {
+      console.error("Error finalizing upload:", err);
+      // Don't throw here to avoid 500 to client if possible, but logging is essential
+      throw err;
+    }
+  },
+});
+
+// Handle tus requests
+async function handleTus(req, res) {
+  return tusServer.handle(req, res);
 }
 
 app.prepare().then(() => {
@@ -390,9 +331,9 @@ app.prepare().then(() => {
       const parsedUrl = parse(req.url, true);
       const { pathname } = parsedUrl;
 
-      // Handle uploads BEFORE Next.js touches them
-      if (pathname === "/api/upload" && req.method === "POST") {
-        await handleUpload(req, res);
+      // Handle tus uploads
+      if (pathname.startsWith("/api/tus")) {
+        await handleTus(req, res);
         return;
       }
 
@@ -405,6 +346,6 @@ app.prepare().then(() => {
     }
   }).listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
-    console.log(`> Upload endpoint: http://${hostname}:${port}/api/upload (streaming enabled)`);
+    console.log(`> Tus upload endpoint: http://${hostname}:${port}/api/tus (resumable uploads enabled)`);
   });
 });

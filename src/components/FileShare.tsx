@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { Alert, AlertTitle, Snackbar, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import * as tus from "tus-js-client";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -211,11 +212,29 @@ const FileShare: React.FC = () => {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Handle form submission
+  // Ref to hold the active upload instance
+  const uploadRef = useRef<tus.Upload | null>(null);
+
+  // Cleanup upload on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadRef.current) {
+        uploadRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Handle form submission with tus resumable upload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    // Check if browser supports tus
+    if (!tus.isSupported) {
+      setError(t("fileshare.browser_not_supported", "Your browser does not support resumable uploads"));
+      return;
+    }
 
     if (!file) {
       setError(t("fileshare.file_required", "A file is required"));
@@ -232,9 +251,11 @@ const FileShare: React.FC = () => {
     setUploadProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append("type", "FILE");
-      formData.append("file", file);
+      // Build metadata for tus upload
+      const metadata: Record<string, string> = {
+        filename: file.name,
+        filetype: file.type || "application/octet-stream",
+      };
 
       // Add optional parameters
       if (!isAuthenticated || !neverExpires) {
@@ -243,79 +264,92 @@ const FileShare: React.FC = () => {
         const expiresAt = new Date(
           Date.now() + days * 24 * 60 * 60 * 1000
         ).toISOString();
-        formData.append("expiresAt", expiresAt);
+        metadata.expiresAt = expiresAt;
       }
 
-      if (slug.trim()) formData.append("slug", slug.trim());
-      if (password.trim()) formData.append("password", password.trim());
+      if (slug.trim()) metadata.slug = slug.trim();
+      if (password.trim()) metadata.password = password.trim();
 
-      // Create XMLHttpRequest for upload progress
-      const xhr = new XMLHttpRequest();
+      // Track the share slug from server response
+      let shareSlug: string | null = null;
 
-      const uploadPromise = new Promise<{
-        share?: { slug?: string; id?: string };
-        error?: string;
-      }>((resolve, reject) => {
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(progress);
-          }
-        };
-
-        xhr.onload = () => {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve(response);
-            } else {
-              // Server returned an error with JSON body - use the error message from API
-              resolve({ error: response.error || `Error ${xhr.status}` });
+      // Create tus upload
+      const upload = new tus.Upload(file, {
+        endpoint: "/api/tus",
+        retryDelays: [0, 1000, 3000, 5000, 10000], // Retry on failure
+        chunkSize: 50 * 1024 * 1024, // 50MB chunks (better for reliability)
+        metadata,
+        removeFingerprintOnSuccess: true, // Clean up local storage after success
+        onError: (error) => {
+          console.error("Tus upload error:", error);
+          // Try to parse error message from tus
+          let errorMessage = t("fileshare.network_error", "Network error — could not create share");
+          if (error && typeof error === 'object' && 'message' in error) {
+            try {
+              // tus errors might contain JSON in the message
+              const parsed = JSON.parse(error.message as string);
+              if (parsed.error) {
+                errorMessage = parsed.error;
+              }
+            } catch {
+              errorMessage = (error.message as string) || errorMessage;
             }
-          } catch {
-            // Failed to parse JSON - show raw response
-            resolve({ error: xhr.responseText || `Error ${xhr.status}` });
           }
-        };
+          setError(errorMessage);
+          setLoading(false);
+          setUploadProgress(0);
+        },
+        onProgress: (bytesUploaded, bytesTotal) => {
+          // Use file.size as fallback if bytesTotal is undefined
+          const total = bytesTotal || file.size;
+          if (total > 0) {
+            const percent = Math.round((bytesUploaded / total) * 100);
+            setUploadProgress(percent);
+          }
+        },
+        onAfterResponse: (_req, res) => {
+          // Capture X-Share-Slug header if present (set by server on upload finish)
+          const slugHeader = res.getHeader("X-Share-Slug");
+          if (slugHeader) {
+            shareSlug = slugHeader;
+          }
+        },
+        onSuccess: () => {
+          // Upload succeeded - the share was created in onUploadFinish on server
+          if (shareSlug) {
+            setSuccess(`${window.location.origin}/f/${shareSlug}`);
+          } else {
+            setSuccess(t("fileshare.success_title", "File shared successfully!"));
+          }
 
-        // Network error - reject with a generic network error message
-        xhr.onerror = () => {
-          reject(new Error(t("fileshare.network_error", "Network error")));
-        };
-
-        xhr.onabort = () => reject(new Error("Upload cancelled"));
-
-        // Use Pages Router endpoint for true streaming (no memory buffering)
-        xhr.open("POST", "/api/upload");
-        xhr.send(formData);
+          // Reset form
+          setFile(null);
+          setSlug("");
+          setPassword("");
+          setNeverExpires(false);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          setLoading(false);
+          setUploadProgress(0);
+          uploadRef.current = null;
+        },
       });
 
-      const data = await uploadPromise;
+      // Store ref
+      uploadRef.current = upload;
 
-      if (data.error) {
-        setError(data.error);
-      } else {
-        const fileShare = data?.share;
-        if (fileShare?.slug) {
-          setSuccess(`${window.location.origin}/f/${fileShare.slug}`);
-        } else if (fileShare?.id) {
-          setSuccess(`${window.location.origin}/f/${fileShare.id}`);
-        } else {
-          setSuccess(t("fileshare.success_title", "File shared successfully!"));
-        }
-
-        // Reset form
-        setFile(null);
-        setSlug("");
-        setPassword("");
-        setNeverExpires(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+      // Check for previous upload to resume
+      const previousUploads = await upload.findPreviousUploads();
+      if (previousUploads.length > 0) {
+        // Resume from last upload
+        upload.resumeFromPreviousUpload(previousUploads[0]);
       }
+
+      // Start upload
+      upload.start();
     } catch (error) {
       console.error("FileShare error:", error);
-      // Display the actual error message if available
       if (error instanceof Error && error.message) {
         setError(error.message);
       } else {
@@ -323,7 +357,6 @@ const FileShare: React.FC = () => {
           t("fileshare.network_error", "Network error — could not create share")
         );
       }
-    } finally {
       setLoading(false);
       setUploadProgress(0);
     }
