@@ -197,7 +197,7 @@ async function handleUpload(req, res) {
     let currentUsageBytes = 0;
     let remainingQuotaBytes = Infinity;
     
-    if (!isAuthenticated) {
+    if (!isAuthenticated && chunkIndex === 0) {
       // Calculate current usage for IP (only for anonymous users)
       const shares = await prisma.share.findMany({
         where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
@@ -219,7 +219,7 @@ async function handleUpload(req, res) {
       remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
       
       // Check quota only at start
-      if (chunkIndex === 0 && remainingQuotaBytes <= 0) {
+      if (remainingQuotaBytes <= 0) {
         res.writeHead(429, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ 
           error: `IP quota exceeded. Current usage: ${(currentUsageBytes / (1024 * 1024)).toFixed(2)} MB, Limit: ${ipQuotaMB} MB. Sign in for higher limits.`
@@ -228,6 +228,9 @@ async function handleUpload(req, res) {
       }
 
       effectiveMaxBytes = Math.min(maxFileSizeBytes, remainingQuotaBytes);
+    } else if (!isAuthenticated && chunkIndex > 0) {
+        // Skip heavy quota check for subsequent chunks
+        effectiveMaxBytes = maxFileSizeBytes;
     }
 
     return new Promise((resolve) => {

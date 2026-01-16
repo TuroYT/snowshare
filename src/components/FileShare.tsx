@@ -231,7 +231,7 @@ const FileShare: React.FC = () => {
     setLoading(true);
     setUploadProgress(0);
 
-    const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+    const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB chunks
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     
     // Generate a client-side upload ID (simple random string)
