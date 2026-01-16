@@ -7,8 +7,8 @@ import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 import Busboy from "busboy";
-import { createWriteStream, existsSync, unlinkSync, mkdirSync } from "fs";
-import { stat, rename } from "fs/promises";
+import { createWriteStream, existsSync, unlinkSync, mkdirSync, statSync } from "fs";
+import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
@@ -104,6 +104,73 @@ async function handleUpload(req, res) {
       console.log("Auth check failed, treating as anonymous:", authErr);
     }
 
+    // Helper to safely parse integer headers for chunking
+    const parseChunkHeader = (headerValue, headerName) => {
+      // Reject multiple header values
+      if (Array.isArray(headerValue)) {
+        if (headerValue.length !== 1) {
+          throw new Error(`Invalid ${headerName} header`);
+        }
+        headerValue = headerValue[0];
+      }
+
+      const value = Number.parseInt(headerValue, 10);
+      if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+        throw new Error(`Invalid ${headerName} header`);
+      }
+      return value;
+    };
+
+    // NEW: Chunking Headers
+    const chunkIndexHeader = req.headers["x-chunk-index"];
+    const totalChunksHeader = req.headers["x-total-chunks"];
+    const uploadIdHeader = req.headers["x-upload-id"];
+
+    const isChunked =
+      chunkIndexHeader !== undefined &&
+      totalChunksHeader !== undefined &&
+      uploadIdHeader !== undefined;
+
+    let chunkIndex = 0;
+    let totalChunks = 1;
+    let uploadId = crypto.randomBytes(16).toString("hex");
+
+    if (isChunked) {
+      try {
+        chunkIndex = parseChunkHeader(chunkIndexHeader, "x-chunk-index");
+        totalChunks = parseChunkHeader(totalChunksHeader, "x-total-chunks");
+      } catch (e) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid chunk header" }));
+        return;
+      }
+
+      // Validate logical ranges for chunking
+      if (totalChunks <= 0 || chunkIndex < 0 || chunkIndex >= totalChunks) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid chunk index or total chunks" }));
+        return;
+      }
+
+      // Ensure uploadIdHeader is a single string value
+      if (Array.isArray(uploadIdHeader)) {
+        if (uploadIdHeader.length !== 1) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid upload ID" }));
+          return;
+        }
+        uploadId = uploadIdHeader[0];
+      } else {
+        uploadId = uploadIdHeader;
+      }
+    }
+
+    // Security: Validate uploadId
+    if (isChunked && !/^[a-zA-Z0-9-]+$/.test(uploadId)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid upload ID" }));
+      return;
+    }
     // Get settings for limits
     const settings = await prisma.settings.findFirst();
     
@@ -127,6 +194,7 @@ async function handleUpload(req, res) {
     // For authenticated users, skip quota check entirely
     let effectiveMaxBytes = maxFileSizeBytes;
     let currentUsageBytes = 0;
+    let remainingQuotaBytes = Infinity;
     
     if (!isAuthenticated) {
       // Calculate current usage for IP (only for anonymous users)
@@ -147,9 +215,10 @@ async function handleUpload(req, res) {
         }
       }
 
-      const remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
+      remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
       
-      if (remainingQuotaBytes <= 0) {
+      // Check quota only at start
+      if (chunkIndex === 0 && remainingQuotaBytes <= 0) {
         res.writeHead(429, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ 
           error: `IP quota exceeded. Current usage: ${(currentUsageBytes / (1024 * 1024)).toFixed(2)} MB, Limit: ${ipQuotaMB} MB. Sign in for higher limits.`
@@ -167,27 +236,43 @@ async function handleUpload(req, res) {
       let fileSize = 0;
       let aborted = false;
       let writeStream = null;
+      
+      // For chunked uploads, use persistent temp file name
+      const tempFileName = isChunked ? `temp_upload_${uploadId}` : `temp_${uploadId}`;
+      tempFilePath = path.join(uploadsDir, tempFileName);
 
-      const cleanup = () => {
+      const cleanup = async () => {
         if (tempFilePath && existsSync(tempFilePath)) {
           try {
-            unlinkSync(tempFilePath);
+             await unlink(tempFilePath);
           } catch {
-            // Ignore unlink errors for already deleted files
+             // Ignore
           }
         }
       };
 
       const sendError = (status, message) => {
-        cleanup();
-        res.writeHead(status, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: message }));
+        if (aborted) {
+            cleanup().catch(console.error);
+        }
+        if (!res.headersSent) {
+            res.writeHead(status, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: message }));
+        }
+        resolve();
+      };
+
+      const sendSuccess = (data) => {
+        if (!res.headersSent) {
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(data));
+        }
         resolve();
       };
 
       const busboy = Busboy({
         headers: req.headers,
-        limits: { fileSize: effectiveMaxBytes, files: 1 },
+        limits: { fileSize: isChunked ? Infinity : effectiveMaxBytes, files: 1 },
       });
 
       busboy.on("field", (name, value) => {
@@ -219,10 +304,21 @@ async function handleUpload(req, res) {
 
         originalFilename = filename;
 
-        // Create temp file
-        const tempFileName = `temp_${crypto.randomBytes(16).toString("hex")}`;
-        tempFilePath = path.join(uploadsDir, tempFileName);
-        writeStream = createWriteStream(tempFilePath);
+         // Handle chunk appending: Check prior existence if chunk > 0
+         if (isChunked && chunkIndex > 0) {
+            if (existsSync(tempFilePath)) {
+                const stats = statSync(tempFilePath);
+                fileSize = stats.size;
+            } else {
+                fileStream.resume();
+                aborted = true;
+                sendError(400, "Upload session expired or invalid.");
+                return;
+            }
+         }
+
+        const flags = (isChunked && chunkIndex > 0) ? 'a' : 'w';
+        writeStream = createWriteStream(tempFilePath, { flags });
 
         // Track size during streaming - NO BUFFERING
         fileStream.on("data", (chunk) => {
@@ -232,7 +328,12 @@ async function handleUpload(req, res) {
             aborted = true;
             fileStream.destroy();
             writeStream?.destroy();
-            sendError(413, `File size exceeds the allowed limit of ${maxFileSizeMB}MB.`);
+            
+            if (!isAuthenticated && fileSize > remainingQuotaBytes) {
+                sendError(429, `IP quota exceeded.`);
+            } else {
+                sendError(413, `File size exceeds the allowed limit of ${maxFileSizeMB}MB.`);
+            }
           }
         });
 
@@ -244,7 +345,7 @@ async function handleUpload(req, res) {
             aborted = true;
             fileStream.destroy();
             writeStream?.destroy();
-            sendError(413, `File size exceeds the allowed limit of ${maxFileSizeMB}MB.`);
+            sendError(413, `File size limited.`);
           }
         });
 
@@ -276,11 +377,23 @@ async function handleUpload(req, res) {
               writeStream.on("error", rej);
             });
           }
+          
+          // Chunk intermediate success
+          if (isChunked && chunkIndex < totalChunks - 1) {
+              sendSuccess({ 
+                status: "chunk_received", 
+                index: chunkIndex,
+                nextIndex: chunkIndex + 1
+              });
+              return;
+          }
 
           if (!tempFilePath || !originalFilename) {
             sendError(400, "File required");
             return;
           }
+          
+          if (!fields.type) fields.type = "FILE";
 
           // Validate optional fields
           const slug = fields.slug?.trim();
@@ -288,8 +401,23 @@ async function handleUpload(req, res) {
           const expiresAtStr = fields.expiresAt;
 
           if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
+            aborted = true;
+            await cleanup();
             sendError(400, "Invalid slug format.");
             return;
+          }
+          
+           // Check slug uniqueness
+          if (slug) {
+            const existingShare = await prisma.share.findUnique({
+              where: { slug },
+            });
+            if (existingShare) {
+               aborted = true;
+               await cleanup();
+              sendError(409, "This custom URL is already taken. Please choose another one.");
+              return;
+            }
           }
 
           // Parse expiration
@@ -297,24 +425,29 @@ async function handleUpload(req, res) {
           if (expiresAtStr) {
             expiresAt = new Date(expiresAtStr);
             if (isNaN(expiresAt.getTime())) {
+               aborted = true;
+               await cleanup();
               sendError(400, "Invalid expiration date.");
               return;
             }
           }
 
-          // Expiration rules:
-          // - Anonymous users: MUST set expiration (max 7 days)
-          // - Authenticated users: NO limit (expiration is optional)
+          // Expiration rules
           if (!isAuthenticated) {
+            const defaultAnonExpiry = new Date();
+            defaultAnonExpiry.setDate(defaultAnonExpiry.getDate() + 7);
+
             if (!expiresAt) {
-              sendError(400, "Anonymous uploads require an expiration date (maximum 7 days).");
-              return;
-            }
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
-            if (expiresAt > maxExpiry) {
-              sendError(400, "Anonymous uploads cannot expire more than 7 days in the future.");
-              return;
+               expiresAt = defaultAnonExpiry;
+            } else {
+                const maxExpiry = new Date();
+                maxExpiry.setDate(maxExpiry.getDate() + 7);
+                if (expiresAt > maxExpiry) {
+                 aborted = true;
+                 await cleanup();
+                  sendError(400, "Anonymous uploads cannot expire more than 7 days in the future.");
+                  return;
+                }
             }
           }
 
@@ -346,7 +479,7 @@ async function handleUpload(req, res) {
           const finalFilePath = path.join(uploadsDir, finalFileName);
 
           await rename(tempFilePath, finalFilePath);
-          tempFilePath = null;
+          tempFilePath = null; // Prevent cleanup
 
           // Update database with final file path
           await prisma.share.update({
@@ -354,16 +487,14 @@ async function handleUpload(req, res) {
             data: { filePath: finalFileName },
           });
 
-          res.writeHead(201, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({
+          sendSuccess({
             share: {
               slug: share.slug,
               type: share.type,
               expiresAt: share.expiresAt,
               hasPassword: !!share.password,
             },
-          }));
-          resolve();
+          });
         } catch (err) {
           console.error("Error processing upload:", err);
           sendError(500, "Error processing upload.");

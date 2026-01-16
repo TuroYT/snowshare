@@ -7,8 +7,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Busboy from "busboy";
 import { Readable } from "node:stream";
-import { createWriteStream, existsSync, unlinkSync } from "fs";
-import { mkdir } from "fs/promises";
+import { createWriteStream, existsSync, unlinkSync, statSync } from "fs";
+import { mkdir, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getServerSession } from "next-auth/next";
@@ -152,8 +152,23 @@ export async function POST(req: NextRequest) {
   // Get limits BEFORE starting to receive the file
   const limits = await getUploadLimits(req, isAuthenticated);
 
-  // Pre-check: if remaining quota is 0, reject immediately
-  if (limits.remainingQuotaBytes <= 0) {
+  // Parse chunk headers
+  const chunkIndexHeader = req.headers.get("x-chunk-index");
+  const totalChunksHeader = req.headers.get("x-total-chunks");
+  const uploadIdHeader = req.headers.get("x-upload-id");
+  const isChunked = chunkIndexHeader !== null && totalChunksHeader !== null && uploadIdHeader !== null;
+  
+  const chunkIndex = isChunked ? parseInt(chunkIndexHeader!, 10) : 0;
+  const totalChunks = isChunked ? parseInt(totalChunksHeader!, 10) : 1;
+  const uploadId = isChunked ? uploadIdHeader! : crypto.randomBytes(16).toString("hex");
+
+  // Security: Validate uploadId to prevent directory traversal
+  if (isChunked && !/^[a-zA-Z0-9-]+$/.test(uploadId)) {
+      return NextResponse.json({ error: "Invalid upload ID" }, { status: 400 });
+  }
+
+  // Pre-check: if remaining quota is 0, reject immediately (only for new upload/first chunk)
+  if (chunkIndex === 0 && limits.remainingQuotaBytes <= 0) {
     const currentUsageMB = (limits.currentUsageBytes / (1024 * 1024)).toFixed(2);
     return NextResponse.json(
       {
@@ -185,18 +200,25 @@ export async function POST(req: NextRequest) {
     let aborted = false;
     let fileWriteStream: ReturnType<typeof createWriteStream> | null = null;
 
-    const cleanup = () => {
+    // For chunked uploads, use persistent temp file name
+    const tempFileName = isChunked ? `temp_upload_${uploadId}` : `temp_${crypto.randomBytes(16).toString("hex")}`;
+    tempFilePath = path.join(uploadsDir, tempFileName);
+
+    const cleanup = async () => {
+      // Delete temp file if aborted or error
       if (tempFilePath && existsSync(tempFilePath)) {
         try {
-          unlinkSync(tempFilePath);
+          await unlink(tempFilePath);
         } catch {
           // Ignore
         }
       }
     };
 
-    const sendError = (status: number, message: string) => {
-      cleanup();
+    const sendError = async (status: number, message: string) => {
+      if (aborted) {
+          await cleanup();
+      }
       resolve(NextResponse.json({ error: message }, { status }));
     };
 
@@ -210,7 +232,7 @@ export async function POST(req: NextRequest) {
     const busboy = Busboy({
       headers,
       limits: {
-        fileSize: effectiveMaxBytes,
+        fileSize: limits.maxFileSizeBytes * 2, // Check manually
         files: 1,
       },
     });
@@ -248,10 +270,21 @@ export async function POST(req: NextRequest) {
 
       originalFilename = filename;
 
-      // Create temp file
-      const tempFileName = `temp_${crypto.randomBytes(16).toString("hex")}`;
-      tempFilePath = path.join(uploadsDir, tempFileName);
-      fileWriteStream = createWriteStream(tempFilePath);
+      // Handle chunk appending: Check prior existence if chunk > 0
+      if (isChunked && chunkIndex > 0) {
+         if (existsSync(tempFilePath!)) {
+             const stats = statSync(tempFilePath!);
+             fileSize = stats.size;
+         } else {
+             fileStream.resume();
+             aborted = true;
+             sendError(400, "Upload session expired or invalid.");
+             return;
+         }
+      }
+
+      const flags = (isChunked && chunkIndex > 0) ? 'a' : 'w';
+      fileWriteStream = createWriteStream(tempFilePath!, { flags });
 
       // Track size during streaming
       fileStream.on("data", (chunk: Buffer) => {
@@ -285,30 +318,13 @@ export async function POST(req: NextRequest) {
 
       fileStream.pipe(fileWriteStream);
 
-      // Handle busboy's file size limit
+      // Handle busboy's file size limit (backup)
       fileStream.on("limit", () => {
         if (aborted) return;
         aborted = true;
         fileStream.destroy();
         fileWriteStream?.destroy();
-
-        if (fileSize > limits.remainingQuotaBytes) {
-          const currentUsageMB = (
-            limits.currentUsageBytes /
-            (1024 * 1024)
-          ).toFixed(2);
-          sendError(
-            429,
-            limits.isAuthenticated
-              ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
-              : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`
-          );
-        } else {
-          sendError(
-            413,
-            `File size exceeds the allowed limit of ${limits.maxFileSizeMB}MB.`
-          );
-        }
+         sendError(413, `File size limit exceeded.`);
       });
 
       fileStream.on("error", (err) => {
@@ -337,14 +353,28 @@ export async function POST(req: NextRequest) {
             fileWriteStream!.on("error", rejectWrite);
           });
         }
+        
+        // Chunk intermediate success
+        if (isChunked && chunkIndex < totalChunks - 1) {
+             return sendSuccess({ 
+                 status: "chunk_received", 
+                 index: chunkIndex,
+                 nextIndex: chunkIndex + 1
+             });
+        }
+
+        // --- Finalize Logic (Only if not chunked or last chunk) ---
 
         // Validate required fields
         if (fields.type !== "FILE") {
-          return sendError(400, "Invalid share type for file upload");
+           // Should ideally be present in last chunk
         }
+        
+        // Use default type FILE if missing
+        const type = fields.type || "FILE";
 
         if (!tempFilePath || !originalFilename) {
-          return sendError(400, "File required");
+          return sendError(400, "File required or upload error");
         }
 
         // Validate optional fields
@@ -353,6 +383,8 @@ export async function POST(req: NextRequest) {
         const expiresAtStr = fields.expiresAt;
 
         if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
+          aborted = true; 
+          await cleanup();
           return sendError(
             400,
             "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."
@@ -365,6 +397,8 @@ export async function POST(req: NextRequest) {
             where: { slug },
           });
           if (existingShare) {
+            aborted = true;
+            await cleanup();
             return sendError(
               409,
               "This custom URL is already taken. Please choose another one."
@@ -377,25 +411,30 @@ export async function POST(req: NextRequest) {
         if (expiresAtStr) {
           expiresAt = new Date(expiresAtStr);
           if (isNaN(expiresAt.getTime())) {
+             aborted = true;
+             await cleanup();
             return sendError(400, "Invalid expiration date.");
           }
         }
 
         // Anonymous users must set expiration (max 7 days)
         if (!isAuthenticated) {
+          const defaultAnonExpiry = new Date();
+          defaultAnonExpiry.setDate(defaultAnonExpiry.getDate() + 7);
+          
           if (!expiresAt) {
-            return sendError(
-              400,
-              "Anonymous uploads require an expiration date (maximum 7 days)."
-            );
-          }
-          const maxExpiry = new Date();
-          maxExpiry.setDate(maxExpiry.getDate() + 7);
-          if (expiresAt > maxExpiry) {
-            return sendError(
-              400,
-              "Anonymous uploads cannot expire more than 7 days in the future."
-            );
+             expiresAt = defaultAnonExpiry;
+          } else {
+             const maxExpiry = new Date();
+             maxExpiry.setDate(maxExpiry.getDate() + 7);
+             if (expiresAt > maxExpiry) {
+                 aborted = true;
+                 await cleanup();
+                return sendError(
+                  400,
+                  "Anonymous uploads cannot expire more than 7 days in the future."
+                );
+             }
           }
         }
 
@@ -426,8 +465,7 @@ export async function POST(req: NextRequest) {
         const finalFileName = generateSafeFilename(originalFilename, share.id);
         const finalFilePath = path.join(uploadsDir, finalFileName);
 
-        const fs = await import("fs/promises");
-        await fs.rename(tempFilePath, finalFilePath);
+        await rename(tempFilePath, finalFilePath);
         tempFilePath = null; // Prevent cleanup of renamed file
 
         // Update database with final file path
@@ -447,6 +485,7 @@ export async function POST(req: NextRequest) {
         });
       } catch (err) {
         console.error("Error processing upload:", err);
+        aborted = true;
         sendError(500, "Error processing upload.");
       }
     });
@@ -459,7 +498,6 @@ export async function POST(req: NextRequest) {
     });
 
     // Convert Web API ReadableStream to Node.js Readable and pipe to busboy
-    // Use 'as any' to work around type incompatibility between Web API and Node.js stream types
     const nodeStream = Readable.fromWeb(
       req.body as unknown as import("stream/web").ReadableStream
     );

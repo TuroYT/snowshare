@@ -231,86 +231,111 @@ const FileShare: React.FC = () => {
     setLoading(true);
     setUploadProgress(0);
 
+    const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    
+    // Generate a client-side upload ID (simple random string)
+    const uploadId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+
     try {
-      const formData = new FormData();
-      formData.append("type", "FILE");
-      formData.append("file", file);
+      let finalResult: { share?: { slug?: string; id?: string }; error?: string } | null = null;
 
-      // Add optional parameters
-      if (!isAuthenticated || !neverExpires) {
-        const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-        const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-        const expiresAt = new Date(
-          Date.now() + days * 24 * 60 * 60 * 1000
-        ).toISOString();
-        formData.append("expiresAt", expiresAt);
-      }
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end);
 
-      if (slug.trim()) formData.append("slug", slug.trim());
-      if (password.trim()) formData.append("password", password.trim());
-
-      // Create XMLHttpRequest for upload progress
-      const xhr = new XMLHttpRequest();
-
-      const uploadPromise = new Promise<{
-        share?: { slug?: string; id?: string };
-        error?: string;
-      }>((resolve, reject) => {
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(progress);
-          }
-        };
-
-        xhr.onload = () => {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve(response);
-            } else {
-              // Server returned an error with JSON body - use the error message from API
-              resolve({ error: response.error || `Error ${xhr.status}` });
+        const formData = new FormData();
+        formData.append("file", chunk, file.name); // Important: pass filename
+        
+        // Add metadata only on the last chunk
+        if (chunkIndex === totalChunks - 1) {
+            formData.append("type", "FILE");
+            // Add optional parameters
+            if (!isAuthenticated || !neverExpires) {
+                const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
+                const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
+                const expiresAt = new Date(
+                Date.now() + days * 24 * 60 * 60 * 1000
+                ).toISOString();
+                formData.append("expiresAt", expiresAt);
             }
-          } catch {
-            // Failed to parse JSON - show raw response
-            resolve({ error: xhr.responseText || `Error ${xhr.status}` });
-          }
-        };
 
-        // Network error - reject with a generic network error message
-        xhr.onerror = () => {
-          reject(new Error(t("fileshare.network_error", "Network error")));
-        };
-
-        xhr.onabort = () => reject(new Error("Upload cancelled"));
-
-        // Use Pages Router endpoint for true streaming (no memory buffering)
-        xhr.open("POST", "/api/upload");
-        xhr.send(formData);
-      });
-
-      const data = await uploadPromise;
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        const fileShare = data?.share;
-        if (fileShare?.slug) {
-          setSuccess(`${window.location.origin}/f/${fileShare.slug}`);
-        } else if (fileShare?.id) {
-          setSuccess(`${window.location.origin}/f/${fileShare.id}`);
-        } else {
-          setSuccess(t("fileshare.success_title", "File shared successfully!"));
+            if (slug.trim()) formData.append("slug", slug.trim());
+            if (password.trim()) formData.append("password", password.trim());
         }
 
-        // Reset form
-        setFile(null);
-        setSlug("");
-        setPassword("");
-        setNeverExpires(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
+        const xhr = new XMLHttpRequest();
+
+        const chunkPromise = new Promise<any>((resolve, reject) => {
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              // Calculate global progress
+              const chunkProgress = event.loaded;
+              const totalProgress = start + chunkProgress;
+              const percent = Math.round((totalProgress / file.size) * 100);
+              setUploadProgress(percent);
+            }
+          };
+
+          xhr.onload = () => {
+             try {
+                const response = JSON.parse(xhr.responseText);
+                if (xhr.status >= 200 && xhr.status < 300) {
+                   resolve(response);
+                } else {
+                   resolve({ error: response.error || `Error ${xhr.status}` });
+                }
+             } catch (e) {
+                resolve({ error: xhr.responseText || `Error ${xhr.status}` });
+             }
+          };
+
+          xhr.onerror = () => reject(new Error(t("fileshare.network_error", "Network error")));
+          xhr.onabort = () => reject(new Error("Upload cancelled"));
+
+          xhr.open("POST", "/api/upload");
+          // Add chunk headers
+          xhr.setRequestHeader("X-Chunk-Index", chunkIndex.toString());
+          xhr.setRequestHeader("X-Total-Chunks", totalChunks.toString());
+          xhr.setRequestHeader("X-Upload-Id", uploadId);
+          
+          xhr.send(formData);
+        });
+
+        const result = await chunkPromise;
+
+        if (result.error) {
+           throw new Error(result.error);
+        }
+        
+        if (chunkIndex === totalChunks - 1) {
+            finalResult = result;
+        }
+      }
+
+      // Process final result
+      if (finalResult) {
+        if (finalResult.error) {
+           setError(finalResult.error);
+        } else {
+            const fileShare = finalResult.share;
+            if (fileShare?.slug) {
+            setSuccess(`${window.location.origin}/f/${fileShare.slug}`);
+            } else if (fileShare?.id) {
+            setSuccess(`${window.location.origin}/f/${fileShare.id}`);
+            } else {
+            setSuccess(t("fileshare.success_title", "File shared successfully!"));
+            }
+
+            // Reset form
+            setFile(null);
+            setSlug("");
+            setPassword("");
+            setNeverExpires(false);
+            if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+            }
         }
       }
     } catch (error) {
