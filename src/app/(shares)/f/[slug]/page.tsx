@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import { formatBytes } from "@/lib/formatSize";
 
 interface FileInfo {
     filename: string;
@@ -19,8 +20,37 @@ export default function FileSharePage() {
     const [loading, setLoading] = useState(false);
     const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
     const [loadingInfo, setLoadingInfo] = useState(true);
+    const [useGiB, setUseGiB] = useState(false);
     const params = useParams();
     const slug = params?.slug as string;
+
+    // Fetch settings to get unit format preference
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const response = await fetch("/api/settings");
+                if (response.ok) {
+                    const data = await response.json();
+                    // Check user authentication status and set appropriate unit
+                    const sessionResponse = await fetch("/api/auth/session");
+                    if (sessionResponse.ok) {
+                        const session = await sessionResponse.json();
+                        if (session?.user) {
+                            setUseGiB(data.settings?.useGiBForAuth ?? false);
+                        } else {
+                            setUseGiB(data.settings?.useGiBForAnon ?? false);
+                        }
+                    } else {
+                        setUseGiB(data.settings?.useGiBForAnon ?? false);
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching settings:", err);
+                setUseGiB(false);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     // Fetch file info on load
     useEffect(() => {
@@ -95,9 +125,7 @@ export default function FileSharePage() {
 
     const formatFileSize = (bytes?: number) => {
         if (!bytes) return t("file_download.unknown_size");
-        const sizes = ["B", "KB", "MB", "GB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(1024));
-        return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
+        return formatBytes(bytes, useGiB);
     };
 
     if (loadingInfo) {

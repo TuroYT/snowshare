@@ -44,6 +44,22 @@ function getClientIp(req) {
   return req.socket?.remoteAddress || "unknown";
 }
 
+// Convert MB to display unit (MiB or GiB)
+function convertFromMBForDisplay(megabytes, useGiB) {
+  if (useGiB) {
+    // 1 GiB = 1024 MiB
+    return Math.round((megabytes / 1024) * 100) / 100;
+  } else {
+    // MiB = MB (1:1 for practical purposes)
+    return megabytes;
+  }
+}
+
+// Get display unit label
+function getUnitLabel(useGiB) {
+  return useGiB ? "GiB" : "MiB";
+}
+
 // Generate safe filename
 function generateSafeFilename(originalName, shareId) {
   const ext = path.extname(originalName);
@@ -148,16 +164,21 @@ const tusServer = new TusServer({
     const settings = await prisma.settings.findFirst();
     
     let maxFileSizeMB, ipQuotaMB;
+    let useGiBForDisplay;
     if (isAuthenticated) {
       maxFileSizeMB = settings?.authMaxUpload || 51200;
       ipQuotaMB = settings?.authIpQuota || 102400;
+      useGiBForDisplay = settings?.useGiBForAuth ?? false;
     } else {
       maxFileSizeMB = settings?.anoMaxUpload || 2048;
       ipQuotaMB = settings?.anoIpQuota || 4096;
+      useGiBForDisplay = settings?.useGiBForAnon ?? false;
     }
     
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
+    const unitLabel = getUnitLabel(useGiBForDisplay);
+    const maxFileSizeDisplay = convertFromMBForDisplay(maxFileSizeMB, useGiBForDisplay);
 
     // Check file size limit
     // upload.size property contains the size from the Upload-Length header
@@ -167,7 +188,7 @@ const tusServer = new TusServer({
     // If size is available, check it against limits
     if (uploadSize !== undefined && uploadSize !== null) {
       if (uploadSize > maxFileSizeBytes) {
-        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeMB}MB.` };
+        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.` };
         throw { status_code: 413, body: JSON.stringify(body) };
       }
       
@@ -183,7 +204,9 @@ const tusServer = new TusServer({
           }
           
           if (uploadSize > remainingQuota) {
-            const body = { error: `File would exceed your quota. Remaining: ${(remainingQuota / (1024 * 1024)).toFixed(2)}MB` };
+            const remainingQuotaMB = Math.round(remainingQuota / (1024 * 1024));
+            const remainingDisplay = convertFromMBForDisplay(remainingQuotaMB, useGiBForDisplay);
+            const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay}${unitLabel}` };
             throw { status_code: 429, body: JSON.stringify(body) };
           }
         } catch (error) {

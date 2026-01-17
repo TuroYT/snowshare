@@ -37,6 +37,8 @@ export async function GET() {
                     authMaxUpload: 51200,
                     anoIpQuota: 4096,
                     authIpQuota: 102400,
+                    useGiBForAnon: false,
+                    useGiBForAuth: false,
                     termsOfUses: `# Terms of Use
 
 Welcome to SnowShare! By using our platform, you agree to the following terms and conditions. Please read them carefully.
@@ -120,6 +122,8 @@ export async function PATCH(request: Request) {
                     authMaxUpload: data.authMaxUpload || 51200,
                     anoIpQuota: data.anoIpQuota || 4096,
                     authIpQuota: data.authIpQuota || 102400,
+                    useGiBForAnon: data.useGiBForAnon !== undefined ? data.useGiBForAnon : false,
+                    useGiBForAuth: data.useGiBForAuth !== undefined ? data.useGiBForAuth : false,
                     appName: data.appName || "SnowShare",
                     appDescription: data.appDescription || "Share your files, pastes and URLs securely",
                     logoUrl: data.logoUrl || null,
@@ -183,6 +187,8 @@ Thank you for using SnowShare!`
                     authMaxUpload: data.authMaxUpload || settings.authMaxUpload,
                     anoIpQuota: data.anoIpQuota || settings.anoIpQuota,
                     authIpQuota: data.authIpQuota || settings.authIpQuota,
+                    useGiBForAnon: data.useGiBForAnon !== undefined ? data.useGiBForAnon : settings.useGiBForAnon,
+                    useGiBForAuth: data.useGiBForAuth !== undefined ? data.useGiBForAuth : settings.useGiBForAuth,
                     appName: data.appName !== undefined ? data.appName : settings.appName,
                     appDescription: data.appDescription !== undefined ? data.appDescription : settings.appDescription,
                     logoUrl: data.logoUrl !== undefined ? data.logoUrl : settings.logoUrl,
