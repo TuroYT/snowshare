@@ -7,6 +7,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Alert, AlertTitle, Snackbar, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import * as tus from "tus-js-client";
+import { formatBytes, convertFromMB } from "@/lib/formatSize";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -41,8 +42,11 @@ const FileShare: React.FC = () => {
     useState<number>(MAX_FILE_SIZE_ANON);
   const [maxFileSizeAuth, setMaxFileSizeAuth] =
     useState<number>(MAX_FILE_SIZE_AUTH);
+  const [useGiBForAnon, setUseGiBForAnon] = useState(false);
+  const [useGiBForAuth, setUseGiBForAuth] = useState(false);
 
   const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
+  const useGiB = isAuthenticated ? useGiBForAuth : useGiBForAnon;
 
   // Fetch settings to check if anonymous file sharing is allowed
   useEffect(() => {
@@ -59,6 +63,9 @@ const FileShare: React.FC = () => {
           if (data.settings?.authMaxUpload) {
             setMaxFileSizeAuth(data.settings.authMaxUpload * 1024 * 1024);
           }
+          // Set unit format preferences
+          setUseGiBForAnon(data.settings?.useGiBForAnon ?? false);
+          setUseGiBForAuth(data.settings?.useGiBForAuth ?? false);
         } else {
           // Default to hardcoded values if settings can't be fetched
           setAllowAnonFileShare(true);
@@ -70,25 +77,25 @@ const FileShare: React.FC = () => {
       }
     };
     fetchSettings();
-  }, []);
+  }, [isAuthenticated]);
 
-  // Format file size
+  // Format file size using the formatBytes utility
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return formatBytes(bytes, useGiB);
   };
 
   // Validate file
   const validateFile = (file: File): string | null => {
     if (file.size > maxFileSize) {
-      const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
+      const maxValue = convertFromMB(
+        Math.round(maxFileSize / (1024 * 1024)),
+        useGiB
+      );
+      const unit = useGiB ? "GiB" : "MiB";
       return t(
         "fileshare.file_too_large",
-        "File is too large (max {{max}}MB)",
-        { max: maxSizeMB }
+        "File is too large (max {{max}} {{unit}})",
+        { max: maxValue, unit }
       );
     }
     return null;
@@ -502,13 +509,19 @@ const FileShare: React.FC = () => {
                   {isAuthenticated
                     ? t(
                         "fileshare.max_size_auth",
-                        "{{max}}MB maximum for authenticated users",
-                        { max: Math.round(maxFileSizeAuth / (1024 * 1024)) }
+                        "{{max}} {{unit}} maximum for authenticated users",
+                        { 
+                          max: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
+                          unit: useGiB ? "GiB" : "MiB"
+                        }
                       )
                     : t(
                         "fileshare.max_size_anon",
-                        "{{max}}MB maximum for anonymous users",
-                        { max: Math.round(maxFileSizeAnon / (1024 * 1024)) }
+                        "{{max}} {{unit}} maximum for anonymous users",
+                        { 
+                          max: convertFromMB(Math.round(maxFileSizeAnon / (1024 * 1024)), useGiB),
+                          unit: useGiB ? "GiB" : "MiB"
+                        }
                       )}
                 </p>
               </div>
@@ -698,10 +711,11 @@ const FileShare: React.FC = () => {
               💡{" "}
               {t(
                 "fileshare.login_for_more",
-                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}}MB)",
+                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}} {{unit}})",
                 {
                   max: MAX_DAYS_AUTH,
-                  maxSize: Math.round(maxFileSizeAuth / (1024 * 1024)),
+                  maxSize: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
+                  unit: useGiB ? "GiB" : "MiB"
                 }
               )}
             </p>
