@@ -91,25 +91,26 @@ export default function LogsTab() {
     if (!hasPendingFetches) return;
 
     const fetchLocations = async () => {
-      const updates: { [key: string]: IpLocation | null } = {};
+      const updates: { [ip: string]: IpLocation | null } = {};
 
-      // Fetch locations for all IPs in parallel, but only if not already fetched
+      // Fetch locations for all unique IPs in parallel, but only if not already fetched
       await Promise.all(
         logs.map(async (log) => {
           if (log.ipSource && !log.location && log.locationLoading && !fetchedIpsRef.current.has(log.ipSource)) {
             fetchedIpsRef.current.add(log.ipSource);
             const location = await getIpLocation(log.ipSource);
-            updates[log.id] = location;
+            updates[log.ipSource] = location;
           }
         })
       );
 
       // Update state with all fetched locations
+      // Multiple logs with the same IP will all get the same location data
       if (Object.keys(updates).length > 0) {
         setLogs((prevLogs) =>
           prevLogs.map((log) => {
-            if (updates[log.id] !== undefined) {
-              return { ...log, location: updates[log.id], locationLoading: false };
+            if (log.ipSource && updates[log.ipSource] !== undefined) {
+              return { ...log, location: updates[log.ipSource], locationLoading: false };
             }
             return log;
           })
