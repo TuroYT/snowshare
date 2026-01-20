@@ -27,7 +27,9 @@
         "title": "Udostępnianie kodu",
         "description": "Udostępniaj fragmenty tekstu łatwo i bezpiecznie.",
         "share_code_title": "Udostępnij kod",
-        "share_code_description": "Twórz i udostępniaj fragmenty kodu"
+        "share_code_description": "Twórz i udostępniaj fragmenty kodu",
+        "locked_title": "Udostępnianie kodu jest zablokowane",
+        "locked_message": "Musisz być zalogowany, aby udostępniać kod."
     },
     "pasteshare_ui": {
         "label_title": "Tytuł",
@@ -171,7 +173,9 @@
         "duration_in_x_weeks": "Ten link wygaśnie za {{count}} tygodnie",
         "duration_in_1_month": "Ten link wygaśnie za 1 miesiąc",
         "duration_in_x_months": "Ten link wygaśnie za {{count}} miesięcy",
-        "duration_in_x_years": "Ten link wygaśnie za {{count}} rok/lat"
+        "duration_in_x_years": "Ten link wygaśnie za {{count}} rok/lat",
+        "locked_title": "Udostępnianie linków jest zablokowane",
+        "locked_message": "Musisz być zalogowany, aby udostępniać linki."
     },
     "footer": {
         "made_with": "Stworzone z",
@@ -393,6 +397,10 @@
             "no_sso_active": "Nie można włączyć: Nie znaleziono aktywnego dostawcy SSO.",
             "allow_anon_fileshare": "Anonimowe udostępnianie plików",
             "allow_anon_fileshare_desc": "Pozwól niezalogowanym użytkownikom udostępniać pliki",
+            "allow_anon_linkshare": "Anonimowe udostępnianie linków",
+            "allow_anon_linkshare_desc": "Pozwól niezalogowanym użytkownikom udostępniać linki",
+            "allow_anon_pasteshare": "Anonimowe udostępnianie kodu",
+            "allow_anon_pasteshare_desc": "Pozwól niezalogowanym użytkownikom udostępniać kod/tekst",
             "section_general": "Ogólne",
             "section_storage": "Pamięć",
             "saving": "Zapisywanie...",

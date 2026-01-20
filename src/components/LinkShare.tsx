@@ -22,6 +22,29 @@ const LinkShare: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState<number>(150);
+  const [allowAnonLinkShare, setAllowAnonLinkShare] = useState<boolean | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Fetch settings to check if anonymous link sharing is allowed
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (response.ok) {
+          const data = await response.json();
+          setAllowAnonLinkShare(data.settings?.allowAnonLinkShare ?? true);
+        } else {
+          // Default to true if settings can't be fetched
+          setAllowAnonLinkShare(true);
+        }
+      } catch {
+        setAllowAnonLinkShare(true);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   function isValidUrl(value: string) {
     try {
@@ -153,6 +176,52 @@ const LinkShare: React.FC = () => {
       setError(t("linkshare.network_error", "Erreur réseau — impossible de créer le partage"));
     } finally {
       setLoading(false);
+    }
+  }
+
+  if (!isAuthenticated) {
+    // Show loading while fetching settings
+    if (settingsLoading) {
+      return (
+        <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
+          <div className="animate-pulse">
+            <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
+            <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Block anonymous users if allowAnonLinkShare is disabled
+    if (!allowAnonLinkShare) {
+      return (
+        <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
+          <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
+            <svg
+              className="w-6 h-6 text-red-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+            {t("linkshare.locked_title", "Link sharing is locked")}
+          </h2>
+          <p className="text-[var(--foreground-muted)] mb-4">
+            {t(
+              "linkshare.locked_message",
+              "You must be logged in to share links."
+            )}
+          </p>
+        </div>
+      );
     }
   }
 

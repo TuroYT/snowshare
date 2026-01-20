@@ -12,6 +12,8 @@ export async function GET() {
         data: {
           allowSignin: true,
           allowAnonFileShare: true,
+          allowAnonLinkShare: true,
+          allowAnonPasteShare: true,
           anoMaxUpload: 2048,
           authMaxUpload: 51200,
           anoIpQuota: 4096,
@@ -38,6 +40,8 @@ export async function GET() {
       settings: {
         allowSignin: settings.allowSignin,
         allowAnonFileShare: settings.allowAnonFileShare,
+        allowAnonLinkShare: settings.allowAnonLinkShare,
+        allowAnonPasteShare: settings.allowAnonPasteShare,
         anoMaxUpload: settings.anoMaxUpload,
         authMaxUpload: settings.authMaxUpload,
         appName: settings.appName,

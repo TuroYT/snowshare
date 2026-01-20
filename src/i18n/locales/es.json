@@ -23,7 +23,9 @@
     "title": "PasteShare",
     "description": "Comparte tus fragmentos de texto de forma segura y fácil.",
     "share_code_title": "Compartir código",
-    "share_code_description": "Crea y comparte tus fragmentos de código"
+    "share_code_description": "Crea y comparte tus fragmentos de código",
+    "locked_title": "Compartir código está bloqueado",
+    "locked_message": "Debes iniciar sesión para compartir código."
   },
   "pasteshare_ui": {
     "label_title": "Título",
@@ -163,7 +165,9 @@
     "duration_in_x_weeks": "Este enlace expirará en {{count}} semanas",
     "duration_in_1_month": "Este enlace expirará en 1 mois",
     "duration_in_x_months": "Este enlace expirará en {{count}} meses",
-    "duration_in_x_years": "Este enlace expirará en {{count}} año(s)"
+    "duration_in_x_years": "Este enlace expirará en {{count}} año(s)",
+    "locked_title": "Compartir enlaces está bloqueado",
+    "locked_message": "Debes iniciar sesión para compartir enlaces."
   },
   "footer": {
     "made_with": "Hecho con",
@@ -388,6 +392,10 @@
       "no_sso_active": "No se puede activar: No se encontró ningún proveedor de SSO activo.",
       "allow_anon_fileshare": "Compartir Archivos Anónimamente",
       "allow_anon_fileshare_desc": "Permitir a usuarios no autenticados compartir archivos",
+      "allow_anon_linkshare": "Compartir Enlaces Anónimamente",
+      "allow_anon_linkshare_desc": "Permitir a usuarios no autenticados compartir enlaces",
+      "allow_anon_pasteshare": "Compartir Código Anónimamente",
+      "allow_anon_pasteshare_desc": "Permitir a usuarios no autenticados compartir código/texto",
       "section_general": "General",
       "section_storage": "Almacenamiento",
       "saving": "Guardando...",

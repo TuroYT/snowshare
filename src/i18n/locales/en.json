@@ -23,7 +23,9 @@
     "title": "PasteShare",
     "description": "Share your text snippets securely and easily.",
     "share_code_title": "Share code",
-    "share_code_description": "Create and share your code snippets"
+    "share_code_description": "Create and share your code snippets",
+    "locked_title": "Paste sharing is locked",
+    "locked_message": "You must be logged in to share code."
   },
   "pasteshare_ui": {
     "label_title": "Title",
@@ -167,7 +169,9 @@
     "duration_in_x_weeks": "This link will expire in {{count}} weeks",
     "duration_in_1_month": "This link will expire in 1 month",
     "duration_in_x_months": "This link will expire in {{count}} months",
-    "duration_in_x_years": "This link will expire in {{count}} year(s)"
+    "duration_in_x_years": "This link will expire in {{count}} year(s)",
+    "locked_title": "Link sharing is locked",
+    "locked_message": "You must be logged in to share links."
   },
   "footer": {
     "made_with": "Made with",
@@ -390,6 +394,10 @@
       "no_sso_active": "Cannot enable: No active SSO provider found.",
       "allow_anon_fileshare": "Anonymous File Sharing",
       "allow_anon_fileshare_desc": "Allow unauthenticated users to share files",
+      "allow_anon_linkshare": "Anonymous Link Sharing",
+      "allow_anon_linkshare_desc": "Allow unauthenticated users to share links",
+      "allow_anon_pasteshare": "Anonymous Paste Sharing",
+      "allow_anon_pasteshare_desc": "Allow unauthenticated users to share code/text",
       "section_general": "General",
       "section_storage": "Storage",
       "saving": "Saving...",

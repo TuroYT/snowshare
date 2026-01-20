@@ -10,6 +10,8 @@ interface Settings {
   allowSignin: boolean
   disableCredentialsLogin: boolean
   allowAnonFileShare: boolean
+  allowAnonLinkShare: boolean
+  allowAnonPasteShare: boolean
   anoMaxUpload: number
   authMaxUpload: number
   anoIpQuota: number
@@ -40,6 +42,8 @@ export default function SettingsTab() {
         allowSignin: data.settings.allowSignin ?? true,
         disableCredentialsLogin: data.settings.disableCredentialsLogin ?? false,
         allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
+        allowAnonLinkShare: data.settings.allowAnonLinkShare ?? true,
+        allowAnonPasteShare: data.settings.allowAnonPasteShare ?? true,
       })
     } catch (err) {
       setToastMessage(t("admin.error_load_data"))
@@ -193,6 +197,44 @@ export default function SettingsTab() {
             <span
               className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
                 settings.allowAnonFileShare ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.settings.allow_anon_linkshare")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.allow_anon_linkshare_desc")}</p>
+          </div>
+          <button
+            onClick={() => handleToggle("allowAnonLinkShare")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.allowAnonLinkShare ? "bg-[var(--primary)]" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.allowAnonLinkShare ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.settings.allow_anon_pasteshare")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.allow_anon_pasteshare_desc")}</p>
+          </div>
+          <button
+            onClick={() => handleToggle("allowAnonPasteShare")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.allowAnonPasteShare ? "bg-[var(--primary)]" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.allowAnonPasteShare ? "translate-x-7" : "translate-x-1"
               }`}
             />
           </button>

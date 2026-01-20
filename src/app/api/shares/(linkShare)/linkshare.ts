@@ -42,6 +42,11 @@ export const createLinkShare = async (
     const session = await getServerSession(authOptions);
 
     if (!session) {
+        // Check if anonymous link sharing is allowed
+        const settings = await prisma.settings.findFirst();
+        if (settings && !settings.allowAnonLinkShare) {
+            return { error: "Anonymous users are not allowed to create link shares. Please log in." };
+        }
         
         if (expiresAt) {
             const maxExpiry = new Date();

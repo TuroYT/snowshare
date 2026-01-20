@@ -40,6 +40,29 @@ const ManageCodeBlock: React.FC<{
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
+  const [allowAnonPasteShare, setAllowAnonPasteShare] = React.useState<boolean | null>(null);
+  const [settingsLoading, setSettingsLoading] = React.useState(true);
+
+  // Fetch settings to check if anonymous paste sharing is allowed
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (response.ok) {
+          const data = await response.json();
+          setAllowAnonPasteShare(data.settings?.allowAnonPasteShare ?? true);
+        } else {
+          // Default to true if settings can't be fetched
+          setAllowAnonPasteShare(true);
+        }
+      } catch {
+        setAllowAnonPasteShare(true);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const getDurationText = () => {
     const days = expiresDays;
@@ -100,6 +123,52 @@ const ManageCodeBlock: React.FC<{
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    // Show loading while fetching settings
+    if (settingsLoading) {
+      return (
+        <div className="text-center p-6">
+          <div className="animate-pulse">
+            <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
+            <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Block anonymous users if allowAnonPasteShare is disabled
+    if (!allowAnonPasteShare) {
+      return (
+        <div className="text-center p-6">
+          <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
+            <svg
+              className="w-6 h-6 text-red-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+            {t("pasteshare.locked_title", "Paste sharing is locked")}
+          </h2>
+          <p className="text-[var(--foreground-muted)] mb-4">
+            {t(
+              "pasteshare.locked_message",
+              "You must be logged in to share code."
+            )}
+          </p>
+        </div>
+      );
+    }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
