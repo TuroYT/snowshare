@@ -51,7 +51,9 @@ function getClientIp(req: NextRequest): string {
 async function calculateIpUploadSizeBytes(ipAddress: string): Promise<number> {
   const shares = await prisma.share.findMany({
     where: {
-      ipSource: ipAddress,
+      ipAddress: {
+        ip: ipAddress,
+      },
       type: "FILE",
       filePath: { not: null },
     },

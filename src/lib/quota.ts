@@ -24,7 +24,9 @@ async function getFileSize(filePath: string): Promise<number> {
 async function calculateIpUploadSize(ipAddress: string): Promise<number> {
   const shares = await prisma.share.findMany({
     where: {
-      ipSource: ipAddress,
+      ipAddress: {
+        ip: ipAddress,
+      },
       type: "FILE",
       filePath: { not: null },
     },
