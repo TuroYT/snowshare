@@ -41,12 +41,10 @@ export async function getIpLocation(ip: string | null): Promise<IpLocation | nul
   }
 
   try {
-    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`, {
+    const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`, {
       headers: {
         'Accept': 'application/json',
       },
-      // Cache for 1 hour
-      next: { revalidate: 3600 }
     });
 
     if (!response.ok) {

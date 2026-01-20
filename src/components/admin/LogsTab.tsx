@@ -68,8 +68,17 @@ export default function LogsTab() {
   }, [pagination.page, pagination.limit, typeFilter, search]);
 
   // Fetch location data for IPs after logs are loaded
+  // Note: This effect depends on 'logs' but the ref tracking prevents infinite loops
+  // because we only fetch each unique IP once
   useEffect(() => {
     if (logs.length === 0) return;
+
+    // Check if there are any IPs that need fetching
+    const hasPendingFetches = logs.some(
+      (log) => log.ipSource && !log.location && log.locationLoading && !fetchedIpsRef.current.has(log.ipSource)
+    );
+
+    if (!hasPendingFetches) return;
 
     const fetchLocations = async () => {
       const updates: { [key: string]: IpLocation | null } = {};
