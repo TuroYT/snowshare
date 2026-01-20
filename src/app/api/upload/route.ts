@@ -452,7 +452,7 @@ export async function POST(req: NextRequest) {
         try {
           ipLocation = await getIpLocation(clientIp);
         } catch (error) {
-          console.error('Failed to fetch IP location:', error);
+          console.error('Failed to fetch IP location for IP:', clientIp, error);
           // Continue with null location - share creation should not fail
         }
 
