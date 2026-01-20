@@ -73,7 +73,10 @@ export default function LogsTab() {
 
   // Fetch location data for IPs after logs are loaded
   // Note: This effect depends on 'logs' but the ref tracking prevents infinite loops
-  // because we only fetch each unique IP once
+  // because we only fetch each unique IP once. The early exit check also prevents
+  // unnecessary runs when there are no pending fetches.
+  // Performance: The effect only runs when logs change (e.g., pagination, filter),
+  // and the ref ensures each IP is fetched exactly once across all runs.
   // Rate limit consideration: ip-api.com allows 45 requests/minute. With typical pagination
   // of 20 logs per page, we'll make at most 20 requests (likely fewer due to IP reuse),
   // which is well under the limit.

@@ -26,8 +26,16 @@ export async function getIpLocation(ip: string | null): Promise<IpLocation | nul
     return null;
   }
 
+  // Validate IP format to prevent injection attacks
+  if (!isValidIpFormat(ip)) {
+    console.error(`Invalid IP format: ${ip}`);
+    return null;
+  }
+
   try {
-    const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,countryCode,regionName,city`, {
+    // URL encode the IP for safety
+    const encodedIp = encodeURIComponent(ip);
+    const response = await fetch(`https://ip-api.com/json/${encodedIp}?fields=country,countryCode,regionName,city`, {
       headers: {
         'Accept': 'application/json',
       },
@@ -51,6 +59,20 @@ export async function getIpLocation(ip: string | null): Promise<IpLocation | nul
     console.error('Error fetching IP geolocation:', error);
     return null;
   }
+}
+
+/**
+ * Validate IP address format (IPv4 or IPv6)
+ * @param ip - IP address to validate
+ * @returns true if valid IP format
+ */
+function isValidIpFormat(ip: string): boolean {
+  // IPv4 pattern
+  const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+  // IPv6 pattern (simplified, covers most common cases)
+  const ipv6Pattern = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
+  
+  return ipv4Pattern.test(ip) || ipv6Pattern.test(ip);
 }
 
 /**
@@ -112,11 +134,17 @@ export function getCountryFlag(countryCode: string | null): string {
     return '';
   }
 
+  // Unicode Regional Indicator Symbol base offset
+  // Regional Indicator Symbols start at U+1F1E6 (127462 in decimal)
+  // To get the symbol for a letter, we calculate: 127462 + (char code - 'A' char code)
+  // This simplifies to: 127397 + char code
+  const REGIONAL_INDICATOR_OFFSET = 127397;
+
   // Convert country code to regional indicator symbols
   const codePoints = countryCode
     .toUpperCase()
     .split('')
-    .map(char => 127397 + char.charCodeAt(0));
+    .map(char => REGIONAL_INDICATOR_OFFSET + char.charCodeAt(0));
   
   return String.fromCodePoint(...codePoints);
 }
