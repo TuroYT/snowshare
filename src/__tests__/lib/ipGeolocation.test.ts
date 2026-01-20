@@ -1,7 +1,7 @@
 /**
  * Tests for the ipGeolocation module
  */
-import { formatLocation, getCountryFlag } from '@/lib/ipGeolocation';
+import { formatLocation, getCountryFlag, isPrivateIp } from '@/lib/ipGeolocation';
 import type { IpLocation } from '@/lib/ipGeolocation';
 
 describe('ipGeolocation', () => {
@@ -10,17 +10,8 @@ describe('ipGeolocation', () => {
       const location: IpLocation = {
         country: 'United States',
         countryCode: 'US',
-        region: 'CA',
         regionName: 'California',
         city: 'Mountain View',
-        zip: '94043',
-        lat: 37.386,
-        lon: -122.0838,
-        timezone: 'America/Los_Angeles',
-        isp: 'Google LLC',
-        org: 'Google Cloud',
-        as: 'AS15169 Google LLC',
-        query: '8.8.8.8',
       };
 
       expect(formatLocation(location)).toBe('Mountain View, California, United States');
@@ -30,17 +21,8 @@ describe('ipGeolocation', () => {
       const location: IpLocation = {
         country: 'France',
         countryCode: 'FR',
-        region: 'IDF',
         regionName: 'Île-de-France',
         city: '',
-        zip: '',
-        lat: 48.8566,
-        lon: 2.3522,
-        timezone: 'Europe/Paris',
-        isp: 'Orange',
-        org: 'Orange',
-        as: 'AS3215 Orange S.A.',
-        query: '8.8.4.4',
       };
 
       expect(formatLocation(location)).toBe('Île-de-France, France');
@@ -50,17 +32,8 @@ describe('ipGeolocation', () => {
       const location: IpLocation = {
         country: 'Singapore',
         countryCode: 'SG',
-        region: '01',
         regionName: 'Singapore',
         city: 'Singapore',
-        zip: '',
-        lat: 1.2897,
-        lon: 103.8501,
-        timezone: 'Asia/Singapore',
-        isp: 'Singtel',
-        org: 'Singtel',
-        as: 'AS3758 SingNet',
-        query: '1.1.1.1',
       };
 
       expect(formatLocation(location)).toBe('Singapore, Singapore');
@@ -74,17 +47,8 @@ describe('ipGeolocation', () => {
       const location: IpLocation = {
         country: 'Unknown',
         countryCode: 'XX',
-        region: '',
         regionName: '',
         city: '',
-        zip: '',
-        lat: 0,
-        lon: 0,
-        timezone: '',
-        isp: '',
-        org: '',
-        as: '',
-        query: '192.0.2.1',
       };
 
       expect(formatLocation(location)).toBe('Unknown');
@@ -114,6 +78,48 @@ describe('ipGeolocation', () => {
       expect(getCountryFlag('X')).toBe('');
       expect(getCountryFlag('USA')).toBe('');
       expect(getCountryFlag('123')).toBe('');
+    });
+  });
+
+  describe('isPrivateIp', () => {
+    it('should identify private IPv4 addresses', () => {
+      expect(isPrivateIp('10.0.0.1')).toBe(true);
+      expect(isPrivateIp('10.255.255.255')).toBe(true);
+      expect(isPrivateIp('172.16.0.1')).toBe(true);
+      expect(isPrivateIp('172.31.255.255')).toBe(true);
+      expect(isPrivateIp('192.168.0.1')).toBe(true);
+      expect(isPrivateIp('192.168.255.255')).toBe(true);
+    });
+
+    it('should identify loopback addresses', () => {
+      expect(isPrivateIp('127.0.0.1')).toBe(true);
+      expect(isPrivateIp('127.255.255.255')).toBe(true);
+    });
+
+    it('should identify link-local addresses', () => {
+      expect(isPrivateIp('169.254.0.1')).toBe(true);
+      expect(isPrivateIp('169.254.255.255')).toBe(true);
+    });
+
+    it('should identify IPv6 private addresses', () => {
+      expect(isPrivateIp('::1')).toBe(true);
+      expect(isPrivateIp('fe80::1')).toBe(true);
+      expect(isPrivateIp('fc00::1')).toBe(true);
+      expect(isPrivateIp('fd00::1')).toBe(true);
+    });
+
+    it('should identify public IP addresses', () => {
+      expect(isPrivateIp('8.8.8.8')).toBe(false);
+      expect(isPrivateIp('1.1.1.1')).toBe(false);
+      expect(isPrivateIp('93.184.216.34')).toBe(false);
+      expect(isPrivateIp('151.101.1.140')).toBe(false);
+    });
+
+    it('should handle edge cases', () => {
+      expect(isPrivateIp('172.15.255.255')).toBe(false); // Just before 172.16
+      expect(isPrivateIp('172.32.0.0')).toBe(false); // Just after 172.31
+      expect(isPrivateIp('192.167.255.255')).toBe(false); // Just before 192.168
+      expect(isPrivateIp('192.169.0.0')).toBe(false); // Just after 192.168
     });
   });
 });

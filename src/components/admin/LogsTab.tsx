@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { getIpLocation, formatLocation, getCountryFlag, type IpLocation } from "@/lib/ipGeolocation";
+import { getIpLocation, formatLocation, getCountryFlag, isPrivateIp, type IpLocation } from "@/lib/ipGeolocation";
 
 interface LogEntry {
   id: string;
@@ -58,7 +58,11 @@ export default function LogsTab() {
       if (!response.ok) throw new Error("Failed to fetch logs");
 
       const data = await response.json();
-      setLogs(data.logs.map((log: LogEntry) => ({ ...log, locationLoading: !!log.ipSource })));
+      // Only set locationLoading for public IPs that can be geolocated
+      setLogs(data.logs.map((log: LogEntry) => ({ 
+        ...log, 
+        locationLoading: !!(log.ipSource && !isPrivateIp(log.ipSource))
+      })));
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching logs:", error);
@@ -70,6 +74,9 @@ export default function LogsTab() {
   // Fetch location data for IPs after logs are loaded
   // Note: This effect depends on 'logs' but the ref tracking prevents infinite loops
   // because we only fetch each unique IP once
+  // Rate limit consideration: ip-api.com allows 45 requests/minute. With typical pagination
+  // of 20 logs per page, we'll make at most 20 requests (likely fewer due to IP reuse),
+  // which is well under the limit.
   useEffect(() => {
     if (logs.length === 0) return;
 

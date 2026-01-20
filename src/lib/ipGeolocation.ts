@@ -7,22 +7,8 @@
 export interface IpLocation {
   country: string;
   countryCode: string;
-  region: string;
   regionName: string;
   city: string;
-  zip: string;
-  lat: number;
-  lon: number;
-  timezone: string;
-  isp: string;
-  org: string;
-  as: string;
-  query: string;
-}
-
-export interface IpLocationError {
-  error: string;
-  message: string;
 }
 
 /**
@@ -41,7 +27,7 @@ export async function getIpLocation(ip: string | null): Promise<IpLocation | nul
   }
 
   try {
-    const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`, {
+    const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,countryCode,regionName,city`, {
       headers: {
         'Accept': 'application/json',
       },
@@ -54,8 +40,9 @@ export async function getIpLocation(ip: string | null): Promise<IpLocation | nul
 
     const data = await response.json();
 
-    if (data.status === 'fail') {
-      console.error(`IP geolocation failed: ${data.message}`);
+    // If any required field is missing, consider it a failed lookup
+    if (!data.country || !data.countryCode) {
+      console.error('IP geolocation failed: missing required fields');
       return null;
     }
 
@@ -71,7 +58,7 @@ export async function getIpLocation(ip: string | null): Promise<IpLocation | nul
  * @param ip - IP address to check
  * @returns true if IP is private/local
  */
-function isPrivateIp(ip: string): boolean {
+export function isPrivateIp(ip: string): boolean {
   // IPv4 private ranges
   const privateRanges = [
     /^10\./,                    // 10.0.0.0/8
