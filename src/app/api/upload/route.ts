@@ -16,7 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
-import { getIpLocation } from "@/lib/ipGeolocation";
+import { findOrCreateIpAddress } from "@/lib/ipAddress";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -447,14 +447,8 @@ export async function POST(req: NextRequest) {
         const finalSlug =
           slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
 
-        // Fetch IP location data (don't fail if geolocation fails)
-        let ipLocation = null;
-        try {
-          ipLocation = await getIpLocation(clientIp);
-        } catch (error) {
-          console.error('Failed to fetch IP location for IP:', clientIp, error);
-          // Continue with null location - share creation should not fail
-        }
+        // Find or create IP address record
+        const ipAddressId = await findOrCreateIpAddress(clientIp);
 
         // Create database record
         const share = await prisma.share.create({
@@ -464,11 +458,7 @@ export async function POST(req: NextRequest) {
             filePath: "", // Will update after rename
             password: hashedPassword,
             expiresAt,
-            ipSource: clientIp,
-            ipCountry: ipLocation?.country || null,
-            ipCountryCode: ipLocation?.countryCode || null,
-            ipRegion: ipLocation?.regionName || null,
-            ipCity: ipLocation?.city || null,
+            ipAddressId,
             ownerId: session?.user?.id || null,
           },
         });

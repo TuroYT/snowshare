@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: {
       type?: "FILE" | "PASTE" | "URL";
-      OR?: Array<{ slug: { contains: string; mode: "insensitive" } } | { owner: { email: { contains: string; mode: "insensitive" } } } | { ipSource: { contains: string } }>;
+      OR?: Array<{ slug: { contains: string; mode: "insensitive" } } | { owner: { email: { contains: string; mode: "insensitive" } } } | { ipAddress: { ip: { contains: string } } }>;
     } = {};
     
     if (type !== "all") {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { slug: { contains: search, mode: "insensitive" } },
         { owner: { email: { contains: search, mode: "insensitive" } } },
-        { ipSource: { contains: search } }
+        { ipAddress: { ip: { contains: search } } }
       ];
     }
 
@@ -59,7 +59,8 @@ export async function GET(request: NextRequest) {
               email: true,
               name: true
             }
-          }
+          },
+          ipAddress: true
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -75,12 +76,12 @@ export async function GET(request: NextRequest) {
       slug: share.slug,
       createdAt: share.createdAt.toISOString(),
       expiresAt: share.expiresAt?.toISOString() || null,
-      ipSource: share.ipSource,
-      ipLocation: (share.ipCountry || share.ipCountryCode || share.ipRegion || share.ipCity) ? {
-        country: share.ipCountry || '',
-        countryCode: share.ipCountryCode || '',
-        regionName: share.ipRegion || '',
-        city: share.ipCity || '',
+      ipSource: share.ipAddress?.ip || null,
+      ipLocation: share.ipAddress ? {
+        country: share.ipAddress.country || '',
+        countryCode: share.ipAddress.countryCode || '',
+        regionName: share.ipAddress.region || '',
+        city: share.ipAddress.city || '',
       } : null,
       hasPassword: !!share.password,
       owner: share.owner ? {

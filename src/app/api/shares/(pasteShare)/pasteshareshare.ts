@@ -6,7 +6,7 @@ import crypto from "crypto";
 import { isValidPasteLanguage, MAX_PASTE_SIZE } from "@/lib/constants";
 import { NextRequest } from "next/server";
 import { getClientIp } from "@/lib/getClientIp";
-import { getIpLocation } from "@/lib/ipGeolocation";
+import { findOrCreateIpAddress } from "@/lib/ipAddress";
 
 export const createPasteShare = async (
   paste: string,
@@ -77,15 +77,9 @@ export const createPasteShare = async (
     } while (await prisma.share.findUnique({ where: { slug } }));
   }
 
-  // Fetch IP location data (don't fail if geolocation fails)
+  // Find or create IP address record
   const clientIp = getClientIp(request);
-  let ipLocation = null;
-  try {
-    ipLocation = await getIpLocation(clientIp);
-  } catch (error) {
-    console.error('Failed to fetch IP location for IP:', clientIp, error);
-    // Continue with null location - share creation should not fail
-  }
+  const ipAddressId = await findOrCreateIpAddress(clientIp);
 
   // create the paste share
   const pasteShare = await prisma.share.create({
@@ -97,11 +91,7 @@ export const createPasteShare = async (
       password: password || null,
       ownerId: session?.user?.id || null,
       type: "PASTE",
-      ipSource: clientIp,
-      ipCountry: ipLocation?.country || null,
-      ipCountryCode: ipLocation?.countryCode || null,
-      ipRegion: ipLocation?.regionName || null,
-      ipCity: ipLocation?.city || null,
+      ipAddressId,
     },
   });
 

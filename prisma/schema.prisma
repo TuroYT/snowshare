@@ -64,24 +64,33 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model IpAddress {
+  id            String   @id @default(cuid())
+  ip            String   @unique
+  country       String?
+  countryCode   String?
+  region        String?
+  city          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  shares        Share[]
+}
+
 model Share {
-  id            String     @id @default(cuid())
+  id            String      @id @default(cuid())
   type          ShareType
   ownerId       String?
-  owner         User?      @relation(fields: [ownerId], references: [id])
+  owner         User?       @relation(fields: [ownerId], references: [id])
   filePath      String?
   paste         String?
   pastelanguage pasteType?
   urlOriginal   String?
-  slug          String     @unique
+  slug          String      @unique
   password      String?
-  createdAt     DateTime   @default(now())
+  createdAt     DateTime    @default(now())
   expiresAt     DateTime?
-  ipSource      String?
-  ipCountry     String?
-  ipCountryCode String?
-  ipRegion      String?
-  ipCity        String?
+  ipAddressId   String?
+  ipAddress     IpAddress?  @relation(fields: [ipAddressId], references: [id])
 }
 
 model Settings {
