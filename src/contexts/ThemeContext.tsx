@@ -175,7 +175,7 @@ export function ThemeProvider({
     // Filter out invalid color values to prevent crashes during editing
     const validatedColors: Partial<ThemeColors> = {}
     Object.entries(newColors).forEach(([key, value]) => {
-      if (value && isValidHexColor(value)) {
+      if (typeof value === 'string' && isValidHexColor(value)) {
         validatedColors[key as keyof ThemeColors] = value
       }
     })
