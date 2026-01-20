@@ -7,6 +7,26 @@ import path from "path";
 import { getClientIp } from "./getClientIp";
 
 /**
+ * Convert MB to display unit (MiB or GiB)
+ */
+function convertFromMBForDisplay(megabytes: number, useGiB: boolean): number {
+  if (useGiB) {
+    // 1 GiB = 1024 MiB
+    return Math.round((megabytes / 1024) * 100) / 100;
+  } else {
+    // MiB = MB (1:1 for practical purposes)
+    return megabytes;
+  }
+}
+
+/**
+ * Get display unit label
+ */
+function getUnitLabel(useGiB: boolean): string {
+  return useGiB ? "GiB" : "MiB";
+}
+
+/**
  * Get file size in MB from file path
  */
 async function getFileSize(filePath: string): Promise<number> {
@@ -78,14 +98,21 @@ export async function checkUploadQuota(
   const ipQuota = isAuthenticated
     ? settings.authIpQuota
     : settings.anoIpQuota;
+  const useGiBForDisplay = isAuthenticated
+    ? settings.useGiBForAuth
+    : settings.useGiBForAnon;
+
+  const unitLabel = getUnitLabel(useGiBForDisplay);
+  const maxFileSizeDisplay = convertFromMBForDisplay(maxFileSize, useGiBForDisplay);
+  const ipQuotaDisplay = convertFromMBForDisplay(ipQuota, useGiBForDisplay);
 
   // Check individual file size
   if (fileSize > maxFileSize) {
     return {
       allowed: false,
       reason: isAuthenticated
-        ? `File size exceeds maximum allowed (${maxFileSize} MB)`
-        : `File size exceeds maximum allowed (${maxFileSize} MB). Sign in for higher limits.`,
+        ? `File size exceeds maximum allowed (${maxFileSizeDisplay}${unitLabel})`
+        : `File size exceeds maximum allowed (${maxFileSizeDisplay}${unitLabel}). Sign in for higher limits.`,
       limit: maxFileSize,
     };
   }
@@ -95,11 +122,12 @@ export async function checkUploadQuota(
 
   // Check if adding this file would exceed quota
   if (currentUsage + fileSize > ipQuota) {
+    const currentUsageDisplay = convertFromMBForDisplay(currentUsage, useGiBForDisplay);
     return {
       allowed: false,
       reason: isAuthenticated
-        ? `IP quota exceeded. Current usage: ${currentUsage.toFixed(2)} MB, Limit: ${ipQuota} MB`
-        : `IP quota exceeded. Current usage: ${currentUsage.toFixed(2)} MB, Limit: ${ipQuota} MB. Sign in for higher limits.`,
+        ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
+        : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`,
       currentUsage,
       limit: ipQuota,
     };
@@ -121,6 +149,7 @@ export async function getQuotaInfo(request: NextRequest): Promise<{
   currentUsage: number;
   remainingQuota: number;
   isAuthenticated: boolean;
+  useGiB: boolean;
 }> {
   const settings = await prisma.settings.findFirst();
   const session = await getServerSession(authOptions);
@@ -133,6 +162,9 @@ export async function getQuotaInfo(request: NextRequest): Promise<{
   const ipQuota = isAuthenticated
     ? settings?.authIpQuota || 102400
     : settings?.anoIpQuota || 4096;
+  const useGiB = isAuthenticated
+    ? settings?.useGiBForAuth ?? false
+    : settings?.useGiBForAnon ?? false;
 
   const currentUsage = await calculateIpUploadSize(ipAddress);
   const remainingQuota = Math.max(0, ipQuota - currentUsage);
@@ -143,5 +175,6 @@ export async function getQuotaInfo(request: NextRequest): Promise<{
     currentUsage,
     remainingQuota,
     isAuthenticated,
+    useGiB,
   };
 }
