@@ -40,29 +40,6 @@ const ManageCodeBlock: React.FC<{
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
-  const [allowAnonPasteShare, setAllowAnonPasteShare] = React.useState<boolean | null>(null);
-  const [settingsLoading, setSettingsLoading] = React.useState(true);
-
-  // Fetch settings to check if anonymous paste sharing is allowed
-  React.useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch("/api/settings");
-        if (response.ok) {
-          const data = await response.json();
-          setAllowAnonPasteShare(data.settings?.allowAnonPasteShare ?? true);
-        } else {
-          // Default to true if settings can't be fetched
-          setAllowAnonPasteShare(true);
-        }
-      } catch {
-        setAllowAnonPasteShare(true);
-      } finally {
-        setSettingsLoading(false);
-      }
-    };
-    fetchSettings();
-  }, []);
 
   const getDurationText = () => {
     const days = expiresDays;
@@ -125,18 +102,6 @@ const ManageCodeBlock: React.FC<{
   };
 
   if (!isAuthenticated) {
-    // Show loading while fetching settings
-    if (settingsLoading) {
-      return (
-        <div className="text-center p-6">
-          <div className="animate-pulse">
-            <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
-            <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
-          </div>
-        </div>
-      );
-    }
-
     // Block anonymous users if allowAnonPasteShare is disabled
     if (!allowAnonPasteShare) {
       return (
