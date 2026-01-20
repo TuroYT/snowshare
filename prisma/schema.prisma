@@ -65,66 +65,66 @@ model VerificationToken {
 }
 
 model IpAddress {
-  id            String   @id @default(cuid())
-  ip            String   @unique
-  country       String?
-  countryCode   String?
-  region        String?
-  city          String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  shares        Share[]
+  id          String   @id @default(cuid())
+  ip          String   @unique
+  country     String?
+  countryCode String?
+  region      String?
+  city        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  shares      Share[]
 }
 
 model Share {
-  id            String      @id @default(cuid())
+  id            String     @id @default(cuid())
   type          ShareType
   ownerId       String?
-  owner         User?       @relation(fields: [ownerId], references: [id])
+  owner         User?      @relation(fields: [ownerId], references: [id])
   filePath      String?
   paste         String?
   pastelanguage pasteType?
   urlOriginal   String?
-  slug          String      @unique
+  slug          String     @unique
   password      String?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime   @default(now())
   expiresAt     DateTime?
   ipAddressId   String?
-  ipAddress     IpAddress?  @relation(fields: [ipAddressId], references: [id])
+  ipAddress     IpAddress? @relation(fields: [ipAddressId], references: [id])
 }
 
 model Settings {
-  id            Int  @id @default(autoincrement())
-  allowSignin   Boolean @default(true)
+  id                      Int     @id @default(autoincrement())
+  allowSignin             Boolean @default(true)
   disableCredentialsLogin Boolean @default(false)
-  allowAnonFileShare Boolean @default(true)
+  allowAnonFileShare      Boolean @default(true)
   // TODO - add S3 support
-  anoMaxUpload  Int     @default(2048) // 2Go
-  authMaxUpload Int     @default(51200) // ~50Go
-  anoIpQuota    Int     @default(4096) // 4Go
-  authIpQuota   Int     @default(102400) // ~100Go
-  
+  anoMaxUpload            Int     @default(2048) // 2Go
+  authMaxUpload           Int     @default(51200) // ~50Go
+  anoIpQuota              Int     @default(4096) // 4Go
+  authIpQuota             Int     @default(102400) // ~100Go
+
   // Branding - Identity
-  appName       String  @default("SnowShare")
-  appDescription String @default("Share your files, pastes, and URLs securely")
-  logoUrl       String?
-  faviconUrl    String?
-  
+  appName        String  @default("SnowShare")
+  appDescription String  @default("Share your files, pastes, and URLs securely")
+  logoUrl        String?
+  faviconUrl     String?
+
   // Branding - Colors (Theme System)
-  primaryColor      String  @default("#3B82F6")  // Primary color (buttons, links)
-  primaryHover      String  @default("#2563EB")  // Primary color hover state
-  primaryDark       String  @default("#1E40AF")  // Dark version of primary color
-  secondaryColor    String  @default("#8B5CF6")  // Secondary color (accents)
-  secondaryHover    String  @default("#7C3AED")  // Secondary color hover state
-  secondaryDark     String  @default("#6D28D9")  // Dark version of secondary color
-  backgroundColor   String  @default("#111827")  // Main background color
-  surfaceColor      String  @default("#1F2937")  // Surface color (cards, panels)
-  textColor         String  @default("#F9FAFB")  // Main text color
-  textMuted         String  @default("#D1D5DB")  // Secondary/muted text color
-  borderColor       String  @default("#374151")  // Border color
+  primaryColor    String @default("#3B82F6") // Primary color (buttons, links)
+  primaryHover    String @default("#2563EB") // Primary color hover state
+  primaryDark     String @default("#1E40AF") // Dark version of primary color
+  secondaryColor  String @default("#8B5CF6") // Secondary color (accents)
+  secondaryHover  String @default("#7C3AED") // Secondary color hover state
+  secondaryDark   String @default("#6D28D9") // Dark version of secondary color
+  backgroundColor String @default("#111827") // Main background color
+  surfaceColor    String @default("#1F2937") // Surface color (cards, panels)
+  textColor       String @default("#F9FAFB") // Main text color
+  textMuted       String @default("#D1D5DB") // Secondary/muted text color
+  borderColor     String @default("#374151") // Border color
 
   // Legal
-  termsOfUses  String?
+  termsOfUses String?
 }
 
 model CustomLink {
@@ -158,14 +158,14 @@ enum pasteType {
 }
 
 model OAuthProvider {
-  id            String   @id @default(cuid())
-  name          String   @unique // github, google, discord, etc.
-  displayName   String   // "GitHub", "Google", etc.
-  enabled       Boolean  @default(false)
-  clientId      String?
-  clientSecret  String?  // Encrypted
-  issuer        String?  // OIDC issuer URL
-  tenantId      String?  // Azure AD tenant ID
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String   @unique // github, google, discord, etc.
+  displayName  String // "GitHub", "Google", etc.
+  enabled      Boolean  @default(false)
+  clientId     String?
+  clientSecret String? // Encrypted
+  issuer       String? // OIDC issuer URL
+  tenantId     String? // Azure AD tenant ID
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
