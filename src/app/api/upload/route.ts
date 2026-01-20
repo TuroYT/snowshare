@@ -447,8 +447,14 @@ export async function POST(req: NextRequest) {
         const finalSlug =
           slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
 
-        // Fetch IP location data
-        const ipLocation = await getIpLocation(clientIp);
+        // Fetch IP location data (don't fail if geolocation fails)
+        let ipLocation = null;
+        try {
+          ipLocation = await getIpLocation(clientIp);
+        } catch (error) {
+          console.error('Failed to fetch IP location:', error);
+          // Continue with null location - share creation should not fail
+        }
 
         // Create database record
         const share = await prisma.share.create({

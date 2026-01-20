@@ -74,9 +74,15 @@ export const createLinkShare = async (
         } while (await prisma.share.findUnique({ where: { slug } }));
     }
 
-    // Fetch IP location data
+    // Fetch IP location data (don't fail if geolocation fails)
     const clientIp = getClientIp(request);
-    const ipLocation = await getIpLocation(clientIp);
+    let ipLocation = null;
+    try {
+        ipLocation = await getIpLocation(clientIp);
+    } catch (error) {
+        console.error('Failed to fetch IP location:', error);
+        // Continue with null location - share creation should not fail
+    }
 
     // create the link share
     const linkShare = await prisma.share.create({
