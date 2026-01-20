@@ -165,8 +165,22 @@ export function ThemeProvider({
     }
   }, [initialData])
 
+  const isValidHexColor = (hex: string): boolean => {
+    if (!hex || typeof hex !== 'string') return false
+    const cleanHex = hex.replace('#', '')
+    return /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(cleanHex)
+  }
+
   const updateTheme = (newColors: Partial<ThemeColors>) => {
-    const updatedColors = { ...colors, ...newColors }
+    // Filter out invalid color values to prevent crashes during editing
+    const validatedColors: Partial<ThemeColors> = {}
+    Object.entries(newColors).forEach(([key, value]) => {
+      if (value && isValidHexColor(value)) {
+        validatedColors[key as keyof ThemeColors] = value
+      }
+    })
+    
+    const updatedColors = { ...colors, ...validatedColors }
     setColors(updatedColors)
     applyThemeToDOM(updatedColors)
   }
@@ -260,7 +274,17 @@ function applyBrandingMeta(branding: BrandingSettings) {
  * Convert hex color to rgba
  */
 function hexToRgba(hex: string, alpha: number): string {
+  // Handle empty or invalid hex values
+  if (!hex || typeof hex !== 'string') {
+    return `rgba(0, 0, 0, ${alpha})`
+  }
+
   hex = hex.replace("#", "")
+
+  // Validate hex format (must be 3 or 6 characters and all hex digits)
+  if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex)) {
+    return `rgba(0, 0, 0, ${alpha})`
+  }
 
   if (hex.length === 3) {
     hex = hex
