@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { getIpLocation, formatLocation, getCountryFlag, isPrivateIp, type IpLocation } from "@/lib/ipGeolocation";
+import { formatLocation, getCountryFlag, type IpLocation } from "@/lib/ipGeolocation";
 
 interface LogEntry {
   id: string;
@@ -11,14 +11,13 @@ interface LogEntry {
   createdAt: string;
   expiresAt: string | null;
   ipSource: string | null;
+  ipLocation: IpLocation | null;
   hasPassword: boolean;
   owner: {
     id: string;
     email: string;
     name: string | null;
   } | null;
-  location?: IpLocation | null;
-  locationLoading?: boolean;
 }
 
 interface Pagination {
@@ -42,7 +41,6 @@ export default function LogsTab() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const fetchedIpsRef = useRef<Set<string>>(new Set());
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -58,11 +56,7 @@ export default function LogsTab() {
       if (!response.ok) throw new Error("Failed to fetch logs");
 
       const data = await response.json();
-      // Only set locationLoading for public IPs that can be geolocated
-      setLogs(data.logs.map((log: LogEntry) => ({ 
-        ...log, 
-        locationLoading: !!(log.ipSource && !isPrivateIp(log.ipSource))
-      })));
+      setLogs(data.logs);
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching logs:", error);
@@ -70,56 +64,6 @@ export default function LogsTab() {
       setLoading(false);
     }
   }, [pagination.page, pagination.limit, typeFilter, search]);
-
-  // Fetch location data for IPs after logs are loaded
-  // Note: This effect depends on 'logs' but the ref tracking prevents infinite loops
-  // because we only fetch each unique IP once. The early exit check also prevents
-  // unnecessary runs when there are no pending fetches.
-  // Performance: The effect only runs when logs change (e.g., pagination, filter),
-  // and the ref ensures each IP is fetched exactly once across all runs.
-  // Rate limit consideration: ip-api.com allows 45 requests/minute. With typical pagination
-  // of 20 logs per page, we'll make at most 20 requests (likely fewer due to IP reuse),
-  // which is well under the limit.
-  useEffect(() => {
-    if (logs.length === 0) return;
-
-    // Check if there are any IPs that need fetching
-    const hasPendingFetches = logs.some(
-      (log) => log.ipSource && !log.location && log.locationLoading && !fetchedIpsRef.current.has(log.ipSource)
-    );
-
-    if (!hasPendingFetches) return;
-
-    const fetchLocations = async () => {
-      const updates: { [ip: string]: IpLocation | null } = {};
-
-      // Fetch locations for all unique IPs in parallel, but only if not already fetched
-      await Promise.all(
-        logs.map(async (log) => {
-          if (log.ipSource && !log.location && log.locationLoading && !fetchedIpsRef.current.has(log.ipSource)) {
-            fetchedIpsRef.current.add(log.ipSource);
-            const location = await getIpLocation(log.ipSource);
-            updates[log.ipSource] = location;
-          }
-        })
-      );
-
-      // Update state with all fetched locations
-      // Multiple logs with the same IP will all get the same location data
-      if (Object.keys(updates).length > 0) {
-        setLogs((prevLogs) =>
-          prevLogs.map((log) => {
-            if (log.ipSource && updates[log.ipSource] !== undefined) {
-              return { ...log, location: updates[log.ipSource], locationLoading: false };
-            }
-            return log;
-          })
-        );
-      }
-    };
-
-    fetchLocations();
-  }, [logs]);
 
   useEffect(() => {
     fetchLogs();
@@ -364,19 +308,14 @@ export default function LogsTab() {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    {log.locationLoading ? (
-                      <div className="flex items-center gap-2 text-[var(--foreground-muted)]">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
-                        <span className="text-xs">{t("loading")}</span>
-                      </div>
-                    ) : log.location ? (
+                    {log.ipLocation ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-lg" title={log.location.country}>
-                          {getCountryFlag(log.location.countryCode)}
+                        <span className="text-lg" title={log.ipLocation.country}>
+                          {getCountryFlag(log.ipLocation.countryCode)}
                         </span>
                         <div className="text-sm">
                           <div className="text-[var(--foreground)]">
-                            {formatLocation(log.location)}
+                            {formatLocation(log.ipLocation)}
                           </div>
                         </div>
                       </div>

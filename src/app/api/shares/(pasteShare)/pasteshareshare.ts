@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { isValidPasteLanguage, MAX_PASTE_SIZE } from "@/lib/constants";
 import { NextRequest } from "next/server";
 import { getClientIp } from "@/lib/getClientIp";
+import { getIpLocation } from "@/lib/ipGeolocation";
 
 export const createPasteShare = async (
   paste: string,
@@ -76,6 +77,10 @@ export const createPasteShare = async (
     } while (await prisma.share.findUnique({ where: { slug } }));
   }
 
+  // Fetch IP location data
+  const clientIp = getClientIp(request);
+  const ipLocation = await getIpLocation(clientIp);
+
   // create the paste share
   const pasteShare = await prisma.share.create({
     data: {
@@ -86,7 +91,11 @@ export const createPasteShare = async (
       password: password || null,
       ownerId: session?.user?.id || null,
       type: "PASTE",
-      ipSource: getClientIp(request),
+      ipSource: clientIp,
+      ipCountry: ipLocation?.country || null,
+      ipCountryCode: ipLocation?.countryCode || null,
+      ipRegion: ipLocation?.regionName || null,
+      ipCity: ipLocation?.city || null,
     },
   });
 

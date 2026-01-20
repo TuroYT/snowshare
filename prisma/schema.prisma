@@ -78,6 +78,10 @@ model Share {
   createdAt     DateTime   @default(now())
   expiresAt     DateTime?
   ipSource      String?
+  ipCountry     String?
+  ipCountryCode String?
+  ipRegion      String?
+  ipCity        String?
 }
 
 model Settings {

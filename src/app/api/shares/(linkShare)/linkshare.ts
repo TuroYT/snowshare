@@ -7,6 +7,7 @@ import crypto from "crypto";
 import { isValidUrl as validateUrl } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
 import { NextRequest } from "next/server";
+import { getIpLocation } from "@/lib/ipGeolocation";
 
 export const createLinkShare = async (
     urlOriginal: string,
@@ -73,6 +74,10 @@ export const createLinkShare = async (
         } while (await prisma.share.findUnique({ where: { slug } }));
     }
 
+    // Fetch IP location data
+    const clientIp = getClientIp(request);
+    const ipLocation = await getIpLocation(clientIp);
+
     // create the link share
     const linkShare = await prisma.share.create({
         data: {
@@ -82,7 +87,11 @@ export const createLinkShare = async (
             password: password || null,
             ownerId: session?.user?.id || null,
             type: "URL",
-            ipSource: getClientIp(request)
+            ipSource: clientIp,
+            ipCountry: ipLocation?.country || null,
+            ipCountryCode: ipLocation?.countryCode || null,
+            ipRegion: ipLocation?.regionName || null,
+            ipCity: ipLocation?.city || null,
         }
     });
 

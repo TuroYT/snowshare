@@ -16,6 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
+import { getIpLocation } from "@/lib/ipGeolocation";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -446,6 +447,9 @@ export async function POST(req: NextRequest) {
         const finalSlug =
           slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
 
+        // Fetch IP location data
+        const ipLocation = await getIpLocation(clientIp);
+
         // Create database record
         const share = await prisma.share.create({
           data: {
@@ -455,6 +459,10 @@ export async function POST(req: NextRequest) {
             password: hashedPassword,
             expiresAt,
             ipSource: clientIp,
+            ipCountry: ipLocation?.country || null,
+            ipCountryCode: ipLocation?.countryCode || null,
+            ipRegion: ipLocation?.regionName || null,
+            ipCity: ipLocation?.city || null,
             ownerId: session?.user?.id || null,
           },
         });

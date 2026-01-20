@@ -76,6 +76,12 @@ export async function GET(request: NextRequest) {
       createdAt: share.createdAt.toISOString(),
       expiresAt: share.expiresAt?.toISOString() || null,
       ipSource: share.ipSource,
+      ipLocation: (share.ipCountry && share.ipCountryCode) ? {
+        country: share.ipCountry,
+        countryCode: share.ipCountryCode,
+        regionName: share.ipRegion || '',
+        city: share.ipCity || '',
+      } : null,
       hasPassword: !!share.password,
       owner: share.owner ? {
         id: share.owner.id,
