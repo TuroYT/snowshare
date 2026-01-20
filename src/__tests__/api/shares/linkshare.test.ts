@@ -36,6 +36,7 @@ import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/crypto-link';
+import { NextRequest } from 'next/server';
 
 const mockGetServerSession = getServerSession as jest.Mock;
 const mockPrismaCreate = prisma.share.create as jest.Mock;
@@ -248,7 +249,8 @@ describe('createLinkShare', () => {
       });
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = await createLinkShare('https://example.com', {} as any, futureDate);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createLinkShare('https://example.com', mockRequest, futureDate);
       
       expect(result.error).toBe('Anonymous users are not allowed to create link shares. Please log in.');
       expect(mockPrismaCreate).not.toHaveBeenCalled();
@@ -260,7 +262,8 @@ describe('createLinkShare', () => {
       });
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = await createLinkShare('https://example.com', {} as any, futureDate);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createLinkShare('https://example.com', mockRequest, futureDate);
       
       expect(result.error).toBeUndefined();
       expect(result.linkShare).toBeDefined();
@@ -271,7 +274,8 @@ describe('createLinkShare', () => {
       mockPrismaSettingsFindFirst.mockResolvedValue(null);
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = await createLinkShare('https://example.com', {} as any, futureDate);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createLinkShare('https://example.com', mockRequest, futureDate);
       
       expect(result.error).toBeUndefined();
       expect(result.linkShare).toBeDefined();

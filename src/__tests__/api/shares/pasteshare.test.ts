@@ -31,6 +31,7 @@ import { createPasteShare } from '@/app/api/shares/(pasteShare)/pasteshareshare'
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { NextRequest } from 'next/server';
 
 const mockGetServerSession = getServerSession as jest.Mock;
 const mockPrismaCreate = prisma.share.create as jest.Mock;
@@ -275,7 +276,8 @@ describe('createPasteShare', () => {
     });
 
     it('should store hashed password, not plaintext', async () => {
-      await createPasteShare('code', 'JAVASCRIPT', {} as any, undefined, undefined, 'mypassword');
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      await createPasteShare('code', 'JAVASCRIPT', mockRequest, undefined, undefined, 'mypassword');
       
       const createArgs = mockPrismaCreate.mock.calls[0][0];
       expect(createArgs.data.password).toBe('hashed_mypassword');
@@ -295,7 +297,8 @@ describe('createPasteShare', () => {
       });
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', {} as any, futureDate);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', mockRequest, futureDate);
       
       expect(result.error).toBe('Anonymous users are not allowed to create paste shares. Please log in.');
       expect(mockPrismaCreate).not.toHaveBeenCalled();
@@ -307,7 +310,8 @@ describe('createPasteShare', () => {
       });
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', {} as any, futureDate);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', mockRequest, futureDate);
       
       expect(result.error).toBeUndefined();
       expect(result.pasteShare).toBeDefined();
@@ -318,7 +322,8 @@ describe('createPasteShare', () => {
       mockPrismaSettingsFindFirst.mockResolvedValue(null);
 
       const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', {} as any, futureDate);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', mockRequest, futureDate);
       
       expect(result.error).toBeUndefined();
       expect(result.pasteShare).toBeDefined();
