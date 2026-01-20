@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { getIpLocation, formatLocation, getCountryFlag, type IpLocation } from "@/lib/ipGeolocation";
 
@@ -42,6 +42,7 @@ export default function LogsTab() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const fetchedIpsRef = useRef<Set<string>>(new Set());
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -73,10 +74,11 @@ export default function LogsTab() {
     const fetchLocations = async () => {
       const updates: { [key: string]: IpLocation | null } = {};
 
-      // Fetch locations for all IPs in parallel
+      // Fetch locations for all IPs in parallel, but only if not already fetched
       await Promise.all(
         logs.map(async (log) => {
-          if (log.ipSource && !log.location && log.locationLoading) {
+          if (log.ipSource && !log.location && log.locationLoading && !fetchedIpsRef.current.has(log.ipSource)) {
+            fetchedIpsRef.current.add(log.ipSource);
             const location = await getIpLocation(log.ipSource);
             updates[log.id] = location;
           }
@@ -97,7 +99,7 @@ export default function LogsTab() {
     };
 
     fetchLocations();
-  }, [logs.length]); // Only depend on length to avoid infinite loops
+  }, [logs]);
 
   useEffect(() => {
     fetchLogs();
