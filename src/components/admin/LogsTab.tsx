@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { getIpLocation, formatLocation, getCountryFlag, type IpLocation } from "@/lib/ipGeolocation";
 
 interface LogEntry {
   id: string;
@@ -16,6 +17,8 @@ interface LogEntry {
     email: string;
     name: string | null;
   } | null;
+  location?: IpLocation | null;
+  locationLoading?: boolean;
 }
 
 interface Pagination {
@@ -54,7 +57,7 @@ export default function LogsTab() {
       if (!response.ok) throw new Error("Failed to fetch logs");
 
       const data = await response.json();
-      setLogs(data.logs);
+      setLogs(data.logs.map((log: LogEntry) => ({ ...log, locationLoading: !!log.ipSource })));
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching logs:", error);
@@ -62,6 +65,39 @@ export default function LogsTab() {
       setLoading(false);
     }
   }, [pagination.page, pagination.limit, typeFilter, search]);
+
+  // Fetch location data for IPs after logs are loaded
+  useEffect(() => {
+    if (logs.length === 0) return;
+
+    const fetchLocations = async () => {
+      const updates: { [key: string]: IpLocation | null } = {};
+
+      // Fetch locations for all IPs in parallel
+      await Promise.all(
+        logs.map(async (log) => {
+          if (log.ipSource && !log.location && log.locationLoading) {
+            const location = await getIpLocation(log.ipSource);
+            updates[log.id] = location;
+          }
+        })
+      );
+
+      // Update state with all fetched locations
+      if (Object.keys(updates).length > 0) {
+        setLogs((prevLogs) =>
+          prevLogs.map((log) => {
+            if (updates[log.id] !== undefined) {
+              return { ...log, location: updates[log.id], locationLoading: false };
+            }
+            return log;
+          })
+        );
+      }
+    };
+
+    fetchLocations();
+  }, [logs.length]); // Only depend on length to avoid infinite loops
 
   useEffect(() => {
     fetchLogs();
@@ -240,6 +276,9 @@ export default function LogsTab() {
                 {t("admin.logs.table.ip")}
               </th>
               <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
+                {t("admin.logs.table.location")}
+              </th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.created")}
               </th>
               <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
@@ -256,7 +295,7 @@ export default function LogsTab() {
           <tbody className="divide-y divide-gray-700/30">
             {loading ? (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
+                <td colSpan={9} className="py-8 text-center text-[var(--foreground-muted)]">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
                     {t("loading")}
@@ -265,7 +304,7 @@ export default function LogsTab() {
               </tr>
             ) : logs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
+                <td colSpan={9} className="py-8 text-center text-[var(--foreground-muted)]">
                   {t("admin.logs.no_logs")}
                 </td>
               </tr>
@@ -301,6 +340,31 @@ export default function LogsTab() {
                     <span className="text-sm text-[var(--foreground-muted)] font-mono">
                       {log.ipSource || "-"}
                     </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    {log.locationLoading ? (
+                      <div className="flex items-center gap-2 text-[var(--foreground-muted)]">
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                        <span className="text-xs">{t("loading")}</span>
+                      </div>
+                    ) : log.location ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg" title={log.location.country}>
+                          {getCountryFlag(log.location.countryCode)}
+                        </span>
+                        <div className="text-sm">
+                          <div className="text-[var(--foreground)]">
+                            {formatLocation(log.location)}
+                          </div>
+                        </div>
+                      </div>
+                    ) : log.ipSource ? (
+                      <span className="text-[var(--foreground-muted)] text-xs italic">
+                        {t("admin.logs.location_unavailable")}
+                      </span>
+                    ) : (
+                      <span className="text-[var(--foreground-muted)]">-</span>
+                    )}
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-[var(--foreground)]">{formatDate(log.createdAt)}</span>

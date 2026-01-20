@@ -434,11 +434,14 @@
                 "slug": "Slug",
                 "owner": "Eigenaar",
                 "ip": "IP-adres",
+                "location": "Locatie",
                 "created": "Aangemaakt",
                 "expires": "Verloopt",
-                "status": "Status"
+                "status": "Status",
+                "actions": "Acties"
             },
             "anonymous": "Anoniem",
+            "location_unavailable": "Locatie niet beschikbaar",
             "never": "Nooit",
             "expired": "Verlopen",
             "active": "Actief",
