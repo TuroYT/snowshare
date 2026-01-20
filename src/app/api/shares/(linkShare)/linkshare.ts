@@ -61,7 +61,7 @@ export const createLinkShare = async (
         }
     }
 
-    // hash password et chiffrer l'URL si password fourni
+    // Hash password and encrypt URL if password is provided
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 12);
         urlOriginal = encrypt(urlOriginal, password);

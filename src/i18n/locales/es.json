@@ -163,7 +163,7 @@
     "duration_in_x_days": "Este enlace expirará en {{count}} días",
     "duration_in_1_week": "Este enlace expirará en 1 semana",
     "duration_in_x_weeks": "Este enlace expirará en {{count}} semanas",
-    "duration_in_1_month": "Este enlace expirará en 1 mois",
+    "duration_in_1_month": "Este enlace expirará en 1 mes",
     "duration_in_x_months": "Este enlace expirará en {{count}} meses",
     "duration_in_x_years": "Este enlace expirará en {{count}} año(s)",
     "locked_title": "Compartir enlaces está bloqueado",

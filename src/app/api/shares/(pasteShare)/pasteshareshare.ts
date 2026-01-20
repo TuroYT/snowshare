@@ -55,7 +55,7 @@ export const createPasteShare = async (
       return { error: "Anonymous users are not allowed to create paste shares. Please log in." };
     }
 
-    // verif si expire supérieur à 7 jours
+    // Check if expiry is greater than 7 days
     if (expiresAt) {
       const maxExpiry = new Date();
       maxExpiry.setDate(maxExpiry.getDate() + 7);
@@ -67,7 +67,7 @@ export const createPasteShare = async (
     }
   }
 
-  // hash password si fourni
+  // Hash password if provided
   if (password) {
     password = await bcrypt.hash(password, 12);
   }
