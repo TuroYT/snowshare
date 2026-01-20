@@ -24,6 +24,26 @@ export const runtime = "nodejs";
 // Disable static optimization
 export const dynamic = "force-dynamic";
 
+/**
+ * Convert MB to display unit (MiB or GiB)
+ */
+function convertFromMBForDisplay(megabytes: number, useGiB: boolean): number {
+  if (useGiB) {
+    // 1 GiB = 1024 MiB
+    return Math.round((megabytes / 1024) * 100) / 100;
+  } else {
+    // MiB = MB (1:1 for practical purposes)
+    return megabytes;
+  }
+}
+
+/**
+ * Get display unit label
+ */
+function getUnitLabel(useGiB: boolean): string {
+  return useGiB ? "GiB" : "MiB";
+}
+
 interface UploadLimits {
   maxFileSizeBytes: number;
   maxFileSizeMB: number;
@@ -32,6 +52,7 @@ interface UploadLimits {
   currentUsageBytes: number;
   remainingQuotaBytes: number;
   isAuthenticated: boolean;
+  useGiB: boolean;
 }
 
 /**
@@ -100,6 +121,10 @@ async function getUploadLimits(
     ? settings?.authIpQuota || 102400
     : settings?.anoIpQuota || 4096;
 
+  const useGiB = isAuthenticated
+    ? settings?.useGiBForAuth ?? false
+    : settings?.useGiBForAnon ?? false;
+
   // Calculate current usage
   const currentUsageBytes = await calculateIpUploadSizeBytes(ipAddress);
 
@@ -116,6 +141,7 @@ async function getUploadLimits(
     currentUsageBytes,
     remainingQuotaBytes,
     isAuthenticated,
+    useGiB,
   };
 }
 
@@ -172,12 +198,14 @@ export async function POST(req: NextRequest) {
 
   // Pre-check: if remaining quota is 0, reject immediately (only for new upload/first chunk)
   if (chunkIndex === 0 && limits.remainingQuotaBytes <= 0) {
-    const currentUsageMB = (limits.currentUsageBytes / (1024 * 1024)).toFixed(2);
+    const unitLabel = getUnitLabel(limits.useGiB);
+    const currentUsageDisplay = convertFromMBForDisplay(Math.round(limits.currentUsageBytes / (1024 * 1024)), limits.useGiB);
+    const ipQuotaDisplay = convertFromMBForDisplay(limits.ipQuotaMB, limits.useGiB);
     return NextResponse.json(
       {
         error: isAuthenticated
-          ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
-          : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`,
+          ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
+          : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`,
       },
       { status: 429 }
     );
@@ -299,21 +327,22 @@ export async function POST(req: NextRequest) {
           fileStream.destroy();
           fileWriteStream?.destroy();
 
+          const unitLabel = getUnitLabel(limits.useGiB);
           if (fileSize > limits.remainingQuotaBytes) {
-            const currentUsageMB = (
-              limits.currentUsageBytes /
-              (1024 * 1024)
-            ).toFixed(2);
+            const currentUsageMB = Math.round(limits.currentUsageBytes / (1024 * 1024));
+            const currentUsageDisplay = convertFromMBForDisplay(currentUsageMB, limits.useGiB);
+            const ipQuotaDisplay = convertFromMBForDisplay(limits.ipQuotaMB, limits.useGiB);
             sendError(
               429,
               limits.isAuthenticated
-                ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
-                : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`
+                ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
+                : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`
             );
           } else {
+            const maxFileSizeDisplay = convertFromMBForDisplay(limits.maxFileSizeMB, limits.useGiB);
             sendError(
               413,
-              `File size exceeds the allowed limit of ${limits.maxFileSizeMB}MB.`
+              `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.`
             );
           }
         }

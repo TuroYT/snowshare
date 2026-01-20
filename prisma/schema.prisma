@@ -103,7 +103,9 @@ model Settings {
   authMaxUpload           Int     @default(51200) // ~50Go
   anoIpQuota              Int     @default(4096) // 4Go
   authIpQuota             Int     @default(102400) // ~100Go
-
+  // Unit format preferences (MiB/GiB vs MB/GB)
+  useGiBForAnon Boolean @default(false) // Use GiB (true) or MiB (false) for anonymous users
+  useGiBForAuth Boolean @default(false) // Use GiB (true) or MiB (false) for authenticated users
   // Branding - Identity
   appName        String  @default("SnowShare")
   appDescription String  @default("Share your files, pastes, and URLs securely")
