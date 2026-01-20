@@ -13,6 +13,9 @@ jest.mock('@/lib/prisma', () => ({
       create: jest.fn(),
       findUnique: jest.fn(),
     },
+    settings: {
+      findFirst: jest.fn(),
+    },
   },
 }));
 
@@ -37,6 +40,7 @@ import { encrypt } from '@/lib/crypto-link';
 const mockGetServerSession = getServerSession as jest.Mock;
 const mockPrismaCreate = prisma.share.create as jest.Mock;
 const mockPrismaFindUnique = prisma.share.findUnique as jest.Mock;
+const mockPrismaSettingsFindFirst = prisma.settings.findFirst as jest.Mock;
 const mockBcryptHash = bcrypt.hash as jest.Mock;
 const mockEncrypt = encrypt as jest.Mock;
 
@@ -229,6 +233,49 @@ describe('createLinkShare', () => {
       
       // Should have checked for slug uniqueness at least twice
       expect(mockPrismaFindUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('anonymous user restrictions', () => {
+    beforeEach(() => {
+      // Set anonymous user (no session)
+      mockGetServerSession.mockResolvedValue(null);
+    });
+
+    it('should reject anonymous link share when allowAnonLinkShare is false', async () => {
+      mockPrismaSettingsFindFirst.mockResolvedValue({
+        allowAnonLinkShare: false,
+      });
+
+      const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const result = await createLinkShare('https://example.com', {} as any, futureDate);
+      
+      expect(result.error).toBe('Anonymous users are not allowed to create link shares. Please log in.');
+      expect(mockPrismaCreate).not.toHaveBeenCalled();
+    });
+
+    it('should allow anonymous link share when allowAnonLinkShare is true', async () => {
+      mockPrismaSettingsFindFirst.mockResolvedValue({
+        allowAnonLinkShare: true,
+      });
+
+      const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const result = await createLinkShare('https://example.com', {} as any, futureDate);
+      
+      expect(result.error).toBeUndefined();
+      expect(result.linkShare).toBeDefined();
+      expect(mockPrismaCreate).toHaveBeenCalled();
+    });
+
+    it('should allow anonymous link share when settings are null (default behavior)', async () => {
+      mockPrismaSettingsFindFirst.mockResolvedValue(null);
+
+      const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const result = await createLinkShare('https://example.com', {} as any, futureDate);
+      
+      expect(result.error).toBeUndefined();
+      expect(result.linkShare).toBeDefined();
+      expect(mockPrismaCreate).toHaveBeenCalled();
     });
   });
 });
