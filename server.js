@@ -83,6 +83,33 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
+// Authenticate user from request
+async function authenticateUser(req) {
+  try {
+    const token = await getToken({ 
+      req: { 
+        headers: req.headers,
+        cookies: parseCookies(req.headers.cookie || "")
+      }, 
+      secret: process.env.NEXTAUTH_SECRET 
+    });
+    
+    if (token?.id) {
+      return {
+        userId: token.id,
+        isAuthenticated: true,
+      };
+    }
+  } catch {
+    // Continue as anonymous
+  }
+  
+  return {
+    userId: null,
+    isAuthenticated: false,
+  };
+}
+
 // Calculate IP usage for quota
 async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   const shares = await prisma.share.findMany({
@@ -140,25 +167,7 @@ const tusServer = new TusServer({
     const clientIp = getClientIp(req);
     
     // Check authentication
-    let userId = null;
-    let isAuthenticated = false;
-    
-    try {
-      const token = await getToken({ 
-        req: { 
-          headers: req.headers,
-          cookies: parseCookies(req.headers.cookie || "")
-        }, 
-        secret: process.env.NEXTAUTH_SECRET 
-      });
-      
-      if (token?.id) {
-        userId = token.id;
-        isAuthenticated = true;
-      }
-    } catch {
-      // Continue as anonymous
-    }
+    const { userId, isAuthenticated } = await authenticateUser(req);
 
     // Get settings
     const settings = await prisma.settings.findFirst();
@@ -240,25 +249,7 @@ const tusServer = new TusServer({
       const clientIp = getClientIp(req);
       
       // Re-authenticate user (metadata from onUploadCreate is not persisted)
-      let userId = null;
-      let isAuthenticated = false;
-      
-      try {
-        const token = await getToken({ 
-          req: { 
-            headers: req.headers,
-            cookies: parseCookies(req.headers.cookie || "")
-          }, 
-          secret: process.env.NEXTAUTH_SECRET 
-        });
-        
-        if (token?.id) {
-          userId = token.id;
-          isAuthenticated = true;
-        }
-      } catch {
-        // Continue as anonymous
-      }
+      const { userId, isAuthenticated } = await authenticateUser(req);
 
       // Validate slug if provided
       let finalSlug = slug;
