@@ -66,20 +66,41 @@ All shares (File/Link/Paste) follow this pattern in `src/app/api/shares/(shareTy
 
 # Developer commands
 
+## Development
 ```bash
 npm run dev          # Next.js dev with Turbopack (default: port 3000)
 npm run build        # Production build (output: .next/)
+npm run start        # Production server (after build)
+npm run lint         # Run ESLint
 npm run lint:fix     # ESLint auto-fix
+```
 
+## Testing
+```bash
 npm run test         # Jest unit tests (jsdom environment)
 npm run test:watch   # Watch mode
 npm run test:coverage # Coverage report
+```
 
-npm run cleanup:expired  # Remove expired shares (tsx script)
+**Test patterns**:
+- Unit tests: `src/__tests__/lib/*.test.ts` (utilities, validation)
+- Component tests: `src/__tests__/components/*.test.tsx` (React components)
+- API tests: `src/__tests__/api/**/*.test.ts` (API routes)
+- Use `describe()` for grouping, `it()` for individual tests
+- Mock Prisma and NextAuth in tests using Jest mocks
 
+## Database
+```bash
 npx prisma migrate dev --name <name>  # Create + apply migration
+npx prisma migrate deploy              # Apply migrations (production)
 npx prisma generate                    # Regenerate client → src/generated/prisma/
 npx prisma db seed                     # Run prisma/seed.ts (if exists)
+npx prisma studio                      # Open Prisma Studio GUI
+```
+
+## Maintenance
+```bash
+npm run cleanup:expired  # Remove expired shares (tsx script)
 ```
 
 **Docker**: `docker compose up -d --build` — runs Next.js + PostgreSQL, executes `prisma migrate deploy` on startup. App at http://localhost:3000, DB at port 5432. Volumes: `db-data/` (persistent), `uploads/` (files).
@@ -123,6 +144,33 @@ Always return JSON with consistent structure:
 - Track file path in `Share.filePath` (relative to project root)
 - Clean up files when shares expire (via cleanup script)
 
+## Error handling patterns
+All API routes should follow this pattern:
+```typescript
+// Validation errors → 400
+if (!isValid) {
+  return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+}
+
+// Unauthorized → 401
+if (!session) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+// Forbidden → 403
+if (!hasPermission) {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
+
+// Quota exceeded → 429
+if (quotaExceeded) {
+  return NextResponse.json({ error: "Quota exceeded" }, { status: 429 });
+}
+
+// Success → 200
+return NextResponse.json({ data: result });
+```
+
 # Key files for common tasks
 
 | Task | Files |
@@ -134,6 +182,85 @@ Always return JSON with consistent structure:
 | Add translation | All files in `src/i18n/locales/*.json` (fr, en, es, de) |
 | Change quotas | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` enforcement |
 | Database operations | All at `src/app/api/` routes; client at `src/generated/prisma` |
+
+# CI/CD workflow
+
+The repository uses GitHub Actions for CI/CD:
+
+- **build-self-hosted.yml**: Runs on push/PR to main/dev branches
+  - Checkout code
+  - Setup Node.js 20
+  - Install dependencies (`npm ci`)
+  - Run linter (`npm run lint`)
+  - Build Docker image
+- **Triggered on**: `push` to main/dev, `pull_request` opened/synchronize/reopened
+- Tests are run via Jest framework (see Testing section)
+
+# Environment setup
+
+## Initial Setup
+1. Clone repository: `git clone https://github.com/TuroYT/snowshare.git`
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env` and configure:
+   ```env
+   DATABASE_URL="postgresql://user:pass@localhost:5432/snowshare"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="$(openssl rand -base64 32)"
+   ALLOW_SIGNUP=true
+   ```
+4. Initialize database: `npx prisma migrate dev`
+5. Generate Prisma client: `npx prisma generate`
+6. Start dev server: `npm run dev`
+
+## Docker Setup (Alternative)
+```bash
+docker compose up -d --build
+# App: http://localhost:3000
+# DB: PostgreSQL on port 5432
+# Data persists in db-data/ and uploads/
+```
+
+# Troubleshooting
+
+## Common Issues
+
+**Prisma Client not generated**
+```bash
+npx prisma generate
+```
+
+**Database connection errors**
+- Check `DATABASE_URL` in `.env`
+- Ensure PostgreSQL is running
+- Verify database exists: `psql -l`
+
+**Port 3000 already in use**
+```bash
+# Change PORT in .env or use:
+PORT=3001 npm run dev
+```
+
+**ESLint errors**
+```bash
+npm run lint:fix  # Auto-fix issues
+```
+
+**Test failures after DB schema change**
+```bash
+npx prisma generate  # Regenerate client
+npm test             # Re-run tests
+```
+
+**File upload issues**
+- Ensure `uploads/` directory exists and is writable
+- Check disk space and quota limits
+
+# Related documentation
+
+- [CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution guidelines and workflow
+- [README.md](../README.md) - Project overview and getting started
+- [SECURITY.md](../SECURITY.md) - Security policy and reporting
+- [prisma/schema.prisma](../prisma/schema.prisma) - Database schema
 
 # AI agent guidelines
 
