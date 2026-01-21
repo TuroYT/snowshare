@@ -5,6 +5,7 @@
 
 import { createServer } from "http";
 import { parse } from "url";
+import { AsyncLocalStorage } from "async_hooks";
 import next from "next";
 import { Server as TusServer } from "@tus/server";
 import { FileStore } from "@tus/file-store";
@@ -21,6 +22,9 @@ const port = parseInt(process.env.PORT || "3000", 10);
 // Initialize Next.js
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
+
+// Create AsyncLocalStorage for request context
+const requestContext = new AsyncLocalStorage();
 
 // Get upload directory
 function getUploadDir() {
@@ -190,20 +194,19 @@ const tusServer = new TusServer({
       throw { status_code: 500, body: "Internal Server Error: Upload context missing" };
     }
 
-    console.log(`[Debug] onUploadCreate: Metadata on req? ${!!req._snowshareMetadata}`);
-    console.log(`[Debug] onUploadCreate: Headers keys: ${Object.keys(req.headers || {}).join(", ")}`);
-    if(req.headers?.cookie) console.log(`[Debug] Cookies present: yes`);
-    
     const { prisma } = await import("./src/lib/prisma.js");
     
     const uploadId = upload.id;
     let clientIp, userId, isAuthenticated;
     
-    // Try to get metadata from request
-    if (req._snowshareMetadata) {
-      ({ clientIp, userId, isAuthenticated } = req._snowshareMetadata);
+    // Try to get metadata from AsyncLocalStorage context
+    const store = requestContext.getStore();
+    
+    if (store) {
+      ({ clientIp, userId, isAuthenticated } = store);
     } else {
-      // Fallback if metadata not attached
+      // Fallback if context is missing (should not happen if wrapped correctly)
+      console.warn("[Upload] Warning: Missing async context, falling back to request inspection");
       clientIp = getClientIpFromHttpReq(req);
       const auth = await authenticateFromRequest(req);
       userId = auth.userId;
@@ -215,9 +218,7 @@ const tusServer = new TusServer({
       clientIp,
       userId,
       isAuthenticated
-    }); 
-    
-    console.log(`[Debug] Stored metadata for upload ${uploadId}: IP=${clientIp}, User=${userId}, Auth=${isAuthenticated}`);
+    });
 
     // Get settings
     const settings = await prisma.settings.findFirst();
@@ -411,20 +412,19 @@ const tusServer = new TusServer({
 
 // Handle tus requests
 async function handleTus(req, res) {
-  // Capture metadata once per request
-  if (!req._snowshareMetadata) {
-    const clientIp = getClientIpFromHttpReq(req);
-    const { userId, isAuthenticated } = await authenticateFromRequest(req);
-    
-    req._snowshareMetadata = {
-      clientIp,
-      userId,
-      isAuthenticated,
-      timestamp: Date.now()
-    };
-  }
+  const clientIp = getClientIpFromHttpReq(req);
+  const { userId, isAuthenticated } = await authenticateFromRequest(req);
   
-  return tusServer.handle(req, res);
+  const context = {
+    clientIp,
+    userId,
+    isAuthenticated,
+    timestamp: Date.now()
+  };
+  
+  return requestContext.run(context, () => {
+    return tusServer.handle(req, res);
+  });
 }
 
 app.prepare().then(() => {
