@@ -36,12 +36,36 @@ function getTusTempDir() {
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
   if (typeof forwarded === "string") {
-    return forwarded.split(",")[0].trim();
+    const ip = forwarded.split(",")[0].trim();
+    console.log(`[IP Debug] Using x-forwarded-for: ${ip}`);
+    return ip;
   }
   if (Array.isArray(forwarded)) {
+    console.log(`[IP Debug] Using x-forwarded-for (array): ${forwarded[0]}`);
     return forwarded[0];
   }
-  return req.socket?.remoteAddress || "unknown";
+  
+  // Try x-real-ip header
+  const realIp = req.headers["x-real-ip"];
+  if (realIp) {
+    console.log(`[IP Debug] Using x-real-ip: ${realIp}`);
+    return realIp;
+  }
+  
+  // Get socket address
+  const socketAddress = req.socket?.remoteAddress;
+  if (socketAddress) {
+    // Normalize IPv6 localhost and IPv4-mapped addresses
+    if (socketAddress === "::1" || socketAddress === "::ffff:127.0.0.1") {
+      console.log(`[IP Debug] Using normalized localhost: 127.0.0.1`);
+      return "127.0.0.1";
+    }
+    console.log(`[IP Debug] Using socket address: ${socketAddress}`);
+    return socketAddress;
+  }
+  
+  console.log(`[IP Debug] No IP found, using unknown`);
+  return "unknown";
 }
 
 // Convert MB to display unit (MiB or GiB)
@@ -86,21 +110,25 @@ function parseCookies(cookieHeader) {
 // Authenticate user from request
 async function authenticateUser(req) {
   try {
+    const cookies = parseCookies(req.headers.cookie || "");
     const token = await getToken({ 
       req: { 
         headers: req.headers,
-        cookies: parseCookies(req.headers.cookie || "")
+        cookies
       }, 
       secret: process.env.NEXTAUTH_SECRET 
     });
     
     if (token?.id) {
+      console.log(`[Auth Debug] User authenticated: ${token.id}`);
       return {
         userId: token.id,
         isAuthenticated: true,
       };
     }
-  } catch {
+    console.log(`[Auth Debug] No valid token found`);
+  } catch (error) {
+    console.error(`[Auth Debug] Error during authentication:`, error.message);
     // Continue as anonymous
   }
   
@@ -250,6 +278,8 @@ const tusServer = new TusServer({
       
       // Re-authenticate user (metadata from onUploadCreate is not persisted)
       const { userId, isAuthenticated } = await authenticateUser(req);
+
+      console.log(`[Upload Debug] IP: ${clientIp}, UserId: ${userId}, IsAuth: ${isAuthenticated}`);
 
       // Validate slug if provided
       let finalSlug = slug;
