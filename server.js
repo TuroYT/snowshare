@@ -167,9 +167,8 @@ if (!existsSync(tusTempDir)) {
   mkdirSync(tusTempDir, { recursive: true });
 }
 
-// Store upload metadata indexed by unique request ID
-// Format: { requestId: { clientIp, userId, isAuthenticated, uploadId?, timestamp } }
-const pendingUploads = new Map();
+// Store upload metadata indexed by upload ID
+const uploadMetadata = new Map();
 
 // Create tus server with FileStore
 const tusServer = new TusServer({
@@ -193,21 +192,26 @@ const tusServer = new TusServer({
 
     const { prisma } = await import("./src/lib/prisma.js");
     
-    // Get metadata from the request ID
-    const requestId = req.snowshareRequestId;
     const uploadId = upload.id;
+    let clientIp, userId, isAuthenticated;
     
-    if (!requestId || !pendingUploads.has(requestId)) {
-      console.error(`[Upload] No metadata found for request ${requestId}`);
-      throw { status_code: 500, body: "Internal Server Error: Missing metadata" };
+    // Try to get metadata from request
+    if (req._snowshareMetadata) {
+      ({ clientIp, userId, isAuthenticated } = req._snowshareMetadata);
+    } else {
+      // Fallback if metadata not attached
+      clientIp = getClientIpFromHttpReq(req);
+      const auth = await authenticateFromRequest(req);
+      userId = auth.userId;
+      isAuthenticated = auth.isAuthenticated;
     }
     
-    const metadata = pendingUploads.get(requestId);
-    const { clientIp, userId, isAuthenticated } = metadata;
-    
-    // Update metadata with upload ID for onUploadFinish
-    metadata.uploadId = uploadId;
-    pendingUploads.set(requestId, metadata);
+    // Store metadata for onUploadFinish
+    uploadMetadata.set(uploadId, {
+      clientIp,
+      userId,
+      isAuthenticated
+    });
 
     // Get settings
     const settings = await prisma.settings.findFirst();
@@ -287,19 +291,19 @@ const tusServer = new TusServer({
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
       
-      // Get metadata from request ID
-      const requestId = req.snowshareRequestId;
+      // Get metadata by upload ID
+      const uploadId = upload.id;
+      const storedMetadata = uploadMetadata.get(uploadId);
       
-      if (!requestId || !pendingUploads.has(requestId)) {
-        console.error(`[Upload] No metadata found for request ${requestId}`);
+      if (!storedMetadata) {
+        console.error(`[Upload] No metadata found for upload ${uploadId}`);
         throw new Error("Missing upload metadata");
       }
       
-      const uploadMetadata = pendingUploads.get(requestId);
-      const { clientIp, userId, isAuthenticated } = uploadMetadata;
+      const { clientIp, userId, isAuthenticated } = storedMetadata;
       
-      // Clean up - we no longer need this metadata
-      pendingUploads.delete(requestId);
+      // Clean up
+      uploadMetadata.delete(uploadId);
 
       // Validate slug if provided
       let finalSlug = slug;
@@ -401,21 +405,18 @@ const tusServer = new TusServer({
 
 // Handle tus requests
 async function handleTus(req, res) {
-  // Generate unique request ID and capture metadata
-  const requestId = crypto.randomUUID();
-  const clientIp = getClientIpFromHttpReq(req);
-  const { userId, isAuthenticated } = await authenticateFromRequest(req);
-  
-  // Store metadata for this request
-  pendingUploads.set(requestId, {
-    clientIp,
-    userId,
-    isAuthenticated,
-    timestamp: Date.now()
-  });
-  
-  // Attach requestId to the request so TUS hooks can access it
-  req.snowshareRequestId = requestId;
+  // Capture metadata once per request
+  if (!req._snowshareMetadata) {
+    const clientIp = getClientIpFromHttpReq(req);
+    const { userId, isAuthenticated } = await authenticateFromRequest(req);
+    
+    req._snowshareMetadata = {
+      clientIp,
+      userId,
+      isAuthenticated,
+      timestamp: Date.now()
+    };
+  }
   
   return tusServer.handle(req, res);
 }
