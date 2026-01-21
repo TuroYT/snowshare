@@ -32,54 +32,55 @@ function getTusTempDir() {
   return path.join(getUploadDir(), ".tus-temp");
 }
 
-// Get client IP
-function getClientIp(req) {
-  // TUS wraps the HTTP request - get the underlying Node.js request
-  const httpReq = req.underlying || req.req || req;
-  
-  const forwarded = httpReq.headers?.["x-forwarded-for"];
+// Get client IP from native Node.js request
+function getClientIpFromHttpReq(req) {
+  const forwarded = req.headers?.["x-forwarded-for"];
   if (typeof forwarded === "string") {
-    const ip = forwarded.split(",")[0].trim();
-    console.log(`[IP Debug] Using x-forwarded-for: ${ip}`);
-    return ip;
+    return forwarded.split(",")[0].trim();
   }
   if (Array.isArray(forwarded)) {
-    console.log(`[IP Debug] Using x-forwarded-for (array): ${forwarded[0]}`);
     return forwarded[0];
   }
   
   // Try x-real-ip header
-  const realIp = httpReq.headers?.["x-real-ip"];
+  const realIp = req.headers?.["x-real-ip"];
   if (realIp) {
-    console.log(`[IP Debug] Using x-real-ip: ${realIp}`);
     return realIp;
   }
   
   // Try socket.remoteAddress
-  const socketAddress = httpReq.socket?.remoteAddress;
+  const socketAddress = req.socket?.remoteAddress;
   if (socketAddress) {
     // Normalize IPv6 localhost and IPv4-mapped addresses
     if (socketAddress === "::1" || socketAddress === "::ffff:127.0.0.1") {
-      console.log(`[IP Debug] Using normalized localhost: 127.0.0.1`);
       return "127.0.0.1";
     }
-    console.log(`[IP Debug] Using socket address: ${socketAddress}`);
     return socketAddress;
   }
   
   // Try connection.remoteAddress (older Node.js versions)
-  const connectionAddress = httpReq.connection?.remoteAddress;
+  const connectionAddress = req.connection?.remoteAddress;
   if (connectionAddress) {
     if (connectionAddress === "::1" || connectionAddress === "::ffff:127.0.0.1") {
-      console.log(`[IP Debug] Using normalized localhost from connection: 127.0.0.1`);
       return "127.0.0.1";
     }
-    console.log(`[IP Debug] Using connection address: ${connectionAddress}`);
     return connectionAddress;
   }
   
-  console.log(`[IP Debug] No IP found, using localhost fallback`);
   return "127.0.0.1";
+}
+
+// Get client IP (works with both HTTP req and TUS req)
+function getClientIp(req, uploadId) {
+  // If we have stored metadata for this upload, use it
+  if (uploadId && uploadMetadata.has(uploadId)) {
+    const metadata = uploadMetadata.get(uploadId);
+    console.log(`[IP Debug] Using stored IP for upload ${uploadId}: ${metadata.clientIp}`);
+    return metadata.clientIp;
+  }
+  
+  // Fallback to extracting from request
+  return getClientIpFromHttpReq(req);
 }
 
 // Convert MB to display unit (MiB or GiB)
@@ -122,18 +123,25 @@ function parseCookies(cookieHeader) {
 }
 
 // Authenticate user from request
-async function authenticateUser(req) {
+async function authenticateUser(req, uploadId) {
+  // If we have stored metadata for this upload, use it
+  if (uploadId && uploadMetadata.has(uploadId)) {
+    const metadata = uploadMetadata.get(uploadId);
+    console.log(`[Auth Debug] Using stored auth for upload ${uploadId}: ${metadata.userId || "anonymous"}`);
+    return {
+      userId: metadata.userId,
+      isAuthenticated: metadata.isAuthenticated,
+    };
+  }
+  
   try {
-    // TUS wraps the HTTP request - get the underlying Node.js request
-    const httpReq = req.underlying || req.req || req;
-    
-    const cookies = parseCookies(httpReq.headers?.cookie || "");
+    // Otherwise try to authenticate from HTTP request
+    const cookies = parseCookies(req.headers?.cookie || "");
     console.log(`[Auth Debug] Cookies found:`, Object.keys(cookies).join(", ") || "none");
-    console.log(`[Auth Debug] Cookie header:`, httpReq.headers?.cookie ? "present" : "missing");
     
     const token = await getToken({ 
       req: { 
-        headers: httpReq.headers || {},
+        headers: req.headers || {},
         cookies
       }, 
       secret: process.env.NEXTAUTH_SECRET 
@@ -191,6 +199,9 @@ if (!existsSync(tusTempDir)) {
   mkdirSync(tusTempDir, { recursive: true });
 }
 
+// Store upload metadata (IP, userId) indexed by upload ID
+const uploadMetadata = new Map();
+
 // Create tus server with FileStore
 const tusServer = new TusServer({
   path: "/api/tus",
@@ -212,10 +223,32 @@ const tusServer = new TusServer({
     }
 
     const { prisma } = await import("./src/lib/prisma.js");
-    const clientIp = getClientIp(req);
     
-    // Check authentication
-    const { userId, isAuthenticated } = await authenticateUser(req);
+    // Use temp metadata if available (from handleTus), otherwise extract from request
+    const uploadId = upload.id;
+    let clientIp, userId, isAuthenticated;
+    
+    if (req._tempMetadata) {
+      clientIp = req._tempMetadata.clientIp;
+      userId = req._tempMetadata.userId;
+      isAuthenticated = req._tempMetadata.isAuthenticated;
+      console.log(`[onUploadCreate] Using temp metadata for upload ${uploadId}`);
+    } else {
+      clientIp = getClientIpFromHttpReq(req);
+      const authResult = await authenticateUser(req);
+      userId = authResult.userId;
+      isAuthenticated = authResult.isAuthenticated;
+      console.log(`[onUploadCreate] Extracted metadata for upload ${uploadId}`);
+    }
+    
+    console.log(`[onUploadCreate] Upload ${uploadId}: IP=${clientIp}, UserId=${userId}, IsAuth=${isAuthenticated}`);
+
+    // Store metadata for use in onUploadFinish
+    uploadMetadata.set(uploadId, {
+      clientIp,
+      userId,
+      isAuthenticated
+    });
 
     // Get settings
     const settings = await prisma.settings.findFirst();
@@ -294,12 +327,16 @@ const tusServer = new TusServer({
       const slug = metadata.slug || "";
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
-      const clientIp = getClientIp(req);
       
-      // Re-authenticate user (metadata from onUploadCreate is not persisted)
-      const { userId, isAuthenticated } = await authenticateUser(req);
+      // Get stored metadata for this upload
+      const uploadId = upload.id;
+      const clientIp = getClientIp(req, uploadId);
+      const { userId, isAuthenticated } = await authenticateUser(req, uploadId);
 
       console.log(`[Upload Debug] IP: ${clientIp}, UserId: ${userId}, IsAuth: ${isAuthenticated}`);
+      
+      // Clean up stored metadata
+      uploadMetadata.delete(uploadId);
 
       // Validate slug if provided
       let finalSlug = slug;
@@ -401,6 +438,47 @@ const tusServer = new TusServer({
 
 // Handle tus requests
 async function handleTus(req, res) {
+  // For POST requests (new upload creation), capture auth info
+  if (req.method === "POST") {
+    const clientIp = getClientIpFromHttpReq(req);
+    const cookies = parseCookies(req.headers?.cookie || "");
+    
+    console.log(`[Pre-TUS] Captured IP: ${clientIp}`);
+    console.log(`[Pre-TUS] Cookies:`, Object.keys(cookies).join(", ") || "none");
+    
+    // Authenticate user
+    let userId = null;
+    let isAuthenticated = false;
+    
+    try {
+      const token = await getToken({ 
+        req: { 
+          headers: req.headers || {},
+          cookies
+        }, 
+        secret: process.env.NEXTAUTH_SECRET 
+      });
+      
+      if (token?.id) {
+        userId = token.id;
+        isAuthenticated = true;
+        console.log(`[Pre-TUS] User authenticated: ${userId}`);
+      } else {
+        console.log(`[Pre-TUS] No authentication found`);
+      }
+    } catch (error) {
+      console.error(`[Pre-TUS] Auth error:`, error.message);
+    }
+    
+    // Store metadata temporarily - will be associated with upload ID in onUploadCreate
+    req._tempMetadata = {
+      clientIp,
+      userId,
+      isAuthenticated,
+      timestamp: Date.now()
+    };
+  }
+  
   return tusServer.handle(req, res);
 }
 
