@@ -50,7 +50,8 @@ export function parseRangeHeader(rangeHeader: string, fileSize: number): { start
   }
 
   // Check that values are within file bounds
-  if (start >= fileSize || end >= fileSize) {
+  // Note: end can equal fileSize - 1 since byte positions are zero-indexed
+  if (start >= fileSize || end > fileSize - 1) {
     return null;
   }
 
