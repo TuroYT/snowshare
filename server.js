@@ -190,6 +190,10 @@ const tusServer = new TusServer({
       throw { status_code: 500, body: "Internal Server Error: Upload context missing" };
     }
 
+    console.log(`[Debug] onUploadCreate: Metadata on req? ${!!req._snowshareMetadata}`);
+    console.log(`[Debug] onUploadCreate: Headers keys: ${Object.keys(req.headers || {}).join(", ")}`);
+    if(req.headers?.cookie) console.log(`[Debug] Cookies present: yes`);
+    
     const { prisma } = await import("./src/lib/prisma.js");
     
     const uploadId = upload.id;
@@ -211,7 +215,9 @@ const tusServer = new TusServer({
       clientIp,
       userId,
       isAuthenticated
-    });
+    }); 
+    
+    console.log(`[Debug] Stored metadata for upload ${uploadId}: IP=${clientIp}, User=${userId}, Auth=${isAuthenticated}`);
 
     // Get settings
     const settings = await prisma.settings.findFirst();
