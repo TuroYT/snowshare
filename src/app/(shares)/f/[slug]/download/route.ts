@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { createReadStream, statSync, existsSync } from "fs";
 import path from "path";
-import { Readable } from "stream";
+import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 
 // Helper function to sanitize filename for Content-Disposition header
 function sanitizeFilename(filename: string): string {
@@ -19,20 +19,6 @@ function jsonResponse(body: unknown, status = 200) {
         status,
         headers: { "Content-Type": "application/json" }
     });
-}
-
-// Helper to convert Node.js stream to Web Stream for Next.js
-function nodeStreamToWebStream(nodeStream: Readable): ReadableStream {
-  return new ReadableStream({
-    start(controller) {
-      nodeStream.on('data', (chunk) => controller.enqueue(chunk));
-      nodeStream.on('end', () => controller.close());
-      nodeStream.on('error', (err) => controller.error(err));
-    },
-    cancel() {
-      nodeStream.destroy();
-    }
-  });
 }
 
 export async function GET(
@@ -99,17 +85,16 @@ export async function GET(
     const range = request.headers.get("range");
     
     if (range) {
-      const parts = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const rangeResult = parseRangeHeader(range, fileSize);
       
-      if (start >= fileSize || end >= fileSize) {
-         return new Response(null, { 
-             status: 416, 
-             headers: { "Content-Range": `bytes */${fileSize}` } 
-         });
+      if (!rangeResult) {
+        return new Response(null, { 
+          status: 416, 
+          headers: { "Content-Range": `bytes */${fileSize}` } 
+        });
       }
 
+      const { start, end } = rangeResult;
       const chunksize = (end - start) + 1;
       const fileStream = createReadStream(fullPath, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);

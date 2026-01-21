@@ -58,7 +58,7 @@ describe('File Download Streaming', () => {
     const mockRequest = {
       url: `http://localhost:3000/api/download/${mockSlug}`,
       headers: new Map(),
-    } as any;
+    } as unknown as NextRequest;
     
     const mockParams = Promise.resolve({ slug: mockSlug });
     
@@ -105,7 +105,7 @@ describe('File Download Streaming', () => {
       headers: {
         get: (key: string) => mockHeaders.get(key),
       },
-    } as any;
+    } as unknown as NextRequest;
     
     const mockParams = Promise.resolve({ slug: mockSlug });
     
