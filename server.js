@@ -70,42 +70,6 @@ function getClientIpFromHttpReq(req) {
   return "127.0.0.1";
 }
 
-// Get client IP (works with both HTTP req and TUS req)
-function getClientIp(req, uploadId) {
-  // If we have stored metadata for this upload, use it
-  if (uploadId && uploadMetadata.has(uploadId)) {
-    const metadata = uploadMetadata.get(uploadId);
-    console.log(`[IP Debug] Using stored IP for upload ${uploadId}: ${metadata.clientIp}`);
-    return metadata.clientIp;
-  }
-  
-  // Fallback to extracting from request
-  return getClientIpFromHttpReq(req);
-}
-
-// Convert MB to display unit (MiB or GiB)
-function convertFromMBForDisplay(megabytes, useGiB) {
-  if (useGiB) {
-    // 1 GiB = 1024 MiB
-    return Math.round((megabytes / 1024) * 100) / 100;
-  } else {
-    // MiB = MB (1:1 for practical purposes)
-    return megabytes;
-  }
-}
-
-// Get display unit label
-function getUnitLabel(useGiB) {
-  return useGiB ? "GiB" : "MiB";
-}
-
-// Generate safe filename
-function generateSafeFilename(originalName, shareId) {
-  const ext = path.extname(originalName);
-  const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9._-]/g, "_");
-  return `${shareId}_${baseName}${ext}`;
-}
-
 // Parse cookies from header string
 function parseCookies(cookieHeader) {
   const cookies = {};
@@ -122,23 +86,10 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-// Authenticate user from request
-async function authenticateUser(req, uploadId) {
-  // If we have stored metadata for this upload, use it
-  if (uploadId && uploadMetadata.has(uploadId)) {
-    const metadata = uploadMetadata.get(uploadId);
-    console.log(`[Auth Debug] Using stored auth for upload ${uploadId}: ${metadata.userId || "anonymous"}`);
-    return {
-      userId: metadata.userId,
-      isAuthenticated: metadata.isAuthenticated,
-    };
-  }
-  
+// Authenticate user from HTTP request
+async function authenticateFromRequest(req) {
   try {
-    // Otherwise try to authenticate from HTTP request
     const cookies = parseCookies(req.headers?.cookie || "");
-    console.log(`[Auth Debug] Cookies found:`, Object.keys(cookies).join(", ") || "none");
-    
     const token = await getToken({ 
       req: { 
         headers: req.headers || {},
@@ -148,22 +99,39 @@ async function authenticateUser(req, uploadId) {
     });
     
     if (token?.id) {
-      console.log(`[Auth Debug] User authenticated: ${token.id}`);
       return {
         userId: token.id,
         isAuthenticated: true,
       };
     }
-    console.log(`[Auth Debug] No valid token found`);
   } catch (error) {
-    console.error(`[Auth Debug] Error during authentication:`, error.message);
-    // Continue as anonymous
+    console.error("[Auth] Error:", error.message);
   }
   
   return {
     userId: null,
     isAuthenticated: false,
   };
+}
+
+// Convert MB to display unit (MiB or GiB)
+function convertFromMBForDisplay(megabytes, useGiB) {
+  if (useGiB) {
+    return Math.round((megabytes / 1024) * 100) / 100;
+  }
+  return megabytes;
+}
+
+// Get display unit label
+function getUnitLabel(useGiB) {
+  return useGiB ? "GiB" : "MiB";
+}
+
+// Generate safe filename
+function generateSafeFilename(originalName, shareId) {
+  const ext = path.extname(originalName);
+  const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9._-]/g, "_");
+  return `${shareId}_${baseName}${ext}`;
 }
 
 // Calculate IP usage for quota
@@ -199,8 +167,9 @@ if (!existsSync(tusTempDir)) {
   mkdirSync(tusTempDir, { recursive: true });
 }
 
-// Store upload metadata (IP, userId) indexed by upload ID
-const uploadMetadata = new Map();
+// Store upload metadata indexed by unique request ID
+// Format: { requestId: { clientIp, userId, isAuthenticated, uploadId?, timestamp } }
+const pendingUploads = new Map();
 
 // Create tus server with FileStore
 const tusServer = new TusServer({
@@ -224,31 +193,21 @@ const tusServer = new TusServer({
 
     const { prisma } = await import("./src/lib/prisma.js");
     
-    // Use temp metadata if available (from handleTus), otherwise extract from request
+    // Get metadata from the request ID
+    const requestId = req.snowshareRequestId;
     const uploadId = upload.id;
-    let clientIp, userId, isAuthenticated;
     
-    if (req._tempMetadata) {
-      clientIp = req._tempMetadata.clientIp;
-      userId = req._tempMetadata.userId;
-      isAuthenticated = req._tempMetadata.isAuthenticated;
-      console.log(`[onUploadCreate] Using temp metadata for upload ${uploadId}`);
-    } else {
-      clientIp = getClientIpFromHttpReq(req);
-      const authResult = await authenticateUser(req);
-      userId = authResult.userId;
-      isAuthenticated = authResult.isAuthenticated;
-      console.log(`[onUploadCreate] Extracted metadata for upload ${uploadId}`);
+    if (!requestId || !pendingUploads.has(requestId)) {
+      console.error(`[Upload] No metadata found for request ${requestId}`);
+      throw { status_code: 500, body: "Internal Server Error: Missing metadata" };
     }
     
-    console.log(`[onUploadCreate] Upload ${uploadId}: IP=${clientIp}, UserId=${userId}, IsAuth=${isAuthenticated}`);
-
-    // Store metadata for use in onUploadFinish
-    uploadMetadata.set(uploadId, {
-      clientIp,
-      userId,
-      isAuthenticated
-    });
+    const metadata = pendingUploads.get(requestId);
+    const { clientIp, userId, isAuthenticated } = metadata;
+    
+    // Update metadata with upload ID for onUploadFinish
+    metadata.uploadId = uploadId;
+    pendingUploads.set(requestId, metadata);
 
     // Get settings
     const settings = await prisma.settings.findFirst();
@@ -328,15 +287,19 @@ const tusServer = new TusServer({
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
       
-      // Get stored metadata for this upload
-      const uploadId = upload.id;
-      const clientIp = getClientIp(req, uploadId);
-      const { userId, isAuthenticated } = await authenticateUser(req, uploadId);
-
-      console.log(`[Upload Debug] IP: ${clientIp}, UserId: ${userId}, IsAuth: ${isAuthenticated}`);
+      // Get metadata from request ID
+      const requestId = req.snowshareRequestId;
       
-      // Clean up stored metadata
-      uploadMetadata.delete(uploadId);
+      if (!requestId || !pendingUploads.has(requestId)) {
+        console.error(`[Upload] No metadata found for request ${requestId}`);
+        throw new Error("Missing upload metadata");
+      }
+      
+      const uploadMetadata = pendingUploads.get(requestId);
+      const { clientIp, userId, isAuthenticated } = uploadMetadata;
+      
+      // Clean up - we no longer need this metadata
+      pendingUploads.delete(requestId);
 
       // Validate slug if provided
       let finalSlug = slug;
@@ -438,46 +401,21 @@ const tusServer = new TusServer({
 
 // Handle tus requests
 async function handleTus(req, res) {
-  // For POST requests (new upload creation), capture auth info
-  if (req.method === "POST") {
-    const clientIp = getClientIpFromHttpReq(req);
-    const cookies = parseCookies(req.headers?.cookie || "");
-    
-    console.log(`[Pre-TUS] Captured IP: ${clientIp}`);
-    console.log(`[Pre-TUS] Cookies:`, Object.keys(cookies).join(", ") || "none");
-    
-    // Authenticate user
-    let userId = null;
-    let isAuthenticated = false;
-    
-    try {
-      const token = await getToken({ 
-        req: { 
-          headers: req.headers || {},
-          cookies
-        }, 
-        secret: process.env.NEXTAUTH_SECRET 
-      });
-      
-      if (token?.id) {
-        userId = token.id;
-        isAuthenticated = true;
-        console.log(`[Pre-TUS] User authenticated: ${userId}`);
-      } else {
-        console.log(`[Pre-TUS] No authentication found`);
-      }
-    } catch (error) {
-      console.error(`[Pre-TUS] Auth error:`, error.message);
-    }
-    
-    // Store metadata temporarily - will be associated with upload ID in onUploadCreate
-    req._tempMetadata = {
-      clientIp,
-      userId,
-      isAuthenticated,
-      timestamp: Date.now()
-    };
-  }
+  // Generate unique request ID and capture metadata
+  const requestId = crypto.randomUUID();
+  const clientIp = getClientIpFromHttpReq(req);
+  const { userId, isAuthenticated } = await authenticateFromRequest(req);
+  
+  // Store metadata for this request
+  pendingUploads.set(requestId, {
+    clientIp,
+    userId,
+    isAuthenticated,
+    timestamp: Date.now()
+  });
+  
+  // Attach requestId to the request so TUS hooks can access it
+  req.snowshareRequestId = requestId;
   
   return tusServer.handle(req, res);
 }
