@@ -103,7 +103,6 @@ const ManageCodeBlock: React.FC<{
 
   if (!isAuthenticated) {
     // Block anonymous users if allowAnonPasteShare is disabled
-    if (!allowAnonPasteShare) {
       return (
         <div className="text-center p-6">
           <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
@@ -132,7 +131,7 @@ const ManageCodeBlock: React.FC<{
           </p>
         </div>
       );
-    }
+    
   }
 
   return (
