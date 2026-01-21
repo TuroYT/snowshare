@@ -42,6 +42,11 @@ export const createLinkShare = async (
     const session = await getServerSession(authOptions);
 
     if (!session) {
+        // Check if anonymous link sharing is allowed
+        const settings = await prisma.settings.findFirst();
+        if (settings && !settings.allowAnonLinkShare) {
+            return { error: "Anonymous users are not allowed to create link shares. Please log in." };
+        }
         
         if (expiresAt) {
             const maxExpiry = new Date();
@@ -56,7 +61,7 @@ export const createLinkShare = async (
         }
     }
 
-    // hash password et chiffrer l'URL si password fourni
+    // Hash password and encrypt URL if password is provided
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 12);
         urlOriginal = encrypt(urlOriginal, password);

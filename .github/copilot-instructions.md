@@ -142,7 +142,8 @@ Always return JSON with consistent structure:
 - **Validate slugs**: Regex pattern `/^[a-zA-Z0-9_-]{3,30}$/` for share slugs
 - **IP tracking**: File uploads track IP via `getClientIp()` in `src/lib/quota.ts` for quota enforcement
 - **Setup flow**: First visit triggers setup check in middleware → redirects to `/setup` if no users exist
-- **Testing**: Jest with jsdom environment; mocks in `src/__tests__/` follow file structure of src/
 - **Error handling**: Always validate input before DB queries; return 400 (bad), 401 (auth), 403 (forbidden), 429 (quota)
 - **Performance**: Use `next/image` for Image optimization; leverage Next.js caching and ISR where applicable
+- **Security**: Sanitize all user inputs; hash passwords with bcrypt (cost 12); use HTTPS in production
+- **Coding**: Use Best Practices for TypeScript and React; keep functions small and focused; add comments for complex logic
 

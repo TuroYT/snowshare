@@ -33,6 +33,8 @@ export async function GET() {
                     allowSignin: true,
                     disableCredentialsLogin: false,
                     allowAnonFileShare: true,
+                    allowAnonLinkShare: true,
+                    allowAnonPasteShare: true,
                     anoMaxUpload: 2048,
                     authMaxUpload: 51200,
                     anoIpQuota: 4096,
@@ -118,6 +120,8 @@ export async function PATCH(request: Request) {
                     allowSignin: data.allowSignin !== undefined ? data.allowSignin : true,
                     disableCredentialsLogin: data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : false,
                     allowAnonFileShare: data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : true,
+                    allowAnonLinkShare: data.allowAnonLinkShare !== undefined ? data.allowAnonLinkShare : true,
+                    allowAnonPasteShare: data.allowAnonPasteShare !== undefined ? data.allowAnonPasteShare : true,
                     anoMaxUpload: data.anoMaxUpload || 2048,
                     authMaxUpload: data.authMaxUpload || 51200,
                     anoIpQuota: data.anoIpQuota || 4096,
@@ -183,6 +187,10 @@ Thank you for using SnowShare!`
                     disableCredentialsLogin: data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : settings.disableCredentialsLogin,
                     allowAnonFileShare:
                         data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : settings.allowAnonFileShare,
+                    allowAnonLinkShare:
+                        data.allowAnonLinkShare !== undefined ? data.allowAnonLinkShare : settings.allowAnonLinkShare,
+                    allowAnonPasteShare:
+                        data.allowAnonPasteShare !== undefined ? data.allowAnonPasteShare : settings.allowAnonPasteShare,
                     anoMaxUpload: data.anoMaxUpload || settings.anoMaxUpload,
                     authMaxUpload: data.authMaxUpload || settings.authMaxUpload,
                     anoIpQuota: data.anoIpQuota || settings.anoIpQuota,

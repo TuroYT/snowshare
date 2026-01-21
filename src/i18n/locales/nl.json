@@ -27,7 +27,9 @@
         "title": "PasteShare",
         "description": "Deel je tekstfragmenten veilig en eenvoudig.",
         "share_code_title": "Code delen",
-        "share_code_description": "Maak en deel je codefragmenten"
+        "share_code_description": "Maak en deel je codefragmenten",
+        "locked_title": "Code delen is vergrendeld",
+        "locked_message": "Je moet ingelogd zijn om code te delen."
     },
     "pasteshare_ui": {
         "label_title": "Titel",
@@ -171,7 +173,9 @@
         "duration_in_x_weeks": "Deze link verloopt over {{count}} weken",
         "duration_in_1_month": "Deze link verloopt over 1 maand",
         "duration_in_x_months": "Deze link verloopt over {{count}} maanden",
-        "duration_in_x_years": "Deze link verloopt over {{count}} jaar"
+        "duration_in_x_years": "Deze link verloopt over {{count}} jaar",
+        "locked_title": "Links delen is vergrendeld",
+        "locked_message": "Je moet ingelogd zijn om links te delen."
     },
     "footer": {
         "made_with": "Gemaakt met",
@@ -396,6 +400,10 @@
             "no_sso_active": "Kan niet inschakelen: Geen actieve SSO-provider gevonden.",
             "allow_anon_fileshare": "Anoniem bestanden delen",
             "allow_anon_fileshare_desc": "Sta toe dat niet-ingelogde gebruikers bestanden delen",
+            "allow_anon_linkshare": "Anoniem links delen",
+            "allow_anon_linkshare_desc": "Sta toe dat niet-ingelogde gebruikers links delen",
+            "allow_anon_pasteshare": "Anoniem code delen",
+            "allow_anon_pasteshare_desc": "Sta toe dat niet-ingelogde gebruikers code/tekst delen",
             "section_general": "Algemeen",
             "section_storage": "Opslag",
             "saving": "Opslaan...",

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
+import LockedShare from "./shareComponents/LockedShare";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -22,6 +23,29 @@ const LinkShare: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
   const [qrSize, setQrSize] = useState<number>(150);
+  const [allowAnonLinkShare, setAllowAnonLinkShare] = useState<boolean | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Fetch settings to check if anonymous link sharing is allowed
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (response.ok) {
+          const data = await response.json();
+          setAllowAnonLinkShare(data.settings?.allowAnonLinkShare ?? true);
+        } else {
+          // Default to true if settings can't be fetched
+          setAllowAnonLinkShare(true);
+        }
+      } catch {
+        setAllowAnonLinkShare(true);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   function isValidUrl(value: string) {
     try {
@@ -154,6 +178,10 @@ const LinkShare: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!isAuthenticated) {
+    return <LockedShare type="link" isLoading={settingsLoading} isLocked={!allowAnonLinkShare} />;
   }
 
   return (

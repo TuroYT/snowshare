@@ -1,18 +1,49 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
 // ...existing code...
 
 import CodeBlock from "./pasteShareComponents/CodeBlock";
 import ManageCodeBlock from "./pasteShareComponents/ManageCodeBlock";
+import LockedShare from "./shareComponents/LockedShare";
 
 const PasteShare: React.FC = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [code, setCode] = React.useState(`function helloWorld() {
     console.log("Hello, world!");
   }`);
   const [language, setLanguage] = React.useState("javascript");
 
+  // Contrôle admin: autoriser ou non le partage anonyme de paste
+  const [allowAnonPasteShare, setAllowAnonPasteShare] = React.useState<boolean | null>(null);
+  const [settingsLoading, setSettingsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (response.ok) {
+          const data = await response.json();
+          setAllowAnonPasteShare(data.settings?.allowAnonPasteShare ?? true);
+        } else {
+          setAllowAnonPasteShare(true);
+        }
+      } catch {
+        setAllowAnonPasteShare(true);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   // Génération du lien (à adapter selon la logique réelle)
+
+  // Bloque le composant entier pour les utilisateurs anonymes si désactivé côté admin
+  if (!isAuthenticated) {
+    return <LockedShare type="paste" isLoading={settingsLoading} isLocked={!allowAnonPasteShare} />;
+  }
 
   return (
     <div className="w-full max-w-full overflow-hidden">

@@ -85,6 +85,8 @@ model Settings {
   allowSignin   Boolean @default(true)
   disableCredentialsLogin Boolean @default(false)
   allowAnonFileShare Boolean @default(true)
+  allowAnonLinkShare Boolean @default(true)
+  allowAnonPasteShare Boolean @default(true)
   // TODO - add S3 support
   anoMaxUpload  Int     @default(2048) // 2Go
   authMaxUpload Int     @default(51200) // ~50Go
