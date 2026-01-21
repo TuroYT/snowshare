@@ -113,7 +113,7 @@ async function authenticateUser(req) {
 // Calculate IP usage for quota
 async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   const shares = await prisma.share.findMany({
-    where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
+    where: { ipSource: clientIp, type: "FILE" },
     select: { filePath: true },
   });
   
