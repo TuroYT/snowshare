@@ -34,6 +34,11 @@ function getTusTempDir() {
 
 // Get client IP
 function getClientIp(req) {
+  // Debug: log what's available in req
+  console.log(`[IP Debug] Headers available:`, Object.keys(req.headers || {}));
+  console.log(`[IP Debug] Socket exists:`, !!req.socket);
+  console.log(`[IP Debug] Connection exists:`, !!req.connection);
+  
   const forwarded = req.headers["x-forwarded-for"];
   if (typeof forwarded === "string") {
     const ip = forwarded.split(",")[0].trim();
@@ -52,7 +57,7 @@ function getClientIp(req) {
     return realIp;
   }
   
-  // Get socket address
+  // Try socket.remoteAddress
   const socketAddress = req.socket?.remoteAddress;
   if (socketAddress) {
     // Normalize IPv6 localhost and IPv4-mapped addresses
@@ -64,8 +69,19 @@ function getClientIp(req) {
     return socketAddress;
   }
   
-  console.log(`[IP Debug] No IP found, using unknown`);
-  return "unknown";
+  // Try connection.remoteAddress (older Node.js versions)
+  const connectionAddress = req.connection?.remoteAddress;
+  if (connectionAddress) {
+    if (connectionAddress === "::1" || connectionAddress === "::ffff:127.0.0.1") {
+      console.log(`[IP Debug] Using normalized localhost from connection: 127.0.0.1`);
+      return "127.0.0.1";
+    }
+    console.log(`[IP Debug] Using connection address: ${connectionAddress}`);
+    return connectionAddress;
+  }
+  
+  console.log(`[IP Debug] No IP found, using localhost fallback`);
+  return "127.0.0.1";
 }
 
 // Convert MB to display unit (MiB or GiB)
@@ -111,6 +127,9 @@ function parseCookies(cookieHeader) {
 async function authenticateUser(req) {
   try {
     const cookies = parseCookies(req.headers.cookie || "");
+    console.log(`[Auth Debug] Cookies found:`, Object.keys(cookies).join(", ") || "none");
+    console.log(`[Auth Debug] Cookie header:`, req.headers.cookie ? "present" : "missing");
+    
     const token = await getToken({ 
       req: { 
         headers: req.headers,
