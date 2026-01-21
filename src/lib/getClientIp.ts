@@ -6,12 +6,13 @@ import { NextRequest } from "next/server";
  * The lookup order is:
  * 1. "x-forwarded-for" — if present, returns the first IP in the comma-separated list (trimmed).
  * 2. "x-real-ip" — if present, returns the trimmed header value.
- * 3. Fallback — returns the string "unknown" when no suitable header is found.
+ * 3. Fallback — returns the string "127.0.0.1" for localhost when no suitable header is found.
  *
  * @param request - The NextRequest whose headers will be inspected.
- * @returns The resolved client IP as a string, or "unknown" if it cannot be determined.
+ * @returns The resolved client IP as a string, or "127.0.0.1" (localhost) if it cannot be determined.
  * @remarks NextRequest does not expose the client IP directly, so headers set by proxies/load
  * balancers are relied upon. Ensure trusted proxies set these headers to avoid spoofing.
+ * In development environments without proxy headers, this returns localhost address.
  */
 export function getClientIp(request: NextRequest): string {
   // Check X-Forwarded-For header (for proxies/load balancers)
@@ -27,6 +28,7 @@ export function getClientIp(request: NextRequest): string {
     return realIp.trim();
   }
 
-  // Fallback to unknown (NextRequest doesn't expose IP directly)
-  return "unknown";
+  // Fallback to localhost for development (NextRequest doesn't expose socket IP directly)
+  // In production behind a reverse proxy, x-forwarded-for or x-real-ip should always be set
+  return "127.0.0.1";
 }

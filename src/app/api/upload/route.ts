@@ -16,6 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
+import { getClientIp } from "@/lib/getClientIp";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -52,17 +53,6 @@ interface UploadLimits {
   remainingQuotaBytes: number;
   isAuthenticated: boolean;
   useGiB: boolean;
-}
-
-/**
- * Get client IP from request headers
- */
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  return req.headers.get("x-real-ip") || "unknown";
 }
 
 /**
