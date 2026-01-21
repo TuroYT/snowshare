@@ -221,14 +221,10 @@ const tusServer = new TusServer({
         // For now, we allow start, but we should probably limit max content length header if possible
     }
 
-    // Store metadata in upload for later use
-    upload.metadata = upload.metadata || {};
-    upload.metadata.clientIp = clientIp;
-    upload.metadata.userId = userId || "";
-    upload.metadata.isAuthenticated = isAuthenticated ? "true" : "false";
-    
-    // Return the updated metadata
-    return { res: null, metadata: upload.metadata };
+    // metadata is provided by the client and persisted by tus
+    // Server-side metadata additions here are NOT persisted
+    // Authentication must be re-done in onUploadFinish
+    return { res: null };
   },
 
   // Called when upload is complete
@@ -241,9 +237,28 @@ const tusServer = new TusServer({
       const slug = metadata.slug || "";
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
-      const clientIp = metadata.clientIp || getClientIp(req);
-      const userId = metadata.userId || null;
-      const isAuthenticated = metadata.isAuthenticated === "true";
+      const clientIp = getClientIp(req);
+      
+      // Re-authenticate user (metadata from onUploadCreate is not persisted)
+      let userId = null;
+      let isAuthenticated = false;
+      
+      try {
+        const token = await getToken({ 
+          req: { 
+            headers: req.headers,
+            cookies: parseCookies(req.headers.cookie || "")
+          }, 
+          secret: process.env.NEXTAUTH_SECRET 
+        });
+        
+        if (token?.id) {
+          userId = token.id;
+          isAuthenticated = true;
+        }
+      } catch {
+        // Continue as anonymous
+      }
 
       // Validate slug if provided
       let finalSlug = slug;
