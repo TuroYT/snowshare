@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { readFile, stat } from "fs/promises";
-import { existsSync } from "fs";
+import { statSync, existsSync, createReadStream } from "fs";
 import path from "path";
+import { Readable } from "stream";
 
 // Helper function to sanitize filename for Content-Disposition header
 function sanitizeFilename(filename: string): string {
@@ -19,6 +19,20 @@ function jsonResponse(body: unknown, status = 200) {
         status,
         headers: { "Content-Type": "application/json" }
     });
+}
+
+// Helper to convert Node.js stream to Web Stream for Next.js
+function nodeStreamToWebStream(nodeStream: Readable): ReadableStream {
+  return new ReadableStream({
+    start(controller) {
+      nodeStream.on('data', (chunk) => controller.enqueue(chunk));
+      nodeStream.on('end', () => controller.close());
+      nodeStream.on('error', (err) => controller.error(err));
+    },
+    cancel() {
+      nodeStream.destroy();
+    }
+  });
 }
 
 // Handle POST requests for file info and download actions
@@ -67,7 +81,7 @@ export async function POST(
         return jsonResponse({ error: "Fichier introuvable" }, 404);
       }
 
-      const stats = await stat(fullPath);
+      const stats = statSync(fullPath);
       
       return jsonResponse({
         filename: originalFilename,
@@ -139,8 +153,9 @@ export async function GET(
       return jsonResponse({ error: "Fichier introuvable" }, 404);
     }
 
-    // Read file
-    const fileBuffer = await readFile(fullPath);
+    // Get file stats for size
+    const stats = statSync(fullPath);
+    const fileSize = stats.size;
     
     // Determine content type
     const ext = path.extname(fullPath).toLowerCase();
@@ -172,11 +187,54 @@ export async function GET(
     // Sanitize filename for Content-Disposition header to prevent header injection
     const safeFilename = sanitizeFilename(originalFilename || 'download');
     
+    // Handle range request for resumable downloads
+    const range = request.headers.get("range");
+    
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      
+      if (start >= fileSize || end >= fileSize) {
+        return new Response(null, { 
+          status: 416, 
+          headers: { "Content-Range": `bytes */${fileSize}` } 
+        });
+      }
+
+      const chunksize = (end - start) + 1;
+      const fileStream = createReadStream(fullPath, { start, end });
+      const webStream = nodeStreamToWebStream(fileStream);
+
+      const headers = new Headers();
+      headers.set("Content-Range", `bytes ${start}-${end}/${fileSize}`);
+      headers.set("Accept-Ranges", "bytes");
+      headers.set("Content-Length", chunksize.toString());
+      headers.set("Content-Type", contentType);
+      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
+      headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      headers.set("Pragma", "no-cache");
+      headers.set("Expires", "0");
+
+      return new NextResponse(webStream as ReadableStream<Uint8Array>, {
+        status: 206,
+        headers,
+      });
+    }
+
+    // Full file download using streaming
+    const fileStream = createReadStream(fullPath);
+    const webStream = nodeStreamToWebStream(fileStream);
+    
     // Set appropriate headers
     const headers = new Headers();
+    headers.set('Content-Length', fileSize.toString());
     headers.set('Content-Type', contentType);
     headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
-    headers.set('Content-Length', fileBuffer.length.toString());
+    headers.set("Accept-Ranges", "bytes");
+    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    headers.set("Pragma", "no-cache");
+    headers.set("Expires", "0");
     
     // For images, PDFs, and text files, allow inline viewing
     if (contentType.startsWith('image/') || contentType === 'application/pdf' || contentType.startsWith('text/')) {
@@ -184,7 +242,7 @@ export async function GET(
       headers.set('Content-Disposition', `${disposition}; filename="${safeFilename}"`);
     }
 
-    return new NextResponse(new Uint8Array(fileBuffer), {
+    return new NextResponse(webStream as ReadableStream<Uint8Array>, {
       status: 200,
       headers,
     });
