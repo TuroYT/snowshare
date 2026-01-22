@@ -14,6 +14,7 @@ import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
+import { convertFromMB, getUnitLabel } from "./src/lib/formatSize.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -116,19 +117,6 @@ async function authenticateFromRequest(req) {
     userId: null,
     isAuthenticated: false,
   };
-}
-
-// Convert MB to display unit (MiB or GiB)
-function convertFromMBForDisplay(megabytes, useGiB) {
-  if (useGiB) {
-    return Math.round((megabytes / 1024) * 100) / 100;
-  }
-  return megabytes;
-}
-
-// Get display unit label
-function getUnitLabel(useGiB) {
-  return useGiB ? "GiB" : "MiB";
 }
 
 // Generate safe filename
@@ -238,7 +226,7 @@ const tusServer = new TusServer({
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
     const unitLabel = getUnitLabel(useGiBForDisplay);
-    const maxFileSizeDisplay = convertFromMBForDisplay(maxFileSizeMB, useGiBForDisplay);
+    const maxFileSizeDisplay = convertFromMB(maxFileSizeMB, useGiBForDisplay);
 
     // Check file size limit
     // upload.size property contains the size from the Upload-Length header
@@ -265,7 +253,7 @@ const tusServer = new TusServer({
           
           if (uploadSize > remainingQuota) {
             const remainingQuotaMB = Math.round(remainingQuota / (1024 * 1024));
-            const remainingDisplay = convertFromMBForDisplay(remainingQuotaMB, useGiBForDisplay);
+            const remainingDisplay = convertFromMB(remainingQuotaMB, useGiBForDisplay);
             const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay}${unitLabel}` };
             throw { status_code: 429, body: JSON.stringify(body) };
           }

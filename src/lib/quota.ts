@@ -5,26 +5,7 @@ import { authOptions } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 import { getClientIp } from "./getClientIp";
-
-/**
- * Convert MB to display unit (MiB or GiB)
- */
-function convertFromMBForDisplay(megabytes: number, useGiB: boolean): number {
-  if (useGiB) {
-    // 1 GiB = 1024 MiB
-    return Math.round((megabytes / 1024) * 100) / 100;
-  } else {
-    // MiB = MB (1:1 for practical purposes)
-    return megabytes;
-  }
-}
-
-/**
- * Get display unit label
- */
-function getUnitLabel(useGiB: boolean): string {
-  return useGiB ? "GiB" : "MiB";
-}
+import { convertFromMB, getUnitLabel } from "./formatSize";
 
 /**
  * Get file size in MB from file path
@@ -103,8 +84,8 @@ export async function checkUploadQuota(
     : settings.useGiBForAnon;
 
   const unitLabel = getUnitLabel(useGiBForDisplay);
-  const maxFileSizeDisplay = convertFromMBForDisplay(maxFileSize, useGiBForDisplay);
-  const ipQuotaDisplay = convertFromMBForDisplay(ipQuota, useGiBForDisplay);
+  const maxFileSizeDisplay = convertFromMB(maxFileSize, useGiBForDisplay);
+  const ipQuotaDisplay = convertFromMB(ipQuota, useGiBForDisplay);
 
   // Check individual file size
   if (fileSize > maxFileSize) {
@@ -122,7 +103,7 @@ export async function checkUploadQuota(
 
   // Check if adding this file would exceed quota
   if (currentUsage + fileSize > ipQuota) {
-    const currentUsageDisplay = convertFromMBForDisplay(currentUsage, useGiBForDisplay);
+    const currentUsageDisplay = convertFromMB(currentUsage, useGiBForDisplay);
     return {
       allowed: false,
       reason: isAuthenticated

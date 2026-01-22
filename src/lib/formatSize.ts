@@ -60,3 +60,10 @@ export function isUsingGiB(
 ): boolean {
   return isAuthenticated ? useGiBForAuth : useGiBForAnon;
 }
+
+/**
+ * Get display unit label
+ */
+export function getUnitLabel(useGiB: boolean): string {
+  return useGiB ? "GiB" : "MiB";
+}
