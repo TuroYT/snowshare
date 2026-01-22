@@ -62,20 +62,6 @@ export function isUsingGiB(
 }
 
 /**
- * Convert MB to display unit (MiB or GiB)
- */
-export function convertFromMBForDisplay(megabytes: number, useGiB: boolean): number {
-  if (useGiB) {
-    // 1 GiB = 1024 MiB
-    return Math.round((megabytes / 1024) * 100) / 100;
-  } else {
-    // Return as MiB (treated as 1:1 with MB for display simplification)
-    // Note: Technically 1 MiB = 1.048576 MB, but we simplify for display
-    return megabytes;
-  }
-}
-
-/**
  * Get display unit label
  */
 export function getUnitLabel(useGiB: boolean): string {

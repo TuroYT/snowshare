@@ -17,7 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
 import { getClientIp } from "@/lib/getClientIp";
-import { convertFromMBForDisplay, getUnitLabel } from "@/lib/formatSize";
+import { convertFromMB, getUnitLabel } from "@/lib/formatSize";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -167,8 +167,8 @@ export async function POST(req: NextRequest) {
   // Pre-check: if remaining quota is 0, reject immediately (only for new upload/first chunk)
   if (chunkIndex === 0 && limits.remainingQuotaBytes <= 0) {
     const unitLabel = getUnitLabel(limits.useGiB);
-    const currentUsageDisplay = convertFromMBForDisplay(Math.round(limits.currentUsageBytes / (1024 * 1024)), limits.useGiB);
-    const ipQuotaDisplay = convertFromMBForDisplay(limits.ipQuotaMB, limits.useGiB);
+    const currentUsageDisplay = convertFromMB(Math.round(limits.currentUsageBytes / (1024 * 1024)), limits.useGiB);
+    const ipQuotaDisplay = convertFromMB(limits.ipQuotaMB, limits.useGiB);
     return NextResponse.json(
       {
         error: isAuthenticated
@@ -298,8 +298,8 @@ export async function POST(req: NextRequest) {
           const unitLabel = getUnitLabel(limits.useGiB);
           if (fileSize > limits.remainingQuotaBytes) {
             const currentUsageMB = Math.round(limits.currentUsageBytes / (1024 * 1024));
-            const currentUsageDisplay = convertFromMBForDisplay(currentUsageMB, limits.useGiB);
-            const ipQuotaDisplay = convertFromMBForDisplay(limits.ipQuotaMB, limits.useGiB);
+            const currentUsageDisplay = convertFromMB(currentUsageMB, limits.useGiB);
+            const ipQuotaDisplay = convertFromMB(limits.ipQuotaMB, limits.useGiB);
             sendError(
               429,
               limits.isAuthenticated
@@ -307,7 +307,7 @@ export async function POST(req: NextRequest) {
                 : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`
             );
           } else {
-            const maxFileSizeDisplay = convertFromMBForDisplay(limits.maxFileSizeMB, limits.useGiB);
+            const maxFileSizeDisplay = convertFromMB(limits.maxFileSizeMB, limits.useGiB);
             sendError(
               413,
               `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.`
