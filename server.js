@@ -236,7 +236,7 @@ const tusServer = new TusServer({
     // If size is available, check it against limits
     if (uploadSize !== undefined && uploadSize !== null) {
       if (uploadSize > maxFileSizeBytes) {
-        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.` };
+        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeDisplay} ${unitLabel}.` };
         throw { status_code: 413, body: JSON.stringify(body) };
       }
       
@@ -254,7 +254,7 @@ const tusServer = new TusServer({
           if (uploadSize > remainingQuota) {
             const remainingQuotaMB = Math.round(remainingQuota / (1024 * 1024));
             const remainingDisplay = convertFromMB(remainingQuotaMB, useGiBForDisplay);
-            const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay}${unitLabel}` };
+            const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay} ${unitLabel}` };
             throw { status_code: 429, body: JSON.stringify(body) };
           }
         } catch (error) {

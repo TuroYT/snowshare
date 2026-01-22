@@ -107,8 +107,8 @@ export async function checkUploadQuota(
     return {
       allowed: false,
       reason: isAuthenticated
-        ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
-        : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`,
+        ? `IP quota exceeded. Current usage: ${currentUsageDisplay} ${unitLabel}, Limit: ${ipQuotaDisplay} ${unitLabel}`
+        : `IP quota exceeded. Current usage: ${currentUsageDisplay} ${unitLabel}, Limit: ${ipQuotaDisplay} ${unitLabel}. Sign in for higher limits.`,
       currentUsage,
       limit: ipQuota,
     };

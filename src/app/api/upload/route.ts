@@ -172,8 +172,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error: isAuthenticated
-          ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
-          : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`,
+          ? `IP quota exceeded. Current usage: ${currentUsageDisplay} ${unitLabel}, Limit: ${ipQuotaDisplay} ${unitLabel}`
+          : `IP quota exceeded. Current usage: ${currentUsageDisplay} ${unitLabel}, Limit: ${ipQuotaDisplay} ${unitLabel}. Sign in for higher limits.`,
       },
       { status: 429 }
     );
@@ -310,7 +310,7 @@ export async function POST(req: NextRequest) {
             const maxFileSizeDisplay = convertFromMB(limits.maxFileSizeMB, limits.useGiB);
             sendError(
               413,
-              `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.`
+              `File size exceeds the allowed limit of ${maxFileSizeDisplay} ${unitLabel}.`
             );
           }
         }

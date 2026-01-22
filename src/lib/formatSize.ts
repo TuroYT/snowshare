@@ -20,7 +20,12 @@ export function formatBytes(bytes: number, useBinary: boolean = false): string {
 
 /**
  * Convert megabytes to appropriate unit value based on settings
- * @param megabytes - Size in megabytes (MB)
+ * 
+ * NOTE: Throughout this system, "MB" refers to MiB (binary megabytes = 1024² bytes),
+ * NOT decimal MB (1,000,000 bytes). This is a common convention in file systems and
+ * storage applications. All quota calculations use binary units internally.
+ * 
+ * @param megabytes - Size in MiB (mebibytes, 1024² bytes)
  * @param useGiB - If true, convert to GiB, else keep as MiB
  * @returns Size in requested unit
  */
@@ -29,23 +34,24 @@ export function convertFromMB(megabytes: number, useGiB: boolean): number {
     // 1 GiB = 1024 MiB
     return Math.round((megabytes / 1024) * 100) / 100;
   } else {
-    // MiB = MB (roughly, 1 MB = 1 MiB for practical purposes)
+    // Return as MiB (no conversion needed since input is already MiB)
     return megabytes;
   }
 }
 
 /**
- * Convert from appropriate unit back to megabytes
+ * Convert from appropriate unit back to megabytes (MiB)
+ * 
  * @param value - Size in units (MiB or GiB)
  * @param useGiB - If true, value is in GiB, else MiB
- * @returns Size in megabytes
+ * @returns Size in MiB (mebibytes, 1024² bytes)
  */
 export function convertToMB(value: number, useGiB: boolean): number {
   if (useGiB) {
-    // GiB to MB: multiply by 1024
+    // GiB to MiB: multiply by 1024
     return Math.round(value * 1024);
   } else {
-    // MiB to MB: 1:1 ratio
+    // Already in MiB, no conversion needed
     return Math.round(value);
   }
 }
