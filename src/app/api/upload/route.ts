@@ -16,6 +16,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
+import { getClientIp } from "@/lib/getClientIp";
+import { convertFromMB, getUnitLabel } from "@/lib/formatSize";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -31,17 +33,7 @@ interface UploadLimits {
   currentUsageBytes: number;
   remainingQuotaBytes: number;
   isAuthenticated: boolean;
-}
-
-/**
- * Get client IP from request headers
- */
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  return req.headers.get("x-real-ip") || "unknown";
+  useGiB: boolean;
 }
 
 /**
@@ -97,6 +89,10 @@ async function getUploadLimits(
     ? settings?.authIpQuota || 102400
     : settings?.anoIpQuota || 4096;
 
+  const useGiB = isAuthenticated
+    ? settings?.useGiBForAuth ?? false
+    : settings?.useGiBForAnon ?? false;
+
   // Calculate current usage
   const currentUsageBytes = await calculateIpUploadSizeBytes(ipAddress);
 
@@ -113,6 +109,7 @@ async function getUploadLimits(
     currentUsageBytes,
     remainingQuotaBytes,
     isAuthenticated,
+    useGiB,
   };
 }
 
@@ -169,12 +166,14 @@ export async function POST(req: NextRequest) {
 
   // Pre-check: if remaining quota is 0, reject immediately (only for new upload/first chunk)
   if (chunkIndex === 0 && limits.remainingQuotaBytes <= 0) {
-    const currentUsageMB = (limits.currentUsageBytes / (1024 * 1024)).toFixed(2);
+    const unitLabel = getUnitLabel(limits.useGiB);
+    const currentUsageDisplay = convertFromMB(Math.round(limits.currentUsageBytes / (1024 * 1024)), limits.useGiB);
+    const ipQuotaDisplay = convertFromMB(limits.ipQuotaMB, limits.useGiB);
     return NextResponse.json(
       {
         error: isAuthenticated
-          ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
-          : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`,
+          ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
+          : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`,
       },
       { status: 429 }
     );
@@ -296,21 +295,22 @@ export async function POST(req: NextRequest) {
           fileStream.destroy();
           fileWriteStream?.destroy();
 
+          const unitLabel = getUnitLabel(limits.useGiB);
           if (fileSize > limits.remainingQuotaBytes) {
-            const currentUsageMB = (
-              limits.currentUsageBytes /
-              (1024 * 1024)
-            ).toFixed(2);
+            const currentUsageMB = Math.round(limits.currentUsageBytes / (1024 * 1024));
+            const currentUsageDisplay = convertFromMB(currentUsageMB, limits.useGiB);
+            const ipQuotaDisplay = convertFromMB(limits.ipQuotaMB, limits.useGiB);
             sendError(
               429,
               limits.isAuthenticated
-                ? `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB`
-                : `IP quota exceeded. Current usage: ${currentUsageMB} MB, Limit: ${limits.ipQuotaMB} MB. Sign in for higher limits.`
+                ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
+                : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`
             );
           } else {
+            const maxFileSizeDisplay = convertFromMB(limits.maxFileSizeMB, limits.useGiB);
             sendError(
               413,
-              `File size exceeds the allowed limit of ${limits.maxFileSizeMB}MB.`
+              `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.`
             );
           }
         }

@@ -13,6 +13,9 @@ jest.mock('@/lib/prisma', () => ({
       create: jest.fn(),
       findUnique: jest.fn(),
     },
+    settings: {
+      findFirst: jest.fn(),
+    },
   },
 }));
 
@@ -28,10 +31,12 @@ import { createPasteShare } from '@/app/api/shares/(pasteShare)/pasteshareshare'
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { NextRequest } from 'next/server';
 
 const mockGetServerSession = getServerSession as jest.Mock;
 const mockPrismaCreate = prisma.share.create as jest.Mock;
 const mockPrismaFindUnique = prisma.share.findUnique as jest.Mock;
+const mockPrismaSettingsFindFirst = prisma.settings.findFirst as jest.Mock;
 const mockBcryptHash = bcrypt.hash as jest.Mock;
 
 describe('createPasteShare', () => {
@@ -271,11 +276,58 @@ describe('createPasteShare', () => {
     });
 
     it('should store hashed password, not plaintext', async () => {
-      await createPasteShare('code', 'JAVASCRIPT', undefined, undefined, 'mypassword');
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      await createPasteShare('code', 'JAVASCRIPT', mockRequest, undefined, undefined, 'mypassword');
       
       const createArgs = mockPrismaCreate.mock.calls[0][0];
       expect(createArgs.data.password).toBe('hashed_mypassword');
       expect(createArgs.data.password).not.toBe('mypassword');
+    });
+  });
+
+  describe('anonymous user restrictions', () => {
+    beforeEach(() => {
+      // Set anonymous user (no session)
+      mockGetServerSession.mockResolvedValue(null);
+    });
+
+    it('should reject anonymous paste share when allowAnonPasteShare is false', async () => {
+      mockPrismaSettingsFindFirst.mockResolvedValue({
+        allowAnonPasteShare: false,
+      });
+
+      const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', mockRequest, futureDate);
+      
+      expect(result.error).toBe('Anonymous users are not allowed to create paste shares. Please log in.');
+      expect(mockPrismaCreate).not.toHaveBeenCalled();
+    });
+
+    it('should allow anonymous paste share when allowAnonPasteShare is true', async () => {
+      mockPrismaSettingsFindFirst.mockResolvedValue({
+        allowAnonPasteShare: true,
+      });
+
+      const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', mockRequest, futureDate);
+      
+      expect(result.error).toBeUndefined();
+      expect(result.pasteShare).toBeDefined();
+      expect(mockPrismaCreate).toHaveBeenCalled();
+    });
+
+    it('should allow anonymous paste share when settings are null (default behavior)', async () => {
+      mockPrismaSettingsFindFirst.mockResolvedValue(null);
+
+      const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const mockRequest = { headers: { get: () => null } } as unknown as NextRequest;
+      const result = await createPasteShare('console.log("test")', 'JAVASCRIPT', mockRequest, futureDate);
+      
+      expect(result.error).toBeUndefined();
+      expect(result.pasteShare).toBeDefined();
+      expect(mockPrismaCreate).toHaveBeenCalled();
     });
   });
 });

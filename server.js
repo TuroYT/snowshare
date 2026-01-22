@@ -5,6 +5,7 @@
 
 import { createServer } from "http";
 import { parse } from "url";
+import { AsyncLocalStorage } from "async_hooks";
 import next from "next";
 import { Server as TusServer } from "@tus/server";
 import { FileStore } from "@tus/file-store";
@@ -13,6 +14,7 @@ import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
+import { convertFromMB, getUnitLabel } from "./src/lib/formatSize.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -21,6 +23,9 @@ const port = parseInt(process.env.PORT || "3000", 10);
 // Initialize Next.js
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
+
+// Create AsyncLocalStorage for request context
+const requestContext = new AsyncLocalStorage();
 
 // Get upload directory
 function getUploadDir() {
@@ -32,23 +37,42 @@ function getTusTempDir() {
   return path.join(getUploadDir(), ".tus-temp");
 }
 
-// Get client IP
-function getClientIp(req) {
-  const forwarded = req.headers["x-forwarded-for"];
+// Get client IP from native Node.js request
+function getClientIpFromHttpReq(req) {
+  const forwarded = req.headers?.["x-forwarded-for"];
   if (typeof forwarded === "string") {
     return forwarded.split(",")[0].trim();
   }
   if (Array.isArray(forwarded)) {
     return forwarded[0];
   }
-  return req.socket?.remoteAddress || "unknown";
-}
-
-// Generate safe filename
-function generateSafeFilename(originalName, shareId) {
-  const ext = path.extname(originalName);
-  const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9._-]/g, "_");
-  return `${shareId}_${baseName}${ext}`;
+  
+  // Try x-real-ip header
+  const realIp = req.headers?.["x-real-ip"];
+  if (realIp) {
+    return realIp;
+  }
+  
+  // Try socket.remoteAddress
+  const socketAddress = req.socket?.remoteAddress;
+  if (socketAddress) {
+    // Normalize IPv6 localhost and IPv4-mapped addresses
+    if (socketAddress === "::1" || socketAddress === "::ffff:127.0.0.1") {
+      return "127.0.0.1";
+    }
+    return socketAddress;
+  }
+  
+  // Try connection.remoteAddress (older Node.js versions)
+  const connectionAddress = req.connection?.remoteAddress;
+  if (connectionAddress) {
+    if (connectionAddress === "::1" || connectionAddress === "::ffff:127.0.0.1") {
+      return "127.0.0.1";
+    }
+    return connectionAddress;
+  }
+  
+  return "127.0.0.1";
 }
 
 // Parse cookies from header string
@@ -65,6 +89,41 @@ function parseCookies(cookieHeader) {
     }
   });
   return cookies;
+}
+
+// Authenticate user from HTTP request
+async function authenticateFromRequest(req) {
+  try {
+    const cookies = parseCookies(req.headers?.cookie || "");
+    const token = await getToken({ 
+      req: { 
+        headers: req.headers || {},
+        cookies
+      }, 
+      secret: process.env.NEXTAUTH_SECRET 
+    });
+    
+    if (token?.id) {
+      return {
+        userId: token.id,
+        isAuthenticated: true,
+      };
+    }
+  } catch (error) {
+    console.error("[Auth] Error:", error.message);
+  }
+  
+  return {
+    userId: null,
+    isAuthenticated: false,
+  };
+}
+
+// Generate safe filename
+function generateSafeFilename(originalName, shareId) {
+  const ext = path.extname(originalName);
+  const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9._-]/g, "_");
+  return `${shareId}_${baseName}${ext}`;
 }
 
 // Calculate IP usage for quota
@@ -100,6 +159,9 @@ if (!existsSync(tusTempDir)) {
   mkdirSync(tusTempDir, { recursive: true });
 }
 
+// Store upload metadata indexed by upload ID
+const uploadMetadata = new Map();
+
 // Create tus server with FileStore
 const tusServer = new TusServer({
   path: "/api/tus",
@@ -121,43 +183,50 @@ const tusServer = new TusServer({
     }
 
     const { prisma } = await import("./src/lib/prisma.js");
-    const clientIp = getClientIp(req);
     
-    // Check authentication
-    let userId = null;
-    let isAuthenticated = false;
+    const uploadId = upload.id;
+    let clientIp, userId, isAuthenticated;
     
-    try {
-      const token = await getToken({ 
-        req: { 
-          headers: req.headers,
-          cookies: parseCookies(req.headers.cookie || "")
-        }, 
-        secret: process.env.NEXTAUTH_SECRET 
-      });
-      
-      if (token?.id) {
-        userId = token.id;
-        isAuthenticated = true;
-      }
-    } catch {
-      // Continue as anonymous
+    // Try to get metadata from AsyncLocalStorage context
+    const store = requestContext.getStore();
+    
+    if (store) {
+      ({ clientIp, userId, isAuthenticated } = store);
+    } else {
+      // Fallback if context is missing (should not happen if wrapped correctly)
+      console.warn("[Upload] Warning: Missing async context, falling back to request inspection");
+      clientIp = getClientIpFromHttpReq(req);
+      const auth = await authenticateFromRequest(req);
+      userId = auth.userId;
+      isAuthenticated = auth.isAuthenticated;
     }
+    
+    // Store metadata for onUploadFinish
+    uploadMetadata.set(uploadId, {
+      clientIp,
+      userId,
+      isAuthenticated
+    });
 
     // Get settings
     const settings = await prisma.settings.findFirst();
     
     let maxFileSizeMB, ipQuotaMB;
+    let useGiBForDisplay;
     if (isAuthenticated) {
       maxFileSizeMB = settings?.authMaxUpload || 51200;
       ipQuotaMB = settings?.authIpQuota || 102400;
+      useGiBForDisplay = settings?.useGiBForAuth ?? false;
     } else {
       maxFileSizeMB = settings?.anoMaxUpload || 2048;
       ipQuotaMB = settings?.anoIpQuota || 4096;
+      useGiBForDisplay = settings?.useGiBForAnon ?? false;
     }
     
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
+    const unitLabel = getUnitLabel(useGiBForDisplay);
+    const maxFileSizeDisplay = convertFromMB(maxFileSizeMB, useGiBForDisplay);
 
     // Check file size limit
     // upload.size property contains the size from the Upload-Length header
@@ -167,7 +236,7 @@ const tusServer = new TusServer({
     // If size is available, check it against limits
     if (uploadSize !== undefined && uploadSize !== null) {
       if (uploadSize > maxFileSizeBytes) {
-        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeMB}MB.` };
+        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeDisplay}${unitLabel}.` };
         throw { status_code: 413, body: JSON.stringify(body) };
       }
       
@@ -183,7 +252,9 @@ const tusServer = new TusServer({
           }
           
           if (uploadSize > remainingQuota) {
-            const body = { error: `File would exceed your quota. Remaining: ${(remainingQuota / (1024 * 1024)).toFixed(2)}MB` };
+            const remainingQuotaMB = Math.round(remainingQuota / (1024 * 1024));
+            const remainingDisplay = convertFromMB(remainingQuotaMB, useGiBForDisplay);
+            const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay}${unitLabel}` };
             throw { status_code: 429, body: JSON.stringify(body) };
           }
         } catch (error) {
@@ -198,14 +269,10 @@ const tusServer = new TusServer({
         // For now, we allow start, but we should probably limit max content length header if possible
     }
 
-    // Store metadata in upload for later use
-    upload.metadata = upload.metadata || {};
-    upload.metadata.clientIp = clientIp;
-    upload.metadata.userId = userId || "";
-    upload.metadata.isAuthenticated = isAuthenticated ? "true" : "false";
-    
-    // Return the updated metadata
-    return { res: null, metadata: upload.metadata };
+    // metadata is provided by the client and persisted by tus
+    // Server-side metadata additions here are NOT persisted
+    // Authentication must be re-done in onUploadFinish
+    return { res: null };
   },
 
   // Called when upload is complete
@@ -218,9 +285,20 @@ const tusServer = new TusServer({
       const slug = metadata.slug || "";
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
-      const clientIp = metadata.clientIp || getClientIp(req);
-      const userId = metadata.userId || null;
-      const isAuthenticated = metadata.isAuthenticated === "true";
+      
+      // Get metadata by upload ID
+      const uploadId = upload.id;
+      const storedMetadata = uploadMetadata.get(uploadId);
+      
+      if (!storedMetadata) {
+        console.error(`[Upload] No metadata found for upload ${uploadId}`);
+        throw new Error("Missing upload metadata");
+      }
+      
+      const { clientIp, userId, isAuthenticated } = storedMetadata;
+      
+      // Clean up
+      uploadMetadata.delete(uploadId);
 
       // Validate slug if provided
       let finalSlug = slug;
@@ -322,7 +400,19 @@ const tusServer = new TusServer({
 
 // Handle tus requests
 async function handleTus(req, res) {
-  return tusServer.handle(req, res);
+  const clientIp = getClientIpFromHttpReq(req);
+  const { userId, isAuthenticated } = await authenticateFromRequest(req);
+  
+  const context = {
+    clientIp,
+    userId,
+    isAuthenticated,
+    timestamp: Date.now()
+  };
+  
+  return requestContext.run(context, () => {
+    return tusServer.handle(req, res);
+  });
 }
 
 app.prepare().then(() => {

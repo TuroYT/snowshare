@@ -7,6 +7,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { Alert, AlertTitle, Snackbar, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import * as tus from "tus-js-client";
+import { formatBytes, convertFromMB } from "@/lib/formatSize";
+import LockedShare from "./shareComponents/LockedShare";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -41,8 +43,11 @@ const FileShare: React.FC = () => {
     useState<number>(MAX_FILE_SIZE_ANON);
   const [maxFileSizeAuth, setMaxFileSizeAuth] =
     useState<number>(MAX_FILE_SIZE_AUTH);
+  const [useGiBForAnon, setUseGiBForAnon] = useState(false);
+  const [useGiBForAuth, setUseGiBForAuth] = useState(false);
 
   const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
+  const useGiB = isAuthenticated ? useGiBForAuth : useGiBForAnon;
 
   // Fetch settings to check if anonymous file sharing is allowed
   useEffect(() => {
@@ -59,6 +64,9 @@ const FileShare: React.FC = () => {
           if (data.settings?.authMaxUpload) {
             setMaxFileSizeAuth(data.settings.authMaxUpload * 1024 * 1024);
           }
+          // Set unit format preferences
+          setUseGiBForAnon(data.settings?.useGiBForAnon ?? false);
+          setUseGiBForAuth(data.settings?.useGiBForAuth ?? false);
         } else {
           // Default to hardcoded values if settings can't be fetched
           setAllowAnonFileShare(true);
@@ -70,25 +78,25 @@ const FileShare: React.FC = () => {
       }
     };
     fetchSettings();
-  }, []);
+  }, [isAuthenticated]);
 
-  // Format file size
+  // Format file size using the formatBytes utility
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return formatBytes(bytes, useGiB);
   };
 
   // Validate file
   const validateFile = (file: File): string | null => {
     if (file.size > maxFileSize) {
-      const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
+      const maxValue = convertFromMB(
+        Math.round(maxFileSize / (1024 * 1024)),
+        useGiB
+      );
+      const unit = useGiB ? "GiB" : "MiB";
       return t(
         "fileshare.file_too_large",
-        "File is too large (max {{max}}MB)",
-        { max: maxSizeMB }
+        "File is too large (max {{max}} {{unit}})",
+        { max: maxValue, unit }
       );
     }
     return null;
@@ -363,49 +371,7 @@ const FileShare: React.FC = () => {
   };
 
   if (!isAuthenticated) {
-    // Show loading while fetching settings
-    if (settingsLoading) {
-      return (
-        <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
-          <div className="animate-pulse">
-            <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
-            <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
-          </div>
-        </div>
-      );
-    }
-
-    // Block anonymous users if allowAnonFileShare is disabled
-    if (!allowAnonFileShare) {
-      return (
-        <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
-          <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
-            <svg
-              className="w-6 h-6 text-red-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
-            {t("fileshare.locked_title", "File sharing is locked")}
-          </h2>
-          <p className="text-[var(--foreground-muted)] mb-4">
-            {t(
-              "fileshare.locked_message",
-              "You must be logged in to share files."
-            )}
-          </p>
-        </div>
-      );
-    }
+    return <LockedShare type="file" isLoading={settingsLoading} isLocked={!allowAnonFileShare} />;
   }
 
   return (
@@ -502,13 +468,19 @@ const FileShare: React.FC = () => {
                   {isAuthenticated
                     ? t(
                         "fileshare.max_size_auth",
-                        "{{max}}MB maximum for authenticated users",
-                        { max: Math.round(maxFileSizeAuth / (1024 * 1024)) }
+                        "{{max}} {{unit}} maximum for authenticated users",
+                        { 
+                          max: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
+                          unit: useGiB ? "GiB" : "MiB"
+                        }
                       )
                     : t(
                         "fileshare.max_size_anon",
-                        "{{max}}MB maximum for anonymous users",
-                        { max: Math.round(maxFileSizeAnon / (1024 * 1024)) }
+                        "{{max}} {{unit}} maximum for anonymous users",
+                        { 
+                          max: convertFromMB(Math.round(maxFileSizeAnon / (1024 * 1024)), useGiB),
+                          unit: useGiB ? "GiB" : "MiB"
+                        }
                       )}
                 </p>
               </div>
@@ -698,10 +670,11 @@ const FileShare: React.FC = () => {
               💡{" "}
               {t(
                 "fileshare.login_for_more",
-                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}}MB)",
+                "Log in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}} {{unit}})",
                 {
                   max: MAX_DAYS_AUTH,
-                  maxSize: Math.round(maxFileSizeAuth / (1024 * 1024)),
+                  maxSize: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
+                  unit: useGiB ? "GiB" : "MiB"
                 }
               )}
             </p>

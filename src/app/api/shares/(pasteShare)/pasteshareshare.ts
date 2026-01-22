@@ -49,7 +49,13 @@ export const createPasteShare = async (
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    // verif si expire supérieur à 7 jours
+    // Check if anonymous paste sharing is allowed
+    const settings = await prisma.settings.findFirst();
+    if (settings && !settings.allowAnonPasteShare) {
+      return { error: "Anonymous users are not allowed to create paste shares. Please log in." };
+    }
+
+    // Check if expiry is greater than 7 days
     if (expiresAt) {
       const maxExpiry = new Date();
       maxExpiry.setDate(maxExpiry.getDate() + 7);
@@ -61,7 +67,7 @@ export const createPasteShare = async (
     }
   }
 
-  // hash password si fourni
+  // Hash password if provided
   if (password) {
     password = await bcrypt.hash(password, 12);
   }

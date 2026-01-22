@@ -4,16 +4,21 @@ import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import MDEditor from "@uiw/react-md-editor"
 import { Snackbar, Alert } from "@mui/material"
+import { convertFromMB, convertToMB } from "@/lib/formatSize"
 
 interface Settings {
   id: number
   allowSignin: boolean
   disableCredentialsLogin: boolean
   allowAnonFileShare: boolean
+  allowAnonLinkShare: boolean
+  allowAnonPasteShare: boolean
   anoMaxUpload: number
   authMaxUpload: number
   anoIpQuota: number
   authIpQuota: number
+  useGiBForAnon: boolean
+  useGiBForAuth: boolean
   termsOfUses: string
 }
 
@@ -40,6 +45,8 @@ export default function SettingsTab() {
         allowSignin: data.settings.allowSignin ?? true,
         disableCredentialsLogin: data.settings.disableCredentialsLogin ?? false,
         allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
+        allowAnonLinkShare: data.settings.allowAnonLinkShare ?? true,
+        allowAnonPasteShare: data.settings.allowAnonPasteShare ?? true,
       })
     } catch (err) {
       setToastMessage(t("admin.error_load_data"))
@@ -69,6 +76,16 @@ export default function SettingsTab() {
       setSettings({
         ...settings,
         [key]: value,
+      })
+    }
+  }
+
+  const handleUnitToggle = (key: "useGiBForAnon" | "useGiBForAuth") => {
+    if (settings) {
+      // Simply toggle the unit preference - values stay in MB internally
+      setSettings({
+        ...settings,
+        [key]: !settings[key],
       })
     }
   }
@@ -197,6 +214,44 @@ export default function SettingsTab() {
             />
           </button>
         </div>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.settings.allow_anon_linkshare")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.allow_anon_linkshare_desc")}</p>
+          </div>
+          <button
+            onClick={() => handleToggle("allowAnonLinkShare")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.allowAnonLinkShare ? "bg-[var(--primary)]" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.allowAnonLinkShare ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">{t("admin.settings.allow_anon_pasteshare")}</label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.allow_anon_pasteshare_desc")}</p>
+          </div>
+          <button
+            onClick={() => handleToggle("allowAnonPasteShare")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.allowAnonPasteShare ? "bg-[var(--primary)]" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.allowAnonPasteShare ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Upload Quotas */}
@@ -212,13 +267,28 @@ export default function SettingsTab() {
 
         {/* Anonymous Users */}
         <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-6 w-6 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
-              <svg className="w-3 h-3 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
+          <div className="flex items-center gap-2 mb-2 justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
+                <svg className="w-3 h-3 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.section_anonymous")}</label>
             </div>
-            <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.section_anonymous")}</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-[var(--foreground-muted)]">{t("admin.quotas.unit_format")}</label>
+              <button
+                onClick={() => handleUnitToggle("useGiBForAnon")}
+                className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                  settings.useGiBForAnon
+                    ? "bg-[var(--secondary)] text-white"
+                    : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
+                }`}
+              >
+                {settings.useGiBForAnon ? "GiB" : "MiB"}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -229,16 +299,16 @@ export default function SettingsTab() {
                 <div className="flex-1">
                   <input
                     type="number"
-                    value={settings.anoMaxUpload}
-                    onChange={(e) => handleChange("anoMaxUpload", parseInt(e.target.value))}
+                    value={convertFromMB(settings.anoMaxUpload, settings.useGiBForAnon)}
+                    onChange={(e) => handleChange("anoMaxUpload", convertToMB(parseInt(e.target.value), settings.useGiBForAnon))}
                     className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     min="0"
                   />
                 </div>
-                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">{settings.useGiBForAnon ? "GiB" : "MiB"}</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("admin.quotas.current_value", { value: settings.anoMaxUpload })}
+                {t("admin.quotas.current_value", { value: convertFromMB(settings.anoMaxUpload, settings.useGiBForAnon) })}
               </p>
             </div>
 
@@ -249,16 +319,16 @@ export default function SettingsTab() {
                 <div className="flex-1">
                   <input
                     type="number"
-                    value={settings.anoIpQuota}
-                    onChange={(e) => handleChange("anoIpQuota", parseInt(e.target.value))}
+                    value={convertFromMB(settings.anoIpQuota, settings.useGiBForAnon)}
+                    onChange={(e) => handleChange("anoIpQuota", convertToMB(parseInt(e.target.value), settings.useGiBForAnon))}
                     className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     min="0"
                   />
                 </div>
-                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">{settings.useGiBForAnon ? "GiB" : "MiB"}</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("admin.quotas.current_value", { value: settings.anoIpQuota })}
+                {t("admin.quotas.current_value", { value: convertFromMB(settings.anoIpQuota, settings.useGiBForAnon) })}
               </p>
             </div>
           </div>
@@ -266,13 +336,28 @@ export default function SettingsTab() {
 
         {/* Authenticated Users */}
         <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-6 w-6 rounded-lg bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]/50 flex items-center justify-center">
-              <svg className="w-3 h-3 text-[var(--secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="flex items-center gap-2 mb-2 justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]/50 flex items-center justify-center">
+                <svg className="w-3 h-3 text-[var(--secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.section_authenticated")}</label>
             </div>
-            <label className="text-[var(--foreground)] font-medium">{t("admin.quotas.section_authenticated")}</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-[var(--foreground-muted)]">{t("admin.quotas.unit_format")}</label>
+              <button
+                onClick={() => handleUnitToggle("useGiBForAuth")}
+                className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                  settings.useGiBForAuth
+                    ? "bg-[var(--secondary)] text-white"
+                    : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
+                }`}
+              >
+                {settings.useGiBForAuth ? "GiB" : "MiB"}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -283,16 +368,16 @@ export default function SettingsTab() {
                 <div className="flex-1">
                   <input
                     type="number"
-                    value={settings.authMaxUpload}
-                    onChange={(e) => handleChange("authMaxUpload", parseInt(e.target.value))}
+                    value={convertFromMB(settings.authMaxUpload, settings.useGiBForAuth)}
+                    onChange={(e) => handleChange("authMaxUpload", convertToMB(parseInt(e.target.value), settings.useGiBForAuth))}
                     className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     min="0"
                   />
                 </div>
-                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">{settings.useGiBForAuth ? "GiB" : "MiB"}</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("admin.quotas.current_value", { value: settings.authMaxUpload })}
+                {t("admin.quotas.current_value", { value: convertFromMB(settings.authMaxUpload, settings.useGiBForAuth) })}
               </p>
             </div>
 
@@ -303,16 +388,16 @@ export default function SettingsTab() {
                 <div className="flex-1">
                   <input
                     type="number"
-                    value={settings.authIpQuota}
-                    onChange={(e) => handleChange("authIpQuota", parseInt(e.target.value))}
+                    value={convertFromMB(settings.authIpQuota, settings.useGiBForAuth)}
+                    onChange={(e) => handleChange("authIpQuota", convertToMB(parseInt(e.target.value), settings.useGiBForAuth))}
                     className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     min="0"
                   />
                 </div>
-                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">MB</span>
+                <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">{settings.useGiBForAuth ? "GiB" : "MiB"}</span>
               </div>
               <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("admin.quotas.current_value", { value: settings.authIpQuota })}
+                {t("admin.quotas.current_value", { value: convertFromMB(settings.authIpQuota, settings.useGiBForAuth) })}
               </p>
             </div>
           </div>

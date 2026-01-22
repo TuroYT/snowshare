@@ -85,11 +85,17 @@ model Settings {
   allowSignin   Boolean @default(true)
   disableCredentialsLogin Boolean @default(false)
   allowAnonFileShare Boolean @default(true)
+  allowAnonLinkShare Boolean @default(true)
+  allowAnonPasteShare Boolean @default(true)
   // TODO - add S3 support
   anoMaxUpload  Int     @default(2048) // 2Go
   authMaxUpload Int     @default(51200) // ~50Go
   anoIpQuota    Int     @default(4096) // 4Go
   authIpQuota   Int     @default(102400) // ~100Go
+  
+  // Unit format preferences (MiB/GiB vs MB/GB)
+  useGiBForAnon Boolean @default(false) // Use GiB (true) or MiB (false) for anonymous users
+  useGiBForAuth Boolean @default(false) // Use GiB (true) or MiB (false) for authenticated users
   
   // Branding - Identity
   appName       String  @default("SnowShare")

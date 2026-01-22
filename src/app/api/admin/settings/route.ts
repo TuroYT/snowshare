@@ -33,10 +33,14 @@ export async function GET() {
                     allowSignin: true,
                     disableCredentialsLogin: false,
                     allowAnonFileShare: true,
+                    allowAnonLinkShare: true,
+                    allowAnonPasteShare: true,
                     anoMaxUpload: 2048,
                     authMaxUpload: 51200,
                     anoIpQuota: 4096,
                     authIpQuota: 102400,
+                    useGiBForAnon: false,
+                    useGiBForAuth: false,
                     termsOfUses: `# Terms of Use
 
 Welcome to SnowShare! By using our platform, you agree to the following terms and conditions. Please read them carefully.
@@ -116,10 +120,14 @@ export async function PATCH(request: Request) {
                     allowSignin: data.allowSignin !== undefined ? data.allowSignin : true,
                     disableCredentialsLogin: data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : false,
                     allowAnonFileShare: data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : true,
+                    allowAnonLinkShare: data.allowAnonLinkShare !== undefined ? data.allowAnonLinkShare : true,
+                    allowAnonPasteShare: data.allowAnonPasteShare !== undefined ? data.allowAnonPasteShare : true,
                     anoMaxUpload: data.anoMaxUpload || 2048,
                     authMaxUpload: data.authMaxUpload || 51200,
                     anoIpQuota: data.anoIpQuota || 4096,
                     authIpQuota: data.authIpQuota || 102400,
+                    useGiBForAnon: data.useGiBForAnon !== undefined ? data.useGiBForAnon : false,
+                    useGiBForAuth: data.useGiBForAuth !== undefined ? data.useGiBForAuth : false,
                     appName: data.appName || "SnowShare",
                     appDescription: data.appDescription || "Share your files, pastes and URLs securely",
                     logoUrl: data.logoUrl || null,
@@ -179,10 +187,16 @@ Thank you for using SnowShare!`
                     disableCredentialsLogin: data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : settings.disableCredentialsLogin,
                     allowAnonFileShare:
                         data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : settings.allowAnonFileShare,
+                    allowAnonLinkShare:
+                        data.allowAnonLinkShare !== undefined ? data.allowAnonLinkShare : settings.allowAnonLinkShare,
+                    allowAnonPasteShare:
+                        data.allowAnonPasteShare !== undefined ? data.allowAnonPasteShare : settings.allowAnonPasteShare,
                     anoMaxUpload: data.anoMaxUpload || settings.anoMaxUpload,
                     authMaxUpload: data.authMaxUpload || settings.authMaxUpload,
                     anoIpQuota: data.anoIpQuota || settings.anoIpQuota,
                     authIpQuota: data.authIpQuota || settings.authIpQuota,
+                    useGiBForAnon: data.useGiBForAnon !== undefined ? data.useGiBForAnon : settings.useGiBForAnon,
+                    useGiBForAuth: data.useGiBForAuth !== undefined ? data.useGiBForAuth : settings.useGiBForAuth,
                     appName: data.appName !== undefined ? data.appName : settings.appName,
                     appDescription: data.appDescription !== undefined ? data.appDescription : settings.appDescription,
                     logoUrl: data.logoUrl !== undefined ? data.logoUrl : settings.logoUrl,
