@@ -141,7 +141,7 @@ function generateSafeFilename(originalName, shareId) {
 // Calculate IP usage for quota
 async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   const shares = await prisma.share.findMany({
-    where: { ipSource: clientIp, type: "FILE" },
+    where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
     select: { filePath: true },
   });
   
