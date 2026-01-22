@@ -2,11 +2,11 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 interface LockedShareProps {
-  /** Type de partage: 'link', 'file', ou 'paste' */
+  /** Share type: 'link', 'file', or 'paste' */
   type: "link" | "file" | "paste";
-  /** Si true, affiche un skeleton de chargement */
+  /** If true, displays a loading skeleton */
   isLoading: boolean;
-  /** Si true, affiche le message de verrouillage */
+  /** If true, displays the lock message */
   isLocked: boolean;
 }
 
