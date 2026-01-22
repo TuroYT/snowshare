@@ -14,6 +14,7 @@ import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
+import { convertFromMBForDisplay, getUnitLabel } from "./src/lib/formatSize.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -116,19 +117,6 @@ async function authenticateFromRequest(req) {
     userId: null,
     isAuthenticated: false,
   };
-}
-
-// Convert MB to display unit (MiB or GiB)
-function convertFromMBForDisplay(megabytes, useGiB) {
-  if (useGiB) {
-    return Math.round((megabytes / 1024) * 100) / 100;
-  }
-  return megabytes;
-}
-
-// Get display unit label
-function getUnitLabel(useGiB) {
-  return useGiB ? "GiB" : "MiB";
 }
 
 // Generate safe filename

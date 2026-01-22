@@ -5,26 +5,7 @@ import { authOptions } from "@/lib/auth";
 import fs from "fs/promises";
 import path from "path";
 import { getClientIp } from "./getClientIp";
-
-/**
- * Convert MB to display unit (MiB or GiB)
- */
-function convertFromMBForDisplay(megabytes: number, useGiB: boolean): number {
-  if (useGiB) {
-    // 1 GiB = 1024 MiB
-    return Math.round((megabytes / 1024) * 100) / 100;
-  } else {
-    // MiB = MB (1:1 for practical purposes)
-    return megabytes;
-  }
-}
-
-/**
- * Get display unit label
- */
-function getUnitLabel(useGiB: boolean): string {
-  return useGiB ? "GiB" : "MiB";
-}
+import { convertFromMBForDisplay, getUnitLabel } from "./formatSize";
 
 /**
  * Get file size in MB from file path

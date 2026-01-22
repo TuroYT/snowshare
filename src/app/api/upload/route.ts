@@ -17,32 +17,13 @@ import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
 import { getClientIp } from "@/lib/getClientIp";
+import { convertFromMBForDisplay, getUnitLabel } from "@/lib/formatSize";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
 
 // Disable static optimization
 export const dynamic = "force-dynamic";
-
-/**
- * Convert MB to display unit (MiB or GiB)
- */
-function convertFromMBForDisplay(megabytes: number, useGiB: boolean): number {
-  if (useGiB) {
-    // 1 GiB = 1024 MiB
-    return Math.round((megabytes / 1024) * 100) / 100;
-  } else {
-    // MiB = MB (1:1 for practical purposes)
-    return megabytes;
-  }
-}
-
-/**
- * Get display unit label
- */
-function getUnitLabel(useGiB: boolean): string {
-  return useGiB ? "GiB" : "MiB";
-}
 
 interface UploadLimits {
   maxFileSizeBytes: number;
