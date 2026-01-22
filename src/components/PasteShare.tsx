@@ -38,10 +38,15 @@ const PasteShare: React.FC = () => {
     fetchSettings();
   }, []);
 
-  // Génération du lien (à adapter selon la logique réelle)
+  if (settingsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+      </div>
+    );
+  }
 
-  // Bloque le composant entier pour les utilisateurs anonymes si désactivé côté admin
-  if (!isAuthenticated) {
+  if (!isAuthenticated && allowAnonPasteShare === false) {
     return <LockedShare type="paste" isLoading={settingsLoading} isLocked={!allowAnonPasteShare} />;
   }
 

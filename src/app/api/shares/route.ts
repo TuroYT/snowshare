@@ -34,7 +34,9 @@ async function POST(req: NextRequest) {
             }
             case "PASTE": {
                 const { paste, pastelanguage, expiresAt, slug, password } = data;
-                const result = await createPasteShare(paste, pastelanguage, req, expiresAt, slug, password);
+                // Convert expiresAt string to Date if provided
+                const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
+                const result = await createPasteShare(paste, pastelanguage, req, expiresAtDate, slug, password);
                 if (result?.error) {
                     return NextResponse.json({ error: result.error }, { status: 400 });
                 }
