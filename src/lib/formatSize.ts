@@ -69,7 +69,8 @@ export function convertFromMBForDisplay(megabytes: number, useGiB: boolean): num
     // 1 GiB = 1024 MiB
     return Math.round((megabytes / 1024) * 100) / 100;
   } else {
-    // MiB = MB (1:1 for practical purposes)
+    // Return as MiB (treated as 1:1 with MB for display simplification)
+    // Note: Technically 1 MiB = 1.048576 MB, but we simplify for display
     return megabytes;
   }
 }
