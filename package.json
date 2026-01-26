@@ -92,6 +92,12 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "test-exclude": "^7.0.0",
-    "hono": "^4.11.4"
+    "hono": "^4.11.4",
+    "lodash": "4.17.23"
+  },
+  "pnpm": {
+    "overrides": {
+      "lodash": "4.17.23"
+    }
   }
 }
