@@ -300,7 +300,8 @@
       "settings": "Configuración",
       "branding": "Personalización",
       "logs": "Registros de Compartidos",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "security": "Seguridad"
     },
     "oauth": {
       "title": "Proveedores OAuth",

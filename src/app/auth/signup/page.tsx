@@ -6,6 +6,7 @@ import { redirect, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslation } from "react-i18next"
 import { useBranding } from "@/components/BrandingProvider"
+import Captcha from "@/components/Captcha"
 
 export default function SignUp() {
   const [email, setEmail] = useState("")
@@ -17,6 +18,13 @@ export default function SignUp() {
   const [allowSignup, setAllowSignup] = useState(true)
   const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
+  const [captchaToken, setCaptchaToken] = useState("")
+  const [captchaConfig, setCaptchaConfig] = useState<{
+    enabled: boolean
+    provider: string | null
+    siteKey: string | null
+  }>({ enabled: false, provider: null, siteKey: null })
+  const [requiresVerification, setRequiresVerification] = useState(false)
   const router = useRouter()
   const { t } = useTranslation()
 
@@ -38,7 +46,20 @@ export default function SignUp() {
       }
     }
 
+    const fetchCaptchaConfig = async () => {
+      try {
+        const response = await fetch("/api/captcha-config")
+        if (response.ok) {
+          const data = await response.json()
+          setCaptchaConfig(data)
+        }
+      } catch (error) {
+        console.error("Error fetching CAPTCHA config:", error)
+      }
+    }
+
     fetchSignupStatus()
+    fetchCaptchaConfig()
   }, [])
 
   // Show loading state while checking signup status
@@ -103,18 +124,35 @@ export default function SignUp() {
       return
     }
 
+    // Check CAPTCHA if enabled
+    if (captchaConfig.enabled && !captchaToken) {
+      setError("Veuillez compléter la vérification CAPTCHA")
+      setLoading(false)
+      return
+    }
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email, 
+          password,
+          captchaToken: captchaToken || undefined
+        }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
+        // Check if email verification is required
+        if (data.requiresVerification) {
+          setRequiresVerification(true)
+          return
+        }
+
         // Auto-login after successful registration using NextAuth credentials provider
         const signInResult = (await signIn("credentials", {
           redirect: false,
@@ -137,6 +175,44 @@ export default function SignUp() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Email verification required message
+  if (requiresVerification) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-green-900/20 border border-green-800">
+            <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
+            Vérifiez votre email
+          </h2>
+          <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
+            Un email de vérification a été envoyé à <strong>{email}</strong>.
+          </p>
+          <p className="text-sm text-[var(--foreground-muted)]">
+            Veuillez cliquer sur le lien dans l&apos;email pour vérifier votre compte avant de vous connecter.
+          </p>
+          <div className="mt-6 space-y-3">
+            <Link
+              href="/auth/signin"
+              className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] transition-colors"
+            >
+              Aller à la connexion
+            </Link>
+            <p className="text-xs text-[var(--foreground-muted)]">
+              Vous n&apos;avez pas reçu l&apos;email? Vérifiez votre dossier spam ou{" "}
+              <Link href="/auth/verify-email" className="text-[var(--primary)] hover:underline">
+                renvoyez l&apos;email de vérification
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -228,6 +304,15 @@ export default function SignUp() {
               />
             </div>
           </div>
+
+          {/* CAPTCHA */}
+          {captchaConfig.enabled && (
+            <Captcha 
+              onVerify={setCaptchaToken}
+              provider={captchaConfig.provider}
+              siteKey={captchaConfig.siteKey}
+            />
+          )}
 
           {error && (
             <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">

@@ -18,8 +18,7 @@
     "admin": "Administration",
     "admin_desc": "Panneau d'administration"
   },
-  "loading": "Chargement..."
-  ,
+  "loading": "Chargement...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Partagez vos extraits de texte en toute sécurité et simplicité.",
@@ -122,8 +121,7 @@
     "downloading": "Téléchargement...",
     "download": "Télécharger",
     "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce."
-  }
-  ,
+  },
   "home": {
     "title": "Bienvenue sur SnowShare",
     "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."
@@ -306,7 +304,8 @@
       "settings": "Paramètres",
       "branding": "Personnalisation",
       "logs": "Logs des partages",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "security": "Sécurité"
     },
     "oauth": {
       "title": "Fournisseurs OAuth",

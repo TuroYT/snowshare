@@ -202,7 +202,9 @@
     "error_invalid_credentials": "Incorrect email or password",
     "error_generic": "An error occurred: ",
     "error_passwords_mismatch": "Passwords do not match",
-    "error_password_too_short": "Password must be at least 6 characters long",    "error_oauth_signin": "No email associated with this provider account.",    "success_account_created": "Account created successfully",
+    "error_password_too_short": "Password must be at least 6 characters long",
+    "error_oauth_signin": "No email associated with this provider account.",
+    "success_account_created": "Account created successfully",
     "terms_notice": "By creating an account, you agree to our",
     "signup_disabled_title": "Sign up disabled",
     "signup_disabled_message": "New registrations are currently not allowed.",
@@ -302,7 +304,8 @@
       "settings": "Settings",
       "branding": "Branding",
       "logs": "Share Logs",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "security": "Security"
     },
     "oauth": {
       "title": "OAuth Providers",
