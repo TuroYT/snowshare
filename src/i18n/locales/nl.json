@@ -107,7 +107,11 @@
     "quota_info": "Quota: {{used}} MB / {{total}} MB gebruikt",
     "quota_remaining": "{{remaining}} MB beschikbaar",
     "quota_exceeded": "Quota overschreden",
-    "quota_warning": "Waarschuwing: je hebt {{percent}}% van je quota gebruikt"
+    "quota_warning": "Waarschuwing: je hebt {{percent}}% van je quota gebruikt",
+    "select_files": "Selecteer bestanden",
+    "select_folder": "Selecteer map",
+    "selected_files": "Geselecteerde bestanden",
+    "total_size": "Totaal"
   },
   "file_download": {
     "loading_error": "Fout bij laden van informatie",
@@ -134,8 +138,7 @@
   "tabs": {
     "linkshare": "LinkShare",
     "pasteshare": "PasteShare",
-    "fileshare": "FileShare",
-    "bulkfileshare": "Bulk Upload"
+    "fileshare": "FileShare"
   },
   "linkshare": {
     "title": "Link delen",
@@ -550,15 +553,5 @@
     "error_generic": "Er is een fout opgetreden",
     "error_url_not_found": "URL niet gevonden",
     "error_connection": "Verbindingsfout"
-  },
-  "bulkfileshare": {
-    "title": "Bulk bestand upload",
-    "drag_drop": "Sleep bestanden of mappen hier naartoe",
-    "select_files": "Selecteer bestanden",
-    "select_folder": "Selecteer map",
-    "selected_files": "Geselecteerde bestanden",
-    "total_size": "Totale grootte",
-    "upload": "Bestanden uploaden",
-    "total_size_too_large": "Totale grootte overschrijdt de limiet (max {{max}} {{unit}})"
   }
 }

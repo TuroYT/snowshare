@@ -99,7 +99,11 @@
     "duration_in_x_months": "Este archivo expirará en {{count}} meses",
     "duration_in_x_years": "Este archivo expirará en {{count}} año(s)",
     "locked_title": "Compartir archivos bloqueado",
-    "locked_message": "Debes estar conectado para compartir archivos."
+    "locked_message": "Debes estar conectado para compartir archivos.",
+    "select_files": "Seleccionar archivos",
+    "select_folder": "Seleccionar carpeta",
+    "selected_files": "Archivos seleccionados",
+    "total_size": "Total"
   },
   "file_download": {
     "loading_error": "Error al cargar la información",
@@ -126,8 +130,7 @@
   "tabs": {
     "linkshare": "LinkShare",
     "pasteshare": "PasteShare",
-    "fileshare": "FileShare",
-    "bulkfileshare": "Carga masiva"
+    "fileshare": "FileShare"
   },
   "linkshare": {
     "title": "Compartir un enlace",
@@ -543,15 +546,5 @@
     "error_generic": "Ha ocurrido un error",
     "error_url_not_found": "URL no encontrada",
     "error_connection": "Error de conexión"
-  },
-  "bulkfileshare": {
-    "title": "Carga masiva de archivos",
-    "drag_drop": "Arrastra y suelta archivos o carpetas aquí",
-    "select_files": "Seleccionar archivos",
-    "select_folder": "Seleccionar carpeta",
-    "selected_files": "Archivos seleccionados",
-    "total_size": "Tamaño total",
-    "upload": "Subir archivos",
-    "total_size_too_large": "El tamaño total excede el límite (máx {{max}} {{unit}})"
   }
 }

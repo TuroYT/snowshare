@@ -5,7 +5,6 @@ import { useState } from "react";
 import LinkShare from "@/components/LinkShare";
 import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
-import BulkFileShare from "@/components/BulkFileShare";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
@@ -18,8 +17,7 @@ export default function Home() {
     const tabs = [
         { id: "linkshare", label: t("tabs.linkshare", "LinkShare"), component: <LinkShare /> },
         { id: "pasteshare", label: t("tabs.pasteshare", "PasteShare"), component: <PasteShare /> },
-        { id: "fileshare", label: t("tabs.fileshare", "FileShare"), component: <FileShare /> },
-        { id: "bulkfileshare", label: t("tabs.bulkfileshare", "Bulk Upload"), component: <BulkFileShare /> }
+        { id: "fileshare", label: t("tabs.fileshare", "FileShare"), component: <FileShare /> }
     ];
 
     return (

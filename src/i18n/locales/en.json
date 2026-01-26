@@ -103,7 +103,11 @@
     "quota_info": "Quota: {{used}} MB / {{total}} MB used",
     "quota_remaining": "{{remaining}} MB available",
     "quota_exceeded": "Quota exceeded",
-    "quota_warning": "Warning: you have used {{percent}}% of your quota"
+    "quota_warning": "Warning: you have used {{percent}}% of your quota",
+    "select_files": "Select Files",
+    "select_folder": "Select Folder",
+    "selected_files": "Selected Files",
+    "total_size": "Total"
   },
   "file_download": {
     "loading_error": "Error loading information",
@@ -130,8 +134,7 @@
   "tabs": {
     "linkshare": "LinkShare",
     "pasteshare": "PasteShare",
-    "fileshare": "FileShare",
-    "bulkfileshare": "Bulk Upload"
+    "fileshare": "FileShare"
   },
   "linkshare": {
     "title": "Share a link",
@@ -547,15 +550,5 @@
     "error_generic": "An error occurred",
     "error_url_not_found": "URL not found",
     "error_connection": "Connection error"
-  },
-  "bulkfileshare": {
-    "title": "Bulk File Upload",
-    "drag_drop": "Drag and drop files or folders here",
-    "select_files": "Select Files",
-    "select_folder": "Select Folder",
-    "selected_files": "Selected Files",
-    "total_size": "Total size",
-    "upload": "Upload Files",
-    "total_size_too_large": "Total size exceeds limit (max {{max}} {{unit}})"
   }
 }
