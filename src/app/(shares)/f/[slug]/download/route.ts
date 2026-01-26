@@ -32,7 +32,6 @@ export async function GET(
   }
 
   try {
-    // Get password from query params if provided
     const url = new URL(request.url);
     const password = url.searchParams.get("password") || undefined;
 
@@ -41,6 +40,13 @@ export async function GET(
     if (result.error) {
       const status = result.requiresPassword ? 403 : 404;
       return jsonResponse({ error: result.error }, status);
+    }
+
+    if (result.share?.isBulk) {
+      return jsonResponse({ 
+        error: "This is a bulk share. Use /bulk-download endpoint instead.",
+        isBulk: true 
+      }, 400);
     }
 
     const { filePath: fullPath, originalFilename } = result;

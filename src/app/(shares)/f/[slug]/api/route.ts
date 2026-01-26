@@ -47,7 +47,6 @@ export async function POST(
 
   try {
     if (action === "info") {
-      // Get file info without password first to check if password is required
       const result = await getFileShare(slug);
       
       if (result.error && !result.requiresPassword) {
@@ -57,11 +56,22 @@ export async function POST(
       if (result.requiresPassword) {
         return jsonResponse({
           filename: "Fichier protégé",
-          requiresPassword: true
+          requiresPassword: true,
+          isBulk: result.isBulk || false
         });
       }
 
-      // Get file stats
+      if (result.isBulk && result.share) {
+        const totalSize = result.share.files?.reduce((sum: number, file: any) => sum + Number(file.size), 0) || 0;
+        return jsonResponse({
+          filename: `${result.share.files?.length || 0} files`,
+          fileSize: totalSize,
+          requiresPassword: false,
+          isBulk: true,
+          fileCount: result.share.files?.length || 0
+        });
+      }
+
       const { filePath: fullPath, originalFilename } = result;
       if (!fullPath || !existsSync(fullPath)) {
         return jsonResponse({ error: "Fichier introuvable" }, 404);
@@ -72,7 +82,8 @@ export async function POST(
       return jsonResponse({
         filename: originalFilename,
         fileSize: stats.size,
-        requiresPassword: false
+        requiresPassword: false,
+        isBulk: false
       });
     }
 
@@ -84,16 +95,20 @@ export async function POST(
         return jsonResponse({ error: result.error }, status);
       }
 
+      if (result.isBulk) {
+        const downloadUrl = `/f/${slug}/bulk-download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
+        return jsonResponse({ downloadUrl, isBulk: true });
+      }
+
       const { filePath: fullPath } = result;
       
       if (!fullPath || !existsSync(fullPath)) {
         return jsonResponse({ error: "Fichier introuvable" }, 404);
       }
 
-      // Generate a download URL with password if needed
       const downloadUrl = `/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
       
-      return jsonResponse({ downloadUrl });
+      return jsonResponse({ downloadUrl, isBulk: false });
     }
 
     return jsonResponse({ error: "Action non supportée" }, 400);

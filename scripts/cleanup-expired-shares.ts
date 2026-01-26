@@ -16,7 +16,6 @@ async function cleanupExpiredShares() {
   try {
     const now = new Date();
     
-    // Récupérer les partages expirés avec les fichiers à supprimer
     const expiredShares = await prisma.share.findMany({
       where: {
         expiresAt: {
@@ -29,7 +28,13 @@ async function cleanupExpiredShares() {
         filePath: true,
         slug: true,
         createdAt: true,
-        expiresAt: true
+        expiresAt: true,
+        isBulk: true,
+        files: {
+          select: {
+            filePath: true
+          }
+        }
       }
     });
 
@@ -43,19 +48,34 @@ async function cleanupExpiredShares() {
     let deletedFiles = 0;
     let deletedShares = 0;
 
-    // Supprimer les fichiers physiques pour les partages de type FILE
     for (const share of expiredShares) {
-      if (share.type === 'FILE' && share.filePath) {
-        const fullFilePath = path.join(getUploadDir(), share.filePath);
-        
-        try {
-          if (fs.existsSync(fullFilePath)) {
-            fs.unlinkSync(fullFilePath);
-            deletedFiles++;
-            console.log(`🗑️  Fichier supprimé: ${share.filePath} (partage: ${share.slug})`);
+      if (share.type === 'FILE') {
+        if (share.isBulk && share.files) {
+          for (const file of share.files) {
+            const fullFilePath = path.join(getUploadDir(), file.filePath);
+            
+            try {
+              if (fs.existsSync(fullFilePath)) {
+                fs.unlinkSync(fullFilePath);
+                deletedFiles++;
+                console.log(`🗑️  Fichier supprimé: ${file.filePath} (partage: ${share.slug})`);
+              }
+            } catch (error) {
+              console.error(`❌ Erreur lors de la suppression du fichier ${file.filePath}:`, error);
+            }
           }
-        } catch (error) {
-          console.error(`❌ Erreur lors de la suppression du fichier ${share.filePath}:`, error);
+        } else if (share.filePath) {
+          const fullFilePath = path.join(getUploadDir(), share.filePath);
+          
+          try {
+            if (fs.existsSync(fullFilePath)) {
+              fs.unlinkSync(fullFilePath);
+              deletedFiles++;
+              console.log(`🗑️  Fichier supprimé: ${share.filePath} (partage: ${share.slug})`);
+            }
+          } catch (error) {
+            console.error(`❌ Erreur lors de la suppression du fichier ${share.filePath}:`, error);
+          }
         }
       }
     }

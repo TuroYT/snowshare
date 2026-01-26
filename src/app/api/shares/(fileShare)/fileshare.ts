@@ -9,7 +9,12 @@ import { existsSync } from "fs";
 
 
 export const getFileShare = async (slug: string, password?: string) => {
-  const share = await prisma.share.findUnique({ where: { slug } });
+  const share = await prisma.share.findUnique({ 
+    where: { slug },
+    include: {
+      files: true,
+    }
+  });
   
   if (!share || share.type !== "FILE") {
     return { error: "File share not found." };
@@ -19,7 +24,6 @@ export const getFileShare = async (slug: string, password?: string) => {
     return { error: "This share has expired." };
   }
 
-  // Check password if required
   if (share.password) {
     if (!password) {
       return { error: "Password required.", requiresPassword: true };
@@ -29,6 +33,13 @@ export const getFileShare = async (slug: string, password?: string) => {
     if (!passwordValid) {
       return { error: "Incorrect password." };
     }
+  }
+
+  if (share.isBulk) {
+    return { 
+      share,
+      isBulk: true,
+    };
   }
 
   if (!share.filePath) {
@@ -43,6 +54,6 @@ export const getFileShare = async (slug: string, password?: string) => {
   return { 
     share,
     filePath,
-    originalFilename: share.filePath.split('_').slice(1).join('_') // Extract original name
+    originalFilename: share.filePath.split('_').slice(1).join('_')
   };
 };
