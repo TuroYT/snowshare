@@ -78,6 +78,13 @@ model Share {
   createdAt     DateTime   @default(now())
   expiresAt     DateTime?
   ipSource      String?
+
+  @@index([slug])
+  @@index([ownerId])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([type, createdAt])
+
 }
 
 model Settings {
