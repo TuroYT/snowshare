@@ -780,11 +780,16 @@ const FileShare: React.FC = () => {
             accept="*/*"
           />
           <input
-            ref={dirInputRef}
+            ref={(node) => {
+              if (node) {
+                dirInputRef.current = node;
+                node.setAttribute("webkitdirectory", "");
+                node.setAttribute("directory", "");
+              }
+            }}
             type="file"
             onChange={handleDirectorySelect}
             className="hidden"
-            {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
           />
         </div>
 
