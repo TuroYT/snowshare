@@ -11,6 +11,8 @@ interface FileInfo {
     filename: string;
     fileSize?: number;
     requiresPassword: boolean;
+    isBulk?: boolean;
+    fileCount?: number;
 }
 
 export default function FileSharePage() {
@@ -189,6 +191,11 @@ export default function FileSharePage() {
                         <p className="text-lg font-medium text-[var(--foreground)] truncate" title={fileInfo?.filename}>
                             {fileInfo?.filename}
                         </p>
+                        {fileInfo?.isBulk && fileInfo?.fileCount && (
+                            <p className="text-sm text-[var(--foreground-muted)] mt-1">
+                                {t("file_download.file_count", "{{count}} files", { count: fileInfo.fileCount })}
+                            </p>
+                        )}
                         {fileInfo?.fileSize && (
                             <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("file_download.size")}: {formatFileSize(fileInfo.fileSize)}</p>
                         )}

@@ -62,7 +62,7 @@ export async function POST(
       }
 
       if (result.isBulk && result.share) {
-        const totalSize = result.share.files?.reduce((sum: number, file: any) => sum + Number(file.size), 0) || 0;
+        const totalSize = result.share.files?.reduce((sum: number, file: { size: bigint }) => sum + Number(file.size), 0) || 0;
         return jsonResponse({
           filename: `${result.share.files?.length || 0} files`,
           fileSize: totalSize,

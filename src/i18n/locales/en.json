@@ -120,7 +120,8 @@
     "password_placeholder": "Enter password",
     "downloading": "Downloading...",
     "download": "Download",
-    "disclaimer": "By downloading this file, you acknowledge it comes from a third-party source."
+    "disclaimer": "By downloading this file, you acknowledge it comes from a third-party source.",
+    "file_count": "{{count}} files"
   },
   "home": {
     "title": "Welcome to SnowShare",

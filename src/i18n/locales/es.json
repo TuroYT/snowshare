@@ -116,7 +116,8 @@
     "password_placeholder": "Introduce la contraseña",
     "downloading": "Descargando...",
     "download": "Descargar",
-    "disclaimer": "Al descargar este archivo, aceptas que proviene de una fuente de terceros."
+    "disclaimer": "Al descargar este archivo, aceptas que proviene de una fuente de terceros.",
+    "file_count": "{{count}} archivos"
   },
   "home": {
     "title": "Bienvenido a SnowShare",

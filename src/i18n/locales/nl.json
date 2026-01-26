@@ -124,7 +124,8 @@
     "password_placeholder": "Voer wachtwoord in",
     "downloading": "Downloaden...",
     "download": "Downloaden",
-    "disclaimer": "Door dit bestand te downloaden erken je dat het afkomstig is van een externe bron."
+    "disclaimer": "Door dit bestand te downloaden erken je dat het afkomstig is van een externe bron.",
+    "file_count": "{{count}} bestanden"
   },
   "home": {
     "title": "Welkom bij SnowShare",

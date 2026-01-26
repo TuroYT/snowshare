@@ -88,7 +88,7 @@ const BulkFileShare: React.FC = () => {
     const selectedFiles = e.target.files;
     if (selectedFiles) {
       const fileList: FileWithPath[] = Array.from(selectedFiles).map((file) => {
-        const fullPath = (file as any).webkitRelativePath || file.name;
+        const fullPath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
         return {
           file,
           relativePath: fullPath,
@@ -110,7 +110,7 @@ const BulkFileShare: React.FC = () => {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       if (item.kind === "file") {
-        const entry = item.webkitGetAsEntry?.();
+        const entry = item.webkitGetAsEntry?.() as FileSystemEntry | null;
         if (entry) {
           filePromises.push(traverseFileTree(entry, ""));
         }
@@ -124,18 +124,18 @@ const BulkFileShare: React.FC = () => {
   };
 
   const traverseFileTree = async (
-    entry: any,
+    entry: FileSystemEntry,
     path: string
   ): Promise<FileWithPath[]> => {
     return new Promise((resolve) => {
       if (entry.isFile) {
-        entry.file((file: File) => {
+        (entry as FileSystemFileEntry).file((file: File) => {
           const relativePath = path + file.name;
           resolve([{ file, relativePath }]);
         });
       } else if (entry.isDirectory) {
-        const dirReader = entry.createReader();
-        dirReader.readEntries(async (entries: any[]) => {
+        const dirReader = (entry as FileSystemDirectoryEntry).createReader();
+        dirReader.readEntries(async (entries: FileSystemEntry[]) => {
           const results = await Promise.all(
             entries.map((e) => traverseFileTree(e, path + entry.name + "/"))
           );
@@ -230,7 +230,7 @@ const BulkFileShare: React.FC = () => {
 
       xhr.open("POST", "/api/upload/bulk");
       xhr.send(formData);
-    } catch (err) {
+    } catch {
       setLoading(false);
       setError(t("fileshare.upload_error", "An error occurred during upload"));
     }
@@ -343,7 +343,7 @@ const BulkFileShare: React.FC = () => {
               type="file"
               onChange={handleDirectorySelect}
               className="hidden"
-              {...({ webkitdirectory: "", directory: "" } as any)}
+              {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
             />
           </div>
 

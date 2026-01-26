@@ -1,5 +1,5 @@
-import { createWriteStream, createReadStream, existsSync } from "fs";
-import { mkdir, unlink, stat } from "fs/promises";
+import { createWriteStream, existsSync } from "fs";
+import { mkdir, stat } from "fs/promises";
 import path from "path";
 import { pipeline } from "stream/promises";
 import archiver from "archiver";

@@ -124,7 +124,8 @@
     "password_placeholder": "Wprowadź hasło",
     "downloading": "Pobieranie...",
     "download": "Pobierz",
-    "disclaimer": "Pobierając plik, potwierdzasz, że pochodzi od podmiotu trzeciego."
+    "disclaimer": "Pobierając plik, potwierdzasz, że pochodzi od podmiotu trzeciego.",
+    "file_count": "{{count}} plików"
   },
   "home": {
     "title": "Witamy w SnowShare",
