@@ -322,6 +322,11 @@ export async function POST(req: NextRequest) {
     const nodeStream = Readable.fromWeb(
       req.body as unknown as import("stream/web").ReadableStream
     );
+
+    nodeStream.on("error", (err) => {
+      console.error("Error reading request stream for bulk upload:", err);
+      busboy.emit("error", err as Error);
+    });
     nodeStream.pipe(busboy);
   });
 }
