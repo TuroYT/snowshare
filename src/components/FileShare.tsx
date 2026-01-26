@@ -153,10 +153,11 @@ const FileShare: React.FC = () => {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       if (item.kind === "file") {
-        const entry = item.webkitGetAsEntry?.() as FileSystemEntry | null;
-        if (entry) {
-          filePromises.push(traverseFileTree(entry, ""));
+        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+        if (!entry) {
+          continue;
         }
+        filePromises.push(traverseFileTree(entry, ""));
       }
     }
 
