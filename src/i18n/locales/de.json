@@ -125,7 +125,8 @@
   "tabs": {
     "linkshare": "LinkShare",
     "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "fileshare": "FileShare",
+    "bulkfileshare": "Bulk-Upload"
   },
   "linkshare": {
     "title": "Einen Link teilen",
@@ -198,7 +199,9 @@
     "error_invalid_credentials": "Falsche E-Mail oder falsches Passwort",
     "error_generic": "Ein Fehler ist aufgetreten: ",
     "error_passwords_mismatch": "Passwörter stimmen nicht überein",
-    "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",    "error_oauth_signin": "Diesem Anbieterkonto ist keine E-Mail-Adresse zugeordnet.",    "success_account_created": "Konto erfolgreich erstellt",
+    "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "error_oauth_signin": "Diesem Anbieterkonto ist keine E-Mail-Adresse zugeordnet.",
+    "success_account_created": "Konto erfolgreich erstellt",
     "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren zu",
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt.",
@@ -539,5 +542,15 @@
     "error_generic": "Ein Fehler ist aufgetreten",
     "error_url_not_found": "URL nicht gefunden",
     "error_connection": "Verbindungsfehler"
+  },
+  "bulkfileshare": {
+    "title": "Bulk-Datei-Upload",
+    "drag_drop": "Dateien oder Ordner hier ablegen",
+    "select_files": "Dateien auswählen",
+    "select_folder": "Ordner auswählen",
+    "selected_files": "Ausgewählte Dateien",
+    "total_size": "Gesamtgröße",
+    "upload": "Dateien hochladen",
+    "total_size_too_large": "Gesamtgröße überschreitet das Limit (max {{max}} {{unit}})"
   }
 }

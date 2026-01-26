@@ -129,7 +129,8 @@
   "tabs": {
     "linkshare": "LinkShare",
     "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "fileshare": "FileShare",
+    "bulkfileshare": "Bulk Upload"
   },
   "linkshare": {
     "title": "Share a link",
@@ -202,7 +203,9 @@
     "error_invalid_credentials": "Incorrect email or password",
     "error_generic": "An error occurred: ",
     "error_passwords_mismatch": "Passwords do not match",
-    "error_password_too_short": "Password must be at least 6 characters long",    "error_oauth_signin": "No email associated with this provider account.",    "success_account_created": "Account created successfully",
+    "error_password_too_short": "Password must be at least 6 characters long",
+    "error_oauth_signin": "No email associated with this provider account.",
+    "success_account_created": "Account created successfully",
     "terms_notice": "By creating an account, you agree to our",
     "signup_disabled_title": "Sign up disabled",
     "signup_disabled_message": "New registrations are currently not allowed.",
@@ -543,5 +546,15 @@
     "error_generic": "An error occurred",
     "error_url_not_found": "URL not found",
     "error_connection": "Connection error"
+  },
+  "bulkfileshare": {
+    "title": "Bulk File Upload",
+    "drag_drop": "Drag and drop files or folders here",
+    "select_files": "Select Files",
+    "select_folder": "Select Folder",
+    "selected_files": "Selected Files",
+    "total_size": "Total size",
+    "upload": "Upload Files",
+    "total_size_too_large": "Total size exceeds limit (max {{max}} {{unit}})"
   }
 }

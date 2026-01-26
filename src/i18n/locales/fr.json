@@ -18,8 +18,7 @@
     "admin": "Administration",
     "admin_desc": "Panneau d'administration"
   },
-  "loading": "Chargement..."
-  ,
+  "loading": "Chargement...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Partagez vos extraits de texte en toute sécurité et simplicité.",
@@ -122,8 +121,7 @@
     "downloading": "Téléchargement...",
     "download": "Télécharger",
     "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce."
-  }
-  ,
+  },
   "home": {
     "title": "Bienvenue sur SnowShare",
     "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."
@@ -131,7 +129,8 @@
   "tabs": {
     "linkshare": "LinkShare",
     "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "fileshare": "FileShare",
+    "bulkfileshare": "Téléchargement groupé"
   },
   "linkshare": {
     "title": "Partager un lien",
@@ -547,5 +546,15 @@
     "error_generic": "Une erreur est survenue",
     "error_url_not_found": "URL introuvable",
     "error_connection": "Erreur de connexion"
+  },
+  "bulkfileshare": {
+    "title": "Téléchargement groupé de fichiers",
+    "drag_drop": "Glissez-déposez des fichiers ou dossiers ici",
+    "select_files": "Sélectionner des fichiers",
+    "select_folder": "Sélectionner un dossier",
+    "selected_files": "Fichiers sélectionnés",
+    "total_size": "Taille totale",
+    "upload": "Télécharger les fichiers",
+    "total_size_too_large": "La taille totale dépasse la limite (max {{max}} {{unit}})"
   }
 }
