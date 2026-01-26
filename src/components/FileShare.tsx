@@ -458,7 +458,16 @@ const FileShare: React.FC = () => {
           const fileWithPath = files[index];
           const file = fileWithPath.file;
 
-          const metadata = {
+          const metadata: {
+            filename: string;
+            filetype: string;
+            relativePath: string;
+            isBulk: string;
+            fileIndex: string;
+            totalFiles: string;
+            bulkShareId?: string;
+            [key: string]: string | undefined;
+          } = {
             ...baseMetadata,
             filename: file.name,
             filetype: file.type || "application/octet-stream",
@@ -472,6 +481,11 @@ const FileShare: React.FC = () => {
             metadata.bulkShareId = shareId;
           }
 
+          // Filter out undefined values to match tus library's metadata type requirement
+          const cleanMetadata = Object.fromEntries(
+            Object.entries(metadata).filter(([, value]) => value !== undefined)
+          ) as Record<string, string>;
+
           let bytesUploadedSoFar = 0;
           for (let i = 0; i < index; i++) {
             bytesUploadedSoFar += files[i].file.size;
@@ -481,7 +495,7 @@ const FileShare: React.FC = () => {
             endpoint: "/api/tus",
             retryDelays: [0, 1000, 3000, 5000, 10000],
             chunkSize: 50 * 1024 * 1024,
-            metadata,
+            metadata: cleanMetadata,
             removeFingerprintOnSuccess: true,
             onError: (error) => {
               console.error(`Tus upload error for file ${index + 1}:`, error);
@@ -500,7 +514,7 @@ const FileShare: React.FC = () => {
               setLoading(false);
               setUploadProgress(0);
             },
-            onProgress: (bytesUploaded, bytesTotal) => {
+            onProgress: (bytesUploaded, _bytesTotal) => {
               const currentFileProgress = bytesUploaded;
               const overallProgress = bytesUploadedSoFar + currentFileProgress;
               const percent = Math.round((overallProgress / totalSize) * 100);
