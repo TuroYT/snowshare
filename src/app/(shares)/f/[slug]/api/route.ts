@@ -64,9 +64,9 @@ export async function POST(
       if (result.isBulk && result.share) {
         const files = result.share.files || [];
         const totalSize = files.reduce((sum: number, file: { size: bigint }) => sum + Number(file.size), 0);
-        const fileList = files.map((file: { originalName: string; relativePath: string; size: bigint }) => ({
+        const fileList = files.map((file) => ({
           name: file.originalName,
-          path: file.relativePath,
+          path: file.relativePath || file.originalName,
           size: Number(file.size),
         }));
         
