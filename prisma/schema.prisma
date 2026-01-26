@@ -46,6 +46,8 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
+  emailVerificationToken String?
+  emailVerificationExpires DateTime?
   image         String?
   password      String?
   createdAt     DateTime  @default(now())
@@ -118,6 +120,24 @@ model Settings {
 
   // Legal
   termsOfUses  String?
+  
+  // Security - Email Verification
+  requireEmailVerification Boolean @default(false)
+  
+  // Security - SMTP Configuration
+  smtpHost      String?
+  smtpPort      Int?
+  smtpSecure    Boolean @default(true)
+  smtpUser      String?
+  smtpPassword  String? // Encrypted in storage
+  smtpFromEmail String?
+  smtpFromName  String?
+  
+  // Security - CAPTCHA Configuration
+  captchaEnabled  Boolean @default(false)
+  captchaProvider String? // "recaptcha-v2", "recaptcha-v3", "turnstile"
+  captchaSiteKey  String?
+  captchaSecretKey String? // Encrypted in storage
 }
 
 model CustomLink {

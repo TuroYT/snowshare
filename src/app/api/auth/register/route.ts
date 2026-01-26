@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants"
+import { validateCaptcha } from "@/lib/captcha"
+import { generateVerificationToken, sendVerificationEmail } from "@/lib/email"
 
 
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, isFirstUser } = await request.json()
+    const { email, password, isFirstUser, captchaToken } = await request.json()
     
     // Check if this is the first user setup
     const userCount = await prisma.user.count()
@@ -16,16 +18,19 @@ export async function POST(request: NextRequest) {
     // Get DB settings
     let allowSignup = true // Default to true
     let disableCredentialsLogin = false
+    let requireEmailVerification = false
     const settings = await prisma.settings.findFirst({
       select: {
         allowSignin: true,
-        disableCredentialsLogin: true
+        disableCredentialsLogin: true,
+        requireEmailVerification: true
       }
     })
     
     if (settings) {
       allowSignup = settings.allowSignin
       disableCredentialsLogin = settings.disableCredentialsLogin
+      requireEmailVerification = settings.requireEmailVerification ?? false
     }
 
     // Allow registration if:
@@ -69,6 +74,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate CAPTCHA if not first user (first user setup should be easy)
+    if (!isActuallyFirstUser) {
+      const captchaResult = await validateCaptcha(captchaToken)
+      if (!captchaResult.success) {
+        return NextResponse.json(
+          { error: captchaResult.error || "CAPTCHA validation failed" },
+          { status: 400 }
+        )
+      }
+    }
+
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -84,17 +100,42 @@ export async function POST(request: NextRequest) {
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 12)
 
+    // Generate email verification token if required
+    let verificationToken: string | null = null
+    let verificationExpires: Date | null = null
+    
+    if (requireEmailVerification && !isActuallyFirstUser) {
+      verificationToken = generateVerificationToken()
+      verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    }
+
     // Créer l'utilisateur
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         isAdmin: isActuallyFirstUser ? true : false,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
+        emailVerified: requireEmailVerification && !isActuallyFirstUser ? null : new Date(),
       }
     })
 
+    // Send verification email if required
+    if (requireEmailVerification && !isActuallyFirstUser && verificationToken) {
+      try {
+        const baseUrl = process.env.NEXTAUTH_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
+        await sendVerificationEmail(email, verificationToken, baseUrl)
+      } catch (emailError) {
+        console.error("Failed to send verification email:", emailError)
+        // Don't fail registration if email fails, but log the error
+        // User can request a new verification email later
+      }
+    }
+
     return NextResponse.json({
       message: "Utilisateur créé avec succès",
+      requiresVerification: requireEmailVerification && !isActuallyFirstUser,
       user: {
         id: user.id,
         email: user.email,
