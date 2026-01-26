@@ -92,6 +92,8 @@ model ShareFile {
   size          BigInt
   mimeType      String?
   createdAt     DateTime @default(now())
+
+  @@index([shareId])
 }
 
 model Settings {
