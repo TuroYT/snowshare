@@ -285,6 +285,11 @@ const tusServer = new TusServer({
       const slug = metadata.slug || "";
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
+      const isBulk = metadata.isBulk === "true";
+      const bulkShareId = metadata.bulkShareId || "";
+      const relativePath = metadata.relativePath || filename;
+      const fileIndex = metadata.fileIndex ? parseInt(metadata.fileIndex) : 0;
+      const totalFiles = metadata.totalFiles ? parseInt(metadata.totalFiles) : 1;
       
       // Get metadata by upload ID
       const uploadId = upload.id;
@@ -300,99 +305,177 @@ const tusServer = new TusServer({
       // Clean up
       uploadMetadata.delete(uploadId);
 
-      // Validate slug if provided
-      let finalSlug = slug;
-      if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
-        finalSlug = "";
-      }
-
-      // Check slug uniqueness
-      if (finalSlug) {
-        const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
-        if (existing) {
+      let share;
+      
+      if (isBulk && bulkShareId) {
+        share = await prisma.share.findUnique({ where: { id: bulkShareId } });
+        
+        if (!share) {
+          console.error(`[Upload] Bulk share not found: ${bulkShareId}`);
+          throw new Error("Bulk share not found");
+        }
+      } else if (isBulk && fileIndex === 0) {
+        let finalSlug = slug;
+        if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
           finalSlug = "";
         }
-      }
-      if (!finalSlug) {
-        finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
-      }
 
-      // Parse expiration
-      let parsedExpiresAt = null;
-      if (expiresAt) {
-        parsedExpiresAt = new Date(expiresAt);
-        if (isNaN(parsedExpiresAt.getTime())) {
-          parsedExpiresAt = null;
-        }
-      }
-
-      // Anonymous expiration rules
-      if (!isAuthenticated) {
-        const defaultExpiry = new Date();
-        defaultExpiry.setDate(defaultExpiry.getDate() + 7);
-        
-        if (!parsedExpiresAt) {
-          parsedExpiresAt = defaultExpiry;
-        } else {
-          const maxExpiry = new Date();
-          maxExpiry.setDate(maxExpiry.getDate() + 7);
-          if (parsedExpiresAt > maxExpiry) {
-            parsedExpiresAt = maxExpiry;
+        if (finalSlug) {
+          const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
+          if (existing) {
+            finalSlug = "";
           }
         }
+        if (!finalSlug) {
+          finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
+        }
+
+        let parsedExpiresAt = null;
+        if (expiresAt) {
+          parsedExpiresAt = new Date(expiresAt);
+          if (isNaN(parsedExpiresAt.getTime())) {
+            parsedExpiresAt = null;
+          }
+        }
+
+        if (!isAuthenticated) {
+          const defaultExpiry = new Date();
+          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+          
+          if (!parsedExpiresAt) {
+            parsedExpiresAt = defaultExpiry;
+          } else {
+            const maxExpiry = new Date();
+            maxExpiry.setDate(maxExpiry.getDate() + 7);
+            if (parsedExpiresAt > maxExpiry) {
+              parsedExpiresAt = maxExpiry;
+            }
+          }
+        }
+
+        let hashedPassword = null;
+        if (password) {
+          const bcrypt = await import("bcryptjs");
+          hashedPassword = await bcrypt.default.hash(password, 12);
+        }
+
+        share = await prisma.share.create({
+          data: {
+            slug: finalSlug,
+            type: "FILE",
+            password: hashedPassword,
+            expiresAt: parsedExpiresAt,
+            ipSource: clientIp,
+            ownerId: userId || null,
+            isBulk: true,
+          },
+        });
+        
+        console.log(`Created bulk share: ${share.slug}`);
+      } else {
+        let finalSlug = slug;
+        if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
+          finalSlug = "";
+        }
+
+        if (finalSlug) {
+          const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
+          if (existing) {
+            finalSlug = "";
+          }
+        }
+        if (!finalSlug) {
+          finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
+        }
+
+        let parsedExpiresAt = null;
+        if (expiresAt) {
+          parsedExpiresAt = new Date(expiresAt);
+          if (isNaN(parsedExpiresAt.getTime())) {
+            parsedExpiresAt = null;
+          }
+        }
+
+        if (!isAuthenticated) {
+          const defaultExpiry = new Date();
+          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+          
+          if (!parsedExpiresAt) {
+            parsedExpiresAt = defaultExpiry;
+          } else {
+            const maxExpiry = new Date();
+            maxExpiry.setDate(maxExpiry.getDate() + 7);
+            if (parsedExpiresAt > maxExpiry) {
+              parsedExpiresAt = maxExpiry;
+            }
+          }
+        }
+
+        let hashedPassword = null;
+        if (password) {
+          const bcrypt = await import("bcryptjs");
+          hashedPassword = await bcrypt.default.hash(password, 12);
+        }
+
+        share = await prisma.share.create({
+          data: {
+            slug: finalSlug,
+            type: "FILE",
+            filePath: "",
+            password: hashedPassword,
+            expiresAt: parsedExpiresAt,
+            ipSource: clientIp,
+            ownerId: userId || null,
+            isBulk: false,
+          },
+        });
       }
 
-      // Hash password if provided
-      let hashedPassword = null;
-      if (password) {
-        const bcrypt = await import("bcryptjs");
-        hashedPassword = await bcrypt.default.hash(password, 12);
-      }
-
-      // Create database record
-      const share = await prisma.share.create({
-        data: {
-          slug: finalSlug,
-          type: "FILE",
-          filePath: "",
-          password: hashedPassword,
-          expiresAt: parsedExpiresAt,
-          ipSource: clientIp,
-          ownerId: userId || null,
-        },
-      });
-
-      // Move file from tus temp to final location
       const tusFilePath = path.join(tusTempDir, upload.id);
       const finalFileName = generateSafeFilename(filename, share.id);
       const finalFilePath = path.join(uploadsDir, finalFileName);
 
       await rename(tusFilePath, finalFilePath);
 
-      // Clean up tus metadata file
       const tusMetaPath = `${tusFilePath}.json`;
       if (existsSync(tusMetaPath)) {
         await unlink(tusMetaPath);
       }
 
-      // Update database
-      await prisma.share.update({
-        where: { id: share.id },
-        data: { filePath: finalFileName },
-      });
+      if (isBulk) {
+        const fileStats = await stat(finalFilePath);
+        
+        await prisma.shareFile.create({
+          data: {
+            shareId: share.id,
+            filePath: finalFileName,
+            originalName: filename,
+            relativePath: relativePath,
+            size: BigInt(fileStats.size),
+            mimeType: metadata.filetype || "application/octet-stream",
+          },
+        });
+        
+        console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
+      } else {
+        await prisma.share.update({
+          where: { id: share.id },
+          data: { filePath: finalFileName },
+        });
+        
+        console.log(`Upload complete: ${filename} -> ${share.slug}`);
+      }
 
-      console.log(`Upload complete: ${filename} -> ${share.slug}`);
-
-      // Return custom headers for the client
       return {
         headers: {
           "X-Share-Slug": share.slug,
-          "X-Share-Expires": share.expiresAt?.toISOString() || ""
+          "X-Share-Id": share.id,
+          "X-Share-Expires": share.expiresAt?.toISOString() || "",
+          "X-Is-Bulk": isBulk ? "true" : "false",
         }
       };
     } catch (err) {
       console.error("Error finalizing upload:", err);
-      // Don't throw here to avoid 500 to client if possible, but logging is essential
       throw err;
     }
   },

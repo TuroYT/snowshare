@@ -47,13 +47,13 @@ export async function POST(
 
   try {
     if (action === "info") {
-      const result = await getFileShare(slug);
+      const result = await getFileShare(slug, password);
       
       if (result.error && !result.requiresPassword) {
         return jsonResponse({ error: result.error }, 404);
       }
 
-      if (result.requiresPassword) {
+      if (result.requiresPassword && !password) {
         return jsonResponse({
           filename: "Fichier protégé",
           requiresPassword: true,
@@ -62,13 +62,21 @@ export async function POST(
       }
 
       if (result.isBulk && result.share) {
-        const totalSize = result.share.files?.reduce((sum: number, file: { size: bigint }) => sum + Number(file.size), 0) || 0;
+        const files = result.share.files || [];
+        const totalSize = files.reduce((sum: number, file: { size: bigint }) => sum + Number(file.size), 0);
+        const fileList = files.map((file: { originalName: string; relativePath: string; size: bigint }) => ({
+          name: file.originalName,
+          path: file.relativePath,
+          size: Number(file.size),
+        }));
+        
         return jsonResponse({
-          filename: `${result.share.files?.length || 0} files`,
+          filename: `${files.length} files`,
           fileSize: totalSize,
           requiresPassword: false,
           isBulk: true,
-          fileCount: result.share.files?.length || 0
+          fileCount: files.length,
+          files: fileList,
         });
       }
 

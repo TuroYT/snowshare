@@ -129,7 +129,11 @@
     "downloading": "Downloaden...",
     "download": "Downloaden",
     "disclaimer": "Door dit bestand te downloaden erken je dat het afkomstig is van een externe bron.",
-    "file_count": "{{count}} bestanden"
+    "file_count": "{{count}} bestanden",
+    "verify_password": "Wachtwoord verifiëren",
+    "verifying": "Verifiëren...",
+    "files_in_share": "Bestanden in deze share",
+    "password_incorrect": "Onjuist wachtwoord"
   },
   "home": {
     "title": "Welkom bij SnowShare",

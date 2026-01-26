@@ -125,7 +125,11 @@
     "downloading": "Téléchargement...",
     "download": "Télécharger",
     "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce.",
-    "file_count": "{{count}} fichiers"
+    "file_count": "{{count}} fichiers",
+    "verify_password": "Vérifier le mot de passe",
+    "verifying": "Vérification...",
+    "files_in_share": "Fichiers dans ce partage",
+    "password_incorrect": "Mot de passe incorrect"
   },
   "home": {
     "title": "Bienvenue sur SnowShare",

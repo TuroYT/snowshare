@@ -121,7 +121,11 @@
     "downloading": "Wird heruntergeladen...",
     "download": "Herunterladen",
     "disclaimer": "Mit dem Herunterladen dieser Datei erkennen Sie an, dass sie von einer Drittquelle stammt.",
-    "file_count": "{{count}} Dateien"
+    "file_count": "{{count}} Dateien",
+    "verify_password": "Passwort überprüfen",
+    "verifying": "Überprüfung...",
+    "files_in_share": "Dateien in dieser Freigabe",
+    "password_incorrect": "Falsches Passwort"
   },
   "home": {
     "title": "Willkommen bei SnowShare",

@@ -328,38 +328,42 @@ const FileShare: React.FC = () => {
     setLoading(true);
     setUploadProgress(0);
 
-    if (files.length === 1) {
-      if (!tus.isSupported) {
-        setError(t("fileshare.browser_not_supported", "Your browser does not support resumable uploads"));
-        setLoading(false);
-        return;
+    if (!tus.isSupported) {
+      setError(t("fileshare.browser_not_supported", "Your browser does not support resumable uploads"));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const baseMetadata: Record<string, string> = {};
+      
+      if (!isAuthenticated || !neverExpires) {
+        const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
+        const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
+        const expiresAt = new Date(
+          Date.now() + days * 24 * 60 * 60 * 1000
+        ).toISOString();
+        baseMetadata.expiresAt = expiresAt;
       }
 
-      const file = files[0].file;
-      const validationError = validateFile(file);
-      if (validationError) {
-        setError(validationError);
-        setLoading(false);
-        return;
-      }
+      if (slug.trim()) baseMetadata.slug = slug.trim();
+      if (password.trim()) baseMetadata.password = password.trim();
 
-      try {
-        const metadata: Record<string, string> = {
-          filename: file.name,
-          filetype: file.type || "application/octet-stream",
-        };
-
-        if (!isAuthenticated || !neverExpires) {
-          const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-          const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-          const expiresAt = new Date(
-            Date.now() + days * 24 * 60 * 60 * 1000
-          ).toISOString();
-          metadata.expiresAt = expiresAt;
+      if (files.length === 1) {
+        const file = files[0].file;
+        const validationError = validateFile(file);
+        if (validationError) {
+          setError(validationError);
+          setLoading(false);
+          return;
         }
 
-        if (slug.trim()) metadata.slug = slug.trim();
-        if (password.trim()) metadata.password = password.trim();
+        const metadata = {
+          ...baseMetadata,
+          filename: file.name,
+          filetype: file.type || "application/octet-stream",
+          isBulk: "false",
+        };
 
         let shareSlug: string | null = null;
 
@@ -427,72 +431,113 @@ const FileShare: React.FC = () => {
         }
 
         upload.start();
-      } catch (error) {
-        console.error("FileShare error:", error);
-        if (error instanceof Error && error.message) {
-          setError(error.message);
-        } else {
-          setError(
-            t("fileshare.network_error", "Network error — could not create share")
-          );
-        }
-        setLoading(false);
-        setUploadProgress(0);
-      }
-    } else {
-      try {
-        const formData = new FormData();
+      } else {
+        let shareSlug: string | null = null;
+        let shareId: string | null = null;
+        let completedFiles = 0;
+        const totalSize = getTotalSize();
 
-        files.forEach((fileWithPath, index) => {
-          formData.append(`file_${index}`, fileWithPath.file);
-          formData.append(`file_${index}_path`, fileWithPath.relativePath);
-        });
-
-        if (!isAuthenticated || !neverExpires) {
-          const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-          const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-          const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-          formData.append("expiresAt", expiresAt);
-        }
-
-        if (slug.trim()) formData.append("slug", slug.trim());
-        if (password.trim()) formData.append("password", password.trim());
-
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            const progress = Math.round((e.loaded / e.total) * 100);
-            setUploadProgress(progress);
-          }
-        });
-
-        xhr.addEventListener("load", () => {
-          setLoading(false);
-          if (xhr.status === 201) {
-            const response = JSON.parse(xhr.responseText);
-            const shareUrl = `${window.location.origin}/f/${response.share.slug}`;
-            setSuccess(shareUrl);
+        const uploadNextFile = async (index: number) => {
+          if (index >= files.length) {
+            if (shareSlug) {
+              setSuccess(`${window.location.origin}/f/${shareSlug}`);
+            }
             setFiles([]);
             setSlug("");
             setPassword("");
-          } else {
-            const response = JSON.parse(xhr.responseText);
-            setError(response.error || t("fileshare.upload_failed", "Upload failed"));
+            setNeverExpires(false);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+            setLoading(false);
+            setUploadProgress(100);
+            uploadRef.current = null;
+            return;
           }
-        });
 
-        xhr.addEventListener("error", () => {
-          setLoading(false);
-          setError(t("fileshare.upload_error", "An error occurred during upload"));
-        });
+          const fileWithPath = files[index];
+          const file = fileWithPath.file;
 
-        xhr.open("POST", "/api/upload/bulk");
-        xhr.send(formData);
-      } catch {
-        setLoading(false);
-        setError(t("fileshare.upload_error", "An error occurred during upload"));
+          const metadata = {
+            ...baseMetadata,
+            filename: file.name,
+            filetype: file.type || "application/octet-stream",
+            relativePath: fileWithPath.relativePath,
+            isBulk: "true",
+            fileIndex: index.toString(),
+            totalFiles: files.length.toString(),
+          };
+
+          if (shareId) {
+            metadata.bulkShareId = shareId;
+          }
+
+          let bytesUploadedSoFar = 0;
+          for (let i = 0; i < index; i++) {
+            bytesUploadedSoFar += files[i].file.size;
+          }
+
+          const upload = new tus.Upload(file, {
+            endpoint: "/api/tus",
+            retryDelays: [0, 1000, 3000, 5000, 10000],
+            chunkSize: 50 * 1024 * 1024,
+            metadata,
+            removeFingerprintOnSuccess: true,
+            onError: (error) => {
+              console.error(`Tus upload error for file ${index + 1}:`, error);
+              let errorMessage = t("fileshare.network_error", "Network error — could not create share");
+              if (error && typeof error === 'object' && 'message' in error) {
+                try {
+                  const parsed = JSON.parse(error.message as string);
+                  if (parsed.error) {
+                    errorMessage = parsed.error;
+                  }
+                } catch {
+                  errorMessage = (error.message as string) || errorMessage;
+                }
+              }
+              setError(`${t("fileshare.file", "File")} ${index + 1}: ${errorMessage}`);
+              setLoading(false);
+              setUploadProgress(0);
+            },
+            onProgress: (bytesUploaded, bytesTotal) => {
+              const currentFileProgress = bytesUploaded;
+              const overallProgress = bytesUploadedSoFar + currentFileProgress;
+              const percent = Math.round((overallProgress / totalSize) * 100);
+              setUploadProgress(Math.min(percent, 100));
+            },
+            onAfterResponse: (_req, res) => {
+              const slugHeader = res.getHeader("X-Share-Slug");
+              const idHeader = res.getHeader("X-Share-Id");
+              if (slugHeader) {
+                shareSlug = slugHeader;
+              }
+              if (idHeader) {
+                shareId = idHeader;
+              }
+            },
+            onSuccess: () => {
+              completedFiles++;
+              uploadNextFile(index + 1);
+            },
+          });
+
+          upload.start();
+        };
+
+        uploadNextFile(0);
       }
+    } catch (error) {
+      console.error("FileShare error:", error);
+      if (error instanceof Error && error.message) {
+        setError(error.message);
+      } else {
+        setError(
+          t("fileshare.network_error", "Network error — could not create share")
+        );
+      }
+      setLoading(false);
+      setUploadProgress(0);
     }
   };
 
