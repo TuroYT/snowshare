@@ -55,7 +55,7 @@ export async function POST(
 
       if (result.requiresPassword && !password) {
         return jsonResponse({
-          filename: "Fichier protégé",
+          filename: "Protected file",
           requiresPassword: true,
           isBulk: result.isBulk || false
         });
@@ -82,7 +82,7 @@ export async function POST(
 
       const { filePath: fullPath, originalFilename } = result;
       if (!fullPath || !existsSync(fullPath)) {
-        return jsonResponse({ error: "Fichier introuvable" }, 404);
+        return jsonResponse({ error: "File not found" }, 404);
       }
 
       const stats = statSync(fullPath);
@@ -111,7 +111,7 @@ export async function POST(
       const { filePath: fullPath } = result;
       
       if (!fullPath || !existsSync(fullPath)) {
-        return jsonResponse({ error: "Fichier introuvable" }, 404);
+        return jsonResponse({ error: "File not found" }, 404);
       }
 
       const downloadUrl = `/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
@@ -119,11 +119,11 @@ export async function POST(
       return jsonResponse({ downloadUrl, isBulk: false });
     }
 
-    return jsonResponse({ error: "Action non supportée" }, 400);
+    return jsonResponse({ error: "Action not supported" }, 400);
     
   } catch (error) {
     console.error("File share error:", error);
-    return jsonResponse({ error: "Erreur lors du traitement" }, 500);
+    return jsonResponse({ error: "Error processing request" }, 500);
   }
 }
 
@@ -135,7 +135,7 @@ export async function GET(
   const { slug } = await params;
   
   if (!slug) {
-    return jsonResponse({ error: "Slug manquant" }, 400);
+    return jsonResponse({ error: "Missing slug" }, 400);
   }
 
   try {
@@ -159,7 +159,7 @@ export async function GET(
     const { filePath: fullPath, originalFilename } = result;
     
     if (!fullPath || !existsSync(fullPath)) {
-      return jsonResponse({ error: "Fichier introuvable" }, 404);
+      return jsonResponse({ error: "File not found" }, 404);
     }
 
     // Get file stats for size
@@ -257,6 +257,6 @@ export async function GET(
     
   } catch (error) {
     console.error("Download error:", error);
-    return jsonResponse({ error: "Erreur lors du téléchargement" }, 500);
+    return jsonResponse({ error: "Error during download" }, 500);
   }
 }

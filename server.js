@@ -444,19 +444,37 @@ const tusServer = new TusServer({
 
       if (isBulk) {
         const fileStats = await stat(finalFilePath);
+        // Re-validate the bulk share exists to avoid FK errors if it was removed between checks
+        const currentShare = await prisma.share.findUnique({ where: { id: share.id }, select: { id: true, slug: true } });
+
+        if (!currentShare) {
+          console.error(`[Upload] Bulk share disappeared before linking file: ${share.id}`);
+          await unlink(finalFilePath).catch(() => {});
+          throw new Error("Bulk share no longer exists");
+        }
         
-        await prisma.shareFile.create({
-          data: {
-            shareId: share.id,
-            filePath: finalFileName,
-            originalName: filename,
-            relativePath: relativePath,
-            size: BigInt(fileStats.size),
-            mimeType: metadata.filetype || "application/octet-stream",
-          },
-        });
-        
-        console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
+        try {
+          await prisma.shareFile.create({
+            data: {
+              shareId: share.id,
+              filePath: finalFileName,
+              originalName: filename,
+              relativePath: relativePath,
+              size: BigInt(fileStats.size),
+              mimeType: metadata.filetype || "application/octet-stream",
+            },
+          });
+          
+          console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
+        } catch (error) {
+          // Clean up the file if we fail to persist the DB relation to avoid orphaned disk usage
+          await unlink(finalFilePath).catch(() => {});
+          if (error?.code === "P2003") {
+            console.error(`[Upload] FK constraint when linking bulk file to share ${share.id}:`, error);
+            throw new Error("Bulk share reference missing during file finalize");
+          }
+          throw error;
+        }
       } else {
         await prisma.share.update({
           where: { id: share.id },

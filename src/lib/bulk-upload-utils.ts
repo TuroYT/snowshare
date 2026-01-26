@@ -1,5 +1,5 @@
-import { createWriteStream, existsSync } from "fs";
-import { mkdir, stat } from "fs/promises";
+import { createWriteStream } from "fs";
+import { access, mkdir, stat } from "fs/promises";
 import path from "path";
 import { pipeline } from "stream/promises";
 import archiver from "archiver";
@@ -26,7 +26,9 @@ export function generateBulkUploadId(): string {
 
 export async function ensureUploadDirectory(): Promise<string> {
   const uploadsDir = getUploadDir();
-  if (!existsSync(uploadsDir)) {
+  try {
+    await access(uploadsDir);
+  } catch {
     await mkdir(uploadsDir, { recursive: true });
   }
   return uploadsDir;
@@ -111,9 +113,12 @@ export async function createZipStream(
 
   for (const file of files) {
     const fullPath = path.join(uploadsDir, file.filePath);
-    if (existsSync(fullPath)) {
+    try {
+      await access(fullPath);
       const displayPath = file.relativePath || file.originalName;
       archive.file(fullPath, { name: displayPath });
+    } catch {
+      // Skip missing files
     }
   }
 

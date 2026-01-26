@@ -9,10 +9,16 @@ import { existsSync } from "fs";
 
 
 export const getFileShare = async (slug: string, password?: string) => {
-  const share = await prisma.share.findUnique({ 
+  const share = await prisma.share.findUnique({
     where: { slug },
-    include: {
-      files: true,
+    select: {
+      id: true,
+      slug: true,
+      type: true,
+      filePath: true,
+      password: true,
+      expiresAt: true,
+      isBulk: true,
     }
   });
   
@@ -36,8 +42,18 @@ export const getFileShare = async (slug: string, password?: string) => {
   }
 
   if (share.isBulk) {
+    // Fetch only the file metadata needed for listing to avoid loading heavy columns
+    const files = await prisma.shareFile.findMany({
+      where: { shareId: share.id },
+      select: {
+        originalName: true,
+        relativePath: true,
+        size: true,
+      }
+    });
+
     return { 
-      share,
+      share: { ...share, files },
       isBulk: true,
     };
   }

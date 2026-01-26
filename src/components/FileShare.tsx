@@ -109,6 +109,8 @@ const FileShare: React.FC = () => {
   };
 
   const getTotalSize = () => {
+    if (files.length === 0) return 0;
+
     return files.reduce((sum, f) => sum + f.file.size, 0);
   };
 

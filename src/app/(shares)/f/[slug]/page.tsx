@@ -333,9 +333,17 @@ export default function FileSharePage() {
                                 <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
                                     {t("file_download.files_in_share", "Files in this share")}:
                                 </h3>
-                                <div className="max-h-64 overflow-y-auto space-y-2">
+                                <ul
+                                    className="max-h-64 overflow-y-auto space-y-2"
+                                    role="list"
+                                    aria-label={t("file_download.files_list_aria", "Files in this share, {{count}} items", { count: fileInfo.files.length })}
+                                >
                                     {fileInfo.files.map((file, index) => (
-                                        <div key={index} className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)]">
+                                        <li
+                                            key={index}
+                                            className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)]"
+                                            aria-label={`${file.path}, ${formatFileSize(file.size)}`}
+                                        >
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm truncate text-[var(--foreground)]" title={file.path}>
                                                     {file.path}
@@ -344,7 +352,7 @@ export default function FileSharePage() {
                                                     {formatFileSize(file.size)}
                                                 </p>
                                             </div>
-                                            <svg className="h-5 w-5 text-[var(--primary)] ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="h-5 w-5 text-[var(--primary)] ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
@@ -352,9 +360,9 @@ export default function FileSharePage() {
                                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                                 />
                                             </svg>
-                                        </div>
+                                        </li>
                                     ))}
-                                </div>
+                                </ul>
                             </div>
                         )}
 

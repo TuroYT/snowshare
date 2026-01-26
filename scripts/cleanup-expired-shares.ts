@@ -11,7 +11,7 @@ function getUploadDir(): string {
 }
 
 async function cleanupExpiredShares() {
-  console.log('🧹 Démarrage du nettoyage des partages expirés...');
+  console.log('🧹 Starting cleanup of expired shares...');
   
   try {
     const now = new Date();
@@ -38,49 +38,46 @@ async function cleanupExpiredShares() {
       }
     });
 
-    console.log(`📊 ${expiredShares.length} partage(s) expiré(s) trouvé(s)`);
+    console.log(`📊 ${expiredShares.length} expired share(s) found`);
 
     if (expiredShares.length === 0) {
-      console.log('✨ Aucun partage expiré à nettoyer');
+      console.log('✨ No expired shares to clean up');
       return;
     }
 
     let deletedFiles = 0;
     let deletedShares = 0;
 
+    const deleteFileIfExists = async (relativePath: string, shareSlug: string): Promise<boolean> => {
+      const fullFilePath = path.join(getUploadDir(), relativePath);
+
+      try {
+        await fs.promises.access(fullFilePath, fs.constants.F_OK);
+        await fs.promises.unlink(fullFilePath);
+        deletedFiles++;
+        console.log(`🗑️  File deleted: ${relativePath} (share: ${shareSlug})`);
+        return true;
+      } catch (error) {
+        // Access throws if the file does not exist; ignore ENOENT but surface other errors for visibility.
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+          console.error(`❌ Error deleting file ${relativePath}:`, error);
+        }
+        return false;
+      }
+    };
+
     for (const share of expiredShares) {
       if (share.type === 'FILE') {
         if (share.isBulk && share.files) {
-          for (const file of share.files) {
-            const fullFilePath = path.join(getUploadDir(), file.filePath);
-            
-            try {
-              if (fs.existsSync(fullFilePath)) {
-                fs.unlinkSync(fullFilePath);
-                deletedFiles++;
-                console.log(`🗑️  Fichier supprimé: ${file.filePath} (partage: ${share.slug})`);
-              }
-            } catch (error) {
-              console.error(`❌ Erreur lors de la suppression du fichier ${file.filePath}:`, error);
-            }
-          }
+          const bulkDeletionTasks = share.files.map((file) => deleteFileIfExists(file.filePath, share.slug));
+          await Promise.all(bulkDeletionTasks);
         } else if (share.filePath) {
-          const fullFilePath = path.join(getUploadDir(), share.filePath);
-          
-          try {
-            if (fs.existsSync(fullFilePath)) {
-              fs.unlinkSync(fullFilePath);
-              deletedFiles++;
-              console.log(`🗑️  Fichier supprimé: ${share.filePath} (partage: ${share.slug})`);
-            }
-          } catch (error) {
-            console.error(`❌ Erreur lors de la suppression du fichier ${share.filePath}:`, error);
-          }
+          await deleteFileIfExists(share.filePath, share.slug);
         }
       }
     }
 
-    // Supprimer les enregistrements de la base de données
+    // Delete database records
     const deleteResult = await prisma.share.deleteMany({
       where: {
         expiresAt: {
@@ -91,27 +88,27 @@ async function cleanupExpiredShares() {
 
     deletedShares = deleteResult.count;
 
-    console.log(`✅ Nettoyage terminé:`);
-    console.log(`   - ${deletedShares} partage(s) supprimé(s) de la base de données`);
-    console.log(`   - ${deletedFiles} fichier(s) physique(s) supprimé(s)`);
+    console.log(`✅ Cleanup completed:`);
+    console.log(`   - ${deletedShares} share(s) deleted from the database`);
+    console.log(`   - ${deletedFiles} physical file(s) deleted`);
     
   } catch (error) {
-    console.error('❌ Erreur lors du nettoyage des partages expirés:', error);
+    console.error('❌ Error during cleanup of expired shares:', error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// Exécuter le script s'il est appelé directement
+// Execute the script if it is called directly
 if (require.main === module) {
   cleanupExpiredShares()
     .then(() => {
-      console.log('🎉 Nettoyage terminé avec succès');
+      console.log('🎉 Cleanup completed successfully');
       process.exit(0);
     })
     .catch((error) => {
-      console.error('💥 Échec du nettoyage:', error);
+      console.error('💥 Cleanup failed:', error);
       process.exit(1);
     });
 }
