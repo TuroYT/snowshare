@@ -38,12 +38,15 @@ export async function saveBulkFile(
   relativePath: string,
   shareId: string
 ): Promise<UploadedFileInfo> {
+  if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
+    throw new Error("Invalid or empty file buffer provided to saveBulkFile");
+  }
+
   const uploadsDir = await ensureUploadDirectory();
   const safeFileName = generateSafeFilename(originalName, shareId);
   const filePath = path.join(uploadsDir, safeFileName);
 
   await mkdir(path.dirname(filePath), { recursive: true });
-  
   const writeStream = createWriteStream(filePath);
   await pipeline(Readable.from(fileBuffer), writeStream);
 
