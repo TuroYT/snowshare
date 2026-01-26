@@ -177,12 +177,42 @@ const FileShare: React.FC = () => {
         });
       } else if (entry.isDirectory) {
         const dirReader = (entry as FileSystemDirectoryEntry).createReader();
-        dirReader.readEntries(async (entries: FileSystemEntry[]) => {
+
+        const readAllEntries = async (): Promise<FileSystemEntry[]> => {
+          const allEntries: FileSystemEntry[] = [];
+
+          // According to the FileSystem API spec, readEntries() must be called
+          // repeatedly until it returns an empty array to get all entries.
+          // See: https://www.w3.org/TR/FileAPI/#file-directory-reader
+          // (Behavior implemented by WebKit/Blink as well.)
+          // We use the same reader and keep reading until no more entries.
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const batch: FileSystemEntry[] = await new Promise((res) => {
+              dirReader.readEntries((entries: FileSystemEntry[]) => {
+                res(entries);
+              });
+            });
+
+            if (!batch.length) {
+              break;
+            }
+
+            allEntries.push(...batch);
+          }
+
+          return allEntries;
+        };
+
+        (async () => {
+          const entries = await readAllEntries();
           const results = await Promise.all(
-            entries.map((e) => traverseFileTree(e, path + entry.name + "/"))
+            entries.map((e) =>
+              traverseFileTree(e, path + entry.name + "/")
+            )
           );
           resolve(results.flat());
-        });
+        })();
       } else {
         resolve([]);
       }
