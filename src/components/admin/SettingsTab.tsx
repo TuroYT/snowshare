@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import MDEditor from "@uiw/react-md-editor"
 import { Snackbar, Alert } from "@mui/material"
 import { convertFromMB, convertToMB } from "@/lib/formatSize"
+import WarningModal from "./WarningModal"
 
 interface Settings {
   id: number
@@ -31,6 +32,7 @@ export default function SettingsTab() {
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success")
+  const [showWarningModal, setShowWarningModal] = useState(false)
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -62,13 +64,44 @@ export default function SettingsTab() {
     fetchSettings()
   }, [fetchSettings])
 
+  // Force allowSignin to true when disableCredentialsLogin is true
+  useEffect(() => {
+    if (settings && settings.disableCredentialsLogin && !settings.allowSignin) {
+      setSettings({
+        ...settings,
+        allowSignin: true,
+      })
+    }
+  }, [settings?.disableCredentialsLogin])
+
   const handleToggle = (key: keyof Settings) => {
     if (settings && typeof settings[key] === "boolean") {
+      // Special handling for disableCredentialsLogin - show warning modal
+      if (key === "disableCredentialsLogin" && !settings.disableCredentialsLogin) {
+        setShowWarningModal(true)
+        return
+      }
+      
       setSettings({
         ...settings,
         [key]: !settings[key],
       })
     }
+  }
+
+  const handleConfirmDisableCredentials = () => {
+    if (settings) {
+      setSettings({
+        ...settings,
+        disableCredentialsLogin: true,
+        allowSignin: true, // Force allowSignin to true when enabling SSO-only
+      })
+    }
+    setShowWarningModal(false)
+  }
+
+  const handleCancelDisableCredentials = () => {
+    setShowWarningModal(false)
   }
 
   const handleChange = (key: keyof Settings, value: number) => {
@@ -143,6 +176,15 @@ export default function SettingsTab() {
 
   return (
     <div className="space-y-6 w-full">
+      {/* Warning Modal */}
+      <WarningModal
+        open={showWarningModal}
+        title={t("admin.settings.warning_disable_credentials_title")}
+        message={t("admin.settings.warning_disable_credentials_message")}
+        onConfirm={handleConfirmDisableCredentials}
+        onCancel={handleCancelDisableCredentials}
+      />
+
       {/* Toast Notifications */}
       <Snackbar open={toastOpen} autoHideDuration={3000} onClose={handleToastClose}>
         <Alert onClose={handleToastClose} severity={toastSeverity} sx={{ width: "100%" }}>
@@ -154,24 +196,7 @@ export default function SettingsTab() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-[var(--foreground)]">{t("admin.settings.section_general")}</h3>
         
-        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <div>
-            <label className="text-[var(--foreground)] font-medium">{t("admin.settings.allow_signup")}</label>
-            <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.allow_signup_desc")}</p>
-          </div>
-          <button
-            onClick={() => handleToggle("allowSignin")}
-            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-              settings.allowSignin ? "bg-[var(--primary)]" : "bg-gray-600"
-            }`}
-          >
-            <span
-              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                settings.allowSignin ? "translate-x-7" : "translate-x-1"
-              }`}
-            />
-          </button>
-        </div>
+        
 
         <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
           <div>
@@ -195,6 +220,27 @@ export default function SettingsTab() {
             />
           </button>
         </div>
+
+                {!settings.disableCredentialsLogin && (
+          <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <div>
+              <label className="text-[var(--foreground)] font-medium">{t("admin.settings.allow_signup")}</label>
+              <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("admin.settings.allow_signup_desc")}</p>
+            </div>
+            <button
+              onClick={() => handleToggle("allowSignin")}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                settings.allowSignin ? "bg-[var(--primary)]" : "bg-gray-600"
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  settings.allowSignin ? "translate-x-7" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
           <div>
