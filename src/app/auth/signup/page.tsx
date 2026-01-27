@@ -126,7 +126,7 @@ export default function SignUp() {
 
     // Check CAPTCHA if enabled
     if (captchaConfig.enabled && !captchaToken) {
-      setError("Veuillez compléter la vérification CAPTCHA")
+      setError("Please complete the CAPTCHA verification")
       setLoading(false)
       return
     }
@@ -188,25 +188,25 @@ export default function SignUp() {
             </svg>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
-            Vérifiez votre email
+            {t('auth.verify_email_title')}
           </h2>
           <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-            Un email de vérification a été envoyé à <strong>{email}</strong>.
+            {t('auth.verify_email_sent')} <strong>{email}</strong>.
           </p>
           <p className="text-sm text-[var(--foreground-muted)]">
-            Veuillez cliquer sur le lien dans l&apos;email pour vérifier votre compte avant de vous connecter.
+            {t('auth.verify_email_instruction')}
           </p>
           <div className="mt-6 space-y-3">
             <Link
               href="/auth/signin"
               className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] transition-colors"
             >
-              Aller à la connexion
+              {t('auth.go_to_signin')}
             </Link>
             <p className="text-xs text-[var(--foreground-muted)]">
-              Vous n&apos;avez pas reçu l&apos;email? Vérifiez votre dossier spam ou{" "}
+              {t('auth.verify_email_not_received')}{" "}
               <Link href="/auth/verify-email" className="text-[var(--primary)] hover:underline">
-                renvoyez l&apos;email de vérification
+                {t('auth.verify_email_resend_link')}
               </Link>
             </p>
           </div>

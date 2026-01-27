@@ -18,7 +18,7 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (!token) {
       setStatus("error")
-      setError("Token de vérification manquant")
+      setError(t("auth.verification_token_missing"))
       return
     }
 
@@ -38,25 +38,25 @@ function VerifyEmailContent() {
           setStatus("success")
           // Redirect to signin after 3 seconds
           setTimeout(() => {
-            router.push("/auth/signin?message=" + encodeURIComponent("Email vérifié avec succès! Vous pouvez maintenant vous connecter."))
+            router.push("/auth/signin?message=" + encodeURIComponent(t("auth.verification_success_message")))
           }, 3000)
         } else {
           setStatus("error")
-          setError(data.error || "Échec de la vérification de l'email")
+          setError(data.error || t("auth.verification_failed_message"))
         }
       } catch (err) {
         setStatus("error")
-        setError("Erreur lors de la vérification de l'email")
+        setError(t("auth.verification_error"))
         console.error(err)
       }
     }
 
     verifyEmail()
-  }, [token, router])
+  }, [token, router, t])
 
   const handleResendVerification = async () => {
     if (!resendEmail) {
-      setError("Veuillez entrer votre adresse email")
+      setError(t("auth.enter_email_prompt"))
       return
     }
 
@@ -74,13 +74,13 @@ function VerifyEmailContent() {
 
       if (response.ok) {
         setError("")
-        alert("Email de vérification renvoyé! Veuillez vérifier votre boîte de réception.")
+        alert(t("auth.resend_success"))
         setResendEmail("")
       } else {
-        setError(data.error || "Échec de l'envoi de l'email de vérification")
+        setError(data.error || t("auth.resend_failed"))
       }
     } catch (err) {
-      setError("Erreur lors de l'envoi de l'email de vérification")
+      setError(t("auth.resend_error"))
       console.error(err)
     } finally {
       setResending(false)
@@ -109,10 +109,10 @@ function VerifyEmailContent() {
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
-              Vérification en cours...
+              {t('auth.verifying')}
             </h2>
             <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-              Veuillez patienter pendant que nous vérifions votre email.
+              {t('auth.verifying_message')}
             </p>
           </div>
         )}
@@ -126,17 +126,17 @@ function VerifyEmailContent() {
               </svg>
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
-              Email vérifié!
+              {t('auth.email_verified_title')}
             </h2>
             <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-              Votre email a été vérifié avec succès. Vous allez être redirigé vers la page de connexion...
+              {t('auth.email_verified_message')}
             </p>
             <div className="mt-6">
               <Link
                 href="/auth/signin"
                 className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
-                Aller à la connexion
+                {t('auth.go_to_signin')}
               </Link>
             </div>
           </div>
@@ -151,7 +151,7 @@ function VerifyEmailContent() {
               </svg>
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
-              Vérification échouée
+              {t('auth.verification_failed_title')}
             </h2>
             <p className="mt-2 text-center text-sm text-red-400">
               {error}
@@ -160,7 +160,7 @@ function VerifyEmailContent() {
             {/* Resend Verification Form */}
             <div className="mt-8 space-y-4">
               <h3 className="text-lg font-medium text-[var(--foreground)]">
-                Renvoyer l&apos;email de vérification
+                {t('auth.resend_verification_title')}
               </h3>
               <div>
                 <input
@@ -168,7 +168,7 @@ function VerifyEmailContent() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   className="appearance-none relative block w-full px-3 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
-                  placeholder="votre-email@exemple.com"
+                  placeholder={t('auth.email_placeholder') as string}
                 />
               </div>
               <button
@@ -176,13 +176,13 @@ function VerifyEmailContent() {
                 disabled={resending}
                 className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {resending ? "Envoi en cours..." : "Renvoyer l'email"}
+                {resending ? t('auth.resending') : t('auth.resend_verification_button')}
               </button>
               <Link
                 href="/auth/signin"
                 className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
-                Retour à la connexion
+                {t('auth.back_to_signin')}
               </Link>
             </div>
           </div>

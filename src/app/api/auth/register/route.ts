@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: "Utilisateur créé avec succès",
+      message: "User created successfully",
       requiresVerification: requireEmailVerification && !isActuallyFirstUser,
       user: {
         id: user.id,

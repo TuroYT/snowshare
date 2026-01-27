@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { error: "Token de vérification requis" },
+        { error: "Verification token required" },
         { status: 400 }
       )
     }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "Token de vérification invalide ou expiré" },
+        { error: "Invalid or expired verification token" },
         { status: 400 }
       )
     }
@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      message: "Email vérifié avec succès",
+      message: "Email verified successfully",
       success: true
     })
   } catch (error) {
-    console.error("Erreur lors de la vérification de l'email:", error)
+    console.error("Error verifying email:", error)
     return NextResponse.json(
-      { error: "Erreur interne du serveur" },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
 
     if (!email) {
       return NextResponse.json(
-        { error: "Email requis" },
+        { error: "Email required" },
         { status: 400 }
       )
     }
@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "Utilisateur non trouvé" },
+        { error: "User not found" },
         { status: 404 }
       )
     }
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
     // Check if already verified
     if (user.emailVerified) {
       return NextResponse.json(
-        { error: "Email déjà vérifié" },
+        { error: "Email already verified" },
         { status: 400 }
       )
     }
@@ -107,19 +107,19 @@ export async function PUT(request: NextRequest) {
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError)
       return NextResponse.json(
-        { error: "Échec de l'envoi de l'email de vérification. Veuillez vérifier la configuration SMTP." },
+        { error: "Failed to send verification email. Please check SMTP configuration." },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
-      message: "Email de vérification renvoyé avec succès",
+      message: "Verification email resent successfully",
       success: true
     })
   } catch (error) {
-    console.error("Erreur lors du renvoi de l'email de vérification:", error)
+    console.error("Error resending verification email:", error)
     return NextResponse.json(
-      { error: "Erreur interne du serveur" },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }
