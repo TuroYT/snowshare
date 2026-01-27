@@ -81,6 +81,15 @@ export async function getDynamicProviders() {
                         return null;
                     }
 
+                    // Check if email verification is required
+                    const settingsCheck = await prisma.settings.findFirst({
+                        select: { requireEmailVerification: true }
+                    });
+
+                    if (settingsCheck?.requireEmailVerification && !user.emailVerified) {
+                        throw new Error("Email not verified. Please check your email for verification link.");
+                    }
+
                     return {
                         id: user.id,
                         email: user.email,
