@@ -66,12 +66,19 @@ export default function SettingsTab() {
 
   // Force allowSignin to true when disableCredentialsLogin is true
   useEffect(() => {
-    if (settings && settings.disableCredentialsLogin && !settings.allowSignin) {
-      setSettings({
-        ...settings,
-        allowSignin: true,
-      })
+    if (!settings?.disableCredentialsLogin) {
+      return
     }
+
+    setSettings((prev) => {
+      if (!prev || !prev.disableCredentialsLogin || prev.allowSignin) {
+        return prev
+      }
+      return {
+        ...prev,
+        allowSignin: true,
+      }
+    })
   }, [settings?.disableCredentialsLogin])
 
   const handleToggle = (key: keyof Settings) => {
