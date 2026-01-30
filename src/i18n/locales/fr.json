@@ -397,7 +397,7 @@
       "disable_credentials_login_desc": "Autoriser uniquement la connexion via SSO. Valide uniquement si au moins un fournisseur SSO est actif.",
       "no_sso_active": "Impossible d'activer : Aucun fournisseur SSO actif.",
       "warning_disable_credentials_title": "Attention : Activer la connexion SSO uniquement",
-      "warning_disable_credentials_message": "⚠️ Avant d'activer cette option, veuillez vérifier que :\n\n1. Votre méthode d'authentification SSO fonctionne correctement\n2. Au moins un compte administrateur est lié à un fournisseur SSO dans /profil\n\nSi vous procédez sans respecter ces exigences, vous risquez de perdre l'accès au panneau d'administration.\n\nÊtes-vous sûr de vouloir continuer ?",
+      "warning_disable_credentials_message": "⚠️ Avant d'activer cette option, veuillez vérifier que :\n\n1. Votre méthode d'authentification SSO fonctionne correctement\n2. Au moins un compte administrateur est lié à un fournisseur SSO dans /profile\n\nSi vous procédez sans respecter ces exigences, vous risquez de perdre l'accès au panneau d'administration.\n\nÊtes-vous sûr de vouloir continuer ?",
       "allow_anon_fileshare": "Partage de fichiers anonyme",
       "allow_anon_fileshare_desc": "Autoriser les utilisateurs non authentifiés à partager des fichiers",
       "allow_anon_linkshare": "Partage de liens anonyme",
