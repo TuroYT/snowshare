@@ -99,7 +99,11 @@
     "duration_in_x_months": "Este archivo expirará en {{count}} meses",
     "duration_in_x_years": "Este archivo expirará en {{count}} año(s)",
     "locked_title": "Compartir archivos bloqueado",
-    "locked_message": "Debes estar conectado para compartir archivos."
+    "locked_message": "Debes estar conectado para compartir archivos.",
+    "select_files": "Seleccionar archivos",
+    "select_folder": "Seleccionar carpeta",
+    "selected_files": "Archivos seleccionados",
+    "total_size": "Total"
   },
   "file_download": {
     "loading_error": "Error al cargar la información",
@@ -116,7 +120,12 @@
     "password_placeholder": "Introduce la contraseña",
     "downloading": "Descargando...",
     "download": "Descargar",
-    "disclaimer": "Al descargar este archivo, aceptas que proviene de una fuente de terceros."
+    "disclaimer": "Al descargar este archivo, aceptas que proviene de una fuente de terceros.",
+    "file_count": "{{count}} archivos",
+    "verify_password": "Verificar contraseña",
+    "verifying": "Verificando...",
+    "files_in_share": "Archivos en este compartido",
+    "password_incorrect": "Contraseña incorrecta"
   },
   "home": {
     "title": "Bienvenido a SnowShare",

@@ -100,7 +100,7 @@ export default function Navigation() {
     return (
       <AppBar position="sticky" sx={{ bgcolor: 'var(--surface)', color: 'var(--foreground)' }}>
         <Toolbar>
-          <Typography>{t('loading')}</Typography>
+          <Typography suppressHydrationWarning>{t('loading')}</Typography>
         </Toolbar>
       </AppBar>
     )

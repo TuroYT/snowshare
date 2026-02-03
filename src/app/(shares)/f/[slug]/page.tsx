@@ -7,10 +7,19 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { formatBytes } from "@/lib/formatSize";
 
+interface FileListItem {
+    name: string;
+    path: string;
+    size: number;
+}
+
 interface FileInfo {
     filename: string;
     fileSize?: number;
     requiresPassword: boolean;
+    isBulk?: boolean;
+    fileCount?: number;
+    files?: FileListItem[];
 }
 
 export default function FileSharePage() {
@@ -21,6 +30,7 @@ export default function FileSharePage() {
     const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
     const [loadingInfo, setLoadingInfo] = useState(true);
     const [useGiB, setUseGiB] = useState(false);
+    const [passwordSubmitted, setPasswordSubmitted] = useState(false);
     const params = useParams();
     const slug = params?.slug as string;
 
@@ -79,10 +89,46 @@ export default function FileSharePage() {
         fetchFileInfo();
     }, [slug, t]);
 
+    const handlePasswordSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!password) {
+            setError(t("file_download.password_required"));
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch(`/f/${slug}/api`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "info",
+                    password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setFileInfo(data);
+                setPasswordSubmitted(true);
+            } else {
+                setError(data.error || t("file_download.password_incorrect"));
+            }
+        } catch {
+            setError(t("file_download.connection_error"));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleDownload = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
 
-        if (fileInfo?.requiresPassword && !password) {
+        if (fileInfo?.requiresPassword && !passwordSubmitted) {
             setError(t("file_download.password_required"));
             return;
         }
@@ -101,10 +147,8 @@ export default function FileSharePage() {
             });
 
             if (response.ok) {
-                // Get the download URL from the response
                 const data = await response.json();
                 if (data.downloadUrl) {
-                    // Trigger download without popup using a hidden anchor element
                     const link = document.createElement("a");
                     link.href = data.downloadUrl;
                     link.download = fileInfo?.filename || "download";
@@ -133,7 +177,7 @@ export default function FileSharePage() {
             <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
-                    <p className="text-[var(--foreground-muted)]">{t("loading")}</p>
+                    <p className="text-[var(--foreground-muted)]" suppressHydrationWarning>{t("loading")}</p>
                 </div>
             </div>
         );
@@ -189,6 +233,11 @@ export default function FileSharePage() {
                         <p className="text-lg font-medium text-[var(--foreground)] truncate" title={fileInfo?.filename}>
                             {fileInfo?.filename}
                         </p>
+                        {fileInfo?.isBulk && fileInfo?.fileCount && (
+                            <p className="text-sm text-[var(--foreground-muted)] mt-1">
+                                {t("file_download.file_count", "{{count}} files", { count: fileInfo.fileCount })}
+                            </p>
+                        )}
                         {fileInfo?.fileSize && (
                             <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("file_download.size")}: {formatFileSize(fileInfo.fileSize)}</p>
                         )}
@@ -200,8 +249,8 @@ export default function FileSharePage() {
                     )}
                 </div>
 
-                {fileInfo?.requiresPassword ? (
-                    <form className="mt-8 space-y-6" onSubmit={handleDownload}>
+                {fileInfo?.requiresPassword && !passwordSubmitted ? (
+                    <form className="mt-8 space-y-6" onSubmit={handlePasswordSubmit}>
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
                                 {t("file_download.password")}
@@ -260,7 +309,7 @@ export default function FileSharePage() {
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                         ></path>
                                     </svg>
-                                    {t("file_download.downloading")}
+                                    {t("file_download.verifying")}
                                 </div>
                             ) : (
                                 <>
@@ -269,16 +318,54 @@ export default function FileSharePage() {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             strokeWidth={2}
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3M4 7h16"
+                                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                                         />
                                     </svg>
-                                    {t("file_download.download")}
+                                    {t("file_download.verify_password")}
                                 </>
                             )}
                         </button>
                     </form>
                 ) : (
                     <div className="mt-8 space-y-6">
+                        {fileInfo?.isBulk && fileInfo?.files && fileInfo.files.length > 0 && (
+                            <div className="bg-[var(--surface)] rounded-lg p-4 border border-[var(--border)]">
+                                <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
+                                    {t("file_download.files_in_share", "Files in this share")}:
+                                </h3>
+                                <ul
+                                    className="max-h-64 overflow-y-auto space-y-2"
+                                    role="list"
+                                    aria-label={t("file_download.files_list_aria", "Files in this share, {{count}} items", { count: fileInfo.files.length })}
+                                >
+                                    {fileInfo.files.map((file, index) => (
+                                        <li
+                                            key={index}
+                                            className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)]"
+                                            aria-label={`${file.path}, ${formatFileSize(file.size)}`}
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm truncate text-[var(--foreground)]" title={file.path}>
+                                                    {file.path}
+                                                </p>
+                                                <p className="text-xs text-[var(--foreground-muted)]">
+                                                    {formatFileSize(file.size)}
+                                                </p>
+                                            </div>
+                                            <svg className="h-5 w-5 text-[var(--primary)] ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         {error && (
                             <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">
                                 <div className="flex items-center justify-center">

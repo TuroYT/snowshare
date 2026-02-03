@@ -93,7 +93,7 @@ export default function Setup() {
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p className="mt-4 text-[var(--foreground-muted)]">{t('loading')}</p>
+          <p className="mt-4 text-[var(--foreground-muted)]" suppressHydrationWarning>{t('loading')}</p>
         </div>
       </div>
     )

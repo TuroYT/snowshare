@@ -8,7 +8,18 @@ import { existsSync } from "fs";
 import { ErrorCode } from "@/lib/api-errors";
 
 export const getFileShare = async (slug: string, password?: string) => {
-  const share = await prisma.share.findUnique({ where: { slug } });
+  const share = await prisma.share.findUnique({
+    where: { slug },
+    select: {
+      id: true,
+      slug: true,
+      type: true,
+      filePath: true,
+      password: true,
+      expiresAt: true,
+      isBulk: true,
+    }
+  });
 
   if (!share || share.type !== "FILE") {
     return { errorCode: ErrorCode.SHARE_NOT_FOUND };
@@ -18,7 +29,6 @@ export const getFileShare = async (slug: string, password?: string) => {
     return { errorCode: ErrorCode.SHARE_EXPIRED };
   }
 
-  // Check password if required
   if (share.password) {
     if (!password) {
       return { errorCode: ErrorCode.PASSWORD_REQUIRED, requiresPassword: true };
@@ -28,6 +38,23 @@ export const getFileShare = async (slug: string, password?: string) => {
     if (!passwordValid) {
       return { errorCode: ErrorCode.PASSWORD_INCORRECT };
     }
+  }
+
+  if (share.isBulk) {
+    // Fetch only the file metadata needed for listing to avoid loading heavy columns
+    const files = await prisma.shareFile.findMany({
+      where: { shareId: share.id },
+      select: {
+        originalName: true,
+        relativePath: true,
+        size: true,
+      }
+    });
+
+    return {
+      share: { ...share, files },
+      isBulk: true,
+    };
   }
 
   if (!share.filePath) {
@@ -42,6 +69,6 @@ export const getFileShare = async (slug: string, password?: string) => {
   return {
     share,
     filePath,
-    originalFilename: share.filePath.split('_').slice(1).join('_') // Extract original name
+    originalFilename: share.filePath.split('_').slice(1).join('_')
   };
 };

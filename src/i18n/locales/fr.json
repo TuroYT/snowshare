@@ -18,8 +18,7 @@
     "admin": "Administration",
     "admin_desc": "Panneau d'administration"
   },
-  "loading": "Chargement..."
-  ,
+  "loading": "Chargement...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Partagez vos extraits de texte en toute sécurité et simplicité.",
@@ -104,7 +103,11 @@
     "quota_info": "Quota: {{used}} MB / {{total}} MB utilisés",
     "quota_remaining": "{{remaining}} MB disponibles",
     "quota_exceeded": "Quota dépassé",
-    "quota_warning": "Attention: vous avez utilisé {{percent}}% de votre quota"
+    "quota_warning": "Attention: vous avez utilisé {{percent}}% de votre quota",
+    "select_files": "Sélectionner des fichiers",
+    "select_folder": "Sélectionner un dossier",
+    "selected_files": "Fichiers sélectionnés",
+    "total_size": "Total"
   },
   "file_download": {
     "loading_error": "Erreur lors du chargement des informations",
@@ -121,9 +124,13 @@
     "password_placeholder": "Entrez le mot de passe",
     "downloading": "Téléchargement...",
     "download": "Télécharger",
-    "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce."
-  }
-  ,
+    "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce.",
+    "file_count": "{{count}} fichiers",
+    "verify_password": "Vérifier le mot de passe",
+    "verifying": "Vérification...",
+    "files_in_share": "Fichiers dans ce partage",
+    "password_incorrect": "Mot de passe incorrect"
+  },
   "home": {
     "title": "Bienvenue sur SnowShare",
     "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."

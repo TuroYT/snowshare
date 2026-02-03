@@ -99,7 +99,11 @@
     "duration_in_x_months": "Diese Datei wird in {{count}} Monaten ablaufen",
     "duration_in_x_years": "Diese Datei wird in {{count}} Jahr(en) ablaufen",
     "locked_title": "Dateifreigabe gesperrt",
-    "locked_message": "Sie müssen angemeldet sein, um Dateien zu teilen."
+    "locked_message": "Sie müssen angemeldet sein, um Dateien zu teilen.",
+    "select_files": "Dateien auswählen",
+    "select_folder": "Ordner auswählen",
+    "selected_files": "Ausgewählte Dateien",
+    "total_size": "Gesamt"
   },
   "file_download": {
     "loading_error": "Fehler beim Laden der Informationen",
@@ -116,7 +120,12 @@
     "password_placeholder": "Passwort eingeben",
     "downloading": "Wird heruntergeladen...",
     "download": "Herunterladen",
-    "disclaimer": "Mit dem Herunterladen dieser Datei erkennen Sie an, dass sie von einer Drittquelle stammt."
+    "disclaimer": "Mit dem Herunterladen dieser Datei erkennen Sie an, dass sie von einer Drittquelle stammt.",
+    "file_count": "{{count}} Dateien",
+    "verify_password": "Passwort überprüfen",
+    "verifying": "Überprüfung...",
+    "files_in_share": "Dateien in dieser Freigabe",
+    "password_incorrect": "Falsches Passwort"
   },
   "home": {
     "title": "Willkommen bei SnowShare",
@@ -198,7 +207,9 @@
     "error_invalid_credentials": "Falsche E-Mail oder falsches Passwort",
     "error_generic": "Ein Fehler ist aufgetreten: ",
     "error_passwords_mismatch": "Passwörter stimmen nicht überein",
-    "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",    "error_oauth_signin": "Diesem Anbieterkonto ist keine E-Mail-Adresse zugeordnet.",    "success_account_created": "Konto erfolgreich erstellt",
+    "error_password_too_short": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "error_oauth_signin": "Diesem Anbieterkonto ist keine E-Mail-Adresse zugeordnet.",
+    "success_account_created": "Konto erfolgreich erstellt",
     "terms_notice": "Durch die Erstellung eines Kontos stimmen Sie unseren zu",
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt.",

@@ -447,16 +447,16 @@ export async function POST(req: NextRequest) {
         const finalSlug =
           slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
 
-        // Create database record
         const share = await prisma.share.create({
           data: {
             slug: finalSlug,
             type: "FILE",
-            filePath: "", // Will update after rename
+            filePath: "",
             password: hashedPassword,
             expiresAt,
             ipSource: clientIp,
             ownerId: session?.user?.id || null,
+            isBulk: false,
           },
         });
 

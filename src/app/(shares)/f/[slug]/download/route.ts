@@ -34,6 +34,13 @@ export async function GET(
       return apiError(request, result.errorCode);
     }
 
+    if (result.share?.isBulk) {
+      return NextResponse.json({
+        error: "This is a bulk share. Use /bulk-download endpoint instead.",
+        isBulk: true
+      }, { status: 400 });
+    }
+
     const { filePath: fullPath, originalFilename } = result;
 
     if (!fullPath || !existsSync(fullPath)) {
