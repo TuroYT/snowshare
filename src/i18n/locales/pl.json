@@ -392,9 +392,11 @@
             "title": "Ustawienia",
             "allow_signup": "Włącz rejestrację",
             "allow_signup_desc": "Pozwól nowym użytkownikom tworzyć konta",
-            "disable_credentials_login": "Wyłącz logowanie danymi uwierzytelniającymi",
+            "disable_credentials_login": "Tryb tylko SSO",
             "disable_credentials_login_desc": "Zezwalaj tylko na logowanie przez SSO. Ważne tylko, jeśli aktywny jest co najmniej jeden dostawca SSO.",
             "no_sso_active": "Nie można włączyć: Nie znaleziono aktywnego dostawcy SSO.",
+            "warning_disable_credentials_title": "Ostrzeżenie: Włączanie trybu tylko SSO",
+            "warning_disable_credentials_message": "⚠️ Przed włączeniem tej opcji sprawdź, czy:\n\n1. Twoja metoda uwierzytelniania SSO działa poprawnie\n2. Co najmniej jedno konto administratora jest połączone z dostawcą SSO w /profile\n\nJeśli kontynuujesz bez spełnienia tych wymagań, możesz stracić dostęp do panelu administracyjnego.\n\nCzy na pewno chcesz kontynuować?",
             "allow_anon_fileshare": "Anonimowe udostępnianie plików",
             "allow_anon_fileshare_desc": "Pozwól niezalogowanym użytkownikom udostępniać pliki",
             "allow_anon_linkshare": "Anonimowe udostępnianie linków",
@@ -541,5 +543,100 @@
         "error_generic": "Wystąpił błąd",
         "error_url_not_found": "URL nie znaleziony",
         "error_connection": "Błąd połączenia"
+    },
+    "api": {
+        "errors": {
+            "internal_server_error": "Wewnętrzny błąd serwera",
+            "server_config_error": "Błąd konfiguracji serwera",
+            "invalid_request": "Nieprawidłowe żądanie",
+            "missing_data": "Brakujące wymagane dane",
+            "invalid_json": "Nieprawidłowe dane JSON",
+
+            "unauthorized": "Nieautoryzowany",
+            "forbidden": "Dostęp zabroniony",
+            "admin_only": "Tylko dla administratorów",
+            "authentication_required": "Wymagana autentykacja",
+
+            "signup_disabled": "Rejestracja jest wyłączona",
+            "users_already_exist": "Użytkownicy już istnieją",
+            "email_password_required": "Wymagany e-mail i hasło",
+            "invalid_email_format": "Nieprawidłowy format e-mail",
+            "password_length": "Hasło musi mieć od {{min}} do {{max}} znaków",
+            "user_already_exists": "Użytkownik z tym adresem e-mail już istnieje",
+            "user_not_found": "Użytkownik nie znaleziony",
+            "invalid_credentials": "Nieprawidłowy e-mail lub hasło",
+            "current_password_required": "Wymagane aktualne hasło",
+            "incorrect_current_password": "Nieprawidłowe aktualne hasło",
+
+            "slug_already_taken": "Ten niestandardowy adres URL jest już zajęty. Proszę wybrać inny.",
+            "slug_invalid": "Nieprawidłowy slug. Musi zawierać od 3 do 30 znaków alfanumerycznych, myślników lub podkreśleń.",
+            "invalid_url": "Nieprawidłowy URL",
+            "invalid_url_format": "Nieprawidłowy format URL",
+            "url_protocol_not_allowed": "Dozwolone są tylko protokoły HTTP i HTTPS",
+            "url_too_long": "URL zbyt długi",
+            "url_required": "Wymagany URL",
+
+            "password_invalid_length": "Hasło musi mieć od {{min}} do {{max}} znaków.",
+            "passwords_mismatch": "Hasła nie pasują do siebie",
+            "password_incorrect": "Nieprawidłowe hasło",
+
+            "expiration_in_past": "Data wygaśnięcia musi być w przyszłości.",
+            "expiration_too_far": "Nieuwierzytelnieni użytkownicy nie mogą tworzyć udostępnień wygasających po {{days}} dniach.",
+            "expiration_required": "Nieuwierzytelnieni użytkownicy muszą podać datę wygaśnięcia.",
+
+            "anon_link_share_disabled": "Anonimowi użytkownicy nie mogą tworzyć udostępnień linków. Proszę się zalogować.",
+            "anon_file_share_disabled": "Anonimowi użytkownicy nie mogą udostępniać plików. Proszę się zalogować.",
+            "anon_paste_share_disabled": "Anonimowi użytkownicy nie mogą udostępniać kodu. Proszę się zalogować.",
+
+            "paste_content_required": "Zawartość wklejki jest wymagana",
+            "paste_content_empty": "Zawartość wklejki nie może być pusta",
+            "paste_language_required": "Język wklejki jest wymagany",
+            "paste_language_invalid": "Nieprawidłowy język wklejki",
+
+            "file_required": "Plik jest wymagany",
+            "filename_required": "Wymagana nazwa pliku",
+            "filename_too_long": "Nazwa pliku zbyt długa (maksymalnie {{max}} znaków)",
+            "filename_invalid": "Nieprawidłowa nazwa pliku",
+            "file_size_invalid": "Nieprawidłowy rozmiar pliku",
+            "file_too_large": "Rozmiar pliku przekracza limit {{maxSizeMB}}MB",
+            "file_type_not_allowed": "Typ pliku niedozwolony",
+
+            "quota_exceeded": "Przekroczono limit",
+            "ip_quota_exceeded": "Przekroczono limit IP. Limit: {{quota}}MB",
+            "user_quota_exceeded": "Przekroczono limit użytkownika. Użyto: {{used}}MB / {{total}}MB",
+
+            "share_not_found": "Udostępnienie nie znalezione",
+            "share_expired": "To udostępnienie wygasło",
+            "share_type_required": "Wymagany typ udostępnienia",
+            "share_type_invalid": "Nieprawidłowy typ udostępnienia",
+            "resource_not_found": "Zasób nie znaleziony",
+            "file_not_found": "Plik nie znaleziony",
+            "password_required": "Hasło jest wymagane",
+
+            "display_name_required": "Nazwa wyświetlana jest wymagana",
+            "display_name_too_long": "Nazwa wyświetlana może mieć maksymalnie {{max}} znaków",
+            "invalid_display_name": "Nieprawidłowa nazwa wyświetlana",
+
+            "provider_not_found": "Dostawca nie znaleziony",
+            "no_sso_providers": "Nie znaleziono aktywnego dostawcy SSO",
+
+            "link_name_required": "Nazwa linku jest wymagana",
+            "link_url_required": "URL linku jest wymagany",
+            "link_url_invalid": "URL linku jest nieprawidłowy",
+
+            "account_not_found": "Konto nie znalezione",
+            "account_already_linked": "Konto już połączone",
+            "account_linking_failed": "Łączenie konta nie powiodło się",
+            "cannot_unlink_last_account": "Nie można odłączyć ostatniego konta. Musisz mieć przynajmniej jedną metodę logowania.",
+
+            "token_required": "Token jest wymagany",
+            "token_invalid": "Nieprawidłowy token",
+            "token_expired": "Token wygasł",
+            "token_invalid_or_expired": "Nieprawidłowy lub wygasły token",
+
+            "invalid_date_format": "Nieprawidłowy format daty",
+            "invalid_expiration_date": "Nieprawidłowa data wygaśnięcia"
+        },
+        "file_protected": "Chroniony plik"
     }
 }

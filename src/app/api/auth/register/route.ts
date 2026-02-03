@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants"
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors"
 
 
 
@@ -32,41 +33,29 @@ export async function POST(request: NextRequest) {
     // 1. Settings allow signup (allowSignin), AND credentials login is NOT disabled
     // 2. OR This is the first user being created (database is empty)
     if ((!allowSignup || disableCredentialsLogin) && !isActuallyFirstUser) {
-      return NextResponse.json(
-        { error: "L'inscription est désactivée" },
-        { status: 403 }
-      )
+      return apiError(request, ErrorCode.SIGNUP_DISABLED)
     }
 
     // If claiming to be first user but database has users, reject
     if (isFirstUser && !isActuallyFirstUser) {
-      return NextResponse.json(
-        { error: "Des utilisateurs existent déjà" },
-        { status: 403 }
-      )
+      return apiError(request, ErrorCode.USERS_ALREADY_EXIST)
     }
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email et mot de passe requis" },
-        { status: 400 }
-      )
+      return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED)
     }
 
     // Validate email format
     if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { error: "Format d'email invalide" },
-        { status: 400 }
-      )
+      return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT)
     }
 
     // Validate password length
     if (!isValidPassword(password)) {
-      return NextResponse.json(
-        { error: `The password must contain between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters` },
-        { status: 400 }
-      )
+      return apiError(request, ErrorCode.PASSWORD_LENGTH, {
+        min: PASSWORD_MIN_LENGTH,
+        max: PASSWORD_MAX_LENGTH
+      })
     }
 
     // Vérifier si l'utilisateur existe déjà
@@ -75,10 +64,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "Un utilisateur avec cet email existe déjà" },
-        { status: 400 }
-      )
+      return apiError(request, ErrorCode.USER_ALREADY_EXISTS)
     }
 
     // Hasher le mot de passe
@@ -102,9 +88,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Erreur lors de l'inscription:", error)
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    )
+    return internalError(request)
   }
 }

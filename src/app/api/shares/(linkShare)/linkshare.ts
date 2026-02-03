@@ -7,6 +7,8 @@ import crypto from "crypto";
 import { isValidUrl as validateUrl } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
 import { NextRequest } from "next/server";
+import { ErrorCode } from "@/lib/api-errors";
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
 
 export const createLinkShare = async (
     urlOriginal: string,
@@ -15,27 +17,36 @@ export const createLinkShare = async (
     slug?: string,
     password?: string
 ) => {
+    // Check if slug already exists
+    if (slug) {
+        const existingShare = await prisma.share.findUnique({ where: { slug } });
+        if (existingShare) {
+            return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
+        }
+    }
+
     // Validate original URL format and protocol
     const urlValidation = validateUrl(urlOriginal);
     if (!urlValidation.valid) {
-        return { error: urlValidation.error || "Invalid original URL" };
+        return { errorCode: ErrorCode.INVALID_URL };
     }
 
     // Validate slug if provided
     if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-        return {
-            error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."
-        };
+        return { errorCode: ErrorCode.SLUG_INVALID };
     }
 
     // Validate expiration date if provided
     if (expiresAt && new Date(expiresAt) <= new Date()) {
-        return { error: "Expiration date must be in the future." };
+        return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
     }
 
     if (password) {
-        if (password.length < 6 || password.length > 100) {
-            return { error: "Password must be between 6 and 100 characters." };
+        if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+            return {
+                errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
+                params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH }
+            };
         }
     }
 
@@ -45,19 +56,20 @@ export const createLinkShare = async (
         // Check if anonymous link sharing is allowed
         const settings = await prisma.settings.findFirst();
         if (settings && !settings.allowAnonLinkShare) {
-            return { error: "Anonymous users are not allowed to create link shares. Please log in." };
+            return { errorCode: ErrorCode.ANON_LINK_SHARE_DISABLED };
         }
-        
+
         if (expiresAt) {
             const maxExpiry = new Date();
             maxExpiry.setDate(maxExpiry.getDate() + 7);
             if (new Date(expiresAt) > maxExpiry) {
                 return {
-                    error: "Unauthenticated users cannot create shares that expire beyond 7 days."
+                    errorCode: ErrorCode.EXPIRATION_TOO_FAR,
+                    params: { days: 7 }
                 };
             }
         } else {
-            return { error: "Unauthenticated users must provide an expiration date." };
+            return { errorCode: ErrorCode.EXPIRATION_REQUIRED };
         }
     }
 

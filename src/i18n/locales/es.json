@@ -387,9 +387,11 @@
       "title": "Configuración",
       "allow_signup": "Permitir Registro",
       "allow_signup_desc": "Permitir que nuevos usuarios creen cuentas",
-      "disable_credentials_login": "Desactivar inicio de sesión con credenciales",
+      "disable_credentials_login": "Solo Inicio de Sesión SSO",
       "disable_credentials_login_desc": "Permitir solo inicio de sesión mediante SSO. Válido solo si hay al menos un proveedor de SSO activo.",
       "no_sso_active": "No se puede activar: No se encontró ningún proveedor de SSO activo.",
+      "warning_disable_credentials_title": "Advertencia: Activar Solo Inicio de Sesión SSO",
+      "warning_disable_credentials_message": "⚠️ Antes de activar esta opción, por favor verifique que:\n\n1. Su método de autenticación SSO funciona correctamente\n2. Al menos una cuenta de administrador está vinculada con un proveedor SSO en /profile\n\nSi continúa sin cumplir estos requisitos, puede perder el acceso al panel de administración.\n\n¿Está seguro de que desea continuar?",
       "allow_anon_fileshare": "Compartir Archivos Anónimamente",
       "allow_anon_fileshare_desc": "Permitir a usuarios no autenticados compartir archivos",
       "allow_anon_linkshare": "Compartir Enlaces Anónimamente",
@@ -541,5 +543,100 @@
     "error_generic": "Ha ocurrido un error",
     "error_url_not_found": "URL no encontrada",
     "error_connection": "Error de conexión"
+  },
+  "api": {
+    "errors": {
+      "internal_server_error": "Error interno del servidor",
+      "server_config_error": "Error de configuración del servidor",
+      "invalid_request": "Solicitud inválida",
+      "missing_data": "Datos requeridos faltantes",
+      "invalid_json": "Datos JSON inválidos",
+
+      "unauthorized": "No autorizado",
+      "forbidden": "Acceso prohibido",
+      "admin_only": "Acción exclusiva de administradores",
+      "authentication_required": "Autenticación requerida",
+
+      "signup_disabled": "El registro está deshabilitado",
+      "users_already_exist": "Ya existen usuarios",
+      "email_password_required": "Se requiere correo electrónico y contraseña",
+      "invalid_email_format": "Formato de correo electrónico inválido",
+      "password_length": "La contraseña debe tener entre {{min}} y {{max}} caracteres",
+      "user_already_exists": "Ya existe un usuario con este correo electrónico",
+      "user_not_found": "Usuario no encontrado",
+      "invalid_credentials": "Correo electrónico o contraseña incorrectos",
+      "current_password_required": "Se requiere la contraseña actual",
+      "incorrect_current_password": "Contraseña actual incorrecta",
+
+      "slug_already_taken": "Esta URL personalizada ya está en uso. Por favor elija otra.",
+      "slug_invalid": "Slug inválido. Debe contener entre 3 y 30 caracteres alfanuméricos, guiones o guiones bajos.",
+      "invalid_url": "URL inválida",
+      "invalid_url_format": "Formato de URL inválido",
+      "url_protocol_not_allowed": "Solo se permiten los protocolos HTTP y HTTPS",
+      "url_too_long": "URL demasiado larga",
+      "url_required": "URL requerida",
+
+      "password_invalid_length": "La contraseña debe tener entre {{min}} y {{max}} caracteres.",
+      "passwords_mismatch": "Las contraseñas no coinciden",
+      "password_incorrect": "Contraseña incorrecta",
+
+      "expiration_in_past": "La fecha de expiración debe estar en el futuro.",
+      "expiration_too_far": "Los usuarios no autenticados no pueden crear compartidos que expiren más allá de {{days}} días.",
+      "expiration_required": "Los usuarios no autenticados deben proporcionar una fecha de expiración.",
+
+      "anon_link_share_disabled": "Los usuarios anónimos no pueden crear compartidos de enlaces. Por favor inicie sesión.",
+      "anon_file_share_disabled": "Los usuarios anónimos no pueden compartir archivos. Por favor inicie sesión.",
+      "anon_paste_share_disabled": "Los usuarios anónimos no pueden compartir código. Por favor inicie sesión.",
+
+      "paste_content_required": "El contenido del paste es requerido",
+      "paste_content_empty": "El contenido del paste no puede estar vacío",
+      "paste_language_required": "El lenguaje del paste es requerido",
+      "paste_language_invalid": "Lenguaje de paste inválido",
+
+      "file_required": "Se requiere un archivo",
+      "filename_required": "Se requiere nombre de archivo",
+      "filename_too_long": "Nombre de archivo demasiado largo (máximo {{max}} caracteres)",
+      "filename_invalid": "Nombre de archivo inválido",
+      "file_size_invalid": "Tamaño de archivo inválido",
+      "file_too_large": "El tamaño del archivo excede el límite de {{maxSizeMB}}MB",
+      "file_type_not_allowed": "Tipo de archivo no permitido",
+
+      "quota_exceeded": "Cuota excedida",
+      "ip_quota_exceeded": "Cuota de IP excedida. Límite: {{quota}}MB",
+      "user_quota_exceeded": "Cuota de usuario excedida. Usado: {{used}}MB / {{total}}MB",
+
+      "share_not_found": "Compartido no encontrado",
+      "share_expired": "Este compartido ha expirado",
+      "share_type_required": "Tipo de compartido requerido",
+      "share_type_invalid": "Tipo de compartido inválido",
+      "resource_not_found": "Recurso no encontrado",
+      "file_not_found": "Archivo no encontrado",
+      "password_required": "Contraseña requerida",
+
+      "display_name_required": "El nombre para mostrar es requerido",
+      "display_name_too_long": "El nombre para mostrar debe tener como máximo {{max}} caracteres",
+      "invalid_display_name": "Nombre para mostrar inválido",
+
+      "provider_not_found": "Proveedor no encontrado",
+      "no_sso_providers": "No se encontró ningún proveedor SSO activo",
+
+      "link_name_required": "El nombre del enlace es requerido",
+      "link_url_required": "La URL del enlace es requerida",
+      "link_url_invalid": "La URL del enlace no es válida",
+
+      "account_not_found": "Cuenta no encontrada",
+      "account_already_linked": "Cuenta ya vinculada",
+      "account_linking_failed": "Error al vincular cuenta",
+      "cannot_unlink_last_account": "No se puede desvincular la última cuenta. Debe tener al menos un método de inicio de sesión.",
+
+      "token_required": "Se requiere el token",
+      "token_invalid": "Token inválido",
+      "token_expired": "Token expirado",
+      "token_invalid_or_expired": "Token inválido o expirado",
+
+      "invalid_date_format": "Formato de fecha inválido",
+      "invalid_expiration_date": "Fecha de expiración inválida"
+    },
+    "file_protected": "Archivo protegido"
   }
 }
