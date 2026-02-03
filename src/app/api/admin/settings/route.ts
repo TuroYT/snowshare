@@ -140,6 +140,7 @@ export async function PATCH(request: NextRequest) {
                     secondaryHover: data.secondaryHover || "#7C3AED",
                     secondaryDark: data.secondaryDark || "#6D28D9",
                     backgroundColor: data.backgroundColor || "#111827",
+                    backgroundImageUrl: data.backgroundImageUrl || null,
                     surfaceColor: data.surfaceColor || "#1F2937",
                     textColor: data.textColor || "#F9FAFB",
                     textMuted: data.textMuted || "#D1D5DB",
@@ -210,6 +211,8 @@ Thank you for using SnowShare!`
                     secondaryDark: data.secondaryDark !== undefined ? data.secondaryDark : settings.secondaryDark,
                     backgroundColor:
                         data.backgroundColor !== undefined ? data.backgroundColor : settings.backgroundColor,
+                    backgroundImageUrl:
+                        data.backgroundImageUrl !== undefined ? data.backgroundImageUrl : settings.backgroundImageUrl,
                     surfaceColor: data.surfaceColor !== undefined ? data.surfaceColor : settings.surfaceColor,
                     textColor: data.textColor !== undefined ? data.textColor : settings.textColor,
                     textMuted: data.textMuted !== undefined ? data.textMuted : settings.textMuted,

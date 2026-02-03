@@ -509,7 +509,10 @@
       "muted_text_hint": "Texto atenuado",
       "borders_label": "Bordes",
       "borders_hint": "Color de los bordes",
-      "theme_preview": "Vista Previa del Tema"
+      "theme_preview": "Vista Previa del Tema",
+      "background_image_url": "URL de imagen de fondo",
+      "background_image_url_hint": "URL de una imagen de fondo personalizada (opcional)",
+      "background_image_preview": "Vista previa del fondo"
     },
     "update": {
       "title": "Actualización disponible",
@@ -560,12 +563,10 @@
       "invalid_request": "Solicitud inválida",
       "missing_data": "Datos requeridos faltantes",
       "invalid_json": "Datos JSON inválidos",
-
       "unauthorized": "No autorizado",
       "forbidden": "Acceso prohibido",
       "admin_only": "Acción exclusiva de administradores",
       "authentication_required": "Autenticación requerida",
-
       "signup_disabled": "El registro está deshabilitado",
       "users_already_exist": "Ya existen usuarios",
       "email_password_required": "Se requiere correo electrónico y contraseña",
@@ -576,7 +577,6 @@
       "invalid_credentials": "Correo electrónico o contraseña incorrectos",
       "current_password_required": "Se requiere la contraseña actual",
       "incorrect_current_password": "Contraseña actual incorrecta",
-
       "slug_already_taken": "Esta URL personalizada ya está en uso. Por favor elija otra.",
       "slug_invalid": "Slug inválido. Debe contener entre 3 y 30 caracteres alfanuméricos, guiones o guiones bajos.",
       "invalid_url": "URL inválida",
@@ -584,24 +584,19 @@
       "url_protocol_not_allowed": "Solo se permiten los protocolos HTTP y HTTPS",
       "url_too_long": "URL demasiado larga",
       "url_required": "URL requerida",
-
       "password_invalid_length": "La contraseña debe tener entre {{min}} y {{max}} caracteres.",
       "passwords_mismatch": "Las contraseñas no coinciden",
       "password_incorrect": "Contraseña incorrecta",
-
       "expiration_in_past": "La fecha de expiración debe estar en el futuro.",
       "expiration_too_far": "Los usuarios no autenticados no pueden crear compartidos que expiren más allá de {{days}} días.",
       "expiration_required": "Los usuarios no autenticados deben proporcionar una fecha de expiración.",
-
       "anon_link_share_disabled": "Los usuarios anónimos no pueden crear compartidos de enlaces. Por favor inicie sesión.",
       "anon_file_share_disabled": "Los usuarios anónimos no pueden compartir archivos. Por favor inicie sesión.",
       "anon_paste_share_disabled": "Los usuarios anónimos no pueden compartir código. Por favor inicie sesión.",
-
       "paste_content_required": "El contenido del paste es requerido",
       "paste_content_empty": "El contenido del paste no puede estar vacío",
       "paste_language_required": "El lenguaje del paste es requerido",
       "paste_language_invalid": "Lenguaje de paste inválido",
-
       "file_required": "Se requiere un archivo",
       "filename_required": "Se requiere nombre de archivo",
       "filename_too_long": "Nombre de archivo demasiado largo (máximo {{max}} caracteres)",
@@ -609,11 +604,9 @@
       "file_size_invalid": "Tamaño de archivo inválido",
       "file_too_large": "El tamaño del archivo excede el límite de {{maxSizeMB}}MB",
       "file_type_not_allowed": "Tipo de archivo no permitido",
-
       "quota_exceeded": "Cuota excedida",
       "ip_quota_exceeded": "Cuota de IP excedida. Límite: {{quota}}MB",
       "user_quota_exceeded": "Cuota de usuario excedida. Usado: {{used}}MB / {{total}}MB",
-
       "share_not_found": "Compartido no encontrado",
       "share_expired": "Este compartido ha expirado",
       "share_type_required": "Tipo de compartido requerido",
@@ -621,28 +614,22 @@
       "resource_not_found": "Recurso no encontrado",
       "file_not_found": "Archivo no encontrado",
       "password_required": "Contraseña requerida",
-
       "display_name_required": "El nombre para mostrar es requerido",
       "display_name_too_long": "El nombre para mostrar debe tener como máximo {{max}} caracteres",
       "invalid_display_name": "Nombre para mostrar inválido",
-
       "provider_not_found": "Proveedor no encontrado",
       "no_sso_providers": "No se encontró ningún proveedor SSO activo",
-
       "link_name_required": "El nombre del enlace es requerido",
       "link_url_required": "La URL del enlace es requerida",
       "link_url_invalid": "La URL del enlace no es válida",
-
       "account_not_found": "Cuenta no encontrada",
       "account_already_linked": "Cuenta ya vinculada",
       "account_linking_failed": "Error al vincular cuenta",
       "cannot_unlink_last_account": "No se puede desvincular la última cuenta. Debe tener al menos un método de inicio de sesión.",
-
       "token_required": "Se requiere el token",
       "token_invalid": "Token inválido",
       "token_expired": "Token expirado",
       "token_invalid_or_expired": "Token inválido o expirado",
-
       "invalid_date_format": "Formato de fecha inválido",
       "invalid_expiration_date": "Fecha de expiración inválida"
     },

@@ -27,6 +27,7 @@ interface BrandingSettings {
     secondaryHover: string;
     secondaryDark: string;
     backgroundColor: string;
+    backgroundImageUrl: string | null;
     surfaceColor: string;
     textColor: string;
     textMuted: string;
@@ -48,6 +49,7 @@ export default function BrandingTab() {
         secondaryHover: "#7C3AED",
         secondaryDark: "#6D28D9",
         backgroundColor: "#111827",
+        backgroundImageUrl: null,
         surfaceColor: "#1F2937",
         textColor: "#F9FAFB",
         textMuted: "#D1D5DB",
@@ -139,6 +141,7 @@ export default function BrandingTab() {
                 secondaryHover: data.settings.secondaryHover || "#7C3AED",
                 secondaryDark: data.settings.secondaryDark || "#6D28D9",
                 backgroundColor: data.settings.backgroundColor || "#111827",
+                backgroundImageUrl: data.settings.backgroundImageUrl || null,
                 surfaceColor: data.settings.surfaceColor || "#1F2937",
                 textColor: data.settings.textColor || "#F9FAFB",
                 textMuted: data.settings.textMuted || "#D1D5DB",
@@ -314,6 +317,7 @@ export default function BrandingTab() {
             secondaryHover: "#7C3AED",
             secondaryDark: "#6D28D9",
             backgroundColor: "#111827",
+            backgroundImageUrl: null,
             surfaceColor: "#1F2937",
             textColor: "#F9FAFB",
             textMuted: "#D1D5DB",
@@ -616,6 +620,42 @@ export default function BrandingTab() {
                             onChange={(v) => handleChange("surfaceColor", v)}
                             hint={t("admin.branding.surface_hint")}
                         />
+                    </div>
+
+                    {/* Background Image URL */}
+                    <div className="mt-4">
+                        <label className="text-sm text-[var(--foreground)] block mb-2">
+                            {t("admin.branding.background_image_url")}
+                        </label>
+                        <input
+                            type="url"
+                            value={settings.backgroundImageUrl || ""}
+                            onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
+                            className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                            placeholder="https://example.com/background.jpg"
+                        />
+                        <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                            {t("admin.branding.background_image_url_hint")}
+                        </p>
+                        {settings.backgroundImageUrl && (
+                            <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
+                                <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                                    {t("admin.branding.background_image_preview")}
+                                </p>
+                                <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                                    <Image
+                                        src={settings.backgroundImageUrl}
+                                        alt="Background preview"
+                                        fill
+                                        className="object-cover"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = "none";
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
