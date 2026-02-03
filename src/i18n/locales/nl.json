@@ -550,5 +550,96 @@
         "error_generic": "Er is een fout opgetreden",
         "error_url_not_found": "URL niet gevonden",
         "error_connection": "Verbindingsfout"
+    },
+    "api": {
+        "errors": {
+            "internal_server_error": "Interne serverfout",
+            "server_config_error": "Serverconfiguratiefout",
+            "invalid_request": "Ongeldig verzoek",
+            "missing_data": "Vereiste gegevens ontbreken",
+            "invalid_json": "Ongeldige JSON-gegevens",
+
+            "unauthorized": "Niet geautoriseerd",
+            "forbidden": "Toegang geweigerd",
+            "admin_only": "Alleen voor beheerders",
+            "authentication_required": "Authenticatie vereist",
+
+            "signup_disabled": "Registratie is uitgeschakeld",
+            "users_already_exist": "Gebruikers bestaan al",
+            "email_password_required": "E-mail en wachtwoord vereist",
+            "invalid_email_format": "Ongeldig e-mailformaat",
+            "password_length": "Wachtwoord moet tussen {{min}} en {{max}} tekens zijn",
+            "user_already_exists": "Er bestaat al een gebruiker met dit e-mailadres",
+            "user_not_found": "Gebruiker niet gevonden",
+            "invalid_credentials": "Ongeldig e-mailadres of wachtwoord",
+            "current_password_required": "Huidig wachtwoord vereist",
+            "incorrect_current_password": "Huidig wachtwoord is onjuist",
+
+            "slug_already_taken": "Deze aangepaste URL is al in gebruik. Kies een andere.",
+            "slug_invalid": "Ongeldige slug. Deze moet tussen 3 en 30 alfanumerieke tekens, streepjes of underscores bevatten.",
+            "invalid_url": "Ongeldige URL",
+            "invalid_url_format": "Ongeldig URL-formaat",
+            "url_protocol_not_allowed": "Alleen HTTP- en HTTPS-protocollen zijn toegestaan",
+            "url_too_long": "URL te lang",
+            "url_required": "URL vereist",
+
+            "password_invalid_length": "Wachtwoord moet tussen {{min}} en {{max}} tekens zijn.",
+            "passwords_mismatch": "Wachtwoorden komen niet overeen",
+            "password_incorrect": "Onjuist wachtwoord",
+
+            "expiration_in_past": "Vervaldatum moet in de toekomst liggen.",
+            "expiration_too_far": "Niet-geverifieerde gebruikers kunnen geen shares maken die meer dan {{days}} dagen verlopen.",
+            "expiration_required": "Niet-geverifieerde gebruikers moeten een vervaldatum opgeven.",
+
+            "anon_link_share_disabled": "Anonieme gebruikers mogen geen linkshares maken. Log alstublieft in.",
+            "anon_file_share_disabled": "Anonieme gebruikers mogen geen bestanden delen. Log alstublieft in.",
+            "anon_paste_share_disabled": "Anonieme gebruikers mogen geen code delen. Log alstublieft in.",
+
+            "paste_content_required": "Paste-inhoud is vereist",
+            "paste_content_empty": "Paste-inhoud mag niet leeg zijn",
+            "paste_language_required": "Paste-taal is vereist",
+            "paste_language_invalid": "Ongeldige paste-taal",
+
+            "file_required": "Een bestand is vereist",
+            "filename_required": "Bestandsnaam vereist",
+            "filename_too_long": "Bestandsnaam te lang (maximaal {{max}} tekens)",
+            "filename_invalid": "Ongeldige bestandsnaam",
+            "file_size_invalid": "Ongeldige bestandsgrootte",
+            "file_too_large": "Bestandsgrootte overschrijdt de limiet van {{maxSizeMB}}MB",
+            "file_type_not_allowed": "Bestandstype niet toegestaan",
+
+            "quota_exceeded": "Quotum overschreden",
+            "ip_quota_exceeded": "IP-quotum overschreden. Limiet: {{quota}}MB",
+            "user_quota_exceeded": "Gebruikersquotum overschreden. Gebruikt: {{used}}MB / {{total}}MB",
+
+            "share_not_found": "Share niet gevonden",
+            "share_type_required": "Share-type vereist",
+            "share_type_invalid": "Ongeldig share-type",
+            "resource_not_found": "Bron niet gevonden",
+
+            "display_name_required": "Weergavenaam is vereist",
+            "display_name_too_long": "Weergavenaam mag maximaal {{max}} tekens zijn",
+            "invalid_display_name": "Ongeldige weergavenaam",
+
+            "provider_not_found": "Provider niet gevonden",
+            "no_sso_providers": "Geen actieve SSO-provider gevonden",
+
+            "link_name_required": "Linknaam is vereist",
+            "link_url_required": "Link-URL is vereist",
+            "link_url_invalid": "Link-URL is niet geldig",
+
+            "account_not_found": "Account niet gevonden",
+            "account_already_linked": "Account al gekoppeld",
+            "account_linking_failed": "Account koppeling mislukt",
+            "cannot_unlink_last_account": "Kan laatste account niet loskoppelen. U moet minimaal één inlogmethode hebben.",
+
+            "token_required": "Token is vereist",
+            "token_invalid": "Ongeldige token",
+            "token_expired": "Token verlopen",
+            "token_invalid_or_expired": "Ongeldige of verlopen token",
+
+            "invalid_date_format": "Ongeldig datumformaat",
+            "invalid_expiration_date": "Ongeldige vervaldatum"
+        }
     }
 }
