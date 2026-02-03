@@ -35,6 +35,14 @@ export const createPasteShare = async (
     return { error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores." };
   }
 
+  // Check if slug already exists
+  if (slug) {
+    const existingShare = await prisma.share.findUnique({ where: { slug } });
+    if (existingShare) {
+      return { error: "This custom URL is already taken. Please choose another one." };
+    }
+  }
+
   // Validate expiration date if provided
   if (expiresAt && new Date(expiresAt) <= new Date()) {
     return { error: "Expiration date must be in the future." };

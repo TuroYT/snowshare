@@ -15,6 +15,14 @@ export const createLinkShare = async (
     slug?: string,
     password?: string
 ) => {
+    // Check if slug already exists
+    if (slug) {
+        const existingShare = await prisma.share.findUnique({ where: { slug } });
+        if (existingShare) {
+            return { error: "This custom URL is already taken. Please choose another one." };
+        }
+    }
+    
     // Validate original URL format and protocol
     const urlValidation = validateUrl(urlOriginal);
     if (!urlValidation.valid) {

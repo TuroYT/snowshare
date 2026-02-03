@@ -28,7 +28,8 @@ async function POST(req: NextRequest) {
                 const { urlOriginal, expiresAt, slug, password } = data;
                 const result = await createLinkShare(urlOriginal, req, expiresAt, slug, password);
                 if (result?.error) {
-                    return NextResponse.json({ error: result.error }, { status: 400 });
+                    const statusCode = result.status || 400;
+                    return NextResponse.json({ error: result.error }, { status: statusCode });
                 }
                 return NextResponse.json({ share: result }, { status: 201 });
             }
@@ -38,7 +39,8 @@ async function POST(req: NextRequest) {
                 const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
                 const result = await createPasteShare(paste, pastelanguage, req, expiresAtDate, slug, password);
                 if (result?.error) {
-                    return NextResponse.json({ error: result.error }, { status: 400 });
+                    const statusCode = result.status || 400;
+                    return NextResponse.json({ error: result.error }, { status: statusCode });
                 }
                 return NextResponse.json({ share: result }, { status: 201 });
             }
