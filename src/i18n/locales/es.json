@@ -50,7 +50,12 @@
     "success": "¡Compartido creado!",
     "created": "¡Paste creado con éxito!",
     "creation_error": "Error al crear el paste",
-    "network_error": "Error de red — no se pudo crear el paste"
+    "network_error": "Error de red — no se pudo crear el paste",
+    "success_title": "¡Paste creado con éxito!",
+    "error_title": "Error",
+    "copied": "✓ Copiado al portapapeles",
+    "copy_title": "Copiar enlace",
+    "qr_info": "Escanea este código QR para acceder al paste"
   },
   "fileshare": {
     "title": "FileShare",

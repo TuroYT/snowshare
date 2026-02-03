@@ -54,7 +54,12 @@
         "success": "Delen aangemaakt!",
         "created": "Paste succesvol aangemaakt!",
         "creation_error": "Fout bij aanmaken van paste",
-        "network_error": "Netwerkfout — kon paste niet aanmaken"
+        "network_error": "Netwerkfout — kon paste niet aanmaken",
+        "success_title": "Paste succesvol aangemaakt!",
+        "error_title": "Fout",
+        "copied": "✓ Gekopieerd naar klembord",
+        "copy_title": "Link kopiëren",
+        "qr_info": "Scan deze QR-code om de paste te openen"
     },
     "fileshare": {
         "title": "FileShare",

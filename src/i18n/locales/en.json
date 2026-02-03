@@ -50,7 +50,12 @@
     "success": "Share created!",
     "created": "Paste created successfully!",
     "creation_error": "Error creating paste",
-    "network_error": "Network error — could not create paste"
+    "network_error": "Network error — could not create paste",
+    "success_title": "Paste created successfully!",
+    "error_title": "Error",
+    "copied": "✓ Copied to clipboard",
+    "copy_title": "Copy link",
+    "qr_info": "Scan this QR code to access the paste"
   },
   "fileshare": {
     "title": "FileShare",

@@ -54,7 +54,12 @@
         "success": "Udostępniono!",
         "created": "Wklejka utworzona pomyślnie!",
         "creation_error": "Błąd tworzenia wklejki",
-        "network_error": "Błąd sieci — nie można utworzyć wklejki"
+        "network_error": "Błąd sieci — nie można utworzyć wklejki",
+        "success_title": "Wklejka utworzona pomyślnie!",
+        "error_title": "Błąd",
+        "copied": "✓ Skopiowano do schowka",
+        "copy_title": "Kopiuj link",
+        "qr_info": "Zeskanuj ten kod QR, aby uzyskać dostęp do wklejki"
     },
     "fileshare": {
         "title": "Udostępnianie plików",
