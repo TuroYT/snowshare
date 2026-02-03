@@ -613,9 +613,12 @@
             "user_quota_exceeded": "Gebruikersquotum overschreden. Gebruikt: {{used}}MB / {{total}}MB",
 
             "share_not_found": "Share niet gevonden",
+            "share_expired": "Deze share is verlopen",
             "share_type_required": "Share-type vereist",
             "share_type_invalid": "Ongeldig share-type",
             "resource_not_found": "Bron niet gevonden",
+            "file_not_found": "Bestand niet gevonden",
+            "password_required": "Wachtwoord vereist",
 
             "display_name_required": "Weergavenaam is vereist",
             "display_name_too_long": "Weergavenaam mag maximaal {{max}} tekens zijn",
@@ -640,6 +643,7 @@
 
             "invalid_date_format": "Ongeldig datumformaat",
             "invalid_expiration_date": "Ongeldige vervaldatum"
-        }
+        },
+        "file_protected": "Beveiligd bestand"
     }
 }

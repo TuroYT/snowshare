@@ -606,9 +606,12 @@
             "user_quota_exceeded": "Przekroczono limit użytkownika. Użyto: {{used}}MB / {{total}}MB",
 
             "share_not_found": "Udostępnienie nie znalezione",
+            "share_expired": "To udostępnienie wygasło",
             "share_type_required": "Wymagany typ udostępnienia",
             "share_type_invalid": "Nieprawidłowy typ udostępnienia",
             "resource_not_found": "Zasób nie znaleziony",
+            "file_not_found": "Plik nie znaleziony",
+            "password_required": "Hasło jest wymagane",
 
             "display_name_required": "Nazwa wyświetlana jest wymagana",
             "display_name_too_long": "Nazwa wyświetlana może mieć maksymalnie {{max}} znaków",
@@ -633,6 +636,7 @@
 
             "invalid_date_format": "Nieprawidłowy format daty",
             "invalid_expiration_date": "Nieprawidłowa data wygaśnięcia"
-        }
+        },
+        "file_protected": "Chroniony plik"
     }
 }

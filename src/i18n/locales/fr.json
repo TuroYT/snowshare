@@ -612,9 +612,12 @@
       "user_quota_exceeded": "Quota utilisateur dépassé. Utilisé : {{used}}MB / {{total}}MB",
 
       "share_not_found": "Partage introuvable",
+      "share_expired": "Ce partage a expiré",
       "share_type_required": "Type de partage requis",
       "share_type_invalid": "Type de partage invalide",
       "resource_not_found": "Ressource introuvable",
+      "file_not_found": "Fichier introuvable",
+      "password_required": "Mot de passe requis",
 
       "display_name_required": "Le nom d'affichage est requis",
       "display_name_too_long": "Le nom d'affichage doit contenir au maximum {{max}} caractères",
@@ -639,6 +642,7 @@
 
       "invalid_date_format": "Format de date invalide",
       "invalid_expiration_date": "Date d'expiration invalide"
-    }
+    },
+    "file_protected": "Fichier protégé"
   }
 }

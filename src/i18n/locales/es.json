@@ -606,9 +606,12 @@
       "user_quota_exceeded": "Cuota de usuario excedida. Usado: {{used}}MB / {{total}}MB",
 
       "share_not_found": "Compartido no encontrado",
+      "share_expired": "Este compartido ha expirado",
       "share_type_required": "Tipo de compartido requerido",
       "share_type_invalid": "Tipo de compartido inválido",
       "resource_not_found": "Recurso no encontrado",
+      "file_not_found": "Archivo no encontrado",
+      "password_required": "Contraseña requerida",
 
       "display_name_required": "El nombre para mostrar es requerido",
       "display_name_too_long": "El nombre para mostrar debe tener como máximo {{max}} caracteres",
@@ -633,6 +636,7 @@
 
       "invalid_date_format": "Formato de fecha inválido",
       "invalid_expiration_date": "Fecha de expiración inválida"
-    }
+    },
+    "file_protected": "Archivo protegido"
   }
 }

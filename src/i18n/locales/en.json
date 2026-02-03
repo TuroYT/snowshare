@@ -608,9 +608,12 @@
       "user_quota_exceeded": "User quota exceeded. Used: {{used}}MB / {{total}}MB",
 
       "share_not_found": "Share not found",
+      "share_expired": "This share has expired",
       "share_type_required": "Share type required",
       "share_type_invalid": "Invalid share type",
       "resource_not_found": "Resource not found",
+      "file_not_found": "File not found",
+      "password_required": "Password required",
 
       "display_name_required": "Display name is required",
       "display_name_too_long": "Display name must be at most {{max}} characters",
@@ -635,6 +638,7 @@
 
       "invalid_date_format": "Invalid date format",
       "invalid_expiration_date": "Invalid expiration date"
-    }
+    },
+    "file_protected": "Protected file"
   }
 }

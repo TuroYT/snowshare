@@ -604,9 +604,12 @@
       "user_quota_exceeded": "Benutzerkontingent überschritten. Verwendet: {{used}}MB / {{total}}MB",
 
       "share_not_found": "Freigabe nicht gefunden",
+      "share_expired": "Diese Freigabe ist abgelaufen",
       "share_type_required": "Freigabetyp erforderlich",
       "share_type_invalid": "Ungültiger Freigabetyp",
       "resource_not_found": "Ressource nicht gefunden",
+      "file_not_found": "Datei nicht gefunden",
+      "password_required": "Passwort erforderlich",
 
       "display_name_required": "Anzeigename ist erforderlich",
       "display_name_too_long": "Anzeigename darf höchstens {{max}} Zeichen lang sein",
@@ -631,6 +634,7 @@
 
       "invalid_date_format": "Ungültiges Datumsformat",
       "invalid_expiration_date": "Ungültiges Ablaufdatum"
-    }
+    },
+    "file_protected": "Geschützte Datei"
   }
 }

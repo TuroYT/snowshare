@@ -32,9 +32,8 @@ export async function GET(
 
     const result = await getFileShare(slug, password);
     
-    if (result.error) {
-      const status = result.requiresPassword ? 403 : 404;
-      return NextResponse.json({ error: result.error }, { status });
+    if (result.errorCode) {
+      return apiError(request, result.errorCode);
     }
 
     const { filePath: fullPath, originalFilename } = result;
