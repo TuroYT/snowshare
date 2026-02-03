@@ -5,8 +5,7 @@ import path from "path";
 
 import { getUploadDir } from "@/lib/constants";
 import { existsSync } from "fs";
-
-
+import { ErrorCode } from "@/lib/api-errors";
 
 export const getFileShare = async (slug: string, password?: string) => {
   const share = await prisma.share.findUnique({
@@ -21,23 +20,23 @@ export const getFileShare = async (slug: string, password?: string) => {
       isBulk: true,
     }
   });
-  
+
   if (!share || share.type !== "FILE") {
-    return { error: "File share not found." };
+    return { errorCode: ErrorCode.SHARE_NOT_FOUND };
   }
 
   if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-    return { error: "This share has expired." };
+    return { errorCode: ErrorCode.SHARE_EXPIRED };
   }
 
   if (share.password) {
     if (!password) {
-      return { error: "Password required.", requiresPassword: true };
+      return { errorCode: ErrorCode.PASSWORD_REQUIRED, requiresPassword: true };
     }
-    
+
     const passwordValid = await bcrypt.compare(password, share.password);
     if (!passwordValid) {
-      return { error: "Incorrect password." };
+      return { errorCode: ErrorCode.PASSWORD_INCORRECT };
     }
   }
 
@@ -52,22 +51,22 @@ export const getFileShare = async (slug: string, password?: string) => {
       }
     });
 
-    return { 
+    return {
       share: { ...share, files },
       isBulk: true,
     };
   }
 
   if (!share.filePath) {
-    return { error: "File not found." };
+    return { errorCode: ErrorCode.FILE_NOT_FOUND };
   }
 
   const filePath = path.join(getUploadDir(), share.filePath);
   if (!existsSync(filePath)) {
-    return { error: "Physical file not found." };
+    return { errorCode: ErrorCode.FILE_NOT_FOUND };
   }
 
-  return { 
+  return {
     share,
     filePath,
     originalFilename: share.filePath.split('_').slice(1).join('_')

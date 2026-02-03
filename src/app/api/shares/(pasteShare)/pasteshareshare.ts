@@ -3,9 +3,10 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
-import { isValidPasteLanguage, MAX_PASTE_SIZE } from "@/lib/constants";
+import { isValidPasteLanguage, MAX_PASTE_SIZE, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
 import { NextRequest } from "next/server";
 import { getClientIp } from "@/lib/getClientIp";
+import { ErrorCode } from "@/lib/api-errors";
 
 export const createPasteShare = async (
   paste: string,
@@ -17,32 +18,43 @@ export const createPasteShare = async (
 ) => {
   // Validate paste
   if (!paste || paste.length < 1) {
-    return { error: "Paste content is required." };
+    return { errorCode: ErrorCode.PASTE_CONTENT_EMPTY };
   }
 
   // Validate paste size limit
   if (paste.length > MAX_PASTE_SIZE) {
-    return { error: "Paste content is too large (max 10MB)." };
+    return { errorCode: ErrorCode.FILE_TOO_LARGE, params: { maxSizeMB: Math.round(MAX_PASTE_SIZE / (1024 * 1024)) } };
   }
 
   // Validate language against allowed enum values
   if (!pastelanguage || typeof pastelanguage !== "string" || !isValidPasteLanguage(pastelanguage)) {
-    return { error: "Paste language is invalid." };
+    return { errorCode: ErrorCode.PASTE_LANGUAGE_INVALID };
   }
 
   // Validate slug if provided
   if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-    return { error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores." };
+    return { errorCode: ErrorCode.SLUG_INVALID };
+  }
+
+  // Check if slug already exists
+  if (slug) {
+    const existingShare = await prisma.share.findUnique({ where: { slug } });
+    if (existingShare) {
+      return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
+    }
   }
 
   // Validate expiration date if provided
   if (expiresAt && new Date(expiresAt) <= new Date()) {
-    return { error: "Expiration date must be in the future." };
+    return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
   }
 
   if (password) {
-    if (password.length < 6 || password.length > 100) {
-      return { error: "Password must be between 6 and 100 characters." };
+    if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+      return {
+        errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
+        params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH }
+      };
     }
   }
 
@@ -52,7 +64,7 @@ export const createPasteShare = async (
     // Check if anonymous paste sharing is allowed
     const settings = await prisma.settings.findFirst();
     if (settings && !settings.allowAnonPasteShare) {
-      return { error: "Anonymous users are not allowed to create paste shares. Please log in." };
+      return { errorCode: ErrorCode.ANON_PASTE_SHARE_DISABLED };
     }
 
     // Check if expiry is greater than 7 days
@@ -60,10 +72,13 @@ export const createPasteShare = async (
       const maxExpiry = new Date();
       maxExpiry.setDate(maxExpiry.getDate() + 7);
       if (new Date(expiresAt) > maxExpiry) {
-        return { error: "Unauthenticated users cannot create shares that expire beyond 7 days." };
+        return {
+          errorCode: ErrorCode.EXPIRATION_TOO_FAR,
+          params: { days: 7 }
+        };
       }
     } else {
-      return { error: "Unauthenticated users must provide an expiration date." };
+      return { errorCode: ErrorCode.EXPIRATION_REQUIRED };
     }
   }
 

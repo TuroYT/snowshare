@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Enable output as standalone to reduce runtime dependencies in Docker
   output: 'standalone',
+  compress: true,
   
   experimental: {
     proxyClientMaxBodySize: '50gb',
@@ -14,6 +15,8 @@ const nextConfig: NextConfig = {
 
   // Configure allowed image domains for external logos
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     remotePatterns: [ 
       {
         protocol: 'https',
