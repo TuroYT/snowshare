@@ -259,7 +259,7 @@ export default function LogsTab() {
                 <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                    {t("loading")}
+                    <span suppressHydrationWarning>{t("loading")}</span>
                   </div>
                 </td>
               </tr>

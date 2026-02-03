@@ -189,7 +189,7 @@ const FileShare: React.FC = () => {
           // See: https://www.w3.org/TR/FileAPI/#file-directory-reader
           // (Behavior implemented by WebKit/Blink as well.)
           // We use the same reader and keep reading until no more entries.
-          // eslint-disable-next-line no-constant-condition
+           
           while (true) {
             const batch: FileSystemEntry[] = await new Promise((res) => {
               dirReader.readEntries((entries: FileSystemEntry[]) => {
@@ -330,6 +330,16 @@ const FileShare: React.FC = () => {
     };
   }, []);
 
+  // Map server error codes to translated messages
+  const errorCodeMap: Record<string, string> = {
+    SLUG_ALREADY_TAKEN: t("api.errors.slug_already_taken", "This custom URL is already taken. Please choose another one."),
+    SLUG_INVALID: t("api.errors.slug_invalid", "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."),
+  };
+
+  const translateErrorCode = (code: string): string => {
+    return errorCodeMap[code] || code;
+  };
+
   // Handle form submission with tus resumable upload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -406,17 +416,25 @@ const FileShare: React.FC = () => {
           chunkSize: 50 * 1024 * 1024,
           metadata,
           removeFingerprintOnSuccess: true,
-          onError: (error) => {
+          onShouldRetry(err) {
+            const status = err?.originalResponse?.getStatus();
+            if (status && status >= 400 && status < 500) return false;
+            if (status === 409) return false;
+            return true;
+          },
+          onError: (error: unknown) => {
             console.error("Tus upload error:", error);
             let errorMessage = t("fileshare.network_error", "Network error — could not create share");
-            if (error && typeof error === 'object' && 'message' in error) {
+            const tusError = error as { originalResponse?: { getBody?: () => string }; message?: string };
+            const body = tusError?.originalResponse?.getBody?.();
+            if (body) {
               try {
-                const parsed = JSON.parse(error.message as string);
+                const parsed = JSON.parse(body);
                 if (parsed.error) {
-                  errorMessage = parsed.error;
+                  errorMessage = translateErrorCode(parsed.error);
                 }
               } catch {
-                errorMessage = (error.message as string) || errorMessage;
+                errorMessage = body;
               }
             }
             setError(errorMessage);
@@ -530,17 +548,25 @@ const FileShare: React.FC = () => {
             chunkSize: 50 * 1024 * 1024,
             metadata: cleanMetadata,
             removeFingerprintOnSuccess: true,
-            onError: (error) => {
+            onShouldRetry(err) {
+              const status = err?.originalResponse?.getStatus();
+              if (status && status >= 400 && status < 500) return false;
+              if (status === 409) return false;
+              return true;
+            },
+            onError: (error: unknown) => {
               console.error(`Tus upload error for file ${index + 1}:`, error);
               let errorMessage = t("fileshare.network_error", "Network error — could not create share");
-              if (error && typeof error === 'object' && 'message' in error) {
+              const tusError = error as { originalResponse?: { getBody?: () => string }; message?: string };
+              const body = tusError?.originalResponse?.getBody?.();
+              if (body) {
                 try {
-                  const parsed = JSON.parse(error.message as string);
+                  const parsed = JSON.parse(body);
                   if (parsed.error) {
-                    errorMessage = parsed.error;
+                    errorMessage = translateErrorCode(parsed.error);
                   }
                 } catch {
-                  errorMessage = (error.message as string) || errorMessage;
+                  errorMessage = body;
                 }
               }
               setError(`${t("fileshare.file", "File")} ${index + 1}: ${errorMessage}`);

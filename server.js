@@ -269,6 +269,21 @@ const tusServer = new TusServer({
         // For now, we allow start, but we should probably limit max content length header if possible
     }
 
+    // Validate slug before upload starts
+    const metadata = upload.metadata || {};
+    const slug = metadata.slug?.trim();
+    if (slug) {
+      if (!/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
+        const body = { error: "SLUG_INVALID" };
+        throw { status_code: 400, body: JSON.stringify(body) };
+      }
+      const existingShare = await prisma.share.findUnique({ where: { slug } });
+      if (existingShare) {
+        const body = { error: "SLUG_ALREADY_TAKEN" };
+        throw { status_code: 409, body: JSON.stringify(body) };
+      }
+    }
+
     // metadata is provided by the client and persisted by tus
     // Server-side metadata additions here are NOT persisted
     // Authentication must be re-done in onUploadFinish
@@ -317,13 +332,15 @@ const tusServer = new TusServer({
       } else if (isBulk && fileIndex === 0) {
         let finalSlug = slug;
         if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
-          finalSlug = "";
+          const body = { error: "SLUG_INVALID" };
+          throw { status_code: 400, body: JSON.stringify(body) };
         }
 
         if (finalSlug) {
           const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
           if (existing) {
-            finalSlug = "";
+            const body = { error: "SLUG_ALREADY_TAKEN" };
+            throw { status_code: 409, body: JSON.stringify(body) };
           }
         }
         if (!finalSlug) {
@@ -375,13 +392,15 @@ const tusServer = new TusServer({
       } else {
         let finalSlug = slug;
         if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
-          finalSlug = "";
+          const body = { error: "SLUG_INVALID" };
+          throw { status_code: 400, body: JSON.stringify(body) };
         }
 
         if (finalSlug) {
           const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
           if (existing) {
-            finalSlug = "";
+            const body = { error: "SLUG_ALREADY_TAKEN" };
+            throw { status_code: 409, body: JSON.stringify(body) };
           }
         }
         if (!finalSlug) {
