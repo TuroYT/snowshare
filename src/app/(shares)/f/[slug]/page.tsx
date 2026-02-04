@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { formatBytes } from "@/lib/formatSize";
+import FilePreviewModal from "@/components/filePreview/FilePreviewModal";
 
 interface FileListItem {
     name: string;
@@ -31,6 +32,7 @@ export default function FileSharePage() {
     const [loadingInfo, setLoadingInfo] = useState(true);
     const [useGiB, setUseGiB] = useState(false);
     const [passwordSubmitted, setPasswordSubmitted] = useState(false);
+    const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null);
     const params = useParams();
     const slug = params?.slug as string;
 
@@ -170,6 +172,28 @@ export default function FileSharePage() {
     const formatFileSize = (bytes?: number) => {
         if (!bytes) return t("file_download.unknown_size");
         return formatBytes(bytes, useGiB);
+    };
+
+    const handleFileClick = async (file: FileListItem) => {
+        // Build the preview URL with absolute path (required by reactjs-file-preview)
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const previewUrl = `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${password ? `&password=${encodeURIComponent(password)}` : ''}`;
+
+        setPreviewFile({
+            url: previewUrl,
+            name: file.name
+        });
+    };
+
+    const handleSingleFilePreview = () => {
+        // For single files (non-bulk), use the download route
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const previewUrl = `${origin}/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
+
+        setPreviewFile({
+            url: previewUrl,
+            name: fileInfo?.filename || 'file'
+        });
     };
 
     if (loadingInfo) {
@@ -341,8 +365,9 @@ export default function FileSharePage() {
                                     {fileInfo.files.map((file, index) => (
                                         <li
                                             key={index}
-                                            className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)]"
+                                            className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)] hover:bg-[var(--surface)] cursor-pointer transition-colors"
                                             aria-label={`${file.path}, ${formatFileSize(file.size)}`}
+                                            onClick={() => handleFileClick(file)}
                                         >
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm truncate text-[var(--foreground)]" title={file.path}>
@@ -352,14 +377,22 @@ export default function FileSharePage() {
                                                     {formatFileSize(file.size)}
                                                 </p>
                                             </div>
-                                            <svg className="h-5 w-5 text-[var(--primary)] ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                />
-                                            </svg>
+                                            <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                                                <svg className="h-5 w-5 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                    />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                    />
+                                                </svg>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -379,6 +412,29 @@ export default function FileSharePage() {
                                     {error}
                                 </div>
                             </div>
+                        )}
+
+                        {!fileInfo?.isBulk && (
+                            <button
+                                onClick={handleSingleFilePreview}
+                                className="group relative w-full flex justify-center py-3 px-4 border border-[var(--border)] text-sm font-medium rounded-md text-[var(--foreground)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] transition-colors"
+                            >
+                                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    />
+                                </svg>
+                                {t("file_download.preview", "Preview")}
+                            </button>
                         )}
 
                         <button
@@ -436,6 +492,16 @@ export default function FileSharePage() {
 
         </div>
         <Footer />
+
+        {/* File Preview Modal */}
+        {previewFile && (
+            <FilePreviewModal
+                isOpen={!!previewFile}
+                onClose={() => setPreviewFile(null)}
+                fileUrl={previewFile.url}
+                fileName={previewFile.name}
+            />
+        )}
         </div>
     );
 }
