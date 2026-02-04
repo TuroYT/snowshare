@@ -212,6 +212,14 @@ export function useTheme() {
   return context
 }
 
+function clearBodyBackground() {
+  document.body.style.backgroundImage = ""
+  document.body.style.backgroundSize = ""
+  document.body.style.backgroundPosition = ""
+  document.body.style.backgroundAttachment = ""
+  document.body.style.backgroundRepeat = ""
+}
+
 /**
  * Apply theme colors to CSS custom properties
  */
@@ -230,24 +238,28 @@ function applyThemeToDOM(colors: ThemeColors) {
 
   // Background colors
   root.style.setProperty("--background", colors.backgroundColor)
-  root.style.setProperty("--surface", hexToRgba(colors.surfaceColor, 0.5))
-  root.style.setProperty("--surface-hover", hexToRgba(colors.surfaceColor, 0.7))
+  root.style.setProperty("--surface", hexToRgba(colors.surfaceColor, 0.85))
+  root.style.setProperty("--surface-hover", hexToRgba(colors.surfaceColor, 0.85))
   root.style.setProperty("--input", colors.surfaceColor)
   root.style.setProperty("--input-focus", colors.backgroundColor)
 
   // Background image
   if (colors.backgroundImageUrl) {
-    document.body.style.backgroundImage = `url('${colors.backgroundImageUrl}')`
-    document.body.style.backgroundSize = "cover"
-    document.body.style.backgroundPosition = "center"
-    document.body.style.backgroundAttachment = "fixed"
-    document.body.style.backgroundRepeat = "no-repeat"
+    const img = new Image()
+    const url = colors.backgroundImageUrl
+    img.onload = () => {
+      document.body.style.backgroundImage = `url('${url}')`
+      document.body.style.backgroundSize = "cover"
+      document.body.style.backgroundPosition = "center"
+      document.body.style.backgroundAttachment = "fixed"
+      document.body.style.backgroundRepeat = "no-repeat"
+    }
+    img.onerror = () => {
+      clearBodyBackground()
+    }
+    img.src = url
   } else {
-    document.body.style.backgroundImage = ""
-    document.body.style.backgroundSize = ""
-    document.body.style.backgroundPosition = ""
-    document.body.style.backgroundAttachment = ""
-    document.body.style.backgroundRepeat = ""
+    clearBodyBackground()
   }
 
   // Text colors
@@ -255,8 +267,8 @@ function applyThemeToDOM(colors: ThemeColors) {
   root.style.setProperty("--foreground-muted", colors.textMuted)
 
   // Border colors
-  root.style.setProperty("--border", hexToRgba(colors.borderColor, 0.5))
-  root.style.setProperty("--border-hover", hexToRgba(colors.borderColor, 0.7))
+  root.style.setProperty("--border", hexToRgba(colors.borderColor, 0.7))
+  root.style.setProperty("--border-hover", hexToRgba(colors.borderColor, 0.85))
 
   // Gradients
   root.style.setProperty(

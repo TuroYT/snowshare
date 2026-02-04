@@ -34,9 +34,9 @@ export default function TermsOfUse() {
     }, []); // Empty dependency array ensures this runs only once
 
     return (
-        <div style={{ backgroundColor: colors.backgroundColor, color: colors.primaryColor }}>
+        <div className="min-h-screen flex flex-col" style={{ color: colors.primaryColor }}>
             <Navigation />
-            <main className="prose mx-auto p-4 min-h-screen">
+            <main className="flex-grow prose mx-auto p-4 w-full">
                 {loading ? (
                     <p>Loading terms of use...</p>
                 ) : error ? (

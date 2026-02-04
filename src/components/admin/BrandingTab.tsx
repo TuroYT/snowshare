@@ -642,18 +642,7 @@ export default function BrandingTab() {
                                 <p className="text-xs text-[var(--foreground-muted)] mb-2">
                                     {t("admin.branding.background_image_preview")}
                                 </p>
-                                <div className="relative w-full h-32 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={settings.backgroundImageUrl}
-                                        alt="Background preview"
-                                        fill
-                                        className="object-cover"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.style.display = "none";
-                                        }}
-                                    />
-                                </div>
+                                <BackgroundImagePreview url={settings.backgroundImageUrl} />
                             </div>
                         )}
                     </div>
@@ -866,6 +855,50 @@ export default function BrandingTab() {
                     {saving ? t("admin.settings.saving") : t("admin.settings.save")}
                 </button>
             </div>
+        </div>
+    );
+}
+
+function BackgroundImagePreview({ url }: { url: string }) {
+    const { t } = useTranslation();
+    const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+
+    useEffect(() => {
+        setStatus("loading");
+        const img = new window.Image();
+        img.onload = () => setStatus("ok");
+        img.onerror = () => setStatus("error");
+        img.src = url;
+    }, [url]);
+
+    if (status === "loading") {
+        return (
+            <div className="w-full h-32 rounded-lg flex items-center justify-center bg-[var(--surface)]/30">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)]"></div>
+            </div>
+        );
+    }
+
+    if (status === "error") {
+        return (
+            <div className="w-full h-32 rounded-lg flex flex-col items-center justify-center bg-red-900/20 border border-red-800/50 text-red-400 text-sm gap-2">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                {t("admin.branding.background_image_error", "Unable to load image. Check that the URL points to a valid image.")}
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-full h-32 rounded-lg overflow-hidden">
+            <Image
+                src={url}
+                alt="Background preview"
+                fill
+                className="object-cover"
+                onError={() => setStatus("error")}
+            />
         </div>
     );
 }
