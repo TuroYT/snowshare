@@ -518,7 +518,10 @@
       "muted_text_hint": "Muted text",
       "borders_label": "Borders",
       "borders_hint": "Border color",
-      "theme_preview": "Theme Preview"
+      "theme_preview": "Theme Preview",
+      "background_image_url": "Background Image URL",
+      "background_image_url_hint": "URL of a custom background image (optional)",
+      "background_image_preview": "Background Preview"
     },
     "update": {
       "title": "Update Available",
@@ -569,12 +572,10 @@
       "invalid_request": "Invalid request",
       "missing_data": "Required data missing",
       "invalid_json": "Invalid JSON data",
-
       "unauthorized": "Unauthorized",
       "forbidden": "Forbidden",
       "admin_only": "Admin only action",
       "authentication_required": "Authentication required",
-
       "signup_disabled": "Sign up is disabled",
       "users_already_exist": "Users already exist",
       "email_password_required": "Email and password required",
@@ -585,7 +586,6 @@
       "invalid_credentials": "Invalid email or password",
       "current_password_required": "Current password required",
       "incorrect_current_password": "Incorrect current password",
-
       "slug_already_taken": "This custom URL is already taken. Please choose another one.",
       "slug_invalid": "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores.",
       "invalid_url": "Invalid URL",
@@ -593,24 +593,19 @@
       "url_protocol_not_allowed": "Only HTTP and HTTPS protocols are allowed",
       "url_too_long": "URL too long",
       "url_required": "URL required",
-
       "password_invalid_length": "Password must be between {{min}} and {{max}} characters.",
       "passwords_mismatch": "Passwords do not match",
       "password_incorrect": "Incorrect password",
-
       "expiration_in_past": "Expiration date must be in the future.",
       "expiration_too_far": "Unauthenticated users cannot create shares that expire beyond {{days}} days.",
       "expiration_required": "Unauthenticated users must provide an expiration date.",
-
       "anon_link_share_disabled": "Anonymous users are not allowed to create link shares. Please log in.",
       "anon_file_share_disabled": "Anonymous users are not allowed to share files. Please log in.",
       "anon_paste_share_disabled": "Anonymous users are not allowed to share code. Please log in.",
-
       "paste_content_required": "Paste content is required",
       "paste_content_empty": "Paste content cannot be empty",
       "paste_language_required": "Paste language is required",
       "paste_language_invalid": "Invalid paste language",
-
       "file_required": "A file is required",
       "filename_required": "Filename required",
       "filename_too_long": "Filename too long (maximum {{max}} characters)",
@@ -618,11 +613,9 @@
       "file_size_invalid": "Invalid file size",
       "file_too_large": "File size exceeds the limit of {{maxSizeMB}}MB",
       "file_type_not_allowed": "File type not allowed",
-
       "quota_exceeded": "Quota exceeded",
       "ip_quota_exceeded": "IP quota exceeded. Limit: {{quota}}MB",
       "user_quota_exceeded": "User quota exceeded. Used: {{used}}MB / {{total}}MB",
-
       "share_not_found": "Share not found",
       "share_expired": "This share has expired",
       "share_type_required": "Share type required",
@@ -630,28 +623,22 @@
       "resource_not_found": "Resource not found",
       "file_not_found": "File not found",
       "password_required": "Password required",
-
       "display_name_required": "Display name is required",
       "display_name_too_long": "Display name must be at most {{max}} characters",
       "invalid_display_name": "Invalid display name",
-
       "provider_not_found": "Provider not found",
       "no_sso_providers": "No active SSO provider found",
-
       "link_name_required": "Link name is required",
       "link_url_required": "Link URL is required",
       "link_url_invalid": "Link URL is not valid",
-
       "account_not_found": "Account not found",
       "account_already_linked": "Account already linked",
       "account_linking_failed": "Account linking failed",
       "cannot_unlink_last_account": "Cannot unlink last account. You must have at least one login method.",
-
       "token_required": "Token is required",
       "token_invalid": "Invalid token",
       "token_expired": "Token expired",
       "token_invalid_or_expired": "Invalid or expired token",
-
       "invalid_date_format": "Invalid date format",
       "invalid_expiration_date": "Invalid expiration date"
     },

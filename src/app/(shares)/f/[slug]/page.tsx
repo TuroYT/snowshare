@@ -174,7 +174,7 @@ export default function FileSharePage() {
 
     if (loadingInfo) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
                     <p className="text-[var(--foreground-muted)]" suppressHydrationWarning>{t("loading")}</p>
@@ -185,7 +185,7 @@ export default function FileSharePage() {
 
     if (!fileInfo && error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full space-y-8 text-center">
                     <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-900/20 border border-red-800">
                         <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,8 +214,8 @@ export default function FileSharePage() {
     }
 
     return (
-        <>
-        <div className="min-h-screen flex items-center justify-center bg-[var(--background)] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex flex-col">
+        <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
                 <div className="text-center">
                     <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]">
@@ -433,9 +433,9 @@ export default function FileSharePage() {
 
 
             </div>
-            
+
         </div>
-    <Footer />
-    </>
+        <Footer />
+        </div>
     );
 }

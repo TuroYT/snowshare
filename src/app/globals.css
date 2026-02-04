@@ -11,9 +11,9 @@
   
   /* Background colors (customizable) */
   --background: #111827;
-  --background-secondary: rgba(17, 24, 39, 0.8);
-  --surface: rgba(31, 41, 55, 0.5);
-  --surface-hover: rgba(55, 65, 81, 0.5);
+  --background-secondary: rgba(17, 24, 39, 0.9);
+  --surface: rgba(31, 41, 55, 0.85);
+  --surface-hover: rgba(55, 65, 81, 0.85);
   
   /* Text colors */
   --foreground: #f9fafb;
@@ -21,8 +21,8 @@
   --foreground-subtle: #9ca3af;
   
   /* Borders and inputs */
-  --border: rgba(55, 65, 81, 0.5);
-  --border-hover: rgba(75, 85, 99, 0.7);
+  --border: rgba(55, 65, 81, 0.7);
+  --border-hover: rgba(75, 85, 99, 0.85);
   --input: #1f2937;
   --input-focus: #111827;
   
@@ -57,7 +57,7 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   line-height: 1.6;

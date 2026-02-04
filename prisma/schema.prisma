@@ -127,6 +127,7 @@ model Settings {
   secondaryHover    String  @default("#7C3AED")  // Secondary color hover state
   secondaryDark     String  @default("#6D28D9")  // Dark version of secondary color
   backgroundColor   String  @default("#111827")  // Main background color
+  backgroundImageUrl String? // Custom background image URL (optional)
   surfaceColor      String  @default("#1F2937")  // Surface color (cards, panels)
   textColor         String  @default("#F9FAFB")  // Main text color
   textMuted         String  @default("#D1D5DB")  // Secondary/muted text color
