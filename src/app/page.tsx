@@ -23,8 +23,7 @@ export default function Home() {
     return (
         <div className="min-h-screen flex flex-col">
             <Navigation />
-
-            <main className="flex-grow max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8 w-full">
+            <main className={`${activeTab === "pasteshare" ? "max-w-[90rem]" : "max-w-6xl"} mx-auto py-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 w-full flex-grow`}>
                 <div className="text-center">
                     {/* Hero Section */}
                     <div className="mb-12">
@@ -63,7 +62,7 @@ export default function Home() {
 
                         {/* Content Area */}
 
-                            <div className="flex justify-center">
+                            <div key={activeTab} className="flex justify-center animate-fade-in-up">
                                 {tabs.find((tab) => tab.id === activeTab)?.component}
                             </div>
 

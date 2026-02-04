@@ -50,7 +50,12 @@
     "success": "Freigabe erstellt!",
     "created": "Paste erfolgreich erstellt!",
     "creation_error": "Fehler beim Erstellen des Paste",
-    "network_error": "Netzwerkfehler — Paste konnte nicht erstellt werden"
+    "network_error": "Netzwerkfehler — Paste konnte nicht erstellt werden",
+    "success_title": "Paste erfolgreich erstellt!",
+    "error_title": "Fehler",
+    "copied": "✓ In die Zwischenablage kopiert",
+    "copy_title": "Link kopieren",
+    "qr_info": "Scannen Sie diesen QR-Code, um auf den Paste zuzugreifen"
   },
   "fileshare": {
     "title": "FileShare",

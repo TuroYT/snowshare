@@ -50,7 +50,12 @@
     "success": "Partage créé !",
     "created": "Paste créé avec succès !",
     "creation_error": "Erreur lors de la création du paste",
-    "network_error": "Erreur réseau — impossible de créer le paste"
+    "network_error": "Erreur réseau — impossible de créer le paste",
+    "success_title": "Paste créé avec succès !",
+    "error_title": "Erreur",
+    "copied": "✓ Copié dans le presse-papiers",
+    "copy_title": "Copier le lien",
+    "qr_info": "Scannez ce QR code pour accéder au paste"
   },
   "fileshare": {
     "title": "FileShare",
