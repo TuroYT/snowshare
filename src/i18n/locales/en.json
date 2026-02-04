@@ -108,7 +108,11 @@
     "quota_info": "Quota: {{used}} MB / {{total}} MB used",
     "quota_remaining": "{{remaining}} MB available",
     "quota_exceeded": "Quota exceeded",
-    "quota_warning": "Warning: you have used {{percent}}% of your quota"
+    "quota_warning": "Warning: you have used {{percent}}% of your quota",
+    "select_files": "Select Files",
+    "select_folder": "Select Folder",
+    "selected_files": "Selected Files",
+    "total_size": "Total"
   },
   "file_download": {
     "loading_error": "Error loading information",
@@ -125,7 +129,12 @@
     "password_placeholder": "Enter password",
     "downloading": "Downloading...",
     "download": "Download",
-    "disclaimer": "By downloading this file, you acknowledge it comes from a third-party source."
+    "disclaimer": "By downloading this file, you acknowledge it comes from a third-party source.",
+    "file_count": "{{count}} files",
+    "verify_password": "Verify Password",
+    "verifying": "Verifying...",
+    "files_in_share": "Files in this share",
+    "password_incorrect": "Incorrect password"
   },
   "home": {
     "title": "Welcome to SnowShare",
@@ -207,7 +216,9 @@
     "error_invalid_credentials": "Incorrect email or password",
     "error_generic": "An error occurred: ",
     "error_passwords_mismatch": "Passwords do not match",
-    "error_password_too_short": "Password must be at least 6 characters long",    "error_oauth_signin": "No email associated with this provider account.",    "success_account_created": "Account created successfully",
+    "error_password_too_short": "Password must be at least 6 characters long",
+    "error_oauth_signin": "No email associated with this provider account.",
+    "success_account_created": "Account created successfully",
     "terms_notice": "By creating an account, you agree to our",
     "signup_disabled_title": "Sign up disabled",
     "signup_disabled_message": "New registrations are currently not allowed.",

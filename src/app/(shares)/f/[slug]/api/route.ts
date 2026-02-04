@@ -41,11 +41,30 @@ export async function POST(
         const locale = detectLocale(request);
         return NextResponse.json({
           filename: translate(locale, "api.file_protected"),
-          requiresPassword: true
+          requiresPassword: true,
+          isBulk: result.isBulk || false
         });
       }
 
-      // Get file stats
+      if (result.isBulk && result.share) {
+        const files = result.share.files || [];
+        const totalSize = files.reduce((sum: number, file: { size: bigint }) => sum + Number(file.size), 0);
+        const fileList = files.map((file) => ({
+          name: file.originalName,
+          path: file.relativePath || file.originalName,
+          size: Number(file.size),
+        }));
+
+        return NextResponse.json({
+          filename: `${files.length} files`,
+          fileSize: totalSize,
+          requiresPassword: false,
+          isBulk: true,
+          fileCount: files.length,
+          files: fileList,
+        });
+      }
+
       const { filePath: fullPath, originalFilename } = result;
       if (!fullPath || !existsSync(fullPath)) {
         return apiError(request, ErrorCode.FILE_NOT_FOUND);
@@ -56,7 +75,8 @@ export async function POST(
       return NextResponse.json({
         filename: originalFilename,
         fileSize: stats.size,
-        requiresPassword: false
+        requiresPassword: false,
+        isBulk: false
       });
     }
 
@@ -67,16 +87,20 @@ export async function POST(
         return apiError(request, result.errorCode);
       }
 
+      if (result.isBulk) {
+        const downloadUrl = `/f/${slug}/bulk-download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
+        return NextResponse.json({ downloadUrl, isBulk: true });
+      }
+
       const { filePath: fullPath } = result;
 
       if (!fullPath || !existsSync(fullPath)) {
         return apiError(request, ErrorCode.FILE_NOT_FOUND);
       }
 
-      // Generate a download URL with password if needed
       const downloadUrl = `/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
 
-      return NextResponse.json({ downloadUrl });
+      return NextResponse.json({ downloadUrl, isBulk: false });
     }
 
     return apiError(request, ErrorCode.INVALID_REQUEST);

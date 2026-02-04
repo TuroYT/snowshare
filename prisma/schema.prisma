@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -78,6 +78,22 @@ model Share {
   createdAt     DateTime   @default(now())
   expiresAt     DateTime?
   ipSource      String?
+  isBulk        Boolean    @default(false)
+  files         ShareFile[]
+}
+
+model ShareFile {
+  id            String   @id @default(cuid())
+  shareId       String
+  share         Share    @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  filePath      String
+  originalName  String
+  relativePath  String?
+  size          BigInt
+  mimeType      String?
+  createdAt     DateTime @default(now())
+
+  @@index([shareId])
 }
 
 model Settings {
