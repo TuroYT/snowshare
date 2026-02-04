@@ -6,6 +6,7 @@ import { encrypt } from "@/lib/crypto-link";
 import crypto from "crypto";
 import { isValidUrl as validateUrl } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
+import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { NextRequest } from "next/server";
 import { ErrorCode } from "@/lib/api-errors";
 import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
@@ -102,6 +103,8 @@ export const createLinkShare = async (
             ipSource: getClientIp(request)
         }
     });
+
+    lookupIpGeolocation(getClientIp(request));
 
     return { linkShare };
 };

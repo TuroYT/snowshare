@@ -462,7 +462,19 @@
       "no_logs": "Geen shares gevonden",
       "pagination_info": "Toont {{start}} t/m {{end}} van {{total}} shares",
       "previous": "Vorige",
-      "next": "Volgende"
+      "next": "Volgende",
+      "geo": {
+        "modal_title": "IP Geolocatie Details",
+        "ip_address": "IP-adres",
+        "country": "Land",
+        "country_code": "Landcode",
+        "continent": "Continent",
+        "continent_code": "Continentcode",
+        "state_province": "Staat / Provincie",
+        "city": "Stad",
+        "unknown": "Onbekend",
+        "not_resolved": "Geolocatiegegevens niet beschikbaar"
+      }
     },
     "branding": {
       "section_identity": "App-identiteit",

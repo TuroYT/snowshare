@@ -460,7 +460,19 @@
       "no_logs": "Keine Freigaben gefunden",
       "pagination_info": "Zeige {{start}} bis {{end}} von {{total}} Freigaben",
       "previous": "Zurück",
-      "next": "Weiter"
+      "next": "Weiter",
+      "geo": {
+        "modal_title": "IP-Geolokalisierung",
+        "ip_address": "IP-Adresse",
+        "country": "Land",
+        "country_code": "Landescode",
+        "continent": "Kontinent",
+        "continent_code": "Kontinentcode",
+        "state_province": "Bundesland / Provinz",
+        "city": "Stadt",
+        "unknown": "Unbekannt",
+        "not_resolved": "Geolokalisierungsdaten nicht verfügbar"
+      }
     },
     "branding": {
       "section_identity": "App-Identität",

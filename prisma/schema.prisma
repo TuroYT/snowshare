@@ -151,6 +151,19 @@ enum ShareType {
   URL
 }
 
+model IpLocalisation {
+  ip            String   @id
+  continentCode String?
+  continentName String?
+  countryCode   String?
+  countryName   String?
+  stateProv     String?
+  city          String?
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 enum pasteType {
   PLAINTEXT
   JAVASCRIPT

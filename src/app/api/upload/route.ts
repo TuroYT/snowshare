@@ -17,6 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
 import { getClientIp } from "@/lib/getClientIp";
+import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { convertFromMB, getUnitLabel } from "@/lib/formatSize";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 
@@ -459,6 +460,8 @@ export async function POST(req: NextRequest) {
             isBulk: false,
           },
         });
+
+        lookupIpGeolocation(clientIp);
 
         // Rename temp file to final name
         const finalFileName = generateSafeFilename(originalFilename, share.id);
