@@ -34,7 +34,11 @@ export async function GET(request: Request) {
     
     //? Gestion PASSWORD
     if (share.password) {
-        const viewUrl = new URL(`/l/${slug}/private`, url.origin);
+        // Utiliser les headers du reverse proxy pour obtenir l'origine publique
+        const protocol = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
+        const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
+        const publicOrigin = `${protocol}://${host}`;
+        const viewUrl = new URL(`/l/${slug}/private`, publicOrigin);
         return Response.redirect(viewUrl.toString(), 302);
     }
     if (!share.urlOriginal) return jsonResponse({ error: "URL introuvable" }, 500);
