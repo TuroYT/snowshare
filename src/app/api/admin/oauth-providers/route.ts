@@ -1,16 +1,17 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { encrypt } from "@/lib/crypto-link"
 import { getServerSession } from "next-auth"
 import { getAuthOptions } from "@/lib/auth"
 import { isValidDisplayName } from "@/lib/validation"
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const authOptions = await getAuthOptions()
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return apiError(request, ErrorCode.UNAUTHORIZED)
   }
 
   const user = await prisma.user.findUnique({
@@ -19,7 +20,7 @@ export async function GET() {
   })
 
   if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    return apiError(request, ErrorCode.ADMIN_ONLY)
   }
 
   const providers = await prisma.oAuthProvider.findMany({
@@ -39,12 +40,12 @@ export async function GET() {
   return NextResponse.json({ providers })
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const authOptions = await getAuthOptions()
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return apiError(request, ErrorCode.UNAUTHORIZED)
   }
 
   const user = await prisma.user.findUnique({
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
   })
 
   if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    return apiError(request, ErrorCode.ADMIN_ONLY)
   }
 
   try {
@@ -62,14 +63,14 @@ export async function POST(request: Request) {
     // Validate displayName
     const dnValidation = isValidDisplayName(displayName)
     if (!dnValidation.valid) {
-      return NextResponse.json({ error: dnValidation.error || "Invalid displayName" }, { status: 400 })
+      return apiError(request, ErrorCode.INVALID_DISPLAY_NAME)
     }
     const safeDisplayName = (displayName as string).trim()
 
     // Ensure NEXTAUTH_SECRET is available when encrypting client secrets
     if (clientSecret && !process.env.NEXTAUTH_SECRET) {
       console.error("Missing NEXTAUTH_SECRET while attempting to encrypt an OAuth provider clientSecret")
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+      return apiError(request, ErrorCode.SERVER_CONFIG_ERROR)
     }
 
     // Encrypt secret if provided
@@ -109,6 +110,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("Error saving provider:", error)
-    return NextResponse.json({ error: "Failed to save provider" }, { status: 500 })
+    return internalError(request)
   }
 }

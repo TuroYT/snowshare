@@ -2,6 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import IpGeoModal from "@/components/admin/IpGeoModal";
+
+interface IpGeoData {
+  countryCode: string | null;
+  countryName: string | null;
+  continentCode: string | null;
+  continentName: string | null;
+  stateProv: string | null;
+  city: string | null;
+  status: string;
+}
 
 interface LogEntry {
   id: string;
@@ -11,11 +22,14 @@ interface LogEntry {
   expiresAt: string | null;
   ipSource: string | null;
   hasPassword: boolean;
+  maxViews: number | null;
+  viewCount: number;
   owner: {
     id: string;
     email: string;
     name: string | null;
   } | null;
+  ipGeo: IpGeoData | null;
 }
 
 interface Pagination {
@@ -23,6 +37,13 @@ interface Pagination {
   limit: number;
   total: number;
   totalPages: number;
+}
+
+function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
+  if (!countryCode || countryCode.length !== 2) return "\u2753";
+  const code = countryCode.toUpperCase();
+  const offset = 0x1f1e6 - 65;
+  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
 }
 
 export default function LogsTab() {
@@ -39,6 +60,8 @@ export default function LogsTab() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [geoModalOpen, setGeoModalOpen] = useState(false);
+  const [selectedGeoLog, setSelectedGeoLog] = useState<LogEntry | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -169,6 +192,11 @@ export default function LogsTab() {
     return new Date(expiresAt) < new Date();
   };
 
+  const isViewLimitReached = (maxViews: number | null, viewCount: number) => {
+    if (maxViews === null || maxViews === undefined) return false;
+    return viewCount >= maxViews;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -259,7 +287,7 @@ export default function LogsTab() {
                 <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                    {t("loading")}
+                    <span suppressHydrationWarning>{t("loading")}</span>
                   </div>
                 </td>
               </tr>
@@ -298,9 +326,31 @@ export default function LogsTab() {
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-[var(--foreground-muted)] font-mono">
-                      {log.ipSource || "-"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {log.ipSource && (
+                        <button
+                          onClick={() => {
+                            setSelectedGeoLog(log);
+                            setGeoModalOpen(true);
+                          }}
+                          className="cursor-pointer hover:scale-110 transition-transform"
+                          title={
+                            log.ipGeo?.status === "resolved"
+                              ? log.ipGeo.countryName || ""
+                              : t("admin.logs.geo.unknown")
+                          }
+                        >
+                          <span className="text-lg">
+                            {log.ipGeo?.status === "resolved"
+                              ? countryCodeToFlagEmoji(log.ipGeo.countryCode)
+                              : "\u2753"}
+                          </span>
+                        </button>
+                      )}
+                      <span className="text-sm text-[var(--foreground-muted)] font-mono">
+                        {log.ipSource || "-"}
+                      </span>
+                    </div>
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-[var(--foreground)]">{formatDate(log.createdAt)}</span>
@@ -311,14 +361,19 @@ export default function LogsTab() {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      {isExpired(log.expiresAt) ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {isExpired(log.expiresAt) || isViewLimitReached(log.maxViews, log.viewCount) ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
                           {t("admin.logs.expired")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                           {t("admin.logs.active")}
+                        </span>
+                      )}
+                      {log.maxViews && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30" title={`${log.viewCount}/${log.maxViews} views`}>
+                          👁️ {log.viewCount}/{log.maxViews}
                         </span>
                       )}
                       {log.hasPassword && (
@@ -388,6 +443,19 @@ export default function LogsTab() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* IP Geolocation Modal */}
+      {selectedGeoLog && (
+        <IpGeoModal
+          isOpen={geoModalOpen}
+          onClose={() => {
+            setGeoModalOpen(false);
+            setSelectedGeoLog(null);
+          }}
+          ip={selectedGeoLog.ipSource || ""}
+          geoData={selectedGeoLog.ipGeo}
+        />
       )}
     </div>
   );

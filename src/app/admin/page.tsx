@@ -57,7 +57,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
+      <div className="min-h-screen text-[var(--foreground)] flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -72,7 +72,7 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
+      <div className="min-h-screen text-[var(--foreground)] flex flex-col">
         <Navigation />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
@@ -90,7 +90,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col">
+    <div className="min-h-screen text-[var(--foreground)] flex flex-col">
       <Navigation />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">

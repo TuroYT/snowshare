@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -6,17 +6,18 @@ import { unlink } from "fs/promises";
 import { join } from "path";
 import bcrypt from "bcryptjs";
 import { isValidPasteLanguage, isValidUrl, MAX_PASTE_SIZE, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
-  req: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
     const share = await prisma.share.findUnique({
@@ -24,11 +25,11 @@ export async function DELETE(
     });
 
     if (!share) {
-      return NextResponse.json({ error: "Partage non trouvé" }, { status: 404 });
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
     if (share.ownerId !== session.user.id) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+      return apiError(request, ErrorCode.FORBIDDEN);
     }
 
     // Si c'est un fichier, le supprimer du système de fichiers
@@ -48,20 +49,20 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting share:", error);
-    return NextResponse.json({ error: "Erreur lors de la suppression" }, { status: 500 });
+    return internalError(request);
   }
 }
 
 // PATCH - Modifier un partage
 export async function PATCH(
-  req: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
     const share = await prisma.share.findUnique({
@@ -69,14 +70,14 @@ export async function PATCH(
     });
 
     if (!share) {
-      return NextResponse.json({ error: "Partage non trouvé" }, { status: 404 });
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
     if (share.ownerId !== session.user.id) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+      return apiError(request, ErrorCode.FORBIDDEN);
     }
 
-    const data = await req.json();
+    const data = await request.json();
     const { expiresAt, password, paste, pastelanguage, urlOriginal } = data;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,7 +92,10 @@ export async function PATCH(
       if (password) {
         // Validate password length
         if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
-          return NextResponse.json({ error: `The password must contain between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters` }, { status: 400 });
+          return apiError(request, ErrorCode.PASSWORD_INVALID_LENGTH, {
+            min: PASSWORD_MIN_LENGTH,
+            max: PASSWORD_MAX_LENGTH
+          });
         }
         updateData.password = await bcrypt.hash(password, 12);
       } else {
@@ -103,7 +107,7 @@ export async function PATCH(
     if (share.type === "PASTE" && paste !== undefined) {
       // Validate paste content length to prevent DoS
       if (typeof paste !== 'string' || paste.length > MAX_PASTE_SIZE) {
-        return NextResponse.json({ error: "Contenu du paste invalide ou trop volumineux" }, { status: 400 });
+        return apiError(request, ErrorCode.PASTE_CONTENT_REQUIRED);
       }
       updateData.paste = paste;
     }
@@ -111,7 +115,7 @@ export async function PATCH(
     if (share.type === "PASTE" && pastelanguage !== undefined) {
       // Validate pastelanguage is a valid enum value
       if (!isValidPasteLanguage(pastelanguage)) {
-        return NextResponse.json({ error: "Langage invalide" }, { status: 400 });
+        return apiError(request, ErrorCode.PASTE_LANGUAGE_INVALID);
       }
       updateData.pastelanguage = pastelanguage;
     }
@@ -120,7 +124,7 @@ export async function PATCH(
       // Validate URL format and protocol
       const urlValidation = isValidUrl(urlOriginal);
       if (!urlValidation.valid) {
-        return NextResponse.json({ error: urlValidation.error || "URL invalide" }, { status: 400 });
+        return apiError(request, ErrorCode.INVALID_URL);
       }
       updateData.urlOriginal = urlOriginal;
     }
@@ -133,6 +137,6 @@ export async function PATCH(
     return NextResponse.json({ share: updatedShare });
   } catch (error) {
     console.error("Error updating share:", error);
-    return NextResponse.json({ error: "Erreur lors de la mise à jour" }, { status: 500 });
+    return internalError(request);
   }
 }

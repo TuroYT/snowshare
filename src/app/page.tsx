@@ -21,14 +21,13 @@ export default function Home() {
     ];
 
     return (
-        <div className="min-h-screen bg-[var(--background)]">
+        <div className="min-h-screen flex flex-col">
             <Navigation />
-
-            <main className="max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+            <main className={`${activeTab === "pasteshare" ? "max-w-[90rem]" : "max-w-6xl"} mx-auto py-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 w-full flex-grow`}>
                 <div className="text-center">
                     {/* Hero Section */}
                     <div className="mb-12">
-                        <h1 
+                        <h1
                             className="text-5xl font-extrabold sm:text-6xl md:text-7xl bg-clip-text text-transparent"
                             style={{ backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor}, ${colors.primaryColor})` }}
                         >
@@ -51,7 +50,7 @@ export default function Home() {
                                             ? "text-white shadow-lg scale-105"
                                             : "bg-[var(--surface)]/50 text-[var(--foreground)] hover:bg-[var(--surface)]/70 hover:text-[var(--foreground)] hover:scale-105 border border-[var(--border)]/50"
                                     }`}
-                                    style={activeTab === tab.id ? { 
+                                    style={activeTab === tab.id ? {
                                         backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor})`,
                                         boxShadow: `0 10px 15px -3px ${colors.primaryColor}40`
                                     } : undefined}
@@ -62,11 +61,11 @@ export default function Home() {
                         </div>
 
                         {/* Content Area */}
-                    
-                            <div className="flex justify-center">
+
+                            <div key={activeTab} className="flex justify-center animate-fade-in-up">
                                 {tabs.find((tab) => tab.id === activeTab)?.component}
                             </div>
-                      
+
                     </div>
                 </div>
             </main>

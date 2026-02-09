@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { internalError } from "@/lib/api-errors";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const USER_COUNT = await prisma.user.count();
     const NEED_SETUP = USER_COUNT === 0;
@@ -109,9 +110,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error checking setup status:", error);
-    return NextResponse.json(
-      { error: "Failed to check setup status" },
-      { status: 500 }
-    );
+    return internalError(request);
   }
 }

@@ -4,50 +4,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createLinkShare } from "./(linkShare)/linkshare";
 import { createPasteShare } from "./(pasteShare)/pasteshareshare";
+import { apiError, ErrorCode } from "@/lib/api-errors";
 
 async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type") || "";
 
     // File uploads should use /api/upload (Pages Router) for true streaming
     if (contentType.includes("multipart/form-data")) {
-        return NextResponse.json(
-            { error: "File uploads should use /api/upload endpoint" },
-            { status: 400 }
-        );
+        return apiError(req, ErrorCode.INVALID_REQUEST);
     }
 
     // Handle JSON data for other share types
     try {
         const data = await req.json();
         if (!data || !data.type) {
-            return NextResponse.json({ error: "Share type required" }, { status: 400 });
+            return apiError(req, ErrorCode.SHARE_TYPE_REQUIRED);
         }
 
         switch (data.type) {
             case "URL": {
-                const { urlOriginal, expiresAt, slug, password } = data;
-                const result = await createLinkShare(urlOriginal, req, expiresAt, slug, password);
-                if (result?.error) {
-                    return NextResponse.json({ error: result.error }, { status: 400 });
+                const { urlOriginal, expiresAt, slug, password, maxViews } = data;
+                const result = await createLinkShare(urlOriginal, req, expiresAt, slug, password, maxViews);
+                if (result?.errorCode) {
+                    return apiError(req, result.errorCode, result.params);
                 }
                 return NextResponse.json({ share: result }, { status: 201 });
             }
             case "PASTE": {
-                const { paste, pastelanguage, expiresAt, slug, password } = data;
+                const { paste, pastelanguage, expiresAt, slug, password, maxViews } = data;
                 // Convert expiresAt string to Date if provided
                 const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
-                const result = await createPasteShare(paste, pastelanguage, req, expiresAtDate, slug, password);
-                if (result?.error) {
-                    return NextResponse.json({ error: result.error }, { status: 400 });
+                const result = await createPasteShare(paste, pastelanguage, req, expiresAtDate, slug, password, maxViews);
+                if (result?.errorCode) {
+                    return apiError(req, result.errorCode, result.params);
                 }
                 return NextResponse.json({ share: result }, { status: 201 });
             }
             default:
-                return NextResponse.json({ error: "Invalid share type" }, { status: 400 });
+                return apiError(req, ErrorCode.SHARE_TYPE_INVALID);
         }
     } catch (err) {
         console.error("JSON parsing error:", err);
-        return NextResponse.json({ error: "Invalid JSON data" }, { status: 400 });
+        return apiError(req, ErrorCode.INVALID_JSON);
     }
 }
 
