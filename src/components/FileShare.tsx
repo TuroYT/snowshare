@@ -252,6 +252,8 @@ const FileShare: React.FC = () => {
   const errorCodeMap: Record<string, string> = {
     SLUG_ALREADY_TAKEN: t("api.errors.slug_already_taken", "This custom URL is already taken. Please choose another one."),
     SLUG_INVALID: t("api.errors.slug_invalid", "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."),
+    IP_QUOTA_EXCEEDED: t("fileshare.upload_ip_quota_exceeded", "IP quota exceeded."),
+    FILE_TOO_LARGE: t("fileshare.upload_file_too_large", "File size exceeds the allowed limit."),
   };
 
   const translateErrorCode = (code: string): string => {

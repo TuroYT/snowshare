@@ -107,6 +107,8 @@
     "quota_info": "Limit: {{used}} MB / {{total}} MB użyte",
     "quota_remaining": "{{remaining}} MB dostępne",
     "quota_exceeded": "Przekroczono limit",
+    "upload_ip_quota_exceeded": "Przekroczono limit IP.",
+    "upload_file_too_large": "Rozmiar pliku przekracza dozwolony limit.",
     "quota_warning": "Uwaga: wykorzystano {{percent}}% Twojego limitu",
     "select_files": "Wybierz pliki",
     "select_folder": "Wybierz folder",

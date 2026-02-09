@@ -14,7 +14,7 @@ import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
-import { convertFromMB, getUnitLabel } from "./src/lib/formatSize.js";
+
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -126,16 +126,26 @@ function generateSafeFilename(originalName, shareId) {
   return `${shareId}_${baseName}${ext}`;
 }
 
-// Calculate IP usage for quota
+// Calculate IP usage for quota (single + bulk uploads)
 async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   const shares = await prisma.share.findMany({
-    where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
-    select: { filePath: true },
+    where: { ipSource: clientIp, type: "FILE" },
+    select: {
+      filePath: true,
+      isBulk: true,
+      files: { select: { size: true } },
+    },
   });
-  
+
   let totalSize = 0;
   for (const share of shares) {
-    if (share.filePath) {
+    if (share.isBulk && share.files?.length > 0) {
+      // Bulk upload: sum ShareFile sizes
+      for (const file of share.files) {
+        totalSize += Number(file.size);
+      }
+    } else if (share.filePath) {
+      // Single upload: stat file on disk
       const fullPath = path.join(uploadsDir, share.filePath);
       try {
         const stats = await stat(fullPath);
@@ -212,21 +222,16 @@ const tusServer = new TusServer({
     const settings = await prisma.settings.findFirst();
     
     let maxFileSizeMB, ipQuotaMB;
-    let useGiBForDisplay;
     if (isAuthenticated) {
       maxFileSizeMB = settings?.authMaxUpload || 51200;
       ipQuotaMB = settings?.authIpQuota || 102400;
-      useGiBForDisplay = settings?.useGiBForAuth ?? false;
     } else {
       maxFileSizeMB = settings?.anoMaxUpload || 2048;
       ipQuotaMB = settings?.anoIpQuota || 4096;
-      useGiBForDisplay = settings?.useGiBForAnon ?? false;
     }
-    
+
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
-    const unitLabel = getUnitLabel(useGiBForDisplay);
-    const maxFileSizeDisplay = convertFromMB(maxFileSizeMB, useGiBForDisplay);
 
     // Check file size limit
     // upload.size property contains the size from the Upload-Length header
@@ -236,33 +241,24 @@ const tusServer = new TusServer({
     // If size is available, check it against limits
     if (uploadSize !== undefined && uploadSize !== null) {
       if (uploadSize > maxFileSizeBytes) {
-        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeDisplay} ${unitLabel}.` };
+        const body = { error: "FILE_TOO_LARGE" };
         throw { status_code: 413, body: JSON.stringify(body) };
       }
-      
-      // Check quota for anonymous users
-      if (!isAuthenticated) {
-        try {
-          const currentUsage = await calculateIpUsage(prisma, clientIp, uploadsDir);
-          const remainingQuota = ipQuotaBytes - currentUsage;
-          
-          if (remainingQuota <= 0) {
-            const body = { error: `IP quota exceeded. Sign in for higher limits.` };
-            throw { status_code: 429, body: JSON.stringify(body) };
-          }
-          
-          if (uploadSize > remainingQuota) {
-            const remainingQuotaMB = Math.round(remainingQuota / (1024 * 1024));
-            const remainingDisplay = convertFromMB(remainingQuotaMB, useGiBForDisplay);
-            const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay} ${unitLabel}` };
-            throw { status_code: 429, body: JSON.stringify(body) };
-          }
-        } catch (error) {
-          console.error("Error calculating IP usage:", error);
-          // If quota check fails, we might want to fail open or closed. 
-          // Failing closed (prevent upload) is safer for quotas.
-          // But preventing crash is Priority #1
-        }
+
+      // Check IP quota
+      let currentUsage;
+      try {
+        currentUsage = await calculateIpUsage(prisma, clientIp, uploadsDir);
+      } catch (error) {
+        console.error("Error calculating IP usage:", error);
+        currentUsage = 0;
+      }
+
+      const remainingQuota = ipQuotaBytes - currentUsage;
+
+      if (remainingQuota <= 0 || uploadSize > remainingQuota) {
+        const body = { error: "IP_QUOTA_EXCEEDED" };
+        throw { status_code: 429, body: JSON.stringify(body) };
       }
     } else {
         // If size is NOT available (deferred length), checking quota is harder.

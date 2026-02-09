@@ -105,6 +105,8 @@
     "duration_in_x_years": "Este archivo expirará en {{count}} año(s)",
     "locked_title": "Compartir archivos bloqueado",
     "locked_message": "Debes estar conectado para compartir archivos.",
+    "upload_ip_quota_exceeded": "Cuota de IP excedida.",
+    "upload_file_too_large": "El tamaño del archivo excede el límite permitido.",
     "select_files": "Seleccionar archivos",
     "select_folder": "Seleccionar carpeta",
     "selected_files": "Archivos seleccionados",

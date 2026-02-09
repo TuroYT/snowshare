@@ -107,6 +107,8 @@
     "quota_info": "Quota: {{used}} MB / {{total}} MB gebruikt",
     "quota_remaining": "{{remaining}} MB beschikbaar",
     "quota_exceeded": "Quota overschreden",
+    "upload_ip_quota_exceeded": "IP-quotum overschreden.",
+    "upload_file_too_large": "Bestandsgrootte overschrijdt de toegestane limiet.",
     "quota_warning": "Waarschuwing: je hebt {{percent}}% van je quota gebruikt",
     "select_files": "Selecteer bestanden",
     "select_folder": "Selecteer map",

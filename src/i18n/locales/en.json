@@ -108,6 +108,8 @@
     "quota_info": "Quota: {{used}} MB / {{total}} MB used",
     "quota_remaining": "{{remaining}} MB available",
     "quota_exceeded": "Quota exceeded",
+    "upload_ip_quota_exceeded": "IP quota exceeded.",
+    "upload_file_too_large": "File size exceeds the allowed limit.",
     "quota_warning": "Warning: you have used {{percent}}% of your quota",
     "select_files": "Select Files",
     "select_folder": "Select Folder",

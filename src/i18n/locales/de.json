@@ -105,6 +105,8 @@
     "duration_in_x_years": "Diese Datei wird in {{count}} Jahr(en) ablaufen",
     "locked_title": "Dateifreigabe gesperrt",
     "locked_message": "Sie müssen angemeldet sein, um Dateien zu teilen.",
+    "upload_ip_quota_exceeded": "IP-Kontingent überschritten.",
+    "upload_file_too_large": "Die Dateigröße überschreitet das zulässige Limit.",
     "select_files": "Dateien auswählen",
     "select_folder": "Ordner auswählen",
     "selected_files": "Ausgewählte Dateien",
