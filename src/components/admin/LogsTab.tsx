@@ -2,6 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import IpGeoModal from "@/components/admin/IpGeoModal";
+
+interface IpGeoData {
+  countryCode: string | null;
+  countryName: string | null;
+  continentCode: string | null;
+  continentName: string | null;
+  stateProv: string | null;
+  city: string | null;
+  status: string;
+}
 
 interface LogEntry {
   id: string;
@@ -16,6 +27,7 @@ interface LogEntry {
     email: string;
     name: string | null;
   } | null;
+  ipGeo: IpGeoData | null;
 }
 
 interface Pagination {
@@ -23,6 +35,13 @@ interface Pagination {
   limit: number;
   total: number;
   totalPages: number;
+}
+
+function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
+  if (!countryCode || countryCode.length !== 2) return "\u2753";
+  const code = countryCode.toUpperCase();
+  const offset = 0x1f1e6 - 65;
+  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
 }
 
 export default function LogsTab() {
@@ -39,6 +58,8 @@ export default function LogsTab() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [geoModalOpen, setGeoModalOpen] = useState(false);
+  const [selectedGeoLog, setSelectedGeoLog] = useState<LogEntry | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -298,9 +319,31 @@ export default function LogsTab() {
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-[var(--foreground-muted)] font-mono">
-                      {log.ipSource || "-"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {log.ipSource && (
+                        <button
+                          onClick={() => {
+                            setSelectedGeoLog(log);
+                            setGeoModalOpen(true);
+                          }}
+                          className="cursor-pointer hover:scale-110 transition-transform"
+                          title={
+                            log.ipGeo?.status === "resolved"
+                              ? log.ipGeo.countryName || ""
+                              : t("admin.logs.geo.unknown")
+                          }
+                        >
+                          <span className="text-lg">
+                            {log.ipGeo?.status === "resolved"
+                              ? countryCodeToFlagEmoji(log.ipGeo.countryCode)
+                              : "\u2753"}
+                          </span>
+                        </button>
+                      )}
+                      <span className="text-sm text-[var(--foreground-muted)] font-mono">
+                        {log.ipSource || "-"}
+                      </span>
+                    </div>
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-[var(--foreground)]">{formatDate(log.createdAt)}</span>
@@ -388,6 +431,19 @@ export default function LogsTab() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* IP Geolocation Modal */}
+      {selectedGeoLog && (
+        <IpGeoModal
+          isOpen={geoModalOpen}
+          onClose={() => {
+            setGeoModalOpen(false);
+            setSelectedGeoLog(null);
+          }}
+          ip={selectedGeoLog.ipSource || ""}
+          geoData={selectedGeoLog.ipGeo}
+        />
       )}
     </div>
   );

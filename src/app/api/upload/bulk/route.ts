@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/getClientIp";
+import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import {
@@ -272,6 +273,8 @@ export async function POST(req: NextRequest) {
             isBulk: true,
           },
         });
+
+        lookupIpGeolocation(clientIp);
 
         const uploadedFiles: UploadedFileInfo[] = [];
         for (const fileData of filesData) {

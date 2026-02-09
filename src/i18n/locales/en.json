@@ -464,7 +464,19 @@
       "no_logs": "No shares found",
       "pagination_info": "Showing {{start}} to {{end}} of {{total}} shares",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "geo": {
+        "modal_title": "IP Geolocation Details",
+        "ip_address": "IP Address",
+        "country": "Country",
+        "country_code": "Country Code",
+        "continent": "Continent",
+        "continent_code": "Continent Code",
+        "state_province": "State / Province",
+        "city": "City",
+        "unknown": "Unknown",
+        "not_resolved": "Geolocation data unavailable"
+      }
     },
     "branding": {
       "section_identity": "App Identity",

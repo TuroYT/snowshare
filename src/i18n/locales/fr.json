@@ -464,7 +464,19 @@
       "no_logs": "Aucun partage trouvé",
       "pagination_info": "Affichage de {{start}} à {{end}} sur {{total}} partages",
       "previous": "Précédent",
-      "next": "Suivant"
+      "next": "Suivant",
+      "geo": {
+        "modal_title": "Geolocalisation IP",
+        "ip_address": "Adresse IP",
+        "country": "Pays",
+        "country_code": "Code pays",
+        "continent": "Continent",
+        "continent_code": "Code continent",
+        "state_province": "Region / Province",
+        "city": "Ville",
+        "unknown": "Inconnu",
+        "not_resolved": "Donnees de geolocalisation indisponibles"
+      }
     },
     "branding": {
       "section_identity": "Identité de l'application",

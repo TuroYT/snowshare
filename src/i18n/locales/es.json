@@ -460,7 +460,19 @@
       "no_logs": "No se encontraron compartidos",
       "pagination_info": "Mostrando {{start}} a {{end}} de {{total}} compartidos",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "geo": {
+        "modal_title": "Geolocalizacion IP",
+        "ip_address": "Direccion IP",
+        "country": "Pais",
+        "country_code": "Codigo de pais",
+        "continent": "Continente",
+        "continent_code": "Codigo de continente",
+        "state_province": "Estado / Provincia",
+        "city": "Ciudad",
+        "unknown": "Desconocido",
+        "not_resolved": "Datos de geolocalizacion no disponibles"
+      }
     },
     "branding": {
       "section_identity": "Identidad de la Aplicación",

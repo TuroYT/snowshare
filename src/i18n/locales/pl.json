@@ -459,7 +459,19 @@
       "no_logs": "Brak udostępnień",
       "pagination_info": "Wyświetlane od {{start}} do {{end}} z {{total}} udostępnień",
       "previous": "Poprzednia",
-      "next": "Następna"
+      "next": "Następna",
+      "geo": {
+        "modal_title": "Geolokalizacja IP",
+        "ip_address": "Adres IP",
+        "country": "Kraj",
+        "country_code": "Kod kraju",
+        "continent": "Kontynent",
+        "continent_code": "Kod kontynentu",
+        "state_province": "Województwo / Prowincja",
+        "city": "Miasto",
+        "unknown": "Nieznany",
+        "not_resolved": "Dane geolokalizacyjne niedostępne"
+      }
     },
     "branding": {
       "section_identity": "Wygląd aplikacji",

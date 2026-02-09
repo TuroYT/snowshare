@@ -69,21 +69,46 @@ export async function GET(request: NextRequest) {
       prisma.share.count({ where })
     ]);
 
+    // Batch fetch geolocation data for all IPs on this page
+    const uniqueIps = [...new Set(
+      shares.map(s => s.ipSource).filter((ip): ip is string => !!ip)
+    )];
+
+    const geoData = uniqueIps.length > 0
+      ? await prisma.ipLocalisation.findMany({
+          where: { ip: { in: uniqueIps } },
+        })
+      : [];
+
+    const geoMap = new Map(geoData.map(g => [g.ip, g]));
+
     // Format shares for response
-    const logs = shares.map(share => ({
-      id: share.id,
-      type: share.type,
-      slug: share.slug,
-      createdAt: share.createdAt.toISOString(),
-      expiresAt: share.expiresAt?.toISOString() || null,
-      ipSource: share.ipSource,
-      hasPassword: !!share.password,
-      owner: share.owner ? {
-        id: share.owner.id,
-        email: share.owner.email,
-        name: share.owner.name
-      } : null
-    }));
+    const logs = shares.map(share => {
+      const geo = share.ipSource ? geoMap.get(share.ipSource) : undefined;
+      return {
+        id: share.id,
+        type: share.type,
+        slug: share.slug,
+        createdAt: share.createdAt.toISOString(),
+        expiresAt: share.expiresAt?.toISOString() || null,
+        ipSource: share.ipSource,
+        hasPassword: !!share.password,
+        owner: share.owner ? {
+          id: share.owner.id,
+          email: share.owner.email,
+          name: share.owner.name
+        } : null,
+        ipGeo: geo ? {
+          countryCode: geo.countryCode,
+          countryName: geo.countryName,
+          continentCode: geo.continentCode,
+          continentName: geo.continentName,
+          stateProv: geo.stateProv,
+          city: geo.city,
+          status: geo.status,
+        } : null,
+      };
+    });
 
     return NextResponse.json({
       logs,
