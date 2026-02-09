@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // Enable output as standalone to reduce runtime dependencies in Docker
   output: 'standalone',
   compress: true,
-  
+  serverExternalPackages: ['@prisma/client'],
   experimental: {
     proxyClientMaxBodySize: '50gb',
   },
