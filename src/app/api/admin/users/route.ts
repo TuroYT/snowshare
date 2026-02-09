@@ -1,15 +1,16 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { isValidEmail, isValidPassword } from "@/lib/constants";
+import { NextRequest, NextResponse } from "next/server";
+import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
 import bcryptjs from "bcryptjs";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session || !session.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
   // Check if user is admin
@@ -18,7 +19,7 @@ export async function GET() {
   });
 
   if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return apiError(request, ErrorCode.ADMIN_ONLY);
   }
 
   try {
@@ -39,18 +40,15 @@ export async function GET() {
     return NextResponse.json({ users });
   } catch (error) {
     console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch users" },
-      { status: 500 }
-    );
+    return internalError(request);
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session || !session.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
   // Check if user is admin
@@ -59,25 +57,19 @@ export async function PATCH(request: Request) {
   });
 
   if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return apiError(request, ErrorCode.ADMIN_ONLY);
   }
 
   try {
     const { userId, action } = await request.json();
 
     if (!userId || !action) {
-      return NextResponse.json(
-        { error: "Missing userId or action" },
-        { status: 400 }
-      );
+      return apiError(request, ErrorCode.MISSING_DATA);
     }
 
     // Prevent self-modification
     if (userId === session.user.id && action !== "view") {
-      return NextResponse.json(
-        { error: "Cannot modify your own account" },
-        { status: 400 }
-      );
+      return apiError(request, ErrorCode.FORBIDDEN);
     }
 
     if (action === "promote") {
@@ -103,21 +95,18 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    return apiError(request, ErrorCode.INVALID_REQUEST);
   } catch (error) {
     console.error("Error updating user:", error);
-    return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 }
-    );
+    return internalError(request);
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session || !session.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
   // Check if user is admin
@@ -126,7 +115,7 @@ export async function POST(request: Request) {
   });
 
   if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return apiError(request, ErrorCode.ADMIN_ONLY);
   }
 
   try {
@@ -134,31 +123,22 @@ export async function POST(request: Request) {
 
     // Validate input
     if (!email || typeof email !== "string") {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
-      );
+      return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
     }
 
     if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
+      return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
     }
 
     if (!password || typeof password !== "string") {
-      return NextResponse.json(
-        { error: "Password is required" },
-        { status: 400 }
-      );
+      return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
     }
 
     if (!isValidPassword(password)) {
-      return NextResponse.json(
-        { error: "Password must be between 6 and 100 characters" },
-        { status: 400 }
-      );
+      return apiError(request, ErrorCode.PASSWORD_LENGTH, {
+        min: PASSWORD_MIN_LENGTH,
+        max: PASSWORD_MAX_LENGTH
+      });
     }
 
     // Check if user already exists
@@ -167,10 +147,7 @@ export async function POST(request: Request) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 409 }
-      );
+      return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
     }
 
     // Hash password
@@ -199,9 +176,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ user: newUser }, { status: 201 });
   } catch (error) {
     console.error("Error creating user:", error);
-    return NextResponse.json(
-      { error: "Failed to create user" },
-      { status: 500 }
-    );
+    return internalError(request);
   }
 }

@@ -10,6 +10,7 @@ export interface ThemeColors {
   secondaryHover: string
   secondaryDark: string
   backgroundColor: string
+  backgroundImageUrl: string | null
   surfaceColor: string
   textColor: string
   textMuted: string
@@ -32,6 +33,7 @@ export interface ThemeData {
     secondaryHover?: string
     secondaryDark?: string
     backgroundColor?: string
+    backgroundImageUrl?: string | null
     surfaceColor?: string
     textColor?: string
     textMuted?: string
@@ -59,6 +61,7 @@ const defaultColors: ThemeColors = {
   secondaryHover: "#7C3AED",
   secondaryDark: "#6D28D9",
   backgroundColor: "#111827",
+  backgroundImageUrl: null,
   surfaceColor: "#1F2937",
   textColor: "#F9FAFB",
   textMuted: "#D1D5DB",
@@ -104,6 +107,7 @@ export function ThemeProvider({
         secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
         secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
         backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
+        backgroundImageUrl: settings.backgroundImageUrl !== undefined ? settings.backgroundImageUrl : defaultColors.backgroundImageUrl,
         surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
         textColor: settings.textColor || defaultColors.textColor,
         textMuted: settings.textMuted || defaultColors.textMuted,
@@ -139,6 +143,7 @@ export function ThemeProvider({
         secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
         secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
         backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
+        backgroundImageUrl: settings.backgroundImageUrl !== undefined ? settings.backgroundImageUrl : defaultColors.backgroundImageUrl,
         surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
         textColor: settings.textColor || defaultColors.textColor,
         textMuted: settings.textMuted || defaultColors.textMuted,
@@ -207,6 +212,14 @@ export function useTheme() {
   return context
 }
 
+function clearBodyBackground() {
+  document.body.style.backgroundImage = ""
+  document.body.style.backgroundSize = ""
+  document.body.style.backgroundPosition = ""
+  document.body.style.backgroundAttachment = ""
+  document.body.style.backgroundRepeat = ""
+}
+
 /**
  * Apply theme colors to CSS custom properties
  */
@@ -225,18 +238,37 @@ function applyThemeToDOM(colors: ThemeColors) {
 
   // Background colors
   root.style.setProperty("--background", colors.backgroundColor)
-  root.style.setProperty("--surface", hexToRgba(colors.surfaceColor, 0.5))
-  root.style.setProperty("--surface-hover", hexToRgba(colors.surfaceColor, 0.7))
+  root.style.setProperty("--surface", hexToRgba(colors.surfaceColor, 0.85))
+  root.style.setProperty("--surface-hover", hexToRgba(colors.surfaceColor, 0.85))
   root.style.setProperty("--input", colors.surfaceColor)
   root.style.setProperty("--input-focus", colors.backgroundColor)
+
+  // Background image
+  if (colors.backgroundImageUrl) {
+    const img = new Image()
+    const url = colors.backgroundImageUrl
+    img.onload = () => {
+      document.body.style.backgroundImage = `url('${url}')`
+      document.body.style.backgroundSize = "cover"
+      document.body.style.backgroundPosition = "center"
+      document.body.style.backgroundAttachment = "fixed"
+      document.body.style.backgroundRepeat = "no-repeat"
+    }
+    img.onerror = () => {
+      clearBodyBackground()
+    }
+    img.src = url
+  } else {
+    clearBodyBackground()
+  }
 
   // Text colors
   root.style.setProperty("--foreground", colors.textColor)
   root.style.setProperty("--foreground-muted", colors.textMuted)
 
   // Border colors
-  root.style.setProperty("--border", hexToRgba(colors.borderColor, 0.5))
-  root.style.setProperty("--border-hover", hexToRgba(colors.borderColor, 0.7))
+  root.style.setProperty("--border", hexToRgba(colors.borderColor, 0.7))
+  root.style.setProperty("--border-hover", hexToRgba(colors.borderColor, 0.85))
 
   // Gradients
   root.style.setProperty(

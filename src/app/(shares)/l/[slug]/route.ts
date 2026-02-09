@@ -1,6 +1,8 @@
 import { decrypt } from "@/lib/crypto-link";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { apiError, ErrorCode } from "@/lib/api-errors";
+import { NextRequest } from "next/server";
 
 
 function jsonResponse(body: unknown, status = 200) {
@@ -10,7 +12,7 @@ function jsonResponse(body: unknown, status = 200) {
     });
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     // support /s?slug=... and /s/<slug>
     let slug = url.searchParams.get("slug");
@@ -19,47 +21,66 @@ export async function GET(request: Request) {
         if (parts.length >= 2) slug = parts[1];
     }
 
-    if (!slug) return jsonResponse({ error: "Slug manquant" }, 400);
+    if (!slug) return apiError(request, ErrorCode.MISSING_DATA);
 
     const share = await prisma.share.findUnique({ where: { slug } });
-    if (!share) return jsonResponse({ error: "Partage introuvable" }, 404);
+    if (!share) return apiError(request, ErrorCode.SHARE_NOT_FOUND);
 
     if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-        return jsonResponse({ error: "Ce partage a expiré" }, 410);
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
+    }
+
+    if (share.maxViews !== null && share.viewCount >= share.maxViews) {
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
     if (share.type !== "URL") {
-        return jsonResponse({ error: "Erreur dans le partage" }, 400);
+        return apiError(request, ErrorCode.INVALID_REQUEST);
     }
-    
+
     //? Gestion PASSWORD
     if (share.password) {
-        const viewUrl = new URL(`/l/${slug}/private`, url.origin);
+        // Utiliser les headers du reverse proxy pour obtenir l'origine publique
+        const protocol = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
+        const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
+        const publicOrigin = `${protocol}://${host}`;
+        const viewUrl = new URL(`/l/${slug}/private`, publicOrigin);
         return Response.redirect(viewUrl.toString(), 302);
     }
-    if (!share.urlOriginal) return jsonResponse({ error: "URL introuvable" }, 500);
+    if (!share.urlOriginal) return apiError(request, ErrorCode.RESOURCE_NOT_FOUND);
+
+    // Increment view count
+    await prisma.share.update({
+        where: { id: share.id },
+        data: { viewCount: { increment: 1 } },
+    });
+
     return Response.redirect(share.urlOriginal, 302);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     // Gestion des DATAS
     let body;
     try {
         body = await request.json();
     } catch {
-        return jsonResponse({ error: "Corps JSON attendu" }, 400);
+        return apiError(request, ErrorCode.INVALID_JSON);
     }
 
     const slug = body?.slug;
     const password = body?.password;
-    if (!slug || typeof slug !== "string") return jsonResponse({ error: "Slug manquant" }, 400);
-    if (!password || typeof password !== "string") return jsonResponse({ error: "Mot de passe manquant" }, 400);
+    if (!slug || typeof slug !== "string") return apiError(request, ErrorCode.MISSING_DATA);
+    if (!password || typeof password !== "string") return apiError(request, ErrorCode.PASSWORD_REQUIRED);
 
     const share = await prisma.share.findUnique({ where: { slug } });
-    if (!share) return jsonResponse({ error: "Partage introuvable" }, 404);
+    if (!share) return apiError(request, ErrorCode.SHARE_NOT_FOUND);
 
     if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-        return jsonResponse({ error: "Ce partage a expiré" }, 410);
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
+    }
+
+    if (share.maxViews !== null && share.viewCount >= share.maxViews) {
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
     if (!share.password) {
@@ -69,10 +90,15 @@ export async function POST(request: Request) {
 
     // check password
     const ok = await bcrypt.compare(password, share.password);
-    if (!ok) return jsonResponse({ error: "Mot de passe incorrect" }, 401);
+    if (!ok) return apiError(request, ErrorCode.PASSWORD_INCORRECT);
 
+    // Increment view count
+    await prisma.share.update({
+        where: { id: share.id },
+        data: { viewCount: { increment: 1 } },
+    });
 
-        const decrypted = decrypt(share.urlOriginal || "", password);
-        return jsonResponse({ url: decrypted });
+    const decrypted = decrypt(share.urlOriginal || "", password);
+    return jsonResponse({ url: decrypted });
  
 }

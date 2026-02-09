@@ -1,16 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
-// GET - Récupérer les informations de l'utilisateur
-export async function GET() {
+// GET - Get User informations
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
     const user = await prisma.user.findUnique({
@@ -26,26 +27,26 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
+      return apiError(request, ErrorCode.USER_NOT_FOUND);
     }
 
     return NextResponse.json({ user });
   } catch (error) {
     console.error("Error fetching user profile:", error);
-    return NextResponse.json({ error: "Erreur lors de la récupération du profil" }, { status: 500 });
+    return internalError(request);
   }
 }
 
 // PATCH - Modifier les informations de l'utilisateur
-export async function PATCH(req: Request) {
+export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+      return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
-    const data = await req.json();
+    const data = await request.json();
     const { name, email, currentPassword, newPassword } = data;
 
     const user = await prisma.user.findUnique({
@@ -53,7 +54,7 @@ export async function PATCH(req: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
+      return apiError(request, ErrorCode.USER_NOT_FOUND);
     }
 
     const updateData: {
@@ -74,7 +75,7 @@ export async function PATCH(req: Request) {
       });
 
       if (existingUser) {
-        return NextResponse.json({ error: "Cet email est déjà utilisé" }, { status: 400 });
+        return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
       }
 
       updateData.email = email;
@@ -83,17 +84,17 @@ export async function PATCH(req: Request) {
     // Mise à jour du mot de passe
     if (newPassword) {
       if (!currentPassword) {
-        return NextResponse.json({ error: "Mot de passe actuel requis" }, { status: 400 });
+        return apiError(request, ErrorCode.CURRENT_PASSWORD_REQUIRED);
       }
 
       if (!user.password) {
-        return NextResponse.json({ error: "Impossible de modifier le mot de passe" }, { status: 400 });
+        return apiError(request, ErrorCode.FORBIDDEN);
       }
 
       const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
       if (!isPasswordValid) {
-        return NextResponse.json({ error: "Mot de passe actuel incorrect" }, { status: 400 });
+        return apiError(request, ErrorCode.INCORRECT_CURRENT_PASSWORD);
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -115,6 +116,6 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     console.error("Error updating user profile:", error);
-    return NextResponse.json({ error: "Erreur lors de la mise à jour du profil" }, { status: 500 });
+    return internalError(request);
   }
 }

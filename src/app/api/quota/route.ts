@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getQuotaInfo } from "@/lib/quota";
+import { internalError } from "@/lib/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,9 +8,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(quotaInfo);
   } catch (error) {
     console.error("Error fetching quota info:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch quota information" },
-      { status: 500 }
-    );
+    return internalError(request);
   }
 }

@@ -14,6 +14,8 @@ type Share = {
   password?: string;
   createdAt: string;
   expiresAt?: string;
+  maxViews?: number | null;
+  viewCount: number;
 };
 
 type ShareItemProps = {
@@ -114,6 +116,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   };
 
   const isExpired = share.expiresAt && new Date(share.expiresAt) < new Date();
+  const isViewLimitReached = share.maxViews !== null && share.maxViews !== undefined && share.viewCount >= share.maxViews;
 
   return (
     <div className={`modern-card p-6 ${isExpired ? 'opacity-60 border-red-900/30' : ''}`}>
@@ -126,12 +129,17 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${isExpired ? 'from-red-600/20 to-red-800/20 border-red-700/50 text-red-400' : getTypeColor()}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${isExpired || isViewLimitReached ? 'from-red-600/20 to-red-800/20 border-red-700/50 text-red-400' : getTypeColor()}`}>
               {share.type}
             </span>
             {isExpired && (
               <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-900/30 border border-red-700/50 text-red-400">
                 {t("profile.stats_expired", "Expired")}
+              </span>
+            )}
+            {isViewLimitReached && (
+              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-900/30 border border-red-700/50 text-red-400">
+                {t("profile.view_limit_reached", "View Limit Reached")}
               </span>
             )}
             <span className="text-[var(--foreground-muted)] text-sm">
@@ -264,11 +272,20 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               <div className="flex flex-wrap gap-2 mt-3 text-xs">
                 {share.expiresAt && (
                   <span className={`px-2 py-1 rounded ${
-                    isExpired 
-                      ? 'bg-red-900/30 border border-red-800 text-red-400' 
+                    isExpired
+                      ? 'bg-red-900/30 border border-red-800 text-red-400'
                       : 'bg-yellow-900/20 border border-yellow-800 text-yellow-400'
                   }`}>
                     {isExpired ? '⛔' : '⏰'} {isExpired ? t("profile.stats_expired", "Expired") : t("profile.expires_on")} {new Date(share.expiresAt).toLocaleDateString()}
+                  </span>
+                )}
+                {share.maxViews && (
+                  <span className={`px-2 py-1 rounded ${
+                    isViewLimitReached
+                      ? 'bg-red-900/30 border border-red-800 text-red-400'
+                      : 'bg-blue-900/20 border border-blue-800 text-blue-400'
+                  }`}>
+                    👁️ {share.viewCount}/{share.maxViews} {t("profile.views")}
                   </span>
                 )}
                 {share.password && (
