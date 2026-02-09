@@ -8,6 +8,7 @@ import { formatBytes, convertFromMB } from "@/lib/formatSize";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
+import ViewLimitSettings from "./shareComponents/ViewLimitSettings";
 import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
@@ -37,6 +38,8 @@ const FileShare: React.FC = () => {
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
+  const [hasViewLimit, setHasViewLimit] = useState(false);
+  const [maxViews, setMaxViews] = useState(1);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -311,6 +314,7 @@ const FileShare: React.FC = () => {
 
       if (slug.trim()) baseMetadata.slug = slug.trim();
       if (password.trim()) baseMetadata.password = password.trim();
+      if (hasViewLimit) baseMetadata.maxViews = maxViews.toString();
 
       if (files.length === 1) {
         const file = files[0].file;
@@ -385,6 +389,8 @@ const FileShare: React.FC = () => {
             setSlug("");
             setPassword("");
             setNeverExpires(false);
+            setHasViewLimit(false);
+            setMaxViews(1);
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
             }
@@ -417,6 +423,8 @@ const FileShare: React.FC = () => {
             setSlug("");
             setPassword("");
             setNeverExpires(false);
+            setHasViewLimit(false);
+            setMaxViews(1);
             if (fileInputRef.current) {
               fileInputRef.current.value = "";
             }
@@ -773,6 +781,14 @@ const FileShare: React.FC = () => {
           setExpiresDays={setExpiresDays}
           neverExpires={neverExpires}
           setNeverExpires={setNeverExpires}
+          translationPrefix="fileshare"
+        />
+
+        <ViewLimitSettings
+          hasViewLimit={hasViewLimit}
+          setHasViewLimit={setHasViewLimit}
+          maxViews={maxViews}
+          setMaxViews={setMaxViews}
           translationPrefix="fileshare"
         />
 

@@ -3,6 +3,7 @@ import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { statSync, existsSync } from "fs";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
+import { prisma } from "@/lib/prisma";
 
 // Handle POST requests for file info and download actions
 export async function POST(
@@ -85,6 +86,14 @@ export async function POST(
 
       if (result.errorCode) {
         return apiError(request, result.errorCode);
+      }
+
+      // Increment view count
+      if (result.share) {
+        await prisma.share.update({
+          where: { id: result.share.id },
+          data: { viewCount: { increment: 1 } },
+        });
       }
 
       if (result.isBulk) {

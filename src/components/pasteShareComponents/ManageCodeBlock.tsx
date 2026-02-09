@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import ExpirationSettings from "../shareComponents/ExpirationSettings";
 import AdvancedSettings from "../shareComponents/AdvancedSettings";
+import ViewLimitSettings from "../shareComponents/ViewLimitSettings";
 import ShareSuccess from "../shareComponents/ShareSuccess";
 import ShareError from "../shareComponents/ShareError";
 import SubmitButton from "../shareComponents/SubmitButton";
@@ -38,6 +39,8 @@ const ManageCodeBlock: React.FC<{
   const [expiresDays, setExpiresDays] = React.useState<number>(isAuthenticated ? 30 : 7);
   const [neverExpires, setNeverExpires] = React.useState(false);
   const [password, setPassword] = React.useState("");
+  const [hasViewLimit, setHasViewLimit] = React.useState(false);
+  const [maxViews, setMaxViews] = React.useState(1);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
@@ -64,6 +67,7 @@ const ManageCodeBlock: React.FC<{
           expiresAt,
           slug,
           password,
+          ...(hasViewLimit ? { maxViews } : {}),
         }),
       });
       const data = await res.json();
@@ -116,6 +120,14 @@ const ManageCodeBlock: React.FC<{
           neverExpires: "pasteshare_ui.expiration_never",
           neverExpiresDesc: "pasteshare_ui.never_expires_desc",
         }}
+      />
+
+      <ViewLimitSettings
+        hasViewLimit={hasViewLimit}
+        setHasViewLimit={setHasViewLimit}
+        maxViews={maxViews}
+        setMaxViews={setMaxViews}
+        translationPrefix="pasteshare_ui"
       />
 
       <AdvancedSettings

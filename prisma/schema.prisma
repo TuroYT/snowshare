@@ -79,6 +79,8 @@ model Share {
   expiresAt     DateTime?
   ipSource      String?
   isBulk        Boolean    @default(false)
+  maxViews      Int?
+  viewCount     Int        @default(0)
   files         ShareFile[]
 }
 

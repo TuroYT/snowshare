@@ -16,7 +16,8 @@ export const createLinkShare = async (
     request: NextRequest,
     expiresAt?: Date,
     slug?: string,
-    password?: string
+    password?: string,
+    maxViews?: number
 ) => {
     // Check if slug already exists
     if (slug) {
@@ -91,6 +92,9 @@ export const createLinkShare = async (
         } while (await prisma.share.findUnique({ where: { slug } }));
     }
 
+    // Validate maxViews if provided
+    const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
+
     // create the link share
     const linkShare = await prisma.share.create({
         data: {
@@ -100,7 +104,8 @@ export const createLinkShare = async (
             password: password || null,
             ownerId: session?.user?.id || null,
             type: "URL",
-            ipSource: getClientIp(request)
+            ipSource: getClientIp(request),
+            maxViews: parsedMaxViews,
         }
     });
 

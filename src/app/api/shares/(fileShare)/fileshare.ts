@@ -18,6 +18,8 @@ export const getFileShare = async (slug: string, password?: string) => {
       password: true,
       expiresAt: true,
       isBulk: true,
+      maxViews: true,
+      viewCount: true,
     }
   });
 
@@ -26,6 +28,10 @@ export const getFileShare = async (slug: string, password?: string) => {
   }
 
   if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
+    return { errorCode: ErrorCode.SHARE_EXPIRED };
+  }
+
+  if (share.maxViews !== null && share.viewCount >= share.maxViews) {
     return { errorCode: ErrorCode.SHARE_EXPIRED };
   }
 

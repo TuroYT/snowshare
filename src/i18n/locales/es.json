@@ -55,7 +55,11 @@
     "error_title": "Error",
     "copied": "✓ Copiado al portapapeles",
     "copy_title": "Copiar enlace",
-    "qr_info": "Escanea este código QR para acceder al paste"
+    "qr_info": "Escanea este código QR para acceder al paste",
+    "view_limit": "Límite de vistas",
+    "view_limit_desc": "El paste expirará después de un número definido de vistas",
+    "views": "vistas",
+    "view_limit_info": "Este paste expirará después de {{count}} vista(s)"
   },
   "fileshare": {
     "title": "FileShare",
@@ -110,7 +114,11 @@
     "select_files": "Seleccionar archivos",
     "select_folder": "Seleccionar carpeta",
     "selected_files": "Archivos seleccionados",
-    "total_size": "Total"
+    "total_size": "Total",
+    "view_limit": "Límite de vistas/descargas",
+    "view_limit_desc": "El compartido expirará después de un número definido de vistas o descargas",
+    "views": "vistas",
+    "view_limit_info": "Este compartido expirará después de {{count}} vista(s)/descarga(s)"
   },
   "file_download": {
     "loading_error": "Error al cargar la información",
@@ -183,7 +191,11 @@
     "duration_in_x_months": "Este enlace expirará en {{count}} meses",
     "duration_in_x_years": "Este enlace expirará en {{count}} año(s)",
     "locked_title": "Compartir enlaces está bloqueado",
-    "locked_message": "Debes iniciar sesión para compartir enlaces."
+    "locked_message": "Debes iniciar sesión para compartir enlaces.",
+    "view_limit": "Límite de vistas/descargas",
+    "view_limit_desc": "El compartido expirará después de un número definido de vistas",
+    "views": "vistas",
+    "view_limit_info": "Este compartido expirará después de {{count}} vista(s)"
   },
   "footer": {
     "made_with": "Hecho con",
@@ -273,6 +285,8 @@
     "label_expiration": "Expiración",
     "expires_on": "Expira el",
     "protected": "Protegido",
+    "view_limit_reached": "Límite de vistas alcanzado",
+    "views": "vistas",
     "accounts": {
       "title": "Cuentas OAuth conectadas",
       "description": "Gestiona las cuentas OAuth vinculadas a tu perfil. Puedes iniciar sesión con cualquiera de estas cuentas.",

@@ -296,6 +296,8 @@ const tusServer = new TusServer({
       const slug = metadata.slug || "";
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
+      const maxViewsRaw = metadata.maxViews ? parseInt(metadata.maxViews) : null;
+      const maxViews = maxViewsRaw && maxViewsRaw > 0 ? maxViewsRaw : null;
       const isBulk = metadata.isBulk === "true";
       const bulkShareId = metadata.bulkShareId || "";
       const relativePath = metadata.relativePath || filename;
@@ -381,9 +383,10 @@ const tusServer = new TusServer({
             ipSource: clientIp,
             ownerId: userId || null,
             isBulk: true,
+            maxViews,
           },
         });
-        
+
         console.log(`Created bulk share: ${share.slug}`);
       } else {
         let finalSlug = slug;
@@ -442,6 +445,7 @@ const tusServer = new TusServer({
             ipSource: clientIp,
             ownerId: userId || null,
             isBulk: false,
+            maxViews,
           },
         });
       }

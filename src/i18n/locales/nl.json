@@ -54,7 +54,16 @@
     "success": "Delen aangemaakt!",
     "created": "Paste succesvol aangemaakt!",
     "creation_error": "Fout bij aanmaken van paste",
-    "network_error": "Netwerkfout — kon paste niet aanmaken"
+    "network_error": "Netwerkfout — kon paste niet aanmaken",
+    "success_title": "Paste succesvol aangemaakt!",
+    "error_title": "Fout",
+    "copied": "✓ Gekopieerd naar klembord",
+    "copy_title": "Link kopiëren",
+    "qr_info": "Scan deze QR-code om de paste te openen",
+    "view_limit": "Weergavelimiet",
+    "view_limit_desc": "De paste verloopt na een ingesteld aantal weergaves",
+    "views": "weergaves",
+    "view_limit_info": "Deze paste verloopt na {{count}} weergave(s)"
   },
   "fileshare": {
     "title": "FileShare",
@@ -113,7 +122,11 @@
     "select_files": "Selecteer bestanden",
     "select_folder": "Selecteer map",
     "selected_files": "Geselecteerde bestanden",
-    "total_size": "Totaal"
+    "total_size": "Totaal",
+    "view_limit": "Weergave-/downloadlimiet",
+    "view_limit_desc": "De share verloopt na een ingesteld aantal weergaves of downloads",
+    "views": "weergaves",
+    "view_limit_info": "Deze share verloopt na {{count}} weergave(s)/download(s)"
   },
   "file_download": {
     "loading_error": "Fout bij laden van informatie",
@@ -186,7 +199,11 @@
     "duration_in_x_months": "Deze link verloopt over {{count}} maanden",
     "duration_in_x_years": "Deze link verloopt over {{count}} jaar",
     "locked_title": "Links delen is vergrendeld",
-    "locked_message": "Je moet ingelogd zijn om links te delen."
+    "locked_message": "Je moet ingelogd zijn om links te delen.",
+    "view_limit": "Weergave-/downloadlimiet",
+    "view_limit_desc": "De share verloopt na een ingesteld aantal weergaves",
+    "views": "weergaves",
+    "view_limit_info": "Deze share verloopt na {{count}} weergave(s)"
   },
   "footer": {
     "made_with": "Gemaakt met",
@@ -275,6 +292,8 @@
     "label_expiration": "Vervaldatum",
     "expires_on": "Verloopt op",
     "protected": "Beveiligd",
+    "view_limit_reached": "Weergavelimiet bereikt",
+    "views": "weergaves",
     "tab_accounts": "Verbonden accounts",
     "accounts": {
       "title": "Verbonden OAuth-accounts",

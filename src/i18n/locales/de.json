@@ -55,7 +55,11 @@
     "error_title": "Fehler",
     "copied": "✓ In die Zwischenablage kopiert",
     "copy_title": "Link kopieren",
-    "qr_info": "Scannen Sie diesen QR-Code, um auf den Paste zuzugreifen"
+    "qr_info": "Scannen Sie diesen QR-Code, um auf den Paste zuzugreifen",
+    "view_limit": "Ansichtslimit",
+    "view_limit_desc": "Der Paste läuft nach einer festgelegten Anzahl von Ansichten ab",
+    "views": "Ansichten",
+    "view_limit_info": "Dieser Paste läuft nach {{count}} Ansicht(en) ab"
   },
   "fileshare": {
     "title": "FileShare",
@@ -110,7 +114,11 @@
     "select_files": "Dateien auswählen",
     "select_folder": "Ordner auswählen",
     "selected_files": "Ausgewählte Dateien",
-    "total_size": "Gesamt"
+    "total_size": "Gesamt",
+    "view_limit": "Ansichts-/Downloadlimit",
+    "view_limit_desc": "Die Freigabe läuft nach einer festgelegten Anzahl von Ansichten oder Downloads ab",
+    "views": "Ansichten",
+    "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en)/Download(s) ab"
   },
   "file_download": {
     "loading_error": "Fehler beim Laden der Informationen",
@@ -183,7 +191,11 @@
     "duration_in_x_months": "Dieser Link wird in {{count}} Monaten ablaufen",
     "duration_in_x_years": "Dieser Link wird in {{count}} Jahr(en) ablaufen",
     "locked_title": "Link-Freigabe ist gesperrt",
-    "locked_message": "Sie müssen angemeldet sein, um Links zu teilen."
+    "locked_message": "Sie müssen angemeldet sein, um Links zu teilen.",
+    "view_limit": "Ansichts-/Downloadlimit",
+    "view_limit_desc": "Die Freigabe läuft nach einer festgelegten Anzahl von Ansichten ab",
+    "views": "Ansichten",
+    "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en) ab"
   },
   "footer": {
     "made_with": "Made with",
@@ -273,6 +285,8 @@
     "label_expiration": "Ablauf",
     "expires_on": "Läuft ab am",
     "protected": "Geschützt",
+    "view_limit_reached": "Ansichtslimit erreicht",
+    "views": "Ansichten",
     "accounts": {
       "title": "Verbundene OAuth-Konten",
       "description": "Verwalten Sie OAuth-Konten, die mit Ihrem Profil verknüpft sind. Sie können sich mit jedem dieser Konten anmelden.",

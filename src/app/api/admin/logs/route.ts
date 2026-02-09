@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
         expiresAt: share.expiresAt?.toISOString() || null,
         ipSource: share.ipSource,
         hasPassword: !!share.password,
+        maxViews: share.maxViews,
+        viewCount: share.viewCount,
         owner: share.owner ? {
           id: share.owner.id,
           email: share.owner.email,

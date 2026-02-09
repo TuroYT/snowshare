@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
+import ViewLimitSettings from "./shareComponents/ViewLimitSettings";
 import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
@@ -23,6 +24,8 @@ const LinkShare: React.FC = () => {
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
+  const [hasViewLimit, setHasViewLimit] = useState(false);
+  const [maxViews, setMaxViews] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -117,6 +120,7 @@ const LinkShare: React.FC = () => {
     if (expiresAt) payload.expiresAt = expiresAt;
     if (slug.trim()) payload.slug = slug.trim();
     if (password.trim()) payload.password = password.trim();
+    if (hasViewLimit) payload.maxViews = maxViews;
 
     try {
       setLoading(true);
@@ -145,6 +149,8 @@ const LinkShare: React.FC = () => {
         setSlug("");
         setPassword("");
         setNeverExpires(false);
+        setHasViewLimit(false);
+        setMaxViews(1);
         setUrlError(null);
       }
     } catch (error) {
@@ -266,6 +272,14 @@ const LinkShare: React.FC = () => {
           setExpiresDays={setExpiresDays}
           neverExpires={neverExpires}
           setNeverExpires={setNeverExpires}
+          translationPrefix="linkshare"
+        />
+
+        <ViewLimitSettings
+          hasViewLimit={hasViewLimit}
+          setHasViewLimit={setHasViewLimit}
+          maxViews={maxViews}
+          setMaxViews={setMaxViews}
           translationPrefix="linkshare"
         />
 
