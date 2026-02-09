@@ -29,7 +29,7 @@
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@next-auth/prisma-adapter": "^1.0.7",
-    "@prisma/adapter-pg": "^6.16.2",
+    "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "@tailwindcss/typography": "^0.5.16",
     "@tus/file-store": "^2.0.0",
@@ -98,6 +98,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "test-exclude": "^7.0.0",
-    "hono": "^4.11.4"
+    "hono": ">=4.11.7",
+    "lodash": "4.17.23"
   }
 }
