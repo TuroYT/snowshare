@@ -17,6 +17,20 @@ export async function GET(request: NextRequest) {
       where: {
         ownerId: session.user.id,
       },
+      select: {
+        id: true,
+        type: true,
+        slug: true,
+        filePath: true,
+        paste: true,
+        pastelanguage: true,
+        urlOriginal: true,
+        password: true,
+        createdAt: true,
+        expiresAt: true,
+        maxViews: true,
+        viewCount: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },

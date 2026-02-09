@@ -55,7 +55,11 @@
     "error_title": "Error",
     "copied": "✓ Copied to clipboard",
     "copy_title": "Copy link",
-    "qr_info": "Scan this QR code to access the paste"
+    "qr_info": "Scan this QR code to access the paste",
+    "view_limit": "View limit",
+    "view_limit_desc": "The paste will expire after a set number of views",
+    "views": "views",
+    "view_limit_info": "This paste will expire after {{count}} view(s)"
   },
   "fileshare": {
     "title": "FileShare",
@@ -114,7 +118,11 @@
     "select_files": "Select Files",
     "select_folder": "Select Folder",
     "selected_files": "Selected Files",
-    "total_size": "Total"
+    "total_size": "Total",
+    "view_limit": "View/download limit",
+    "view_limit_desc": "The share will expire after a set number of views or downloads",
+    "views": "views",
+    "view_limit_info": "This share will expire after {{count}} view(s)/download(s)"
   },
   "file_download": {
     "loading_error": "Error loading information",
@@ -187,7 +195,11 @@
     "duration_in_x_months": "This link will expire in {{count}} months",
     "duration_in_x_years": "This link will expire in {{count}} year(s)",
     "locked_title": "Link sharing is locked",
-    "locked_message": "You must be logged in to share links."
+    "locked_message": "You must be logged in to share links.",
+    "view_limit": "View/download limit",
+    "view_limit_desc": "The share will expire after a set number of views",
+    "views": "views",
+    "view_limit_info": "This share will expire after {{count}} view(s)"
   },
   "footer": {
     "made_with": "Made with",
@@ -277,6 +289,8 @@
     "label_expiration": "Expiration",
     "expires_on": "Expires on",
     "protected": "Protected",
+    "view_limit_reached": "View Limit Reached",
+    "views": "views",
     "accounts": {
       "title": "Connected OAuth Accounts",
       "description": "Manage OAuth accounts linked to your profile. You can sign in with any of these accounts.",

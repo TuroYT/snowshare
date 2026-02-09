@@ -22,6 +22,8 @@ interface LogEntry {
   expiresAt: string | null;
   ipSource: string | null;
   hasPassword: boolean;
+  maxViews: number | null;
+  viewCount: number;
   owner: {
     id: string;
     email: string;
@@ -190,6 +192,11 @@ export default function LogsTab() {
     return new Date(expiresAt) < new Date();
   };
 
+  const isViewLimitReached = (maxViews: number | null, viewCount: number) => {
+    if (maxViews === null || maxViews === undefined) return false;
+    return viewCount >= maxViews;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -354,14 +361,19 @@ export default function LogsTab() {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      {isExpired(log.expiresAt) ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {isExpired(log.expiresAt) || isViewLimitReached(log.maxViews, log.viewCount) ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
                           {t("admin.logs.expired")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                           {t("admin.logs.active")}
+                        </span>
+                      )}
+                      {log.maxViews && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30" title={`${log.viewCount}/${log.maxViews} views`}>
+                          👁️ {log.viewCount}/{log.maxViews}
                         </span>
                       )}
                       {log.hasPassword && (

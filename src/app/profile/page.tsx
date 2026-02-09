@@ -22,6 +22,8 @@ type Share = {
   password?: string;
   createdAt: string;
   expiresAt?: string;
+  maxViews?: number | null;
+  viewCount: number;
 };
 
 type User = {

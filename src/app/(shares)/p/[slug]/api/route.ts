@@ -22,7 +22,7 @@ export async function GET(
             return jsonResponse({ error: "Slug manquant" }, 400);
         }
 
-        const share = await prisma.share.findUnique({ 
+        const share = await prisma.share.findUnique({
             where: { slug },
             select: {
                 id: true,
@@ -34,6 +34,8 @@ export async function GET(
                 expiresAt: true,
                 slug: true,
                 ownerId: true,
+                maxViews: true,
+                viewCount: true,
             }
         });
 
@@ -46,6 +48,10 @@ export async function GET(
             return jsonResponse({ error: "Ce paste a expiré" }, 410);
         }
 
+        if (share.maxViews !== null && share.viewCount >= share.maxViews) {
+            return jsonResponse({ error: "Ce paste a expiré" }, 410);
+        }
+
         // Vérifier si c'est bien un paste
         if (share.type !== "PASTE") {
             return jsonResponse({ error: "Ce lien ne correspond pas à un paste" }, 400);
@@ -53,7 +59,7 @@ export async function GET(
 
         // Si le paste est protégé par mot de passe
         if (share.password) {
-            return jsonResponse({ 
+            return jsonResponse({
                 error: "Ce paste est protégé par mot de passe",
                 requiresPassword: true,
                 slug: share.slug,
@@ -61,6 +67,12 @@ export async function GET(
                 expiresAt: share.expiresAt,
             }, 403);
         }
+
+        // Increment view count
+        await prisma.share.update({
+            where: { id: share.id },
+            data: { viewCount: { increment: 1 } },
+        });
 
         // Retourner le paste public
         return jsonResponse({
@@ -105,7 +117,7 @@ export async function POST(
             return jsonResponse({ error: "Mot de passe manquant ou invalide" }, 400);
         }
 
-        const share = await prisma.share.findUnique({ 
+        const share = await prisma.share.findUnique({
             where: { slug },
             select: {
                 id: true,
@@ -117,6 +129,8 @@ export async function POST(
                 expiresAt: true,
                 slug: true,
                 ownerId: true,
+                maxViews: true,
+                viewCount: true,
             }
         });
 
@@ -126,6 +140,10 @@ export async function POST(
 
         // Vérifier si le partage a expiré
         if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
+            return jsonResponse({ error: "Ce paste a expiré" }, 410);
+        }
+
+        if (share.maxViews !== null && share.viewCount >= share.maxViews) {
             return jsonResponse({ error: "Ce paste a expiré" }, 410);
         }
 
@@ -145,6 +163,12 @@ export async function POST(
         if (!isPasswordValid) {
             return jsonResponse({ error: "Mot de passe incorrect" }, 401);
         }
+
+        // Increment view count
+        await prisma.share.update({
+            where: { id: share.id },
+            data: { viewCount: { increment: 1 } },
+        });
 
         // Retourner le paste déprotégé
         return jsonResponse({

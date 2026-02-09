@@ -23,18 +23,18 @@ async function POST(req: NextRequest) {
 
         switch (data.type) {
             case "URL": {
-                const { urlOriginal, expiresAt, slug, password } = data;
-                const result = await createLinkShare(urlOriginal, req, expiresAt, slug, password);
+                const { urlOriginal, expiresAt, slug, password, maxViews } = data;
+                const result = await createLinkShare(urlOriginal, req, expiresAt, slug, password, maxViews);
                 if (result?.errorCode) {
                     return apiError(req, result.errorCode, result.params);
                 }
                 return NextResponse.json({ share: result }, { status: 201 });
             }
             case "PASTE": {
-                const { paste, pastelanguage, expiresAt, slug, password } = data;
+                const { paste, pastelanguage, expiresAt, slug, password, maxViews } = data;
                 // Convert expiresAt string to Date if provided
                 const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
-                const result = await createPasteShare(paste, pastelanguage, req, expiresAtDate, slug, password);
+                const result = await createPasteShare(paste, pastelanguage, req, expiresAtDate, slug, password, maxViews);
                 if (result?.errorCode) {
                     return apiError(req, result.errorCode, result.params);
                 }

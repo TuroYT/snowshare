@@ -54,7 +54,16 @@
     "success": "Udostępniono!",
     "created": "Wklejka utworzona pomyślnie!",
     "creation_error": "Błąd tworzenia wklejki",
-    "network_error": "Błąd sieci — nie można utworzyć wklejki"
+    "network_error": "Błąd sieci — nie można utworzyć wklejki",
+    "success_title": "Wklejka utworzona pomyślnie!",
+    "error_title": "Błąd",
+    "copied": "✓ Skopiowano do schowka",
+    "copy_title": "Kopiuj link",
+    "qr_info": "Zeskanuj ten kod QR, aby uzyskać dostęp do wklejki",
+    "view_limit": "Limit wyświetleń",
+    "view_limit_desc": "Wklejka wygasa po określonej liczbie wyświetleń",
+    "views": "wyświetlenia",
+    "view_limit_info": "Ta wklejka wygaśnie po {{count}} wyświetleniu/ach"
   },
   "fileshare": {
     "title": "Udostępnianie plików",
@@ -113,7 +122,11 @@
     "select_files": "Wybierz pliki",
     "select_folder": "Wybierz folder",
     "selected_files": "Wybrane pliki",
-    "total_size": "Całkowity"
+    "total_size": "Całkowity",
+    "view_limit": "Limit wyświetleń/pobrań",
+    "view_limit_desc": "Udostępnienie wygasa po określonej liczbie wyświetleń lub pobrań",
+    "views": "wyświetlenia",
+    "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach lub pobraniu/ach"
   },
   "file_download": {
     "loading_error": "Błąd ładowania informacji",
@@ -186,7 +199,11 @@
     "duration_in_x_months": "Ten link wygaśnie za {{count}} miesięcy",
     "duration_in_x_years": "Ten link wygaśnie za {{count}} rok/lat",
     "locked_title": "Udostępnianie linków jest zablokowane",
-    "locked_message": "Musisz być zalogowany, aby udostępniać linki."
+    "locked_message": "Musisz być zalogowany, aby udostępniać linki.",
+    "view_limit": "Limit wyświetleń/pobrań",
+    "view_limit_desc": "Udostępnienie wygasa po określonej liczbie wyświetleń",
+    "views": "wyświetlenia",
+    "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach"
   },
   "footer": {
     "made_with": "Stworzone z",
@@ -275,6 +292,8 @@
     "label_expiration": "Wygasa",
     "expires_on": "Wygasa",
     "protected": "Chronione",
+    "view_limit_reached": "Osiągnięty limit wyświetleń",
+    "views": "wyświetlenia",
     "tab_accounts": "Połączone konta",
     "accounts": {
       "title": "Połączone konta OAuth",
