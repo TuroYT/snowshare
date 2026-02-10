@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Snackbar, Alert } from "@mui/material"
+import SecurityWarningModal from "@/components/admin/SecurityWarningModal"
 
 interface SecuritySettings {
   requireEmailVerification: boolean
@@ -26,9 +27,13 @@ export default function SecurityTab() {
   const [saving, setSaving] = useState(false)
   const [testingEmail, setTestingEmail] = useState(false)
   const [testEmail, setTestEmail] = useState("")
+  const [testingCaptcha, setTestingCaptcha] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success")
+  const [warningModalOpen, setWarningModalOpen] = useState(false)
+  const [warningModalType, setWarningModalType] = useState<"captcha" | "email">("captcha")
+  const [pendingToggle, setPendingToggle] = useState<keyof SecuritySettings | null>(null)
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -53,11 +58,35 @@ export default function SecurityTab() {
 
   const handleToggle = (key: keyof SecuritySettings) => {
     if (settings && typeof settings[key] === "boolean") {
+      // Show warning modal before enabling captcha or email verification
+      if ((key === "captchaEnabled" || key === "requireEmailVerification") && !settings[key]) {
+        setWarningModalType(key === "captchaEnabled" ? "captcha" : "email")
+        setPendingToggle(key)
+        setWarningModalOpen(true)
+        return
+      }
+      
       setSettings({
         ...settings,
         [key]: !settings[key],
       })
     }
+  }
+
+  const handleWarningConfirm = () => {
+    if (pendingToggle && settings) {
+      setSettings({
+        ...settings,
+        [pendingToggle]: !settings[pendingToggle],
+      })
+    }
+    setWarningModalOpen(false)
+    setPendingToggle(null)
+  }
+
+  const handleWarningCancel = () => {
+    setWarningModalOpen(false)
+    setPendingToggle(null)
   }
 
   const handleChange = (key: keyof SecuritySettings, value: string | number | boolean | null) => {
@@ -100,7 +129,7 @@ export default function SecurityTab() {
 
   const handleTestEmail = async () => {
     if (!testEmail) {
-      setToastMessage("Please enter an email address")
+      setToastMessage(t("security.test_email.error_no_address"))
       setToastSeverity("error")
       setToastOpen(true)
       return
@@ -117,21 +146,61 @@ export default function SecurityTab() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send test email")
+        throw new Error(data.error || t("security.test_email.error_failed"))
       }
 
-      setToastMessage("Test email sent successfully!")
+      setToastMessage(t("security.test_email.success"))
       setToastSeverity("success")
       setToastOpen(true)
       setTestEmail("")
     } catch (err) {
       const error = err as Error
-      setToastMessage(error.message || "Failed to send test email")
+      setToastMessage(error.message || t("security.test_email.error_failed"))
       setToastSeverity("error")
       setToastOpen(true)
       console.error(err)
     } finally {
       setTestingEmail(false)
+    }
+  }
+
+  const handleTestCaptcha = async () => {
+    if (!settings?.captchaProvider || !settings?.captchaSiteKey || !settings?.captchaSecretKey) {
+      setToastMessage(t("security.test_captcha.error_config"))
+      setToastSeverity("error")
+      setToastOpen(true)
+      return
+    }
+
+    try {
+      setTestingCaptcha(true)
+      const response = await fetch("/api/admin/test-captcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: settings.captchaProvider,
+          siteKey: settings.captchaSiteKey,
+          secretKey: settings.captchaSecretKey,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.details || t("security.test_captcha.error_failed"))
+      }
+
+      setToastMessage(data.message || t("security.test_captcha.success"))
+      setToastSeverity("success")
+      setToastOpen(true)
+    } catch (err) {
+      const error = err as Error
+      setToastMessage(error.message || t("security.test_captcha.error_failed"))
+      setToastSeverity("error")
+      setToastOpen(true)
+      console.error(err)
+    } finally {
+      setTestingCaptcha(false)
     }
   }
 
@@ -296,7 +365,7 @@ export default function SecurityTab() {
               disabled={testingEmail}
               className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg font-medium transition-all disabled:opacity-50 hover:bg-[var(--primary-hover)]"
             >
-              {testingEmail ? "Sending..." : "Send Test Email"}
+              {testingEmail ? t("security.test_email.button_sending") : t("security.test_email.button_send")}
             </button>
           </div>
         </div>
@@ -378,9 +447,30 @@ export default function SecurityTab() {
                 <li>• <strong>Cloudflare Turnstile:</strong> Get keys from <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline">Cloudflare Dashboard</a></li>
               </ul>
             </div>
+
+            <div className="p-4 bg-[var(--secondary)]/10 border border-[var(--secondary-dark)]/30 rounded-lg">
+              <h4 className="text-sm font-medium text-[var(--foreground)] mb-2">{t("security.test_captcha.title")}</h4>
+              <p className="text-xs text-[var(--foreground-muted)] mb-3">
+                {t("security.test_captcha.description")}
+              </p>
+              <button
+                onClick={handleTestCaptcha}
+                disabled={testingCaptcha || !settings.captchaProvider || !settings.captchaSiteKey || !settings.captchaSecretKey}
+                className="w-full px-4 py-2 bg-[var(--secondary)] text-white rounded-lg font-medium transition-all disabled:opacity-50 hover:bg-[var(--secondary-hover)]"
+              >
+                {testingCaptcha ? t("security.test_captcha.button_testing") : t("security.test_captcha.button_test")}
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      <SecurityWarningModal
+        open={warningModalOpen}
+        type={warningModalType}
+        onConfirm={handleWarningConfirm}
+        onClose={handleWarningCancel}
+      />
 
       <div className="flex justify-end">
         <button

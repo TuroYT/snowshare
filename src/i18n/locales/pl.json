@@ -565,5 +565,41 @@
     "error_generic": "Wystąpił błąd",
     "error_url_not_found": "URL nie znaleziony",
     "error_connection": "Błąd połączenia"
+  },
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ Włączyć ochronę CAPTCHA?",
+      "captcha_message": "Ważne: Przed włączeniem CAPTCHA, przetestuj swoją konfigurację używając przycisku 'Testuj CAPTCHA'.",
+      "captcha_risk_1": "Jeśli klucze CAPTCHA są nieprawidłowe, NIKT nie będzie mógł zarejestrować nowych kont",
+      "captcha_risk_2": "Możesz zablokować sobie dostęp do tworzenia nowych kont administratorów",
+      "captcha_risk_3": "Istniejący użytkownicy nie zostaną dotknięci, ale nowe rejestracje będą zablokowane",
+      "captcha_recommendation": "✅ Zalecane: Najpierw przetestuj swoją konfigurację CAPTCHA, a następnie ją włącz.",
+      "email_title": "⚠️ Włączyć weryfikację email?",
+      "email_message": "Ważne: Przed włączeniem weryfikacji email, przetestuj swoją konfigurację SMTP.",
+      "email_risk_1": "Jeśli ustawienia SMTP są nieprawidłowe, użytkownicy nie otrzymają emaili weryfikacyjnych",
+      "email_risk_2": "Nowi użytkownicy nie będą mogli ukończyć rejestracji",
+      "email_risk_3": "Możesz zablokować sobie dostęp, jeśli utworzysz nowe konto",
+      "email_risk_4": "Istniejący użytkownicy NIE zostaną dotknięci",
+      "email_recommendation": "✅ Zalecane: Najpierw wyślij testowy email, aby sprawdzić, czy SMTP działa poprawnie.",
+      "potential_risks": "⚠️ Potencjalne ryzyka:",
+      "cancel": "Anuluj",
+      "confirm": "Rozumiem, włącz"
+    },
+    "test_captcha": {
+      "title": "Testuj konfigurację CAPTCHA",
+      "description": "Przetestuj swoją konfigurację CAPTCHA przed włączeniem, aby zapobiec blokowaniu.",
+      "button_test": "Testuj klucze CAPTCHA",
+      "button_testing": "Testowanie konfiguracji...",
+      "success": "Konfiguracja CAPTCHA jest prawidłowa!",
+      "error_config": "Najpierw skonfiguruj dostawcę CAPTCHA i klucze",
+      "error_failed": "Test konfiguracji CAPTCHA nie powiódł się"
+    },
+    "test_email": {
+      "button_send": "Wyślij testowy email",
+      "button_sending": "Wysyłanie...",
+      "success": "Testowy email wysłany pomyślnie!",
+      "error_no_address": "Wprowadź adres email",
+      "error_failed": "Nie udało się wysłać testowego emaila"
+    }
   }
 }

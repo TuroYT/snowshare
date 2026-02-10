@@ -4,12 +4,57 @@ import bcrypt from "bcryptjs"
 import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants"
 import { validateCaptcha } from "@/lib/captcha"
 import { generateVerificationToken, sendVerificationEmail } from "@/lib/email"
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit"
+import { registerSchema } from "@/lib/validation-schemas"
+import { getClientIp } from "@/lib/getClientIp"
+import { 
+  logRegistrationSuccess, 
+  logRegistrationFailed, 
+  logRateLimitThrottled 
+} from "@/lib/security-logger"
 
 
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, isFirstUser, captchaToken } = await request.json()
+    // Apply rate limiting: 5 registration attempts per 15 minutes per IP
+    const rateLimitResult = checkRateLimit(request, {
+      maxRequests: 5,
+      windowSeconds: 15 * 60,
+      keyPrefix: "register",
+    })
+
+    if (!rateLimitResult.success) {
+      const clientIp = getClientIp(request)
+      logRateLimitThrottled("register", clientIp, rateLimitResult.limit)
+      
+      return NextResponse.json(
+        { error: rateLimitResult.error },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      )
+    }
+    
+    const body = await request.json()
+    
+    // Validate input with Zod
+    const validation = registerSchema.safeParse(body)
+    if (!validation.success) {
+      const clientIp = getClientIp(request)
+      logRegistrationFailed(body.email || "unknown", clientIp, "invalid_input")
+      
+      return NextResponse.json(
+        { error: "Invalid input", details: validation.error.format() },
+        { 
+          status: 400,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      )
+    }
+    
+    const { email, password, isFirstUser, captchaToken } = validation.data
     
     // Check if this is the first user setup
     const userCount = await prisma.user.count()
@@ -76,10 +121,17 @@ export async function POST(request: NextRequest) {
 
     // Validate CAPTCHA if not first user (first user setup should be easy)
     if (!isActuallyFirstUser) {
-      const captchaResult = await validateCaptcha(captchaToken)
+      const captchaResult = await validateCaptcha(captchaToken, request)
+      
       if (!captchaResult.success) {
+        const clientIp = getClientIp(request)
+        logRegistrationFailed(email, clientIp, `captcha_failed: ${captchaResult.errorCode || "unknown"}`)
+        
         return NextResponse.json(
-          { error: captchaResult.error || "CAPTCHA validation failed" },
+          { 
+            error: captchaResult.userMessage || captchaResult.error || "CAPTCHA validation failed",
+            errorCode: captchaResult.errorCode
+          },
           { status: 400 }
         )
       }
@@ -91,6 +143,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
+      const clientIp = getClientIp(request)
+      logRegistrationFailed(email, clientIp, "email_already_exists")
+      
       return NextResponse.json(
         { error: "Un utilisateur avec cet email existe déjà" },
         { status: 400 }
@@ -120,6 +175,10 @@ export async function POST(request: NextRequest) {
         emailVerified: requireEmailVerification && !isActuallyFirstUser ? null : new Date(),
       }
     })
+
+    // Log successful registration
+    const clientIp = getClientIp(request)
+    logRegistrationSuccess(user.id.toString(), email, clientIp)
 
     // Send verification email if required
     if (requireEmailVerification && !isActuallyFirstUser && verificationToken) {

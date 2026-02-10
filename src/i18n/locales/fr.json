@@ -569,5 +569,41 @@
     "error_generic": "Une erreur est survenue",
     "error_url_not_found": "URL introuvable",
     "error_connection": "Erreur de connexion"
+  },
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ Activer la protection CAPTCHA ?",
+      "captcha_message": "Important : Avant d'activer le CAPTCHA, veuillez tester votre configuration en utilisant le bouton 'Tester le CAPTCHA'.",
+      "captcha_risk_1": "Si les clés CAPTCHA sont incorrectes, PERSONNE ne pourra créer de nouveaux comptes",
+      "captcha_risk_2": "Vous pourriez vous bloquer l'accès pour créer de nouveaux comptes admin",
+      "captcha_risk_3": "Les utilisateurs existants ne seront pas affectés, mais les nouvelles inscriptions seront bloquées",
+      "captcha_recommendation": "✅ Recommandé : Testez d'abord votre configuration CAPTCHA, puis activez-la.",
+      "email_title": "⚠️ Activer la vérification par email ?",
+      "email_message": "Important : Avant d'activer la vérification par email, veuillez tester votre configuration SMTP.",
+      "email_risk_1": "Si les paramètres SMTP sont incorrects, les utilisateurs ne recevront pas les emails de vérification",
+      "email_risk_2": "Les nouveaux utilisateurs ne pourront pas terminer leur inscription",
+      "email_risk_3": "Vous pourriez vous bloquer si vous créez un nouveau compte",
+      "email_risk_4": "Les utilisateurs existants ne seront PAS affectés",
+      "email_recommendation": "✅ Recommandé : Envoyez d'abord un email de test pour vérifier que SMTP fonctionne correctement.",
+      "potential_risks": "⚠️ Risques potentiels :",
+      "cancel": "Annuler",
+      "confirm": "Je comprends, l'activer"
+    },
+    "test_captcha": {
+      "title": "Tester la configuration CAPTCHA",
+      "description": "Testez votre configuration CAPTCHA avant de l'activer pour éviter le verrouillage.",
+      "button_test": "Tester les clés CAPTCHA",
+      "button_testing": "Test en cours...",
+      "success": "Configuration CAPTCHA valide !",
+      "error_config": "Veuillez d'abord configurer le fournisseur CAPTCHA et les clés",
+      "error_failed": "Échec du test de configuration CAPTCHA"
+    },
+    "test_email": {
+      "button_send": "Envoyer un email de test",
+      "button_sending": "Envoi en cours...",
+      "success": "Email de test envoyé avec succès !",
+      "error_no_address": "Veuillez entrer une adresse email",
+      "error_failed": "Échec de l'envoi de l'email de test"
+    }
   }
 }
