@@ -1,40 +1,25 @@
 "use client"
 
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material"
+import { useTranslation } from "react-i18next"
 
 interface SecurityWarningModalProps {
   open: boolean
   onClose: () => void
   onConfirm: () => void
-  type: "captcha" | "email-verification"
+  type: "captcha" | "email"
 }
 
 export default function SecurityWarningModal({ open, onClose, onConfirm, type }: SecurityWarningModalProps) {
-  const warnings = {
-    captcha: {
-      title: "⚠️ Enable CAPTCHA Protection?",
-      message: "Important: Before enabling CAPTCHA, please test your configuration using the 'Test CAPTCHA' button.",
-      risks: [
-        "If CAPTCHA keys are incorrect, NO ONE will be able to register new accounts",
-        "You may lock yourself out from creating new admin accounts",
-        "Existing users won't be affected, but new signups will be blocked",
-      ],
-      recommendation: "✅ Recommended: Test your CAPTCHA configuration first, then enable it.",
-    },
-    "email-verification": {
-      title: "⚠️ Enable Email Verification?",
-      message: "Important: Before enabling email verification, please test your SMTP configuration.",
-      risks: [
-        "If SMTP settings are incorrect, users won't receive verification emails",
-        "New users won't be able to complete registration",
-        "You may lock yourself out if you create a new account",
-        "Existing users will NOT be affected",
-      ],
-      recommendation: "✅ Recommended: Send a test email first to verify SMTP is working correctly.",
-    },
-  }
-
-  const warning = warnings[type]
+  const { t } = useTranslation()
+  
+  const titleKey = type === "captcha" ? "security.warning_modal.captcha_title" : "security.warning_modal.email_title"
+  const messageKey = type === "captcha" ? "security.warning_modal.captcha_message" : "security.warning_modal.email_message"
+  const recommendationKey = type === "captcha" ? "security.warning_modal.captcha_recommendation" : "security.warning_modal.email_recommendation"
+  
+  const riskKeys = type === "captcha" 
+    ? ["security.warning_modal.captcha_risk_1", "security.warning_modal.captcha_risk_2", "security.warning_modal.captcha_risk_3"]
+    : ["security.warning_modal.email_risk_1", "security.warning_modal.email_risk_2", "security.warning_modal.email_risk_3", "security.warning_modal.email_risk_4"]
 
   return (
     <Dialog 
@@ -54,28 +39,28 @@ export default function SecurityWarningModal({ open, onClose, onConfirm, type }:
         borderBottom: '1px solid var(--border)',
         fontWeight: 600,
       }}>
-        {warning.title}
+        {t(titleKey)}
       </DialogTitle>
       
       <DialogContent sx={{ mt: 2 }}>
         <Typography variant="body1" sx={{ color: 'var(--foreground)', mb: 2 }}>
-          {warning.message}
+          {t(messageKey)}
         </Typography>
 
         <div className="p-4 bg-red-900/10 border border-red-800 rounded-lg mb-3">
           <Typography variant="subtitle2" sx={{ color: 'var(--foreground)', fontWeight: 600, mb: 1 }}>
-            ⚠️ Potential Risks:
+            {t("security.warning_modal.potential_risks")}
           </Typography>
           <ul className="space-y-1 text-sm text-[var(--foreground-muted)]">
-            {warning.risks.map((risk, index) => (
-              <li key={index}>• {risk}</li>
+            {riskKeys.map((riskKey, index) => (
+              <li key={index}>• {t(riskKey)}</li>
             ))}
           </ul>
         </div>
 
         <div className="p-3 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg">
           <Typography variant="body2" sx={{ color: 'var(--foreground)' }}>
-            {warning.recommendation}
+            {t(recommendationKey)}
           </Typography>
         </div>
       </DialogContent>
@@ -88,7 +73,7 @@ export default function SecurityWarningModal({ open, onClose, onConfirm, type }:
             '&:hover': { backgroundColor: 'var(--surface)' }
           }}
         >
-          Cancel
+          {t("security.warning_modal.cancel")}
         </Button>
         <Button 
           onClick={onConfirm}
@@ -98,7 +83,7 @@ export default function SecurityWarningModal({ open, onClose, onConfirm, type }:
             '&:hover': { backgroundColor: 'var(--primary-hover)' }
           }}
         >
-          I Understand, Enable It
+          {t("security.warning_modal.confirm")}
         </Button>
       </DialogActions>
     </Dialog>

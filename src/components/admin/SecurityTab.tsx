@@ -32,7 +32,7 @@ export default function SecurityTab() {
   const [toastMessage, setToastMessage] = useState("")
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success")
   const [warningModalOpen, setWarningModalOpen] = useState(false)
-  const [warningModalType, setWarningModalType] = useState<"captcha" | "email-verification">("captcha")
+  const [warningModalType, setWarningModalType] = useState<"captcha" | "email">("captcha")
   const [pendingToggle, setPendingToggle] = useState<keyof SecuritySettings | null>(null)
 
   const fetchSettings = useCallback(async () => {
@@ -60,7 +60,7 @@ export default function SecurityTab() {
     if (settings && typeof settings[key] === "boolean") {
       // Show warning modal before enabling captcha or email verification
       if ((key === "captchaEnabled" || key === "requireEmailVerification") && !settings[key]) {
-        setWarningModalType(key === "captchaEnabled" ? "captcha" : "email-verification")
+        setWarningModalType(key === "captchaEnabled" ? "captcha" : "email")
         setPendingToggle(key)
         setWarningModalOpen(true)
         return
@@ -129,7 +129,7 @@ export default function SecurityTab() {
 
   const handleTestEmail = async () => {
     if (!testEmail) {
-      setToastMessage("Please enter an email address")
+      setToastMessage(t("security.test_email.error_no_address"))
       setToastSeverity("error")
       setToastOpen(true)
       return
@@ -146,16 +146,16 @@ export default function SecurityTab() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send test email")
+        throw new Error(data.error || t("security.test_email.error_failed"))
       }
 
-      setToastMessage("Test email sent successfully!")
+      setToastMessage(t("security.test_email.success"))
       setToastSeverity("success")
       setToastOpen(true)
       setTestEmail("")
     } catch (err) {
       const error = err as Error
-      setToastMessage(error.message || "Failed to send test email")
+      setToastMessage(error.message || t("security.test_email.error_failed"))
       setToastSeverity("error")
       setToastOpen(true)
       console.error(err)
@@ -166,7 +166,7 @@ export default function SecurityTab() {
 
   const handleTestCaptcha = async () => {
     if (!settings?.captchaProvider || !settings?.captchaSiteKey || !settings?.captchaSecretKey) {
-      setToastMessage("Please configure CAPTCHA provider and keys first")
+      setToastMessage(t("security.test_captcha.error_config"))
       setToastSeverity("error")
       setToastOpen(true)
       return
@@ -187,15 +187,15 @@ export default function SecurityTab() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || data.details || "CAPTCHA configuration test failed")
+        throw new Error(data.error || data.details || t("security.test_captcha.error_failed"))
       }
 
-      setToastMessage(data.message || "CAPTCHA configuration is valid!")
+      setToastMessage(data.message || t("security.test_captcha.success"))
       setToastSeverity("success")
       setToastOpen(true)
     } catch (err) {
       const error = err as Error
-      setToastMessage(error.message || "Failed to test CAPTCHA configuration")
+      setToastMessage(error.message || t("security.test_captcha.error_failed"))
       setToastSeverity("error")
       setToastOpen(true)
       console.error(err)
@@ -365,7 +365,7 @@ export default function SecurityTab() {
               disabled={testingEmail}
               className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg font-medium transition-all disabled:opacity-50 hover:bg-[var(--primary-hover)]"
             >
-              {testingEmail ? "Sending..." : "Send Test Email"}
+              {testingEmail ? t("security.test_email.button_sending") : t("security.test_email.button_send")}
             </button>
           </div>
         </div>
@@ -449,16 +449,16 @@ export default function SecurityTab() {
             </div>
 
             <div className="p-4 bg-[var(--secondary)]/10 border border-[var(--secondary-dark)]/30 rounded-lg">
-              <h4 className="text-sm font-medium text-[var(--foreground)] mb-2">Test CAPTCHA Configuration</h4>
+              <h4 className="text-sm font-medium text-[var(--foreground)] mb-2">{t("security.test_captcha.title")}</h4>
               <p className="text-xs text-[var(--foreground-muted)] mb-3">
-                Test your CAPTCHA configuration before enabling it to prevent lockout.
+                {t("security.test_captcha.description")}
               </p>
               <button
                 onClick={handleTestCaptcha}
                 disabled={testingCaptcha || !settings.captchaProvider || !settings.captchaSiteKey || !settings.captchaSecretKey}
                 className="w-full px-4 py-2 bg-[var(--secondary)] text-white rounded-lg font-medium transition-all disabled:opacity-50 hover:bg-[var(--secondary-hover)]"
               >
-                {testingCaptcha ? "Testing Configuration..." : "Test CAPTCHA Keys"}
+                {testingCaptcha ? t("security.test_captcha.button_testing") : t("security.test_captcha.button_test")}
               </button>
             </div>
           </div>
