@@ -76,7 +76,8 @@ export async function POST(request: NextRequest) {
 
     // Validate CAPTCHA if not first user (first user setup should be easy)
     if (!isActuallyFirstUser) {
-      const captchaResult = await validateCaptcha(captchaToken)
+      const captchaResult = await validateCaptcha(captchaToken, request)
+      
       if (!captchaResult.success) {
         return NextResponse.json(
           { error: captchaResult.error || "CAPTCHA validation failed" },

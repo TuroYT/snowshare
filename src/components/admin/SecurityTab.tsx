@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Snackbar, Alert } from "@mui/material"
+import SecurityWarningModal from "@/components/admin/SecurityWarningModal"
 
 interface SecuritySettings {
   requireEmailVerification: boolean
@@ -26,9 +27,13 @@ export default function SecurityTab() {
   const [saving, setSaving] = useState(false)
   const [testingEmail, setTestingEmail] = useState(false)
   const [testEmail, setTestEmail] = useState("")
+  const [testingCaptcha, setTestingCaptcha] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
   const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success")
+  const [warningModalOpen, setWarningModalOpen] = useState(false)
+  const [warningModalType, setWarningModalType] = useState<"captcha" | "email-verification">("captcha")
+  const [pendingToggle, setPendingToggle] = useState<keyof SecuritySettings | null>(null)
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -53,11 +58,35 @@ export default function SecurityTab() {
 
   const handleToggle = (key: keyof SecuritySettings) => {
     if (settings && typeof settings[key] === "boolean") {
+      // Show warning modal before enabling captcha or email verification
+      if ((key === "captchaEnabled" || key === "requireEmailVerification") && !settings[key]) {
+        setWarningModalType(key === "captchaEnabled" ? "captcha" : "email-verification")
+        setPendingToggle(key)
+        setWarningModalOpen(true)
+        return
+      }
+      
       setSettings({
         ...settings,
         [key]: !settings[key],
       })
     }
+  }
+
+  const handleWarningConfirm = () => {
+    if (pendingToggle && settings) {
+      setSettings({
+        ...settings,
+        [pendingToggle]: !settings[pendingToggle],
+      })
+    }
+    setWarningModalOpen(false)
+    setPendingToggle(null)
+  }
+
+  const handleWarningCancel = () => {
+    setWarningModalOpen(false)
+    setPendingToggle(null)
   }
 
   const handleChange = (key: keyof SecuritySettings, value: string | number | boolean | null) => {
@@ -132,6 +161,46 @@ export default function SecurityTab() {
       console.error(err)
     } finally {
       setTestingEmail(false)
+    }
+  }
+
+  const handleTestCaptcha = async () => {
+    if (!settings?.captchaProvider || !settings?.captchaSiteKey || !settings?.captchaSecretKey) {
+      setToastMessage("Please configure CAPTCHA provider and keys first")
+      setToastSeverity("error")
+      setToastOpen(true)
+      return
+    }
+
+    try {
+      setTestingCaptcha(true)
+      const response = await fetch("/api/admin/test-captcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: settings.captchaProvider,
+          siteKey: settings.captchaSiteKey,
+          secretKey: settings.captchaSecretKey,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.details || "CAPTCHA configuration test failed")
+      }
+
+      setToastMessage(data.message || "CAPTCHA configuration is valid!")
+      setToastSeverity("success")
+      setToastOpen(true)
+    } catch (err) {
+      const error = err as Error
+      setToastMessage(error.message || "Failed to test CAPTCHA configuration")
+      setToastSeverity("error")
+      setToastOpen(true)
+      console.error(err)
+    } finally {
+      setTestingCaptcha(false)
     }
   }
 
@@ -378,9 +447,30 @@ export default function SecurityTab() {
                 <li>• <strong>Cloudflare Turnstile:</strong> Get keys from <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline">Cloudflare Dashboard</a></li>
               </ul>
             </div>
+
+            <div className="p-4 bg-[var(--secondary)]/10 border border-[var(--secondary-dark)]/30 rounded-lg">
+              <h4 className="text-sm font-medium text-[var(--foreground)] mb-2">Test CAPTCHA Configuration</h4>
+              <p className="text-xs text-[var(--foreground-muted)] mb-3">
+                Test your CAPTCHA configuration before enabling it to prevent lockout.
+              </p>
+              <button
+                onClick={handleTestCaptcha}
+                disabled={testingCaptcha || !settings.captchaProvider || !settings.captchaSiteKey || !settings.captchaSecretKey}
+                className="w-full px-4 py-2 bg-[var(--secondary)] text-white rounded-lg font-medium transition-all disabled:opacity-50 hover:bg-[var(--secondary-hover)]"
+              >
+                {testingCaptcha ? "Testing Configuration..." : "Test CAPTCHA Keys"}
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      <SecurityWarningModal
+        open={warningModalOpen}
+        type={warningModalType}
+        onConfirm={handleWarningConfirm}
+        onClose={handleWarningCancel}
+      />
 
       <div className="flex justify-end">
         <button
