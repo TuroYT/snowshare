@@ -1,10 +1,14 @@
 import { prisma } from "./prisma"
 import { getClientIp } from "./getClientIp"
 import { NextRequest } from "next/server"
+import { mapProviderErrorCode, CaptchaErrorCode, getCaptchaError } from "./captcha-errors"
+import { logCaptchaValidationFailed, logSecurityEvent, SecurityEventType, SecurityEventSeverity } from "./security-logger"
 
 export interface CaptchaValidationResult {
   success: boolean
   error?: string
+  errorCode?: CaptchaErrorCode
+  userMessage?: string
 }
 
 /**
@@ -14,6 +18,11 @@ async function getCaptchaConfig() {
   const settings = await prisma.settings.findFirst()
   
   if (!settings?.captchaEnabled) {
+    logSecurityEvent({
+      type: SecurityEventType.CAPTCHA_VALIDATION_SUCCESS,
+      severity: SecurityEventSeverity.INFO,
+      message: "CAPTCHA validation bypassed - CAPTCHA not enabled",
+    })
     return null
   }
 
@@ -56,28 +65,27 @@ async function validateRecaptcha(
     if (data.success) {
       return { success: true }
     } else {
-      // Provide more detailed error messages
+      // Map provider error codes to internal codes
       const errorCodes = data["error-codes"] || []
-      let errorMessage = "CAPTCHA validation failed. Please try again."
-
-      if (errorCodes.includes("timeout-or-duplicate")) {
-        errorMessage = "CAPTCHA has expired or was already used. Please try again."
-      } else if (errorCodes.includes("invalid-input-response")) {
-        errorMessage = "Invalid CAPTCHA response. Please try again."
-      } else if (errorCodes.includes("invalid-input-secret")) {
-        errorMessage = "CAPTCHA configuration error. Please contact the administrator."
-      }
+      const providerErrorCode = errorCodes[0] || "generic_error"
+      const internalCode = mapProviderErrorCode("recaptcha-v2", providerErrorCode)
+      const errorDetails = getCaptchaError(internalCode)
 
       return {
         success: false,
-        error: errorMessage,
+        error: errorDetails.message,
+        errorCode: internalCode,
+        userMessage: errorDetails.userMessage,
       }
     }
   } catch (error) {
     console.error("reCAPTCHA validation error:", error)
+    const errorDetails = getCaptchaError(CaptchaErrorCode.NETWORK_ERROR)
     return {
       success: false,
-      error: "CAPTCHA validation error. Please try again.",
+      error: errorDetails.message,
+      errorCode: CaptchaErrorCode.NETWORK_ERROR,
+      userMessage: errorDetails.userMessage,
     }
   }
 }
@@ -123,30 +131,27 @@ async function validateTurnstile(
     if (data.success) {
       return { success: true }
     } else {
-      // Provide more detailed error messages
+      // Map provider error codes to internal codes
       const errorCodes = data["error-codes"] || []
-      let errorMessage = "CAPTCHA validation failed. Please try again."
-
-      if (errorCodes.includes("timeout-or-duplicate")) {
-        errorMessage = "CAPTCHA has expired or was already used. Please refresh the page and try again."
-      } else if (errorCodes.includes("invalid-input-response")) {
-        errorMessage = "Invalid CAPTCHA response. Please try again."
-      } else if (errorCodes.includes("invalid-input-secret")) {
-        errorMessage = "CAPTCHA configuration error. Please contact the administrator."
-      } else if (errorCodes.includes("bad-request")) {
-        errorMessage = "Invalid CAPTCHA request. Please try again."
-      }
+      const providerErrorCode = errorCodes[0] || "generic_error"
+      const internalCode = mapProviderErrorCode("turnstile", providerErrorCode)
+      const errorDetails = getCaptchaError(internalCode)
 
       return {
         success: false,
-        error: errorMessage,
+        error: errorDetails.message,
+        errorCode: internalCode,
+        userMessage: errorDetails.userMessage,
       }
     }
   } catch (error) {
     console.error("Turnstile validation error:", error)
+    const errorDetails = getCaptchaError(CaptchaErrorCode.NETWORK_ERROR)
     return {
       success: false,
-      error: "CAPTCHA validation error. Please try again.",
+      error: errorDetails.message,
+      errorCode: CaptchaErrorCode.NETWORK_ERROR,
+      userMessage: errorDetails.userMessage,
     }
   }
 }
@@ -167,15 +172,7 @@ export async function validateCaptcha(
     return { success: true }
   }
 
-  // If CAPTCHA is enabled but no token provided
-  if (!token) {
-    return {
-      success: false,
-      error: "CAPTCHA verification is required.",
-    }
-  }
-
-  // Extract IP and hostname if request provided
+  // Extract IP and hostname early for logging
   let ip: string | undefined
   let hostname: string | undefined
 
@@ -189,19 +186,58 @@ export async function validateCaptcha(
     }
   }
 
+  // If CAPTCHA is enabled but no token provided
+  if (!token) {
+    const errorDetails = getCaptchaError(CaptchaErrorCode.TOKEN_MISSING)
+    
+    if (ip) {
+      logCaptchaValidationFailed(ip, config.provider, "token_missing")
+    }
+    
+    return {
+      success: false,
+      error: errorDetails.message,
+      errorCode: CaptchaErrorCode.TOKEN_MISSING,
+      userMessage: errorDetails.userMessage,
+    }
+  }
+
   // Validate based on provider
+  let result: CaptchaValidationResult
+  
   switch (config.provider) {
     case "recaptcha-v2":
     case "recaptcha-v3":
-      return validateRecaptcha(token, config.secretKey, ip)
+      result = await validateRecaptcha(token, config.secretKey, ip)
+      break
     case "turnstile":
-      return validateTurnstile(token, config.secretKey, ip, hostname)
-    default:
-      return {
+      result = await validateTurnstile(token, config.secretKey, ip, hostname)
+      break
+    default: {
+      const errorDetails = getCaptchaError(CaptchaErrorCode.UNKNOWN_PROVIDER)
+      result = {
         success: false,
-        error: "Unknown CAPTCHA provider.",
+        error: errorDetails.message,
+        errorCode: CaptchaErrorCode.UNKNOWN_PROVIDER,
+        userMessage: errorDetails.userMessage,
       }
+      break
+    }
   }
+
+  // Log validation failures
+  if (!result.success && ip) {
+    logCaptchaValidationFailed(ip, config.provider, result.errorCode || "unknown")
+  } else if (result.success) {
+    logSecurityEvent({
+      type: SecurityEventType.CAPTCHA_VALIDATION_SUCCESS,
+      severity: SecurityEventSeverity.INFO,
+      message: `CAPTCHA validation successful (${config.provider})`,
+      ip,
+    })
+  }
+
+  return result
 }
 
 /**

@@ -6,6 +6,12 @@ import { validateCaptcha } from "@/lib/captcha"
 import { generateVerificationToken, sendVerificationEmail } from "@/lib/email"
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit"
 import { registerSchema } from "@/lib/validation-schemas"
+import { getClientIp } from "@/lib/getClientIp"
+import { 
+  logRegistrationSuccess, 
+  logRegistrationFailed, 
+  logRateLimitThrottled 
+} from "@/lib/security-logger"
 
 
 
@@ -19,6 +25,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (!rateLimitResult.success) {
+      const clientIp = getClientIp(request)
+      logRateLimitThrottled("register", clientIp, rateLimitResult.limit)
+      
       return NextResponse.json(
         { error: rateLimitResult.error },
         { 
@@ -33,6 +42,9 @@ export async function POST(request: NextRequest) {
     // Validate input with Zod
     const validation = registerSchema.safeParse(body)
     if (!validation.success) {
+      const clientIp = getClientIp(request)
+      logRegistrationFailed(body.email || "unknown", clientIp, "invalid_input")
+      
       return NextResponse.json(
         { error: "Invalid input", details: validation.error.format() },
         { 
@@ -112,8 +124,14 @@ export async function POST(request: NextRequest) {
       const captchaResult = await validateCaptcha(captchaToken, request)
       
       if (!captchaResult.success) {
+        const clientIp = getClientIp(request)
+        logRegistrationFailed(email, clientIp, `captcha_failed: ${captchaResult.errorCode || "unknown"}`)
+        
         return NextResponse.json(
-          { error: captchaResult.error || "CAPTCHA validation failed" },
+          { 
+            error: captchaResult.userMessage || captchaResult.error || "CAPTCHA validation failed",
+            errorCode: captchaResult.errorCode
+          },
           { status: 400 }
         )
       }
@@ -125,6 +143,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
+      const clientIp = getClientIp(request)
+      logRegistrationFailed(email, clientIp, "email_already_exists")
+      
       return NextResponse.json(
         { error: "Un utilisateur avec cet email existe déjà" },
         { status: 400 }
@@ -154,6 +175,10 @@ export async function POST(request: NextRequest) {
         emailVerified: requireEmailVerification && !isActuallyFirstUser ? null : new Date(),
       }
     })
+
+    // Log successful registration
+    const clientIp = getClientIp(request)
+    logRegistrationSuccess(user.id.toString(), email, clientIp)
 
     // Send verification email if required
     if (requireEmailVerification && !isActuallyFirstUser && verificationToken) {

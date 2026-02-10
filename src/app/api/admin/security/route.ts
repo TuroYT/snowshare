@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { maskSecret, unmaskSecret } from "@/lib/secret-masking"
 import { securitySettingsSchema } from "@/lib/validation-schemas"
+import { logSecuritySettingsUpdated } from "@/lib/security-logger"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -133,6 +134,12 @@ export async function PATCH(request: Request) {
         data: updateData
       })
     }
+
+    // Log security settings update
+    const changes = Object.keys(updateData).filter(
+      key => !key.includes("Password") && !key.includes("SecretKey")
+    )
+    logSecuritySettingsUpdated(session.user.id, changes)
 
     // Return masked secrets
     return NextResponse.json({

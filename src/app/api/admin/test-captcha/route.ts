@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit"
 import { testCaptchaSchema } from "@/lib/validation-schemas"
+import { logSecurityEvent, SecurityEventType, SecurityEventSeverity } from "@/lib/security-logger"
+import { getClientIp } from "@/lib/getClientIp"
 
 // Test CAPTCHA configuration without saving
 export async function POST(request: NextRequest) {
@@ -55,6 +57,17 @@ export async function POST(request: NextRequest) {
     }
     
     const { provider, siteKey: _siteKey, secretKey } = validation.data
+
+    // Log CAPTCHA test attempt
+    const clientIp = getClientIp(request)
+    logSecurityEvent({
+      type: SecurityEventType.CAPTCHA_CONFIG_TESTED,
+      severity: SecurityEventSeverity.INFO,
+      message: `Admin testing CAPTCHA configuration (${provider})`,
+      userId: session.user.id,
+      ip: clientIp,
+      metadata: { provider },
+    })
 
     // Generate a test token validation
     // Note: We can't fully test without a real token from the client
