@@ -4,12 +4,45 @@ import bcrypt from "bcryptjs"
 import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants"
 import { validateCaptcha } from "@/lib/captcha"
 import { generateVerificationToken, sendVerificationEmail } from "@/lib/email"
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit"
+import { registerSchema } from "@/lib/validation-schemas"
 
 
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, isFirstUser, captchaToken } = await request.json()
+    // Apply rate limiting: 5 registration attempts per 15 minutes per IP
+    const rateLimitResult = checkRateLimit(request, {
+      maxRequests: 5,
+      windowSeconds: 15 * 60,
+      keyPrefix: "register",
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: rateLimitResult.error },
+        { 
+          status: 429,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      )
+    }
+    
+    const body = await request.json()
+    
+    // Validate input with Zod
+    const validation = registerSchema.safeParse(body)
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: validation.error.format() },
+        { 
+          status: 400,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      )
+    }
+    
+    const { email, password, isFirstUser, captchaToken } = validation.data
     
     // Check if this is the first user setup
     const userCount = await prisma.user.count()

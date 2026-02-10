@@ -2,9 +2,28 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/rate-limit"
+import { testCaptchaSchema } from "@/lib/validation-schemas"
 
 // Test CAPTCHA configuration without saving
 export async function POST(request: NextRequest) {
+  // Apply rate limiting: 10 test attempts per 5 minutes per IP
+  const rateLimitResult = checkRateLimit(request, {
+    maxRequests: 10,
+    windowSeconds: 5 * 60,
+    keyPrefix: "test-captcha",
+  })
+
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { error: rateLimitResult.error },
+      { 
+        status: 429,
+        headers: getRateLimitHeaders(rateLimitResult)
+      }
+    )
+  }
+  
   const session = await getServerSession(authOptions)
 
   if (!session || !session.user?.id) {
@@ -21,21 +40,21 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { provider, siteKey, secretKey } = await request.json()
-
-    if (!provider || !siteKey || !secretKey) {
-      return NextResponse.json({ 
-        error: "Missing required fields: provider, siteKey, and secretKey are required" 
-      }, { status: 400 })
+    const body = await request.json()
+    
+    // Validate input with Zod
+    const validation = testCaptchaSchema.safeParse(body)
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: validation.error.format() },
+        { 
+          status: 400,
+          headers: getRateLimitHeaders(rateLimitResult)
+        }
+      )
     }
-
-    // Validate provider type
-    const validProviders = ["recaptcha-v2", "recaptcha-v3", "turnstile"]
-    if (!validProviders.includes(provider)) {
-      return NextResponse.json({ 
-        error: `Invalid provider. Must be one of: ${validProviders.join(", ")}` 
-      }, { status: 400 })
-    }
+    
+    const { provider, siteKey: _siteKey, secretKey } = validation.data
 
     // Generate a test token validation
     // Note: We can't fully test without a real token from the client
