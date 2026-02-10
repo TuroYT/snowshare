@@ -9,10 +9,10 @@ jest.mock('@/lib/getClientIp', () => ({
   getClientIp: jest.fn(() => '192.168.1.1'),
 }));
 
-const { getClientIp } = require('@/lib/getClientIp');
+import { getClientIp } from '@/lib/getClientIp';
 
 // Mock request object
-const mockRequest = (): any => ({
+const mockRequest = () => ({
   headers: new Map([['x-forwarded-for', '192.168.1.1']]),
   nextUrl: { searchParams: new URLSearchParams() },
 });

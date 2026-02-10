@@ -321,7 +321,7 @@ describe('Validation schemas', () => {
         captchaSecretKey: 'secret-key',
       };
 
-      const result = captchaConfigSchema.safeParse(data as any);
+      const result = captchaConfigSchema.safeParse(data);
       expect(result.success).toBe(false);
     });
   });
