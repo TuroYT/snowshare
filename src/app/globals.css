@@ -59,7 +59,7 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-app, var(--font-geist-sans)), Arial, Helvetica, sans-serif;
   line-height: 1.6;
 }
 

@@ -545,7 +545,10 @@
       "theme_preview": "Vista Previa del Tema",
       "background_image_url": "URL de imagen de fondo",
       "background_image_url_hint": "URL de una imagen de fondo personalizada (opcional)",
-      "background_image_preview": "Vista previa del fondo"
+      "background_image_preview": "Vista previa del fondo",
+      "section_typography": "Tipografía",
+      "font_family": "Fuente",
+      "font_family_hint": "La fuente utilizada globalmente en toda la aplicación"
     },
     "update": {
       "title": "Actualización disponible",

@@ -22,7 +22,23 @@ export interface BrandingSettings {
   appDescription: string
   logoUrl: string | null
   faviconUrl: string | null
+  fontFamily: string
 }
+
+export const AVAILABLE_FONTS = [
+  { id: "Geist", name: "Geist (Par défaut)", category: "sans-serif" },
+  { id: "Inter", name: "Inter", category: "sans-serif" },
+  { id: "Roboto", name: "Roboto", category: "sans-serif" },
+  { id: "Open Sans", name: "Open Sans", category: "sans-serif" },
+  { id: "Lato", name: "Lato", category: "sans-serif" },
+  { id: "Poppins", name: "Poppins", category: "sans-serif" },
+  { id: "Nunito", name: "Nunito", category: "sans-serif" },
+  { id: "Montserrat", name: "Montserrat", category: "sans-serif" },
+  { id: "Raleway", name: "Raleway", category: "sans-serif" },
+  { id: "Source Sans 3", name: "Source Sans 3", category: "sans-serif" },
+  { id: "DM Sans", name: "DM Sans", category: "sans-serif" },
+  { id: "Plus Jakarta Sans", name: "Plus Jakarta Sans", category: "sans-serif" },
+]
 
 export interface ThemeData {
   settings: {
@@ -42,6 +58,7 @@ export interface ThemeData {
     appDescription?: string
     logoUrl?: string | null
     faviconUrl?: string | null
+    fontFamily?: string
   }
 }
 
@@ -73,6 +90,7 @@ const defaultBranding: BrandingSettings = {
   appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
   logoUrl: null,
   faviconUrl: null,
+  fontFamily: "Geist",
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -119,12 +137,14 @@ export function ThemeProvider({
         appDescription: settings.appDescription || defaultBranding.appDescription,
         logoUrl: settings.logoUrl || null,
         faviconUrl: settings.faviconUrl || null,
+        fontFamily: settings.fontFamily || defaultBranding.fontFamily,
       }
 
       setColors(newColors)
       setBranding(newBranding)
       applyThemeToDOM(newColors)
       applyBrandingMeta(newBranding)
+      loadGoogleFont(newBranding.fontFamily)
     } catch (error) {
       console.error("Failed to fetch theme:", error)
     } finally {
@@ -155,12 +175,14 @@ export function ThemeProvider({
         appDescription: settings.appDescription || defaultBranding.appDescription,
         logoUrl: settings.logoUrl || null,
         faviconUrl: settings.faviconUrl || null,
+        fontFamily: settings.fontFamily || defaultBranding.fontFamily,
       }
 
       setColors(newColors)
       setBranding(newBranding)
       applyThemeToDOM(newColors)
       applyBrandingMeta(newBranding)
+      loadGoogleFont(newBranding.fontFamily)
       setIsLoading(false)
 
       // Ensure we refresh settings on the client as well. In production
@@ -218,6 +240,41 @@ function clearBodyBackground() {
   document.body.style.backgroundPosition = ""
   document.body.style.backgroundAttachment = ""
   document.body.style.backgroundRepeat = ""
+}
+
+/**
+ * Load a Google Font dynamically by injecting a <link> into the document head.
+ * "Geist" is bundled via next/font so we skip loading it from Google.
+ */
+function loadGoogleFont(fontFamily: string) {
+  if (!fontFamily || fontFamily === "Geist") {
+    // Geist is loaded via next/font, just set the CSS variable to use it
+    document.documentElement.style.setProperty(
+      "--font-app",
+      "var(--font-geist-sans)"
+    )
+    return
+  }
+
+  const linkId = "dynamic-google-font"
+  let link = document.getElementById(linkId) as HTMLLinkElement | null
+
+  const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@300;400;500;600;700&display=swap`
+
+  if (link) {
+    link.href = fontUrl
+  } else {
+    link = document.createElement("link")
+    link.id = linkId
+    link.rel = "stylesheet"
+    link.href = fontUrl
+    document.head.appendChild(link)
+  }
+
+  document.documentElement.style.setProperty(
+    "--font-app",
+    `"${fontFamily}", sans-serif`
+  )
 }
 
 /**

@@ -13,7 +13,8 @@ const DEFAULTS = {
     surfaceColor: "#1F2937",
     textColor: "#F9FAFB",
     textMuted: "#D1D5DB",
-    borderColor: "#374151"
+    borderColor: "#374151",
+    fontFamily: "Geist"
 };
 
 const defaultSettings = {
@@ -38,7 +39,8 @@ const defaultSettings = {
         surfaceColor: DEFAULTS.surfaceColor,
         textColor: DEFAULTS.textColor,
         textMuted: DEFAULTS.textMuted,
-        borderColor: DEFAULTS.borderColor
+        borderColor: DEFAULTS.borderColor,
+        fontFamily: DEFAULTS.fontFamily
     }
 };
 
@@ -58,7 +60,8 @@ const defaultBranding = {
         surfaceColor: DEFAULTS.surfaceColor,
         textColor: DEFAULTS.textColor,
         textMuted: DEFAULTS.textMuted,
-        borderColor: DEFAULTS.borderColor
+        borderColor: DEFAULTS.borderColor,
+        fontFamily: DEFAULTS.fontFamily
     }
 };
 
@@ -105,7 +108,8 @@ export async function getPublicSettings() {
                 surfaceColor: s.surfaceColor,
                 textColor: s.textColor,
                 textMuted: s.textMuted,
-                borderColor: s.borderColor
+                borderColor: s.borderColor,
+                fontFamily: s.fontFamily
             }
         } as const;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -139,7 +143,8 @@ export async function getBrandingSettings() {
                 surfaceColor: true,
                 textColor: true,
                 textMuted: true,
-                borderColor: true
+                borderColor: true,
+                fontFamily: true
             }
         });
 
