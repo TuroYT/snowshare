@@ -46,3 +46,4 @@ dev.db
 uploads/*
 uploads/
 .vscode
+.claude
