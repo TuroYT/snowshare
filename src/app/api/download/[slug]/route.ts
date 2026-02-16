@@ -3,6 +3,7 @@ import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { createReadStream, statSync, existsSync } from "fs";
 import path from "path";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // Helper function to sanitize filename for Content-Disposition header
 function sanitizeFilename(filename: string): string {
@@ -19,9 +20,9 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  
+
   if (!slug) {
-    return NextResponse.json({ error: "Slug manquant" }, { status: 400 });
+    return apiError(request, ErrorCode.MISSING_DATA);
   }
 
   try {
@@ -31,15 +32,14 @@ export async function GET(
 
     const result = await getFileShare(slug, password);
     
-    if (result.error) {
-      const status = result.requiresPassword ? 403 : 404;
-      return NextResponse.json({ error: result.error }, { status });
+    if (result.errorCode) {
+      return apiError(request, result.errorCode);
     }
 
     const { filePath: fullPath, originalFilename } = result;
-    
+
     if (!fullPath || !existsSync(fullPath)) {
-      return NextResponse.json({ error: "Fichier introuvable" }, { status: 404 });
+      return apiError(request, ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     // Get file stats for size
@@ -137,6 +137,6 @@ export async function GET(
     
   } catch (error) {
     console.error("Download error:", error);
-    return NextResponse.json({ error: "Erreur lors du téléchargement" }, { status: 500 });
+    return internalError(request);
   }
 }

@@ -17,7 +17,9 @@ import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import bcrypt from "bcryptjs";
 import { getClientIp } from "@/lib/getClientIp";
+import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { convertFromMB, getUnitLabel } from "@/lib/formatSize";
+import { apiError, ErrorCode } from "@/lib/api-errors";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -161,7 +163,7 @@ export async function POST(req: NextRequest) {
 
   // Security: Validate uploadId to prevent directory traversal
   if (isChunked && !/^[a-zA-Z0-9-]+$/.test(uploadId)) {
-      return NextResponse.json({ error: "Invalid upload ID" }, { status: 400 });
+      return apiError(req, ErrorCode.INVALID_REQUEST);
   }
 
   // Pre-check: if remaining quota is 0, reject immediately (only for new upload/first chunk)
@@ -446,18 +448,20 @@ export async function POST(req: NextRequest) {
         const finalSlug =
           slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
 
-        // Create database record
         const share = await prisma.share.create({
           data: {
             slug: finalSlug,
             type: "FILE",
-            filePath: "", // Will update after rename
+            filePath: "",
             password: hashedPassword,
             expiresAt,
             ipSource: clientIp,
             ownerId: session?.user?.id || null,
+            isBulk: false,
           },
         });
+
+        lookupIpGeolocation(clientIp);
 
         // Rename temp file to final name
         const finalFileName = generateSafeFilename(originalFilename, share.id);

@@ -1,13 +1,14 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
     // Check if user is admin
@@ -16,7 +17,7 @@ export async function GET() {
     });
 
     if (!user?.isAdmin) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        return apiError(request, ErrorCode.ADMIN_ONLY);
     }
 
     try {
@@ -80,15 +81,15 @@ Thank you for using SnowShare!`
         return NextResponse.json({ settings, hasActiveSSO: activeProvidersCount > 0 });
     } catch (error) {
         console.error("Error fetching settings:", error);
-        return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
+        return internalError(request);
     }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
     // Check if user is admin
@@ -97,7 +98,7 @@ export async function PATCH(request: Request) {
     });
 
     if (!user?.isAdmin) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        return apiError(request, ErrorCode.ADMIN_ONLY);
     }
 
     try {
@@ -108,7 +109,7 @@ export async function PATCH(request: Request) {
                 where: { enabled: true }
             });
             if (activeProvidersCount === 0) {
-                return NextResponse.json({ error: "Cannot disable credentials login without active SSO providers" }, { status: 400 });
+                return apiError(request, ErrorCode.NO_SSO_PROVIDERS);
             }
         }
 
@@ -139,6 +140,7 @@ export async function PATCH(request: Request) {
                     secondaryHover: data.secondaryHover || "#7C3AED",
                     secondaryDark: data.secondaryDark || "#6D28D9",
                     backgroundColor: data.backgroundColor || "#111827",
+                    backgroundImageUrl: data.backgroundImageUrl || null,
                     surfaceColor: data.surfaceColor || "#1F2937",
                     textColor: data.textColor || "#F9FAFB",
                     textMuted: data.textMuted || "#D1D5DB",
@@ -209,6 +211,8 @@ Thank you for using SnowShare!`
                     secondaryDark: data.secondaryDark !== undefined ? data.secondaryDark : settings.secondaryDark,
                     backgroundColor:
                         data.backgroundColor !== undefined ? data.backgroundColor : settings.backgroundColor,
+                    backgroundImageUrl:
+                        data.backgroundImageUrl !== undefined ? data.backgroundImageUrl : settings.backgroundImageUrl,
                     surfaceColor: data.surfaceColor !== undefined ? data.surfaceColor : settings.surfaceColor,
                     textColor: data.textColor !== undefined ? data.textColor : settings.textColor,
                     textMuted: data.textMuted !== undefined ? data.textMuted : settings.textMuted,
@@ -221,6 +225,6 @@ Thank you for using SnowShare!`
         return NextResponse.json({ settings });
     } catch (error) {
         console.error("Error updating settings:", error);
-        return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });
+        return internalError(request);
     }
 }

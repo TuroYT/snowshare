@@ -43,7 +43,7 @@ export default function Navigation() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null)
   const [isAdmin, setIsAdmin] = useState<boolean>(false)
-  const [allowSignup, setAllowSignup] = useState(true)
+  const [showSignupButton, setShowSignupButton] = useState(true)
 
   // Fetch signup status from database
   useEffect(() => {
@@ -52,11 +52,11 @@ export default function Navigation() {
         const response = await fetch("/api/setup/check")
         if (response.ok) {
           const data = await response.json()
-          setAllowSignup(data.allowSignup ?? true)
+          setShowSignupButton(data.allowSignup && data.onlySSOMode === false)
         }
       } catch (error) {
         console.error("Error fetching signup status:", error)
-        setAllowSignup(true) // Default to true on error
+        setShowSignupButton(true) // Default to true on error
       }
     }
 
@@ -100,7 +100,7 @@ export default function Navigation() {
     return (
       <AppBar position="sticky" sx={{ bgcolor: 'var(--surface)', color: 'var(--foreground)' }}>
         <Toolbar>
-          <Typography>{t('loading')}</Typography>
+          <Typography suppressHydrationWarning>{t('loading')}</Typography>
         </Toolbar>
       </AppBar>
     )
@@ -245,7 +245,7 @@ export default function Navigation() {
                 >
                   {t('nav.signin')}
                 </Button>
-                {allowSignup && (
+                {showSignupButton && (
                   <Button
                     component={Link}
                     href="/auth/signup"
@@ -370,7 +370,7 @@ export default function Navigation() {
             >
               <ListItemText primary={t('nav.signin')} />
             </ListItem>
-            {allowSignup && (
+            {showSignupButton && (
               <ListItem
                 component={Link}
                 href="/auth/signup"
