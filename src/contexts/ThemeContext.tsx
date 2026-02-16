@@ -26,7 +26,7 @@ export interface BrandingSettings {
 }
 
 export const AVAILABLE_FONTS = [
-  { id: "Geist", name: "Geist (Par défaut)", category: "sans-serif" },
+  { id: "Geist", name: "Geist", category: "sans-serif" },
   { id: "Inter", name: "Inter", category: "sans-serif" },
   { id: "Roboto", name: "Roboto", category: "sans-serif" },
   { id: "Open Sans", name: "Open Sans", category: "sans-serif" },
