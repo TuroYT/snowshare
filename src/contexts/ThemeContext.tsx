@@ -247,16 +247,24 @@ function clearBodyBackground() {
  * "Geist" is bundled via next/font so we skip loading it from Google.
  */
 function loadGoogleFont(fontFamily: string) {
+  const linkId = "dynamic-google-font"
+  
   if (!fontFamily || fontFamily === "Geist") {
     // Geist is loaded via next/font, just set the CSS variable to use it
     document.documentElement.style.setProperty(
       "--font-app",
       "var(--font-geist-sans)"
     )
+    
+    // Remove any previously injected Google Font link
+    const existingLink = document.getElementById(linkId)
+    if (existingLink) {
+      existingLink.remove()
+    }
+    
     return
   }
 
-  const linkId = "dynamic-google-font"
   let link = document.getElementById(linkId) as HTMLLinkElement | null
 
   const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@300;400;500;600;700&display=swap`
