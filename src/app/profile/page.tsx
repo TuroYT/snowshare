@@ -22,8 +22,6 @@ type Share = {
   password?: string;
   createdAt: string;
   expiresAt?: string;
-  maxViews?: number | null;
-  viewCount: number;
 };
 
 type User = {
@@ -120,7 +118,7 @@ const ProfilePage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-[var(--background)]">
         <Navigation />
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
@@ -149,10 +147,10 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-[var(--background)]">
       <Navigation />
 
-      <main className="flex-grow max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8 w-full">
+      <main className="max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold sm:text-6xl bg-clip-text text-transparent mb-4" style={{ backgroundImage: 'linear-gradient(to right, var(--primary), var(--secondary), var(--primary))' }}>

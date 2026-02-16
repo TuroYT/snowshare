@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // DELETE – Remove the link
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -12,7 +11,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
         // Checking admin permissions
         if (!session?.user?.id) {
-            return apiError(request, ErrorCode.UNAUTHORIZED);
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const user = await prisma.user.findUnique({
@@ -20,11 +19,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         });
 
         if (!user?.isAdmin) {
-            return apiError(request, ErrorCode.ADMIN_ONLY);
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         if (!id) {
-            return apiError(request, ErrorCode.MISSING_DATA);
+            return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
         // Checking if the link exists
@@ -33,7 +32,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         });
 
         if (!link) {
-            return apiError(request, ErrorCode.RESOURCE_NOT_FOUND);
+            return NextResponse.json({ error: "Link not found" }, { status: 404 });
         }
 
         await prisma.customLink.delete({
@@ -43,6 +42,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         return NextResponse.json({ message: "Link deleted successfully" }, { status: 200 });
     } catch (error) {
         console.error("Error deleting custom link:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to delete custom link" }, { status: 500 });
     }
 }

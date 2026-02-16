@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 /**
  * POST /api/user/accounts/link
@@ -14,13 +13,13 @@ export async function POST(request: NextRequest) {
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
-            return apiError(request, ErrorCode.UNAUTHORIZED);
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { provider } = await request.json();
 
         if (!provider) {
-            return apiError(request, ErrorCode.MISSING_DATA);
+            return NextResponse.json({ error: "Provider is required" }, { status: 400 });
         }
 
         // Verify that the provider exists and is enabled
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!oauthProvider) {
-            return apiError(request, ErrorCode.PROVIDER_NOT_FOUND);
+            return NextResponse.json({ error: "Provider not found or disabled" }, { status: 404 });
         }
 
         // Verify if the account is not already linked
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (existingAccount) {
-            return apiError(request, ErrorCode.ACCOUNT_ALREADY_LINKED);
+            return NextResponse.json({ error: "Account already linked" }, { status: 400 });
         }
 
         const linkToken = randomBytes(32).toString("hex");
@@ -85,6 +84,6 @@ export async function POST(request: NextRequest) {
         return response;
     } catch (error) {
         console.error("Error generating link:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to generate link" }, { status: 500 });
     }
 }

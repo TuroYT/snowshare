@@ -11,9 +11,9 @@
   
   /* Background colors (customizable) */
   --background: #111827;
-  --background-secondary: rgba(17, 24, 39, 0.9);
-  --surface: rgba(31, 41, 55, 0.85);
-  --surface-hover: rgba(55, 65, 81, 0.85);
+  --background-secondary: rgba(17, 24, 39, 0.8);
+  --surface: rgba(31, 41, 55, 0.5);
+  --surface-hover: rgba(55, 65, 81, 0.5);
   
   /* Text colors */
   --foreground: #f9fafb;
@@ -21,8 +21,8 @@
   --foreground-subtle: #9ca3af;
   
   /* Borders and inputs */
-  --border: rgba(55, 65, 81, 0.7);
-  --border-hover: rgba(75, 85, 99, 0.85);
+  --border: rgba(55, 65, 81, 0.5);
+  --border-hover: rgba(75, 85, 99, 0.7);
   --input: #1f2937;
   --input-focus: #111827;
   
@@ -57,7 +57,7 @@
 }
 
 body {
-  background-color: var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   line-height: 1.6;
@@ -280,65 +280,6 @@ body {
   }
 }
 
-/* Share tab entrance animation — GPU-composited (opacity + transform only) */
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.3s ease-out both;
-  will-change: opacity, transform;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-in-up {
-    animation: none;
-  }
-}
-
-/* Modal animations */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out both;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.2s ease-out both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-in,
-  .animate-scale-in {
-    animation: none;
-  }
-}
-
 /* Glow effects */
 .glow-blue {
   box-shadow: 0 4px 14px 0 color-mix(in srgb, var(--primary) 25%, transparent);
@@ -548,82 +489,4 @@ body {
 .flex-container-safe > * {
   min-width: 0;
   max-width: 100%;
-}
-
-/* Share form styles */
-.input-paste {
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  background: var(--surface);
-  color: var(--foreground);
-  transition: all 0.2s ease;
-}
-
-.input-paste:focus {
-  outline: none;
-  border-color: var(--primary);
-  background: var(--background);
-  box-shadow: 0 0 0 3px rgb(from var(--primary) r g b / 0.1);
-}
-
-.input-paste::placeholder {
-  color: var(--foreground-muted);
-  opacity: 1;
-}
-
-.btn-paste {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: #fff;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  box-shadow: 0 4px 14px 0 rgb(from var(--primary) r g b / 0.25);
-  transition: all 0.3s ease;
-}
-
-.btn-paste:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgb(from var(--primary) r g b / 0.4);
-}
-
-.toggle-slider {
-  width: 2.75rem;
-  height: 1.5rem;
-  background-color: var(--surface);
-  border-radius: 0.75rem;
-  position: relative;
-  transition: all 0.3s ease;
-  border: 2px solid var(--border);
-}
-
-.toggle-slider-active {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  border-color: var(--secondary);
-}
-
-.toggle-slider-thumb {
-  width: 1rem;
-  height: 1rem;
-  background-color: #ffffff;
-  border-radius: 50%;
-  position: absolute;
-  top: 0.125rem;
-  left: 0.125rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-slider-thumb-active {
-  transform: translateX(1.25rem);
-}
-
-label {
-  color: var(--foreground);
-  font-weight: 500;
-}
-
-.hover\:scale-102:hover {
-  transform: scale(1.02);
 }

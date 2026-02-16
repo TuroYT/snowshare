@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Share" ADD COLUMN "maxViews" INTEGER;
-ALTER TABLE "Share" ADD COLUMN "viewCount" INTEGER NOT NULL DEFAULT 0;

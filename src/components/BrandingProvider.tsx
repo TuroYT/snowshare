@@ -11,7 +11,7 @@ export interface Branding {
 
 const defaultBranding: Branding = {
   appName: "SnowShare",
-  appDescription: "Securely share your files with ease.",
+  appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
   logoUrl: null,
   faviconUrl: null,
 }

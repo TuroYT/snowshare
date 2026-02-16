@@ -27,7 +27,6 @@ interface BrandingSettings {
     secondaryHover: string;
     secondaryDark: string;
     backgroundColor: string;
-    backgroundImageUrl: string | null;
     surfaceColor: string;
     textColor: string;
     textMuted: string;
@@ -49,7 +48,6 @@ export default function BrandingTab() {
         secondaryHover: "#7C3AED",
         secondaryDark: "#6D28D9",
         backgroundColor: "#111827",
-        backgroundImageUrl: null,
         surfaceColor: "#1F2937",
         textColor: "#F9FAFB",
         textMuted: "#D1D5DB",
@@ -141,7 +139,6 @@ export default function BrandingTab() {
                 secondaryHover: data.settings.secondaryHover || "#7C3AED",
                 secondaryDark: data.settings.secondaryDark || "#6D28D9",
                 backgroundColor: data.settings.backgroundColor || "#111827",
-                backgroundImageUrl: data.settings.backgroundImageUrl || null,
                 surfaceColor: data.settings.surfaceColor || "#1F2937",
                 textColor: data.settings.textColor || "#F9FAFB",
                 textMuted: data.settings.textMuted || "#D1D5DB",
@@ -317,7 +314,6 @@ export default function BrandingTab() {
             secondaryHover: "#7C3AED",
             secondaryDark: "#6D28D9",
             backgroundColor: "#111827",
-            backgroundImageUrl: null,
             surfaceColor: "#1F2937",
             textColor: "#F9FAFB",
             textMuted: "#D1D5DB",
@@ -621,31 +617,6 @@ export default function BrandingTab() {
                             hint={t("admin.branding.surface_hint")}
                         />
                     </div>
-
-                    {/* Background Image URL */}
-                    <div className="mt-4">
-                        <label className="text-sm text-[var(--foreground)] block mb-2">
-                            {t("admin.branding.background_image_url")}
-                        </label>
-                        <input
-                            type="url"
-                            value={settings.backgroundImageUrl || ""}
-                            onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
-                            className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                            placeholder="https://example.com/background.jpg"
-                        />
-                        <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                            {t("admin.branding.background_image_url_hint")}
-                        </p>
-                        {settings.backgroundImageUrl && (
-                            <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
-                                <p className="text-xs text-[var(--foreground-muted)] mb-2">
-                                    {t("admin.branding.background_image_preview")}
-                                </p>
-                                <BackgroundImagePreview url={settings.backgroundImageUrl} />
-                            </div>
-                        )}
-                    </div>
                 </div>
 
                 {/* Text & Border Colors */}
@@ -855,50 +826,6 @@ export default function BrandingTab() {
                     {saving ? t("admin.settings.saving") : t("admin.settings.save")}
                 </button>
             </div>
-        </div>
-    );
-}
-
-function BackgroundImagePreview({ url }: { url: string }) {
-    const { t } = useTranslation();
-    const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
-
-    useEffect(() => {
-        setStatus("loading");
-        const img = new window.Image();
-        img.onload = () => setStatus("ok");
-        img.onerror = () => setStatus("error");
-        img.src = url;
-    }, [url]);
-
-    if (status === "loading") {
-        return (
-            <div className="w-full h-32 rounded-lg flex items-center justify-center bg-[var(--surface)]/30">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)]"></div>
-            </div>
-        );
-    }
-
-    if (status === "error") {
-        return (
-            <div className="w-full h-32 rounded-lg flex flex-col items-center justify-center bg-red-900/20 border border-red-800/50 text-red-400 text-sm gap-2">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-                {t("admin.branding.background_image_error", "Unable to load image. Check that the URL points to a valid image.")}
-            </div>
-        );
-    }
-
-    return (
-        <div className="relative w-full h-32 rounded-lg overflow-hidden">
-            <Image
-                src={url}
-                alt="Background preview"
-                fill
-                className="object-cover"
-                onError={() => setStatus("error")}
-            />
         </div>
     );
 }

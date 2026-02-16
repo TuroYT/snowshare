@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors"
 import fs from "fs"
 import path from "path"
 
@@ -32,12 +31,12 @@ interface GitHubRelease {
   body: string
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-
+    
     if (!session?.user?.id) {
-      return apiError(request, ErrorCode.UNAUTHORIZED)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Check if user is admin
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user?.isAdmin) {
-      return apiError(request, ErrorCode.ADMIN_ONLY)
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
     
     // Fetch latest release from GitHub
@@ -90,7 +89,10 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error("Version check error:", error)
-    return internalError(request)
+    return NextResponse.json(
+      { error: "Failed to check version" },
+      { status: 500 }
+    )
   }
 }
 

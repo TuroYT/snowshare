@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // GET – Retrieve all links
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const links = await prisma.customLink.findMany({
             orderBy: { createdAt: "asc" }
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ links }, { status: 200 });
     } catch (error) {
         console.error("Error fetching custom links:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to fetch custom links" }, { status: 500 });
     }
 }
 
@@ -24,7 +23,7 @@ export async function POST(request: NextRequest) {
 
         // Checking admin permissions
         if (!session?.user?.id) {
-            return apiError(request, ErrorCode.UNAUTHORIZED);
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const user = await prisma.user.findUnique({
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!user?.isAdmin) {
-            return apiError(request, ErrorCode.ADMIN_ONLY);
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         const body = await request.json();
@@ -40,22 +39,22 @@ export async function POST(request: NextRequest) {
 
         // Validation
         if (!name || !url) {
-            return apiError(request, ErrorCode.MISSING_DATA);
+            return NextResponse.json({ error: "Name and URL are required" }, { status: 400 });
         }
 
         if (typeof name !== "string" || !name.trim()) {
-            return apiError(request, ErrorCode.LINK_NAME_REQUIRED);
+            return NextResponse.json({ error: "Name must be a non-empty string" }, { status: 400 });
         }
 
         if (typeof url !== "string" || !url.trim()) {
-            return apiError(request, ErrorCode.LINK_URL_REQUIRED);
+            return NextResponse.json({ error: "URL must be a non-empty string" }, { status: 400 });
         }
 
         // URL Validation
         try {
             new URL(url.trim());
         } catch {
-            return apiError(request, ErrorCode.LINK_URL_INVALID);
+            return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
         }
 
         const link = await prisma.customLink.create({
@@ -68,6 +67,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ link }, { status: 201 });
     } catch (error) {
         console.error("Error creating custom link:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to create custom link" }, { status: 500 });
     }
 }

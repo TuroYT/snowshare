@@ -6,49 +6,36 @@ import { encrypt } from "@/lib/crypto-link";
 import crypto from "crypto";
 import { isValidUrl as validateUrl } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
-import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { NextRequest } from "next/server";
-import { ErrorCode } from "@/lib/api-errors";
-import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
 
 export const createLinkShare = async (
     urlOriginal: string,
     request: NextRequest,
     expiresAt?: Date,
     slug?: string,
-    password?: string,
-    maxViews?: number
+    password?: string
 ) => {
-    // Check if slug already exists
-    if (slug) {
-        const existingShare = await prisma.share.findUnique({ where: { slug } });
-        if (existingShare) {
-            return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
-        }
-    }
-
     // Validate original URL format and protocol
     const urlValidation = validateUrl(urlOriginal);
     if (!urlValidation.valid) {
-        return { errorCode: ErrorCode.INVALID_URL };
+        return { error: urlValidation.error || "Invalid original URL" };
     }
 
     // Validate slug if provided
     if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-        return { errorCode: ErrorCode.SLUG_INVALID };
+        return {
+            error: "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."
+        };
     }
 
     // Validate expiration date if provided
     if (expiresAt && new Date(expiresAt) <= new Date()) {
-        return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+        return { error: "Expiration date must be in the future." };
     }
 
     if (password) {
-        if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
-            return {
-                errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
-                params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH }
-            };
+        if (password.length < 6 || password.length > 100) {
+            return { error: "Password must be between 6 and 100 characters." };
         }
     }
 
@@ -58,20 +45,19 @@ export const createLinkShare = async (
         // Check if anonymous link sharing is allowed
         const settings = await prisma.settings.findFirst();
         if (settings && !settings.allowAnonLinkShare) {
-            return { errorCode: ErrorCode.ANON_LINK_SHARE_DISABLED };
+            return { error: "Anonymous users are not allowed to create link shares. Please log in." };
         }
-
+        
         if (expiresAt) {
             const maxExpiry = new Date();
             maxExpiry.setDate(maxExpiry.getDate() + 7);
             if (new Date(expiresAt) > maxExpiry) {
                 return {
-                    errorCode: ErrorCode.EXPIRATION_TOO_FAR,
-                    params: { days: 7 }
+                    error: "Unauthenticated users cannot create shares that expire beyond 7 days."
                 };
             }
         } else {
-            return { errorCode: ErrorCode.EXPIRATION_REQUIRED };
+            return { error: "Unauthenticated users must provide an expiration date." };
         }
     }
 
@@ -92,9 +78,6 @@ export const createLinkShare = async (
         } while (await prisma.share.findUnique({ where: { slug } }));
     }
 
-    // Validate maxViews if provided
-    const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
-
     // create the link share
     const linkShare = await prisma.share.create({
         data: {
@@ -104,12 +87,9 @@ export const createLinkShare = async (
             password: password || null,
             ownerId: session?.user?.id || null,
             type: "URL",
-            ipSource: getClientIp(request),
-            maxViews: parsedMaxViews,
+            ipSource: getClientIp(request)
         }
     });
-
-    lookupIpGeolocation(getClientIp(request));
 
     return { linkShare };
 };

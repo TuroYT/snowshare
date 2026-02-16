@@ -14,7 +14,7 @@ import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
-
+import { convertFromMB, getUnitLabel } from "./src/lib/formatSize.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -126,26 +126,16 @@ function generateSafeFilename(originalName, shareId) {
   return `${shareId}_${baseName}${ext}`;
 }
 
-// Calculate IP usage for quota (single + bulk uploads)
+// Calculate IP usage for quota
 async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   const shares = await prisma.share.findMany({
-    where: { ipSource: clientIp, type: "FILE" },
-    select: {
-      filePath: true,
-      isBulk: true,
-      files: { select: { size: true } },
-    },
+    where: { ipSource: clientIp, type: "FILE", filePath: { not: null } },
+    select: { filePath: true },
   });
-
+  
   let totalSize = 0;
   for (const share of shares) {
-    if (share.isBulk && share.files?.length > 0) {
-      // Bulk upload: sum ShareFile sizes
-      for (const file of share.files) {
-        totalSize += Number(file.size);
-      }
-    } else if (share.filePath) {
-      // Single upload: stat file on disk
+    if (share.filePath) {
       const fullPath = path.join(uploadsDir, share.filePath);
       try {
         const stats = await stat(fullPath);
@@ -222,16 +212,21 @@ const tusServer = new TusServer({
     const settings = await prisma.settings.findFirst();
     
     let maxFileSizeMB, ipQuotaMB;
+    let useGiBForDisplay;
     if (isAuthenticated) {
       maxFileSizeMB = settings?.authMaxUpload || 51200;
       ipQuotaMB = settings?.authIpQuota || 102400;
+      useGiBForDisplay = settings?.useGiBForAuth ?? false;
     } else {
       maxFileSizeMB = settings?.anoMaxUpload || 2048;
       ipQuotaMB = settings?.anoIpQuota || 4096;
+      useGiBForDisplay = settings?.useGiBForAnon ?? false;
     }
-
+    
     const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
     const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
+    const unitLabel = getUnitLabel(useGiBForDisplay);
+    const maxFileSizeDisplay = convertFromMB(maxFileSizeMB, useGiBForDisplay);
 
     // Check file size limit
     // upload.size property contains the size from the Upload-Length header
@@ -241,43 +236,37 @@ const tusServer = new TusServer({
     // If size is available, check it against limits
     if (uploadSize !== undefined && uploadSize !== null) {
       if (uploadSize > maxFileSizeBytes) {
-        const body = { error: "FILE_TOO_LARGE" };
+        const body = { error: `File size exceeds the allowed limit of ${maxFileSizeDisplay} ${unitLabel}.` };
         throw { status_code: 413, body: JSON.stringify(body) };
       }
-
-      // Check IP quota
-      let currentUsage;
-      try {
-        currentUsage = await calculateIpUsage(prisma, clientIp, uploadsDir);
-      } catch (error) {
-        console.error("Error calculating IP usage:", error);
-        currentUsage = 0;
-      }
-
-      const remainingQuota = ipQuotaBytes - currentUsage;
-
-      if (remainingQuota <= 0 || uploadSize > remainingQuota) {
-        const body = { error: "IP_QUOTA_EXCEEDED" };
-        throw { status_code: 429, body: JSON.stringify(body) };
+      
+      // Check quota for anonymous users
+      if (!isAuthenticated) {
+        try {
+          const currentUsage = await calculateIpUsage(prisma, clientIp, uploadsDir);
+          const remainingQuota = ipQuotaBytes - currentUsage;
+          
+          if (remainingQuota <= 0) {
+            const body = { error: `IP quota exceeded. Sign in for higher limits.` };
+            throw { status_code: 429, body: JSON.stringify(body) };
+          }
+          
+          if (uploadSize > remainingQuota) {
+            const remainingQuotaMB = Math.round(remainingQuota / (1024 * 1024));
+            const remainingDisplay = convertFromMB(remainingQuotaMB, useGiBForDisplay);
+            const body = { error: `File would exceed your quota. Remaining: ${remainingDisplay} ${unitLabel}` };
+            throw { status_code: 429, body: JSON.stringify(body) };
+          }
+        } catch (error) {
+          console.error("Error calculating IP usage:", error);
+          // If quota check fails, we might want to fail open or closed. 
+          // Failing closed (prevent upload) is safer for quotas.
+          // But preventing crash is Priority #1
+        }
       }
     } else {
         // If size is NOT available (deferred length), checking quota is harder.
         // For now, we allow start, but we should probably limit max content length header if possible
-    }
-
-    // Validate slug before upload starts
-    const metadata = upload.metadata || {};
-    const slug = metadata.slug?.trim();
-    if (slug) {
-      if (!/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
-        const body = { error: "SLUG_INVALID" };
-        throw { status_code: 400, body: JSON.stringify(body) };
-      }
-      const existingShare = await prisma.share.findUnique({ where: { slug } });
-      if (existingShare) {
-        const body = { error: "SLUG_ALREADY_TAKEN" };
-        throw { status_code: 409, body: JSON.stringify(body) };
-      }
     }
 
     // metadata is provided by the client and persisted by tus
@@ -296,13 +285,6 @@ const tusServer = new TusServer({
       const slug = metadata.slug || "";
       const password = metadata.password || "";
       const expiresAt = metadata.expiresAt || "";
-      const maxViewsRaw = metadata.maxViews ? parseInt(metadata.maxViews) : null;
-      const maxViews = maxViewsRaw && maxViewsRaw > 0 ? maxViewsRaw : null;
-      const isBulk = metadata.isBulk === "true";
-      const bulkShareId = metadata.bulkShareId || "";
-      const relativePath = metadata.relativePath || filename;
-      const fileIndex = metadata.fileIndex ? parseInt(metadata.fileIndex) : 0;
-      const totalFiles = metadata.totalFiles ? parseInt(metadata.totalFiles) : 1;
       
       // Get metadata by upload ID
       const uploadId = upload.id;
@@ -318,201 +300,99 @@ const tusServer = new TusServer({
       // Clean up
       uploadMetadata.delete(uploadId);
 
-      let share;
-      
-      if (isBulk && bulkShareId) {
-        share = await prisma.share.findUnique({ where: { id: bulkShareId } });
-        
-        if (!share) {
-          console.error(`[Upload] Bulk share not found: ${bulkShareId}`);
-          throw new Error("Bulk share not found");
-        }
-      } else if (isBulk && fileIndex === 0) {
-        let finalSlug = slug;
-        if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
-          const body = { error: "SLUG_INVALID" };
-          throw { status_code: 400, body: JSON.stringify(body) };
-        }
-
-        if (finalSlug) {
-          const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
-          if (existing) {
-            const body = { error: "SLUG_ALREADY_TAKEN" };
-            throw { status_code: 409, body: JSON.stringify(body) };
-          }
-        }
-        if (!finalSlug) {
-          finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
-        }
-
-        let parsedExpiresAt = null;
-        if (expiresAt) {
-          parsedExpiresAt = new Date(expiresAt);
-          if (isNaN(parsedExpiresAt.getTime())) {
-            parsedExpiresAt = null;
-          }
-        }
-
-        if (!isAuthenticated) {
-          const defaultExpiry = new Date();
-          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
-          
-          if (!parsedExpiresAt) {
-            parsedExpiresAt = defaultExpiry;
-          } else {
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
-            if (parsedExpiresAt > maxExpiry) {
-              parsedExpiresAt = maxExpiry;
-            }
-          }
-        }
-
-        let hashedPassword = null;
-        if (password) {
-          const bcrypt = await import("bcryptjs");
-          hashedPassword = await bcrypt.default.hash(password, 12);
-        }
-
-        share = await prisma.share.create({
-          data: {
-            slug: finalSlug,
-            type: "FILE",
-            password: hashedPassword,
-            expiresAt: parsedExpiresAt,
-            ipSource: clientIp,
-            ownerId: userId || null,
-            isBulk: true,
-            maxViews,
-          },
-        });
-
-        console.log(`Created bulk share: ${share.slug}`);
-      } else {
-        let finalSlug = slug;
-        if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
-          const body = { error: "SLUG_INVALID" };
-          throw { status_code: 400, body: JSON.stringify(body) };
-        }
-
-        if (finalSlug) {
-          const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
-          if (existing) {
-            const body = { error: "SLUG_ALREADY_TAKEN" };
-            throw { status_code: 409, body: JSON.stringify(body) };
-          }
-        }
-        if (!finalSlug) {
-          finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
-        }
-
-        let parsedExpiresAt = null;
-        if (expiresAt) {
-          parsedExpiresAt = new Date(expiresAt);
-          if (isNaN(parsedExpiresAt.getTime())) {
-            parsedExpiresAt = null;
-          }
-        }
-
-        if (!isAuthenticated) {
-          const defaultExpiry = new Date();
-          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
-          
-          if (!parsedExpiresAt) {
-            parsedExpiresAt = defaultExpiry;
-          } else {
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
-            if (parsedExpiresAt > maxExpiry) {
-              parsedExpiresAt = maxExpiry;
-            }
-          }
-        }
-
-        let hashedPassword = null;
-        if (password) {
-          const bcrypt = await import("bcryptjs");
-          hashedPassword = await bcrypt.default.hash(password, 12);
-        }
-
-        share = await prisma.share.create({
-          data: {
-            slug: finalSlug,
-            type: "FILE",
-            filePath: "",
-            password: hashedPassword,
-            expiresAt: parsedExpiresAt,
-            ipSource: clientIp,
-            ownerId: userId || null,
-            isBulk: false,
-            maxViews,
-          },
-        });
+      // Validate slug if provided
+      let finalSlug = slug;
+      if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
+        finalSlug = "";
       }
 
+      // Check slug uniqueness
+      if (finalSlug) {
+        const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
+        if (existing) {
+          finalSlug = "";
+        }
+      }
+      if (!finalSlug) {
+        finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
+      }
+
+      // Parse expiration
+      let parsedExpiresAt = null;
+      if (expiresAt) {
+        parsedExpiresAt = new Date(expiresAt);
+        if (isNaN(parsedExpiresAt.getTime())) {
+          parsedExpiresAt = null;
+        }
+      }
+
+      // Anonymous expiration rules
+      if (!isAuthenticated) {
+        const defaultExpiry = new Date();
+        defaultExpiry.setDate(defaultExpiry.getDate() + 7);
+        
+        if (!parsedExpiresAt) {
+          parsedExpiresAt = defaultExpiry;
+        } else {
+          const maxExpiry = new Date();
+          maxExpiry.setDate(maxExpiry.getDate() + 7);
+          if (parsedExpiresAt > maxExpiry) {
+            parsedExpiresAt = maxExpiry;
+          }
+        }
+      }
+
+      // Hash password if provided
+      let hashedPassword = null;
+      if (password) {
+        const bcrypt = await import("bcryptjs");
+        hashedPassword = await bcrypt.default.hash(password, 12);
+      }
+
+      // Create database record
+      const share = await prisma.share.create({
+        data: {
+          slug: finalSlug,
+          type: "FILE",
+          filePath: "",
+          password: hashedPassword,
+          expiresAt: parsedExpiresAt,
+          ipSource: clientIp,
+          ownerId: userId || null,
+        },
+      });
+
+      // Move file from tus temp to final location
       const tusFilePath = path.join(tusTempDir, upload.id);
       const finalFileName = generateSafeFilename(filename, share.id);
       const finalFilePath = path.join(uploadsDir, finalFileName);
 
       await rename(tusFilePath, finalFilePath);
 
+      // Clean up tus metadata file
       const tusMetaPath = `${tusFilePath}.json`;
       if (existsSync(tusMetaPath)) {
         await unlink(tusMetaPath);
       }
 
-      if (isBulk) {
-        const fileStats = await stat(finalFilePath);
-        // Re-validate the bulk share exists to avoid FK errors if it was removed between checks
-        const currentShare = await prisma.share.findUnique({ where: { id: share.id }, select: { id: true, slug: true } });
+      // Update database
+      await prisma.share.update({
+        where: { id: share.id },
+        data: { filePath: finalFileName },
+      });
 
-        if (!currentShare) {
-          console.error(`[Upload] Bulk share disappeared before linking file: ${share.id}`);
-          await unlink(finalFilePath).catch(() => {});
-          throw new Error("Bulk share no longer exists");
-        }
-        
-        try {
-          await prisma.shareFile.create({
-            data: {
-              shareId: share.id,
-              filePath: finalFileName,
-              originalName: filename,
-              relativePath: relativePath,
-              size: BigInt(fileStats.size),
-              mimeType: metadata.filetype || "application/octet-stream",
-            },
-          });
-          
-          console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
-        } catch (error) {
-          // Clean up the file if we fail to persist the DB relation to avoid orphaned disk usage
-          await unlink(finalFilePath).catch(() => {});
-          if (error?.code === "P2003") {
-            console.error(`[Upload] FK constraint when linking bulk file to share ${share.id}:`, error);
-            throw new Error("Bulk share reference missing during file finalize");
-          }
-          throw error;
-        }
-      } else {
-        await prisma.share.update({
-          where: { id: share.id },
-          data: { filePath: finalFileName },
-        });
-        
-        console.log(`Upload complete: ${filename} -> ${share.slug}`);
-      }
+      console.log(`Upload complete: ${filename} -> ${share.slug}`);
 
+      // Return custom headers for the client
       return {
         headers: {
           "X-Share-Slug": share.slug,
-          "X-Share-Id": share.id,
-          "X-Share-Expires": share.expiresAt?.toISOString() || "",
-          "X-Is-Bulk": isBulk ? "true" : "false",
+          "X-Share-Expires": share.expiresAt?.toISOString() || ""
         }
       };
     } catch (err) {
       console.error("Error finalizing upload:", err);
+      // Don't throw here to avoid 500 to client if possible, but logging is essential
       throw err;
     }
   },

@@ -57,7 +57,7 @@ const PasteShare: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-full overflow-hidden text-left">
+    <div className="w-full max-w-full overflow-hidden">
       {/* Header avec icône */}
       <div className="flex items-center gap-4 mb-6 lg:hidden justify-center">
         <div
@@ -94,7 +94,7 @@ const PasteShare: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
         {/* Grand éditeur de code */}
         <div className="flex-1 min-w-0 max-w-full flex-container-safe">
-          <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[80vh]">
+          <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[70vh]">
             <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
               <div
                 className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
@@ -133,7 +133,7 @@ const PasteShare: React.FC = () => {
         </div>
 
         {/* Formulaire à droite sur desktop, en bas sur mobile */}
-        <div className="w-full lg:w-[32rem] lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
+        <div className="w-full lg:w-96 lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
           <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50">
             <ManageCodeBlock
               code={code}
