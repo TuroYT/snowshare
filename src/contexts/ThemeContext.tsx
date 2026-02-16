@@ -257,9 +257,9 @@ function loadGoogleFont(fontFamily: string) {
     )
     
     // Remove any previously injected Google Font link
-    const existingLink = document.getElementById(linkId)
+    const existingLink = document.getElementById(linkId);
     if (existingLink) {
-      existingLink.remove()
+      existingLink.remove();
     }
     
     return
