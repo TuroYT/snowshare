@@ -2,6 +2,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { maskSecret, unmaskSecret } from "@/lib/secret-masking"
+import { securitySettingsSchema } from "@/lib/validation-schemas"
+import { logSecuritySettingsUpdated } from "@/lib/security-logger"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -38,13 +41,13 @@ export async function GET() {
       smtpPort: settings.smtpPort,
       smtpSecure: settings.smtpSecure ?? true,
       smtpUser: settings.smtpUser,
-      smtpPassword: settings.smtpPassword ? "********" : null, // Mask password
+      smtpPassword: maskSecret(settings.smtpPassword, "smtp-password"),
       smtpFromEmail: settings.smtpFromEmail,
       smtpFromName: settings.smtpFromName,
       captchaEnabled: settings.captchaEnabled ?? false,
       captchaProvider: settings.captchaProvider,
       captchaSiteKey: settings.captchaSiteKey,
-      captchaSecretKey: settings.captchaSecretKey ? "********" : null, // Mask secret key
+      captchaSecretKey: maskSecret(settings.captchaSecretKey, "captcha-secret"),
     })
   } catch (error) {
     console.error("Error fetching security settings:", error)
@@ -69,8 +72,18 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const data = await request.json()
-
+    const body = await request.json()
+    
+    // Validate input with Zod
+    const validation = securitySettingsSchema.safeParse(body)
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: validation.error.format() },
+        { status: 400 }
+      )
+    }
+    
+    const data = validation.data
     let settings = await prisma.settings.findFirst()
 
     const updateData: Record<string, unknown> = {}
@@ -88,9 +101,13 @@ export async function PATCH(request: Request) {
     if (data.smtpFromEmail !== undefined) updateData.smtpFromEmail = data.smtpFromEmail
     if (data.smtpFromName !== undefined) updateData.smtpFromName = data.smtpFromName
     
-    // Only update password if it's not the masked value
-    if (data.smtpPassword !== undefined && data.smtpPassword !== "********") {
-      updateData.smtpPassword = data.smtpPassword
+    // Unmask password - keep original if masked sentinel provided
+    if (data.smtpPassword !== undefined) {
+      updateData.smtpPassword = unmaskSecret(
+        data.smtpPassword,
+        "smtp-password",
+        settings?.smtpPassword || null
+      )
     }
 
     // CAPTCHA settings
@@ -98,9 +115,13 @@ export async function PATCH(request: Request) {
     if (data.captchaProvider !== undefined) updateData.captchaProvider = data.captchaProvider
     if (data.captchaSiteKey !== undefined) updateData.captchaSiteKey = data.captchaSiteKey
     
-    // Only update secret key if it's not the masked value
-    if (data.captchaSecretKey !== undefined && data.captchaSecretKey !== "********") {
-      updateData.captchaSecretKey = data.captchaSecretKey
+    // Unmask secret key - keep original if masked sentinel provided
+    if (data.captchaSecretKey !== undefined) {
+      updateData.captchaSecretKey = unmaskSecret(
+        data.captchaSecretKey,
+        "captcha-secret",
+        settings?.captchaSecretKey || null
+      )
     }
 
     if (!settings) {
@@ -114,20 +135,26 @@ export async function PATCH(request: Request) {
       })
     }
 
-    // Return masked passwords
+    // Log security settings update
+    const changes = Object.keys(updateData).filter(
+      key => !key.includes("Password") && !key.includes("SecretKey")
+    )
+    logSecuritySettingsUpdated(session.user.id, changes)
+
+    // Return masked secrets
     return NextResponse.json({
       requireEmailVerification: settings.requireEmailVerification,
       smtpHost: settings.smtpHost,
       smtpPort: settings.smtpPort,
       smtpSecure: settings.smtpSecure,
       smtpUser: settings.smtpUser,
-      smtpPassword: settings.smtpPassword ? "********" : null,
+      smtpPassword: maskSecret(settings.smtpPassword, "smtp-password"),
       smtpFromEmail: settings.smtpFromEmail,
       smtpFromName: settings.smtpFromName,
       captchaEnabled: settings.captchaEnabled,
       captchaProvider: settings.captchaProvider,
       captchaSiteKey: settings.captchaSiteKey,
-      captchaSecretKey: settings.captchaSecretKey ? "********" : null,
+      captchaSecretKey: maskSecret(settings.captchaSecretKey, "captcha-secret"),
     })
   } catch (error) {
     console.error("Error updating security settings:", error)

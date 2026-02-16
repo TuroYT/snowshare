@@ -572,5 +572,41 @@
     "error_generic": "Er is een fout opgetreden",
     "error_url_not_found": "URL niet gevonden",
     "error_connection": "Verbindingsfout"
+  },
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ CAPTCHA-beveiliging inschakelen?",
+      "captcha_message": "Belangrijk: Test uw configuratie met de knop 'CAPTCHA testen' voordat u CAPTCHA inschakelt.",
+      "captcha_risk_1": "Als de CAPTCHA-sleutels onjuist zijn, kan NIEMAND nieuwe accounts registreren",
+      "captcha_risk_2": "U kunt zichzelf buitensluiten van het aanmaken van nieuwe beheerdersaccounts",
+      "captcha_risk_3": "Bestaande gebruikers worden niet beïnvloed, maar nieuwe registraties worden geblokkeerd",
+      "captcha_recommendation": "✅ Aanbevolen: Test eerst uw CAPTCHA-configuratie en schakel deze vervolgens in.",
+      "email_title": "⚠️ E-mailverificatie inschakelen?",
+      "email_message": "Belangrijk: Test uw SMTP-configuratie voordat u e-mailverificatie inschakelt.",
+      "email_risk_1": "Als de SMTP-instellingen onjuist zijn, ontvangen gebruikers geen verificatie-e-mails",
+      "email_risk_2": "Nieuwe gebruikers kunnen de registratie niet voltooien",
+      "email_risk_3": "U kunt zichzelf buitensluiten als u een nieuw account aanmaakt",
+      "email_risk_4": "Bestaande gebruikers worden NIET beïnvloed",
+      "email_recommendation": "✅ Aanbevolen: Stuur eerst een test-e-mail om te controleren of SMTP correct werkt.",
+      "potential_risks": "⚠️ Potentiële risico's:",
+      "cancel": "Annuleren",
+      "confirm": "Ik begrijp het, inschakelen"
+    },
+    "test_captcha": {
+      "title": "CAPTCHA-configuratie testen",
+      "description": "Test uw CAPTCHA-configuratie voordat u deze inschakelt om een vergrendeling te voorkomen.",
+      "button_test": "CAPTCHA-sleutels testen",
+      "button_testing": "Configuratie testen...",
+      "success": "CAPTCHA-configuratie is geldig!",
+      "error_config": "Configureer eerst de CAPTCHA-provider en sleutels",
+      "error_failed": "CAPTCHA-configuratietest mislukt"
+    },
+    "test_email": {
+      "button_send": "Test-e-mail verzenden",
+      "button_sending": "Verzenden...",
+      "success": "Test-e-mail succesvol verzonden!",
+      "error_no_address": "Voer een e-mailadres in",
+      "error_failed": "Verzenden van test-e-mail mislukt"
+    }
   }
 }

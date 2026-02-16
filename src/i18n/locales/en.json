@@ -569,5 +569,41 @@
     "error_generic": "An error occurred",
     "error_url_not_found": "URL not found",
     "error_connection": "Connection error"
+  },
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ Enable CAPTCHA Protection?",
+      "captcha_message": "Important: Before enabling CAPTCHA, please test your configuration using the 'Test CAPTCHA' button.",
+      "captcha_risk_1": "If CAPTCHA keys are incorrect, NO ONE will be able to register new accounts",
+      "captcha_risk_2": "You may lock yourself out from creating new admin accounts",
+      "captcha_risk_3": "Existing users won't be affected, but new signups will be blocked",
+      "captcha_recommendation": "✅ Recommended: Test your CAPTCHA configuration first, then enable it.",
+      "email_title": "⚠️ Enable Email Verification?",
+      "email_message": "Important: Before enabling email verification, please test your SMTP configuration.",
+      "email_risk_1": "If SMTP settings are incorrect, users won't receive verification emails",
+      "email_risk_2": "New users won't be able to complete registration",
+      "email_risk_3": "You may lock yourself out if you create a new account",
+      "email_risk_4": "Existing users will NOT be affected",
+      "email_recommendation": "✅ Recommended: Send a test email first to verify SMTP is working correctly.",
+      "potential_risks": "⚠️ Potential Risks:",
+      "cancel": "Cancel",
+      "confirm": "I Understand, Enable It"
+    },
+    "test_captcha": {
+      "title": "Test CAPTCHA Configuration",
+      "description": "Test your CAPTCHA configuration before enabling it to prevent lockout.",
+      "button_test": "Test CAPTCHA Keys",
+      "button_testing": "Testing Configuration...",
+      "success": "CAPTCHA configuration is valid!",
+      "error_config": "Please configure CAPTCHA provider and keys first",
+      "error_failed": "CAPTCHA configuration test failed"
+    },
+    "test_email": {
+      "button_send": "Send Test Email",
+      "button_sending": "Sending...",
+      "success": "Test email sent successfully!",
+      "error_no_address": "Please enter an email address",
+      "error_failed": "Failed to send test email"
+    }
   }
 }

@@ -564,6 +564,40 @@
     "disclaimer": "Al acceder a este enlace, acepta que será descifrado y será redirigido a su destino.",
     "error_generic": "Ha ocurrido un error",
     "error_url_not_found": "URL no encontrada",
-    "error_connection": "Error de conexión"
-  }
+    "error_connection": "Error de conexión"  },
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ ¿Activar protección CAPTCHA?",
+      "captcha_message": "Importante: Antes de activar CAPTCHA, por favor prueba tu configuración usando el botón 'Probar CAPTCHA'.",
+      "captcha_risk_1": "Si las claves CAPTCHA son incorrectas, NADIE podrá registrar nuevas cuentas",
+      "captcha_risk_2": "Puedes bloquearte el acceso para crear nuevas cuentas de admin",
+      "captcha_risk_3": "Los usuarios existentes no se verán afectados, pero los nuevos registros serán bloqueados",
+      "captcha_recommendation": "✅ Recomendado: Prueba primero tu configuración CAPTCHA, luego actívala.",
+      "email_title": "⚠️ ¿Activar verificación por email?",
+      "email_message": "Importante: Antes de activar la verificación por email, por favor prueba tu configuración SMTP.",
+      "email_risk_1": "Si los ajustes SMTP son incorrectos, los usuarios no recibirán emails de verificación",
+      "email_risk_2": "Los nuevos usuarios no podrán completar el registro",
+      "email_risk_3": "Puedes bloquearte si creas una nueva cuenta",
+      "email_risk_4": "Los usuarios existentes NO se verán afectados",
+      "email_recommendation": "✅ Recomendado: Envía primero un email de prueba para verificar que SMTP funciona correctamente.",
+      "potential_risks": "⚠️ Riesgos potenciales:",
+      "cancel": "Cancelar",
+      "confirm": "Entiendo, activarlo"
+    },
+    "test_captcha": {
+      "title": "Probar configuración CAPTCHA",
+      "description": "Prueba tu configuración CAPTCHA antes de activarla para evitar el bloqueo.",
+      "button_test": "Probar claves CAPTCHA",
+      "button_testing": "Probando configuración...",
+      "success": "¡La configuración CAPTCHA es válida!",
+      "error_config": "Por favor configura primero el proveedor CAPTCHA y las claves",
+      "error_failed": "Falló la prueba de configuración CAPTCHA"
+    },
+    "test_email": {
+      "button_send": "Enviar email de prueba",
+      "button_sending": "Enviando...",
+      "success": "¡Email de prueba enviado con éxito!",
+      "error_no_address": "Por favor ingresa una dirección de email",
+      "error_failed": "Falló el envío del email de prueba"
+    }  }
 }
