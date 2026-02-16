@@ -1,20 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import { unlink } from "fs/promises";
 import path from "path";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 export async function DELETE(
-  request: NextRequest,
+  _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return apiError(request, ErrorCode.UNAUTHORIZED);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const currentUser = await prisma.user.findUnique({
@@ -23,7 +22,7 @@ export async function DELETE(
     });
 
     if (!currentUser?.isAdmin) {
-      return apiError(request, ErrorCode.ADMIN_ONLY);
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const { id: shareId } = await params;
@@ -33,7 +32,7 @@ export async function DELETE(
       select: { id: true, type: true, filePath: true, slug: true },
     });
     if (!share) {
-      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
+      return NextResponse.json({ error: "Share not found" }, { status: 404 });
     }
 
     if (share.type === "FILE" && share.filePath) {
@@ -51,6 +50,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting share (admin):", error);
-    return internalError(request);
+    return NextResponse.json({ error: "Error deleting share" }, { status: 500 });
   }
 }

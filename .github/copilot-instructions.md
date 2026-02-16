@@ -7,7 +7,7 @@
 - **Stack**: Next.js 15 (App Router) + React 19 + TypeScript + Prisma + NextAuth.js + TailwindCSS 4, PostgreSQL
 - **Key paths**: `src/app/` (routes), `src/components/` (UI), `src/lib/` (utilities), `src/i18n/` (i18n)
 - **Database**: PostgreSQL via Prisma; schema at `prisma/schema.prisma`, client at `src/generated/prisma/`
-- **i18n**: Client-side i18next, 6 locales (fr/en/es/de/nl/pl), auto-detected + localStorage cache
+- **i18n**: Client-side i18next, 4 locales (fr/en/es/de), auto-detected + localStorage cache
 
 # Architecture & data flow
 
@@ -82,6 +82,13 @@ npm run test:watch   # Watch mode
 npm run test:coverage # Coverage report
 ```
 
+**Test patterns**:
+- Unit tests: `src/__tests__/lib/*.test.ts` (utilities, validation)
+- Component tests: `src/__tests__/components/*.test.tsx` (React components)
+- API tests: `src/__tests__/api/**/*.test.ts` (API routes)
+- Use `describe()` for grouping, `it()` for individual tests
+- Mock Prisma and NextAuth in tests using Jest mocks
+
 ## Database
 ```bash
 npx prisma migrate dev --name <name>  # Create + apply migration
@@ -108,7 +115,7 @@ npm run cleanup:expired  # Remove expired shares (tsx script)
 # Project conventions
 
 ## API responses
-Always return JSON with consistent structure (use english for messages):
+Always return JSON with consistent structure:
 - **Success**: `{ share: {...} }`, `{ user: {...} }`, `{ message: "..." }`, `{ data: [...] }`
 - **Error**: `{ error: "message" }` with appropriate HTTP status (400, 401, 403, 409, 429, etc.)
 
@@ -123,9 +130,9 @@ Always return JSON with consistent structure (use english for messages):
 - State management: simple `useState` (no Redux/Zustand)
 
 ## Translations
-- Add keys to ALL 6 locale files in `src/i18n/locales/` when adding UI text
-- Fallback language is english (`en`)
-- Pattern: `t("section.key", "English default")`
+- Add keys to ALL 4 locale files in `src/i18n/locales/` when adding UI text
+- Fallback language is French (`fr`)
+- Pattern: `t("section.key", "French default")`
 
 ## Styling
 - TailwindCSS 4 and material ui
@@ -172,7 +179,7 @@ return NextResponse.json({ data: result });
 | Modify auth | `src/lib/auth.ts` (callbacks), `src/app/api/auth/register/route.ts` |
 | Add share type | `src/app/api/shares/`, new `(typeShare)/` folder + display at `src/app/(shares)/` |
 | Add UI component | `src/components/` — check Navigation.tsx for client/server patterns |
-| Add translation | All files in `src/i18n/locales/*.json` (fr, en, es, de, nl, pl) |
+| Add translation | All files in `src/i18n/locales/*.json` (fr, en, es, de) |
 | Change quotas | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` enforcement |
 | Database operations | All at `src/app/api/` routes; client at `src/generated/prisma` |
 
@@ -265,5 +272,5 @@ npm test             # Re-run tests
 - **Error handling**: Always validate input before DB queries; return 400 (bad), 401 (auth), 403 (forbidden), 429 (quota)
 - **Performance**: Use `next/image` for Image optimization; leverage Next.js caching and ISR where applicable
 - **Security**: Sanitize all user inputs; hash passwords with bcrypt (cost 12); use HTTPS in production
-- **Coding**: Use Best Practices for TypeScript, React and next.js; keep functions small and focused; add comments for complex logic
+- **Coding**: Use Best Practices for TypeScript and React; keep functions small and focused; add comments for complex logic
 

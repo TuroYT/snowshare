@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 /**
  * POST /api/user/accounts/validate-link
@@ -14,13 +13,13 @@ export async function POST(request: NextRequest) {
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
-            return apiError(request, ErrorCode.UNAUTHORIZED);
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { token } = await request.json();
 
         if (!token) {
-            return apiError(request, ErrorCode.TOKEN_REQUIRED);
+            return NextResponse.json({ error: "Token is required" }, { status: 400 });
         }
 
         const verificationToken = await prisma.verificationToken.findUnique({
@@ -28,13 +27,13 @@ export async function POST(request: NextRequest) {
         });
 
         if (!verificationToken) {
-            return apiError(request, ErrorCode.TOKEN_INVALID_OR_EXPIRED);
+            return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
         }
 
         // Expiry check
         if (verificationToken.expires < new Date()) {
             await prisma.verificationToken.delete({ where: { token } });
-            return apiError(request, ErrorCode.TOKEN_EXPIRED);
+            return NextResponse.json({ error: "Token expired" }, { status: 400 });
         }
 
         // Extract token information
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
             !session.user.email ||
             parts[1] !== session.user.email
         ) {
-            return apiError(request, ErrorCode.TOKEN_INVALID);
+            return NextResponse.json({ error: "Invalid token" }, { status: 400 });
         }
 
         const provider = parts[2];
@@ -59,7 +58,7 @@ export async function POST(request: NextRequest) {
 
         if (!linkedAccount) {
             await prisma.verificationToken.delete({ where: { token } });
-            return apiError(request, ErrorCode.ACCOUNT_LINKING_FAILED);
+            return NextResponse.json({ error: "Account linking failed" }, { status: 400 });
         }
 
         await prisma.verificationToken.delete({ where: { token } });
@@ -70,6 +69,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("Error validating link token:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to validate token" }, { status: 500 });
     }
 }

@@ -3,15 +3,22 @@ import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { createReadStream, statSync, existsSync } from "fs";
 import path from "path";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // Helper function to sanitize filename for Content-Disposition header
 function sanitizeFilename(filename: string): string {
+  // Remove or replace characters that could cause header injection
   const sanitized = filename
-    .replace(/[\r\n]/g, '')
-    .replace(/["\\/]/g, '_')
-    .replace(/[^\x20-\x7E]/g, '_');
+    .replace(/[\r\n]/g, '') // Remove newlines
+    .replace(/["\\/]/g, '_') // Replace quotes and slashes
+    .replace(/[^\x20-\x7E]/g, '_'); // Replace non-ASCII printable characters
   return sanitized;
+}
+
+function jsonResponse(body: unknown, status = 200) {
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { "Content-Type": "application/json" }
+    });
 }
 
 export async function GET(
@@ -19,37 +26,34 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-
+  
   if (!slug) {
-    return apiError(request, ErrorCode.MISSING_DATA);
+    return jsonResponse({ error: "Slug manquant" }, 400);
   }
 
   try {
+    // Get password from query params if provided
     const url = new URL(request.url);
     const password = url.searchParams.get("password") || undefined;
 
     const result = await getFileShare(slug, password);
-
-    if (result.errorCode) {
-      return apiError(request, result.errorCode);
-    }
-
-    if (result.share?.isBulk) {
-      return NextResponse.json({
-        error: "This is a bulk share. Use /bulk-download endpoint instead.",
-        isBulk: true
-      }, { status: 400 });
+    
+    if (result.error) {
+      const status = result.requiresPassword ? 403 : 404;
+      return jsonResponse({ error: result.error }, status);
     }
 
     const { filePath: fullPath, originalFilename } = result;
-
+    
     if (!fullPath || !existsSync(fullPath)) {
-      return apiError(request, ErrorCode.FILE_NOT_FOUND);
+      return jsonResponse({ error: "Fichier introuvable" }, 404);
     }
 
+    // Get file stats
     const stats = statSync(fullPath);
     const fileSize = stats.size;
-
+    
+    // Determine content type
     const ext = path.extname(fullPath).toLowerCase();
     const mimeTypes: Record<string, string> = {
       '.pdf': 'application/pdf',
@@ -73,20 +77,20 @@ export async function GET(
       '.ppt': 'application/vnd.ms-powerpoint',
       '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     };
-
+    
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     const safeFilename = sanitizeFilename(originalFilename || 'download');
 
     // Handle range request
     const range = request.headers.get("range");
-
+    
     if (range) {
       const rangeResult = parseRangeHeader(range, fileSize);
-
+      
       if (!rangeResult) {
-        return new Response(null, {
-          status: 416,
-          headers: { "Content-Range": `bytes */${fileSize}` }
+        return new Response(null, { 
+          status: 416, 
+          headers: { "Content-Range": `bytes */${fileSize}` } 
         });
       }
 
@@ -131,6 +135,6 @@ export async function GET(
 
   } catch (error) {
     console.error("Download error:", error);
-    return internalError(request);
+    return jsonResponse({ error: "Erreur lors du téléchargement" }, 500);
   }
 }

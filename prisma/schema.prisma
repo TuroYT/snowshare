@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
@@ -80,24 +80,6 @@ model Share {
   createdAt     DateTime   @default(now())
   expiresAt     DateTime?
   ipSource      String?
-  isBulk        Boolean    @default(false)
-  maxViews      Int?
-  viewCount     Int        @default(0)
-  files         ShareFile[]
-}
-
-model ShareFile {
-  id            String   @id @default(cuid())
-  shareId       String
-  share         Share    @relation(fields: [shareId], references: [id], onDelete: Cascade)
-  filePath      String
-  originalName  String
-  relativePath  String?
-  size          BigInt
-  mimeType      String?
-  createdAt     DateTime @default(now())
-
-  @@index([shareId])
 }
 
 model Settings {
@@ -131,7 +113,6 @@ model Settings {
   secondaryHover    String  @default("#7C3AED")  // Secondary color hover state
   secondaryDark     String  @default("#6D28D9")  // Dark version of secondary color
   backgroundColor   String  @default("#111827")  // Main background color
-  backgroundImageUrl String? // Custom background image URL (optional)
   surfaceColor      String  @default("#1F2937")  // Surface color (cards, panels)
   textColor         String  @default("#F9FAFB")  // Main text color
   textMuted         String  @default("#D1D5DB")  // Secondary/muted text color
@@ -171,19 +152,6 @@ enum ShareType {
   FILE
   PASTE
   URL
-}
-
-model IpLocalisation {
-  ip            String   @id
-  continentCode String?
-  continentName String?
-  countryCode   String?
-  countryName   String?
-  stateProv     String?
-  city          String?
-  status        String   @default("pending")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 }
 
 enum pasteType {

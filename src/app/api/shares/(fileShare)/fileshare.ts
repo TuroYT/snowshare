@@ -5,76 +5,44 @@ import path from "path";
 
 import { getUploadDir } from "@/lib/constants";
 import { existsSync } from "fs";
-import { ErrorCode } from "@/lib/api-errors";
+
+
 
 export const getFileShare = async (slug: string, password?: string) => {
-  const share = await prisma.share.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      slug: true,
-      type: true,
-      filePath: true,
-      password: true,
-      expiresAt: true,
-      isBulk: true,
-      maxViews: true,
-      viewCount: true,
-    }
-  });
-
+  const share = await prisma.share.findUnique({ where: { slug } });
+  
   if (!share || share.type !== "FILE") {
-    return { errorCode: ErrorCode.SHARE_NOT_FOUND };
+    return { error: "File share not found." };
   }
 
   if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-    return { errorCode: ErrorCode.SHARE_EXPIRED };
+    return { error: "This share has expired." };
   }
 
-  if (share.maxViews !== null && share.viewCount >= share.maxViews) {
-    return { errorCode: ErrorCode.SHARE_EXPIRED };
-  }
-
+  // Check password if required
   if (share.password) {
     if (!password) {
-      return { errorCode: ErrorCode.PASSWORD_REQUIRED, requiresPassword: true };
+      return { error: "Password required.", requiresPassword: true };
     }
-
+    
     const passwordValid = await bcrypt.compare(password, share.password);
     if (!passwordValid) {
-      return { errorCode: ErrorCode.PASSWORD_INCORRECT };
+      return { error: "Incorrect password." };
     }
-  }
-
-  if (share.isBulk) {
-    // Fetch only the file metadata needed for listing to avoid loading heavy columns
-    const files = await prisma.shareFile.findMany({
-      where: { shareId: share.id },
-      select: {
-        originalName: true,
-        relativePath: true,
-        size: true,
-      }
-    });
-
-    return {
-      share: { ...share, files },
-      isBulk: true,
-    };
   }
 
   if (!share.filePath) {
-    return { errorCode: ErrorCode.FILE_NOT_FOUND };
+    return { error: "File not found." };
   }
 
   const filePath = path.join(getUploadDir(), share.filePath);
   if (!existsSync(filePath)) {
-    return { errorCode: ErrorCode.FILE_NOT_FOUND };
+    return { error: "Physical file not found." };
   }
 
-  return {
+  return { 
     share,
     filePath,
-    originalFilename: share.filePath.split('_').slice(1).join('_')
+    originalFilename: share.filePath.split('_').slice(1).join('_') // Extract original name
   };
 };

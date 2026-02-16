@@ -2,18 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 /**
  * GET /api/user/accounts
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const authOptions = await getAuthOptions();
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
-            return apiError(request, ErrorCode.UNAUTHORIZED);
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const accounts = await prisma.account.findMany({
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ accounts });
     } catch (error) {
         console.error("Error fetching accounts:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 });
     }
 }
 
@@ -47,13 +46,13 @@ export async function DELETE(request: NextRequest) {
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
-            return apiError(request, ErrorCode.UNAUTHORIZED);
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const { accountId } = await request.json();
 
         if (!accountId) {
-            return apiError(request, ErrorCode.MISSING_DATA);
+            return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
         }
 
         const account = await prisma.account.findFirst({
@@ -64,7 +63,7 @@ export async function DELETE(request: NextRequest) {
         });
 
         if (!account) {
-            return apiError(request, ErrorCode.ACCOUNT_NOT_FOUND);
+            return NextResponse.json({ error: "Account not found" }, { status: 404 });
         }
 
         // Verify if it's the only authentication method
@@ -76,11 +75,14 @@ export async function DELETE(request: NextRequest) {
         });
 
         if (!user) {
-            return apiError(request, ErrorCode.USER_NOT_FOUND);
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
         if (!user.password && user.accounts.length <= 1) {
-            return apiError(request, ErrorCode.CANNOT_UNLINK_LAST_ACCOUNT);
+            return NextResponse.json(
+                { error: "Cannot remove the only authentication method. Please set a password first." },
+                { status: 400 }
+            );
         }
 
         await prisma.account.delete({
@@ -92,6 +94,6 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ message: "Account unlinked successfully" });
     } catch (error) {
         console.error("Error unlinking account:", error);
-        return internalError(request);
+        return NextResponse.json({ error: "Failed to unlink account" }, { status: 500 });
     }
 }
