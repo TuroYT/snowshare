@@ -145,6 +145,7 @@
     "verifying": "Vérification...",
     "files_in_share": "Fichiers dans ce partage",
     "password_incorrect": "Mot de passe incorrect"
+    "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce."
   },
   "home": {
     "title": "Bienvenue sur SnowShare",
@@ -237,7 +238,30 @@
     "signup_disabled_title": "Inscription désactivée",
     "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées.",
     "return_to_main_page": "Retour à la page principale",
-    "or_continue_with": "Ou continuez avec"
+    "or_continue_with": "Ou continuez avec",
+    "verify_email_title": "Vérifiez votre email",
+    "verify_email_sent": "Un email de vérification a été envoyé à",
+    "verify_email_instruction": "Veuillez cliquer sur le lien dans l'email pour vérifier votre compte avant de vous connecter.",
+    "verify_email_not_received": "Vous n'avez pas reçu l'email? Vérifiez votre dossier spam ou",
+    "verify_email_resend_link": "renvoyez l'email de vérification",
+    "verifying": "Vérification en cours...",
+    "verifying_message": "Veuillez patienter pendant que nous vérifions votre email.",
+    "email_verified_title": "Email vérifié!",
+    "email_verified_message": "Votre email a été vérifié avec succès. Vous allez être redirigé vers la page de connexion...",
+    "verification_failed_title": "Vérification échouée",
+    "resend_verification_title": "Renvoyer l'email de vérification",
+    "resend_verification_button": "Renvoyer l'email",
+    "resending": "Envoi en cours...",
+    "go_to_signin": "Aller à la connexion",
+    "back_to_signin": "Retour à la connexion",
+    "verification_token_missing": "Token de vérification manquant",
+    "verification_success_message": "Email vérifié avec succès! Vous pouvez maintenant vous connecter.",
+    "verification_failed_message": "Échec de la vérification de l'email",
+    "verification_error": "Erreur lors de la vérification de l'email",
+    "resend_success": "Email de vérification renvoyé! Veuillez vérifier votre boîte de réception.",
+    "resend_failed": "Échec de l'envoi de l'email de vérification",
+    "resend_error": "Erreur lors de l'envoi de l'email de vérification",
+    "enter_email_prompt": "Veuillez entrer votre adresse email"
   },
   "profile": {
     "title": "Mon Profil",
@@ -334,7 +358,8 @@
       "settings": "Paramètres",
       "branding": "Personnalisation",
       "logs": "Logs des partages",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "security": "Sécurité"
     },
     "oauth": {
       "title": "Fournisseurs OAuth",
@@ -671,5 +696,40 @@
       "invalid_expiration_date": "Date d'expiration invalide"
     },
     "file_protected": "Fichier protégé"
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ Activer la protection CAPTCHA ?",
+      "captcha_message": "Important : Avant d'activer le CAPTCHA, veuillez tester votre configuration en utilisant le bouton 'Tester le CAPTCHA'.",
+      "captcha_risk_1": "Si les clés CAPTCHA sont incorrectes, PERSONNE ne pourra créer de nouveaux comptes",
+      "captcha_risk_2": "Vous pourriez vous bloquer l'accès pour créer de nouveaux comptes admin",
+      "captcha_risk_3": "Les utilisateurs existants ne seront pas affectés, mais les nouvelles inscriptions seront bloquées",
+      "captcha_recommendation": "✅ Recommandé : Testez d'abord votre configuration CAPTCHA, puis activez-la.",
+      "email_title": "⚠️ Activer la vérification par email ?",
+      "email_message": "Important : Avant d'activer la vérification par email, veuillez tester votre configuration SMTP.",
+      "email_risk_1": "Si les paramètres SMTP sont incorrects, les utilisateurs ne recevront pas les emails de vérification",
+      "email_risk_2": "Les nouveaux utilisateurs ne pourront pas terminer leur inscription",
+      "email_risk_3": "Vous pourriez vous bloquer si vous créez un nouveau compte",
+      "email_risk_4": "Les utilisateurs existants ne seront PAS affectés",
+      "email_recommendation": "✅ Recommandé : Envoyez d'abord un email de test pour vérifier que SMTP fonctionne correctement.",
+      "potential_risks": "⚠️ Risques potentiels :",
+      "cancel": "Annuler",
+      "confirm": "Je comprends, l'activer"
+    },
+    "test_captcha": {
+      "title": "Tester la configuration CAPTCHA",
+      "description": "Testez votre configuration CAPTCHA avant de l'activer pour éviter le verrouillage.",
+      "button_test": "Tester les clés CAPTCHA",
+      "button_testing": "Test en cours...",
+      "success": "Configuration CAPTCHA valide !",
+      "error_config": "Veuillez d'abord configurer le fournisseur CAPTCHA et les clés",
+      "error_failed": "Échec du test de configuration CAPTCHA"
+    },
+    "test_email": {
+      "button_send": "Envoyer un email de test",
+      "button_sending": "Envoi en cours...",
+      "success": "Email de test envoyé avec succès !",
+      "error_no_address": "Veuillez entrer une adresse email",
+      "error_failed": "Échec de l'envoi de l'email de test"
+    }
   }
 }

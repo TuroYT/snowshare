@@ -37,6 +37,7 @@
     "@types/archiver": "^7.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/marked": "^5.0.2",
+    "@types/nodemailer": "^7.0.5",
     "@types/pg": "^8.15.5",
     "@uiw/codemirror-extensions-langs": "^4.25.1",
     "@uiw/codemirror-theme-atomone": "^4.25.1",
@@ -46,6 +47,7 @@
     "bcryptjs": "^3.0.2",
     "busboy": "^1.6.0",
     "clsx": "^2.1.1",
+    "crypto": "^1.0.1",
     "i18next": "^23.0.0",
     "i18next-browser-languagedetector": "^7.0.1",
     "marked": "^16.3.0",
@@ -53,6 +55,7 @@
     "next-auth": "^4.24.12",
     "next-plausible": "^3.12.5",
     "pdfjs-dist": "^5.4.624",
+    "nodemailer": "^7.0.12",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0",
     "qrcode.react": "^4.2.0",
@@ -64,7 +67,8 @@
     "reactjs-file-preview": "^1.0.11",
     "tailwind-merge": "^3.4.0",
     "tsx": "^4.21.0",
-    "tus-js-client": "^4.3.1"
+    "tus-js-client": "^4.3.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",

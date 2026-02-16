@@ -233,7 +233,30 @@
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt.",
     "return_to_main_page": "Zurück zur Hauptseite",
-    "or_continue_with": "Oder fahren Sie fort mit"
+    "or_continue_with": "Oder fahren Sie fort mit",
+    "verify_email_title": "E-Mail bestätigen",
+    "verify_email_sent": "Eine Bestätigungs-E-Mail wurde gesendet an",
+    "verify_email_instruction": "Bitte klicken Sie auf den Link in der E-Mail, um Ihr Konto zu bestätigen, bevor Sie sich anmelden.",
+    "verify_email_not_received": "E-Mail nicht erhalten? Überprüfen Sie Ihren Spam-Ordner oder",
+    "verify_email_resend_link": "Bestätigungs-E-Mail erneut senden",
+    "verifying": "Überprüfung läuft...",
+    "verifying_message": "Bitte warten Sie, während wir Ihre E-Mail bestätigen.",
+    "email_verified_title": "E-Mail bestätigt!",
+    "email_verified_message": "Ihre E-Mail wurde erfolgreich bestätigt. Sie werden zur Anmeldeseite weitergeleitet...",
+    "verification_failed_title": "Bestätigung fehlgeschlagen",
+    "resend_verification_title": "Bestätigungs-E-Mail erneut senden",
+    "resend_verification_button": "E-Mail erneut senden",
+    "resending": "Wird gesendet...",
+    "go_to_signin": "Zur Anmeldung",
+    "back_to_signin": "Zurück zur Anmeldung",
+    "verification_token_missing": "Bestätigungstoken fehlt",
+    "verification_success_message": "E-Mail erfolgreich bestätigt! Sie können sich jetzt anmelden.",
+    "verification_failed_message": "E-Mail-Bestätigung fehlgeschlagen",
+    "verification_error": "Fehler bei der E-Mail-Bestätigung",
+    "resend_success": "Bestätigungs-E-Mail erneut gesendet! Bitte überprüfen Sie Ihren Posteingang.",
+    "resend_failed": "Fehler beim Senden der Bestätigungs-E-Mail",
+    "resend_error": "Fehler beim Senden der Bestätigungs-E-Mail",
+    "enter_email_prompt": "Bitte geben Sie Ihre E-Mail-Adresse ein"
   },
   "profile": {
     "title": "Mein Profil",
@@ -330,7 +353,8 @@
       "settings": "Einstellungen",
       "branding": "Branding",
       "logs": "Freigabe-Logs",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "security": "Sicherheit"
     },
     "oauth": {
       "title": "OAuth-Anbieter",
@@ -667,5 +691,40 @@
       "invalid_expiration_date": "Ungültiges Ablaufdatum"
     },
     "file_protected": "Geschützte Datei"
+  "security": {
+    "warning_modal": {
+      "captcha_title": "⚠️ CAPTCHA-Schutz aktivieren?",
+      "captcha_message": "Wichtig: Bevor Sie CAPTCHA aktivieren, testen Sie bitte Ihre Konfiguration mit der Schaltfläche 'CAPTCHA testen'.",
+      "captcha_risk_1": "Wenn die CAPTCHA-Schlüssel falsch sind, kann NIEMAND neue Konten registrieren",
+      "captcha_risk_2": "Sie könnten sich selbst aussperren und keine neuen Admin-Konten erstellen können",
+      "captcha_risk_3": "Bestehende Benutzer sind nicht betroffen, aber neue Registrierungen werden blockiert",
+      "captcha_recommendation": "✅ Empfohlen: Testen Sie zuerst Ihre CAPTCHA-Konfiguration und aktivieren Sie sie dann.",
+      "email_title": "⚠️ E-Mail-Verifizierung aktivieren?",
+      "email_message": "Wichtig: Bevor Sie die E-Mail-Verifizierung aktivieren, testen Sie bitte Ihre SMTP-Konfiguration.",
+      "email_risk_1": "Wenn die SMTP-Einstellungen falsch sind, erhalten Benutzer keine Verifizierungs-E-Mails",
+      "email_risk_2": "Neue Benutzer können die Registrierung nicht abschließen",
+      "email_risk_3": "Sie könnten sich selbst aussperren, wenn Sie ein neues Konto erstellen",
+      "email_risk_4": "Bestehende Benutzer werden NICHT betroffen sein",
+      "email_recommendation": "✅ Empfohlen: Senden Sie zuerst eine Test-E-Mail, um zu überprüfen, ob SMTP korrekt funktioniert.",
+      "potential_risks": "⚠️ Potenzielle Risiken:",
+      "cancel": "Abbrechen",
+      "confirm": "Ich verstehe, aktivieren"
+    },
+    "test_captcha": {
+      "title": "CAPTCHA-Konfiguration testen",
+      "description": "Testen Sie Ihre CAPTCHA-Konfiguration vor der Aktivierung, um eine Sperrung zu verhindern.",
+      "button_test": "CAPTCHA-Schlüssel testen",
+      "button_testing": "Konfiguration wird getestet...",
+      "success": "CAPTCHA-Konfiguration ist gültig!",
+      "error_config": "Bitte konfigurieren Sie zuerst den CAPTCHA-Anbieter und die Schlüssel",
+      "error_failed": "CAPTCHA-Konfigurationstest fehlgeschlagen"
+    },
+    "test_email": {
+      "button_send": "Test-E-Mail senden",
+      "button_sending": "Senden...",
+      "success": "Test-E-Mail erfolgreich gesendet!",
+      "error_no_address": "Bitte geben Sie eine E-Mail-Adresse ein",
+      "error_failed": "Senden der Test-E-Mail fehlgeschlagen"
+    }
   }
 }
