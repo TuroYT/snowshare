@@ -549,7 +549,10 @@
       "theme_preview": "Theme Preview",
       "background_image_url": "Background Image URL",
       "background_image_url_hint": "URL of a custom background image (optional)",
-      "background_image_preview": "Background Preview"
+      "background_image_preview": "Background Preview",
+      "section_typography": "Typography",
+      "font_family": "Font Family",
+      "font_family_hint": "The font used globally across the entire application"
     },
     "update": {
       "title": "Update Available",

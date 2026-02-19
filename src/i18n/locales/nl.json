@@ -552,7 +552,10 @@
       "theme_preview": "Thema-voorbeeld",
       "background_image_url": "Achtergrondafbeelding URL",
       "background_image_url_hint": "URL van een aangepaste achtergrondafbeelding (optioneel)",
-      "background_image_preview": "Achtergrondvoorbeeld"
+      "background_image_preview": "Achtergrondvoorbeeld",
+      "section_typography": "Typografie",
+      "font_family": "Lettertype",
+      "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt"
     },
     "update": {
       "title": "Update beschikbaar",

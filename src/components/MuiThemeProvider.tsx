@@ -67,7 +67,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         divider: borderTransparent,
       },
       typography: {
-        fontFamily: 'var(--font-geist-sans), Arial, Helvetica, sans-serif',
+        fontFamily: 'var(--font-app, var(--font-geist-sans)), Arial, Helvetica, sans-serif',
       },
       shape: {
         borderRadius: 12,

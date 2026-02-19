@@ -65,6 +65,7 @@ export async function GET() {
         textColor: settings.textColor,
         textMuted: settings.textMuted,
         borderColor: settings.borderColor,
+        fontFamily: settings.fontFamily,
       },
     });
   } catch (error) {

@@ -549,7 +549,10 @@
       "theme_preview": "Aperçu du thème",
       "background_image_url": "URL de l'image de fond",
       "background_image_url_hint": "URL d'une image de fond personnalisée (optionnel)",
-      "background_image_preview": "Aperçu de l'arrière-plan"
+      "background_image_preview": "Aperçu de l'arrière-plan",
+      "section_typography": "Typographie",
+      "font_family": "Police d'écriture",
+      "font_family_hint": "La police utilisée globalement dans toute l'application"
     },
     "update": {
       "title": "Mise à jour disponible",

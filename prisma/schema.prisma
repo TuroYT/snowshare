@@ -135,6 +135,9 @@ model Settings {
   textMuted         String  @default("#D1D5DB")  // Secondary/muted text color
   borderColor       String  @default("#374151")  // Border color
 
+  // Branding - Typography
+  fontFamily        String  @default("Geist")    // Global font family
+
   // Legal
   termsOfUses  String?
 }

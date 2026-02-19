@@ -145,6 +145,7 @@ export async function PATCH(request: NextRequest) {
                     textColor: data.textColor || "#F9FAFB",
                     textMuted: data.textMuted || "#D1D5DB",
                     borderColor: data.borderColor || "#374151",
+                    fontFamily: data.fontFamily || "Geist",
                     termsOfUses:
                         data.termsOfUses ||
                         `# Terms of Use
@@ -217,6 +218,7 @@ Thank you for using SnowShare!`
                     textColor: data.textColor !== undefined ? data.textColor : settings.textColor,
                     textMuted: data.textMuted !== undefined ? data.textMuted : settings.textMuted,
                     borderColor: data.borderColor !== undefined ? data.borderColor : settings.borderColor,
+                    fontFamily: data.fontFamily !== undefined ? data.fontFamily : settings.fontFamily,
                     termsOfUses: data.termsOfUses !== undefined ? data.termsOfUses : settings.termsOfUses
                 }
             });
