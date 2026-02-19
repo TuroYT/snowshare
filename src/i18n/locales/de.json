@@ -545,7 +545,10 @@
       "theme_preview": "Themenvorschau",
       "background_image_url": "Hintergrundbild-URL",
       "background_image_url_hint": "URL eines benutzerdefinierten Hintergrundbilds (optional)",
-      "background_image_preview": "Hintergrundvorschau"
+      "background_image_preview": "Hintergrundvorschau",
+      "section_typography": "Typografie",
+      "font_family": "Schriftart",
+      "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird"
     },
     "update": {
       "title": "Update verfügbar",

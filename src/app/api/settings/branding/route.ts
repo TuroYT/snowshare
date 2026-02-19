@@ -22,6 +22,7 @@ export async function GET() {
         textColor: true,
         textMuted: true,
         borderColor: true,
+        fontFamily: true,
       },
     });
 
@@ -45,6 +46,7 @@ export async function GET() {
           textColor: "#F9FAFB",
           textMuted: "#D1D5DB",
           borderColor: "#374151",
+          fontFamily: "Geist",
         },
       });
     }
@@ -71,6 +73,7 @@ export async function GET() {
           textColor: "#F9FAFB",
           textMuted: "#D1D5DB",
           borderColor: "#374151",
+          fontFamily: "Geist",
         },
       },
       { status: 200 }

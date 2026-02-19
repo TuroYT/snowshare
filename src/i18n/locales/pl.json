@@ -549,7 +549,10 @@
       "theme_preview": "Podgląd motywu",
       "background_image_url": "Adres URL obrazu tła",
       "background_image_url_hint": "Adres URL niestandardowego obrazu tła (opcjonalnie)",
-      "background_image_preview": "Podgląd tła"
+      "background_image_preview": "Podgląd tła",
+      "section_typography": "Typografia",
+      "font_family": "Czcionka",
+      "font_family_hint": "Czcionka używana globalnie w całej aplikacji"
     },
     "update": {
       "title": "Dostępna aktualizacja",
