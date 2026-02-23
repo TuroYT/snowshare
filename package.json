@@ -99,6 +99,11 @@
     "@types/react-dom": "19.2.3",
     "test-exclude": "^7.0.0",
     "hono": ">=4.11.7",
-    "lodash": "4.17.23"
+    "lodash": "4.17.23",
+    "readdir-glob": ">=2.0.2",
+    "glob": ">=13.0.4",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": ">=10.2.1"
+    }
   }
 }
