@@ -542,7 +542,7 @@ const FileShare: React.FC = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && (settingsLoading || !allowAnonFileShare)) {
     return <LockedShare type="file" isLoading={settingsLoading} isLocked={!allowAnonFileShare} />;
   }
 
