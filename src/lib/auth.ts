@@ -121,12 +121,16 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
                 if (!account) return false;
                 if (account.provider === "credentials") return true;
 
-                // For OAuth providers
+                // For OAuth providers – email is required to identify users
+                if (!user.email) {
+                    return "/auth/signin?error=OAuthNoEmail";
+                }
+
                 const settings = await prisma.settings.findFirst();
 
                 // Check if user already exists
                 const existingUser = await prisma.user.findUnique({
-                    where: { email: user.email! },
+                    where: { email: user.email },
                     include: { accounts: true }
                 });
 
