@@ -60,10 +60,17 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
                   idToken: true,
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   profile(profile: any) {
+                      // Some providers (e.g. Authelia) may return the email as preferred_username
+                      const email =
+                          profile.email ||
+                          (typeof profile.preferred_username === "string" &&
+                          profile.preferred_username.includes("@")
+                              ? profile.preferred_username
+                              : undefined);
                       return {
                           id: profile.sub,
-                          name: profile.name,
-                          email: profile.email,
+                          name: profile.name || profile.preferred_username,
+                          email,
                           image: profile.picture
                       };
                   }
