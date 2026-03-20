@@ -246,6 +246,7 @@
     "loading": "Loading...",
     "tab_info": "Personal information",
     "tab_shares": "My shares",
+    "tab_access_logs": "Access Logs",
     "tab_accounts": "Connected accounts",
     "info_title": "Personal information",
     "info_subtitle": "Manage your account information",
@@ -675,5 +676,23 @@
       "invalid_expiration_date": "Invalid expiration date"
     },
     "file_protected": "Protected file"
+  },
+  "access_logs": {
+    "title": "Access Logs",
+    "description": "See who accessed your shares and when",
+    "total_entries": "{{count}} entries total",
+    "filter_all_shares": "All shares",
+    "no_logs": "No access logs yet",
+    "click_for_geo": "Click for geolocation details",
+    "table": {
+      "type": "Type",
+      "slug": "Share",
+      "ip": "IP Address",
+      "accessed_at": "Accessed At",
+      "user_agent": "User Agent"
+    },
+    "pagination_info": "Showing {{start}} to {{end}} of {{total}} entries",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

@@ -246,6 +246,7 @@
     "loading": "Chargement...",
     "tab_info": "Informations personnelles",
     "tab_shares": "Mes partages",
+    "tab_access_logs": "Journaux d'acces",
     "tab_accounts": "Comptes connectés",
     "info_title": "Informations personnelles",
     "info_subtitle": "Gérez vos informations de compte",
@@ -675,5 +676,23 @@
       "invalid_expiration_date": "Date d'expiration invalide"
     },
     "file_protected": "Fichier protégé"
+  },
+  "access_logs": {
+    "title": "Journaux d'acces",
+    "description": "Consultez qui a accede a vos partages et quand",
+    "total_entries": "{{count}} entrees au total",
+    "filter_all_shares": "Tous les partages",
+    "no_logs": "Aucun journal d'acces",
+    "click_for_geo": "Cliquez pour les details de geolocalisation",
+    "table": {
+      "type": "Type",
+      "slug": "Partage",
+      "ip": "Adresse IP",
+      "accessed_at": "Date d'acces",
+      "user_agent": "Agent utilisateur"
+    },
+    "pagination_info": "Affichage de {{start}} a {{end}} sur {{total}} entrees",
+    "previous": "Precedent",
+    "next": "Suivant"
   }
 }

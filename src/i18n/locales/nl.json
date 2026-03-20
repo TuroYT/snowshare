@@ -295,6 +295,7 @@
     "protected": "Beveiligd",
     "view_limit_reached": "Weergavelimiet bereikt",
     "views": "weergaves",
+    "tab_access_logs": "Toegangslogboeken",
     "tab_accounts": "Verbonden accounts",
     "accounts": {
       "title": "Verbonden OAuth-accounts",
@@ -678,5 +679,23 @@
       "invalid_expiration_date": "Ongeldige vervaldatum"
     },
     "file_protected": "Beveiligd bestand"
+  },
+  "access_logs": {
+    "title": "Toegangslogboeken",
+    "description": "Bekijk wie uw deellinks heeft bezocht",
+    "total_entries": "{{count}} vermeldingen totaal",
+    "filter_all_shares": "Alle deellinks",
+    "no_logs": "Nog geen toegangslogboeken",
+    "click_for_geo": "Klik voor geolocatiedetails",
+    "table": {
+      "type": "Type",
+      "slug": "Deellink",
+      "ip": "IP-adres",
+      "accessed_at": "Toegangstijd",
+      "user_agent": "User Agent"
+    },
+    "pagination_info": "Toont {{start}} tot {{end}} van {{total}} vermeldingen",
+    "previous": "Vorige",
+    "next": "Volgende"
   }
 }

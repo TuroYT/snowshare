@@ -8,6 +8,7 @@ import ProfileInfo from "@/components/profile/ProfileInfo";
 import SharesList from "@/components/profile/SharesList";
 import ProfileStats from "@/components/profile/ProfileStats";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
+import AccessLogsTab from "@/components/profile/AccessLogsTab";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 
@@ -40,7 +41,7 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "access_logs" | "accounts">("profile");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -198,6 +199,22 @@ const ProfilePage = () => {
             {t("profile.tab_shares")} ({shares.length})
           </button>
           <button
+            onClick={() => setActiveTab("access_logs")}
+            className={`modern-tab ${
+              activeTab === "access_logs" ? "modern-tab-active" : "modern-tab-inactive"
+            }`}
+          >
+            <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+              />
+            </svg>
+            {t("profile.tab_access_logs")}
+          </button>
+          <button
             onClick={() => setActiveTab("accounts")}
             className={`modern-tab ${
               activeTab === "accounts" ? "modern-tab-active" : "modern-tab-inactive"
@@ -230,6 +247,12 @@ const ProfilePage = () => {
                 onUpdate={handleUpdateShare}
               />
             </>
+          )}
+
+          {activeTab === "access_logs" && (
+            <AccessLogsTab
+              shares={shares.map((s) => ({ id: s.id, slug: s.slug, type: s.type }))}
+            />
           )}
 
           {activeTab === "accounts" && <ConnectedAccounts />}

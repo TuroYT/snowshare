@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { logShareAccess } from "@/lib/access-log";
 import { NextRequest } from "next/server";
 
 function jsonResponse(body: unknown, status = 200) {
@@ -73,6 +74,8 @@ export async function GET(
             where: { id: share.id },
             data: { viewCount: { increment: 1 } },
         });
+
+        logShareAccess(request, share.id);
 
         // Retourner le paste public
         return jsonResponse({
@@ -169,6 +172,8 @@ export async function POST(
             where: { id: share.id },
             data: { viewCount: { increment: 1 } },
         });
+
+        logShareAccess(request, share.id);
 
         // Retourner le paste déprotégé
         return jsonResponse({

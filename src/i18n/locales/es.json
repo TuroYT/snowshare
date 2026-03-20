@@ -242,6 +242,7 @@
     "loading": "Cargando...",
     "tab_info": "Información personal",
     "tab_shares": "Mis compartidos",
+    "tab_access_logs": "Registros de acceso",
     "tab_accounts": "Cuentas conectadas",
     "info_title": "Información personal",
     "info_subtitle": "Gestiona la información de tu cuenta",
@@ -671,5 +672,23 @@
       "invalid_expiration_date": "Fecha de expiración inválida"
     },
     "file_protected": "Archivo protegido"
+  },
+  "access_logs": {
+    "title": "Registros de acceso",
+    "description": "Vea quien accedio a sus recursos compartidos",
+    "total_entries": "{{count}} entradas en total",
+    "filter_all_shares": "Todos los recursos",
+    "no_logs": "Sin registros de acceso",
+    "click_for_geo": "Haga clic para detalles de geolocalizacion",
+    "table": {
+      "type": "Tipo",
+      "slug": "Recurso",
+      "ip": "Direccion IP",
+      "accessed_at": "Fecha de acceso",
+      "user_agent": "Agente de usuario"
+    },
+    "pagination_info": "Mostrando {{start}} a {{end}} de {{total}} entradas",
+    "previous": "Anterior",
+    "next": "Siguiente"
   }
 }

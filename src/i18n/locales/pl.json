@@ -295,6 +295,7 @@
     "protected": "Chronione",
     "view_limit_reached": "Osiągnięty limit wyświetleń",
     "views": "wyświetlenia",
+    "tab_access_logs": "Dzienniki dostepu",
     "tab_accounts": "Połączone konta",
     "accounts": {
       "title": "Połączone konta OAuth",
@@ -675,5 +676,23 @@
       "invalid_expiration_date": "Nieprawidłowa data wygaśnięcia"
     },
     "file_protected": "Chroniony plik"
+  },
+  "access_logs": {
+    "title": "Dzienniki dostepu",
+    "description": "Zobacz, kto uzyskal dostep do Twoich udostepnien",
+    "total_entries": "{{count}} wpisow lacznie",
+    "filter_all_shares": "Wszystkie udostepnienia",
+    "no_logs": "Brak dziennikow dostepu",
+    "click_for_geo": "Kliknij, aby zobaczyc szczegoly geolokalizacji",
+    "table": {
+      "type": "Typ",
+      "slug": "Udostepnienie",
+      "ip": "Adres IP",
+      "accessed_at": "Data dostepu",
+      "user_agent": "Agent uzytkownika"
+    },
+    "pagination_info": "Wyswietlanie {{start}} do {{end}} z {{total}} wpisow",
+    "previous": "Poprzedni",
+    "next": "Nastepny"
   }
 }

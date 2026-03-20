@@ -242,6 +242,7 @@
     "loading": "Lädt...",
     "tab_info": "Persönliche Informationen",
     "tab_shares": "Meine Freigaben",
+    "tab_access_logs": "Zugriffsprotokolle",
     "tab_accounts": "Verbundene Konten",
     "info_title": "Persönliche Informationen",
     "info_subtitle": "Verwalten Sie Ihre Kontoinformationen",
@@ -671,5 +672,23 @@
       "invalid_expiration_date": "Ungültiges Ablaufdatum"
     },
     "file_protected": "Geschützte Datei"
+  },
+  "access_logs": {
+    "title": "Zugriffsprotokolle",
+    "description": "Sehen Sie, wer auf Ihre Freigaben zugegriffen hat",
+    "total_entries": "{{count}} Eintraege insgesamt",
+    "filter_all_shares": "Alle Freigaben",
+    "no_logs": "Noch keine Zugriffsprotokolle",
+    "click_for_geo": "Klicken Sie fuer Geolokalisierungsdetails",
+    "table": {
+      "type": "Typ",
+      "slug": "Freigabe",
+      "ip": "IP-Adresse",
+      "accessed_at": "Zugriffszeit",
+      "user_agent": "User Agent"
+    },
+    "pagination_info": "Zeige {{start}} bis {{end}} von {{total}} Eintraegen",
+    "previous": "Zurueck",
+    "next": "Weiter"
   }
 }

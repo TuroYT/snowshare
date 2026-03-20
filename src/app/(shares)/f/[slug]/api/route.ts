@@ -4,6 +4,7 @@ import { statSync, existsSync } from "fs";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { prisma } from "@/lib/prisma";
+import { logShareAccess } from "@/lib/access-log";
 
 // Handle POST requests for file info and download actions
 export async function POST(
@@ -88,12 +89,13 @@ export async function POST(
         return apiError(request, result.errorCode);
       }
 
-      // Increment view count
+      // Increment view count and log access
       if (result.share) {
         await prisma.share.update({
           where: { id: result.share.id },
           data: { viewCount: { increment: 1 } },
         });
+        logShareAccess(request, result.share.id);
       }
 
       if (result.isBulk) {

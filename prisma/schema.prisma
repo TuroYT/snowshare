@@ -82,6 +82,19 @@ model Share {
   maxViews      Int?
   viewCount     Int        @default(0)
   files         ShareFile[]
+  accessLogs    ShareAccessLog[]
+}
+
+model ShareAccessLog {
+  id         String   @id @default(cuid())
+  shareId    String
+  share      Share    @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  ip         String
+  userAgent  String?
+  accessedAt DateTime @default(now())
+
+  @@index([shareId])
+  @@index([ip])
 }
 
 model ShareFile {
