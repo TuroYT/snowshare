@@ -13,6 +13,7 @@ cd /opt/snowshare && cp ../snowshare.env .env && reboot
 ## Version Check
 
 SnowShare automatically checks for updates and displays a notification in the **Admin Panel** when a new version is available. The notification shows:
+
 - Your current version
 - The latest available version
 - Links to release notes and this upgrade guide
@@ -71,12 +72,14 @@ systemctl restart snowshare
 Before upgrading, ensure you:
 
 1. **Backup your database**
+
    ```bash
    # PostgreSQL backup example
    pg_dump -U postgres snowshare > backup_$(date +%Y%m%d).sql
    ```
 
 2. **Backup your uploads folder**
+
    ```bash
    cp -r uploads/ uploads_backup_$(date +%Y%m%d)/
    ```
@@ -105,6 +108,7 @@ After upgrading:
 If you need to rollback to a previous version:
 
 ### Docker Compose
+
 ```bash
 # Revert to a specific version
 git checkout v0.1.0  # Replace with your previous version tag
@@ -113,6 +117,7 @@ docker compose up -d --build
 ```
 
 ### Manual Installation
+
 ```bash
 # Revert to a specific version
 git checkout v0.1.0  # Replace with your previous version tag
@@ -169,6 +174,7 @@ docker compose up -d
 ## Version History
 
 Check the [GitHub Releases](https://github.com/TuroYT/snowshare/releases) page for:
+
 - Complete changelog
 - Breaking changes
 - New features

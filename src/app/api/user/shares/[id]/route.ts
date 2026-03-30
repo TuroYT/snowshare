@@ -4,9 +4,15 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";
 import { join } from "path";
-import bcrypt from "bcryptjs";
-import { isValidPasteLanguage, isValidUrl, MAX_PASTE_SIZE, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
+import {
+  isValidPasteLanguage,
+  isValidUrl,
+  MAX_PASTE_SIZE,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+} from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { hashPassword } from "@/lib/security";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
@@ -54,10 +60,7 @@ export async function DELETE(
 }
 
 // PATCH - Modifier un partage
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -82,11 +85,11 @@ export async function PATCH(
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
-    
+
     if (expiresAt !== undefined) {
       updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
     }
-    
+
     // Hash password if provided, or set to null to remove
     if (password !== undefined) {
       if (password) {
@@ -94,10 +97,10 @@ export async function PATCH(
         if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
           return apiError(request, ErrorCode.PASSWORD_INVALID_LENGTH, {
             min: PASSWORD_MIN_LENGTH,
-            max: PASSWORD_MAX_LENGTH
+            max: PASSWORD_MAX_LENGTH,
           });
         }
-        updateData.password = await bcrypt.hash(password, 12);
+        updateData.password = await hashPassword(password);
       } else {
         updateData.password = null;
       }
@@ -106,7 +109,7 @@ export async function PATCH(
     // Mise à jour spécifique selon le type
     if (share.type === "PASTE" && paste !== undefined) {
       // Validate paste content length to prevent DoS
-      if (typeof paste !== 'string' || paste.length > MAX_PASTE_SIZE) {
+      if (typeof paste !== "string" || paste.length > MAX_PASTE_SIZE) {
         return apiError(request, ErrorCode.PASTE_CONTENT_REQUIRED);
       }
       updateData.paste = paste;

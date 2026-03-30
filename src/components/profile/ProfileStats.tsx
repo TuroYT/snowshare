@@ -20,8 +20,10 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
   const fileShares = shares.filter((s) => s.type === "FILE").length;
   const pasteShares = shares.filter((s) => s.type === "PASTE").length;
   const urlShares = shares.filter((s) => s.type === "URL").length;
-  
-  const activeShares = shares.filter((s) => !s.expiresAt || new Date(s.expiresAt) > new Date()).length;
+
+  const activeShares = shares.filter(
+    (s) => !s.expiresAt || new Date(s.expiresAt) > new Date()
+  ).length;
   const expiredShares = totalShares - activeShares;
 
   const stats = [
@@ -38,7 +40,8 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-blue-600/20 to-blue-800/20 border-[var(--primary-dark)]/50 text-[var(--primary)]",
+      color:
+        "from-blue-600/20 to-blue-800/20 border-[var(--primary-dark)]/50 text-[var(--primary)]",
     },
     {
       label: t("profile.stats_files"),
@@ -53,7 +56,8 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-purple-600/20 to-purple-800/20 border-[var(--secondary-dark)]/50 text-[var(--secondary)]",
+      color:
+        "from-purple-600/20 to-purple-800/20 border-[var(--secondary-dark)]/50 text-[var(--secondary)]",
     },
     {
       label: t("profile.stats_pastes"),
@@ -117,7 +121,9 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
       {stats.map((stat, index) => (
         <div key={index} className="modern-card p-4">
           <div className="flex flex-col items-center text-center gap-3">
-            <div className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center ${stat.color}`}>
+            <div
+              className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center ${stat.color}`}
+            >
               {stat.icon}
             </div>
             <div>

@@ -82,6 +82,11 @@ model Share {
   maxViews      Int?
   viewCount     Int        @default(0)
   files         ShareFile[]
+
+  @@index([ipSource])
+  @@index([ownerId])
+  @@index([expiresAt])
+  @@index([createdAt])
 }
 
 model ShareFile {

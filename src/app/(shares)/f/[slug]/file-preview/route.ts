@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import path from "path";
-import { existsSync, statSync, createReadStream } from "fs";
+import { existsSync, createReadStream } from "fs";
+import { stat } from "fs/promises";
 import { getUploadDir } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
+import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   if (!slug) {
@@ -27,9 +26,7 @@ export async function GET(
     }
 
     // Security: Prevent path traversal attempts and validate input
-    if (relativePath.includes("..") ||
-        relativePath.startsWith("/") ||
-        relativePath.length > 500) {
+    if (relativePath.includes("..") || relativePath.startsWith("/") || relativePath.length > 500) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
@@ -42,7 +39,7 @@ export async function GET(
         password: true,
         expiresAt: true,
         isBulk: true,
-      }
+      },
     });
 
     if (!share || share.type !== "FILE" || !share.isBulk) {
@@ -69,14 +66,14 @@ export async function GET(
     const shareFile = await prisma.shareFile.findFirst({
       where: {
         shareId: share.id,
-        relativePath: relativePath
+        relativePath: relativePath,
       },
       select: {
         filePath: true,
         originalName: true,
         mimeType: true,
         size: true,
-      }
+      },
     });
 
     if (!shareFile) {
@@ -89,59 +86,41 @@ export async function GET(
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const stats = statSync(fullPath);
+    const stats = await stat(fullPath);
     const fileSize = stats.size;
 
     // Determine content type from mimeType or extension
-    let contentType = shareFile.mimeType || 'application/octet-stream';
+    let contentType = shareFile.mimeType || "application/octet-stream";
 
     if (!shareFile.mimeType) {
       const ext = path.extname(fullPath).toLowerCase();
-      const mimeTypes: Record<string, string> = {
-        '.pdf': 'application/pdf',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif',
-        '.webp': 'image/webp',
-        '.svg': 'image/svg+xml',
-        '.mp4': 'video/mp4',
-        '.webm': 'video/webm',
-        '.ogg': 'video/ogg',
-      };
-      contentType = mimeTypes[ext] || 'application/octet-stream';
+      contentType = getMimeType(ext);
     }
 
     // Sanitize filename for Content-Disposition header
-    const safeFilename = (shareFile.originalName || 'download')
-      .replace(/[\r\n]/g, '')
-      .replace(/["\\/]/g, '_')
-      .replace(/[^\x20-\x7E]/g, '_');
+    const safeFilename = sanitizeFilenameForHeader(shareFile.originalName || "download");
 
     // Stream the file
     const fileStream = createReadStream(fullPath);
     const webStream = nodeStreamToWebStream(fileStream);
 
     const headers = new Headers();
-    headers.set('Content-Length', fileSize.toString());
-    headers.set('Content-Type', contentType);
+    headers.set("Content-Length", fileSize.toString());
+    headers.set("Content-Type", contentType);
     headers.set("Accept-Ranges", "bytes");
-    headers.set("Cache-Control", "private, max-age=3600"); // Cache for 1 hour for previews
+    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 
-    // Allow inline viewing for images, PDFs, and videos
-    if (contentType.startsWith('image/') ||
-        contentType === 'application/pdf' ||
-        contentType.startsWith('video/')) {
-      headers.set('Content-Disposition', `inline; filename="${safeFilename}"`);
+    // Allow inline viewing only for safe types (excludes SVG/HTML to prevent XSS)
+    if (isSafeForInline(contentType)) {
+      headers.set("Content-Disposition", `inline; filename="${safeFilename}"`);
     } else {
-      headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
+      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
     }
 
     return new NextResponse(webStream as ReadableStream<Uint8Array>, {
       status: 200,
       headers,
     });
-
   } catch (error) {
     console.error("File preview error:", error);
     return internalError(request);

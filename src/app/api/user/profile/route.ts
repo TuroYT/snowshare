@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { hashPassword, verifyPassword } from "@/lib/security";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // GET - Get User informations
@@ -91,14 +91,13 @@ export async function PATCH(request: NextRequest) {
         return apiError(request, ErrorCode.FORBIDDEN);
       }
 
-      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      const isPasswordValid = await verifyPassword(currentPassword, user.password);
 
       if (!isPasswordValid) {
         return apiError(request, ErrorCode.INCORRECT_CURRENT_PASSWORD);
       }
 
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      updateData.password = hashedPassword;
+      updateData.password = await hashPassword(newPassword);
     }
 
     const updatedUser = await prisma.user.update({

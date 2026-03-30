@@ -10,10 +10,7 @@ interface ShareSuccessProps {
   translationPrefix: string;
 }
 
-const ShareSuccess: React.FC<ShareSuccessProps> = ({
-  url,
-  translationPrefix,
-}) => {
+const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, translationPrefix }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
@@ -46,10 +43,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
   }, []);
 
   return (
-    <div
-      role="status"
-      className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4"
-    >
+    <div role="status" className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4">
       <div className="flex items-start gap-3">
         <svg
           className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5"
@@ -105,12 +99,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
                     />
                   </svg>
                 ) : (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -125,20 +114,10 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
           <div className="mt-4 flex justify-center">
             <div className="flex flex-col items-center bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
               <p className="text-sm text-[var(--foreground)] mb-2 text-center">
-                {t(
-                  `${translationPrefix}.qr_info`,
-                  "Scanner ce QR code pour accéder au partage"
-                )}
+                {t(`${translationPrefix}.qr_info`, "Scanner ce QR code pour accéder au partage")}
               </p>
-              <div
-                className="bg-white rounded p-2"
-                style={{ width: qrSize, height: qrSize }}
-              >
-                <QRCodeSVG
-                  value={url}
-                  size={qrSize - 16}
-                  className="block"
-                />
+              <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>
+                <QRCodeSVG value={url} size={qrSize - 16} className="block" />
               </div>
             </div>
           </div>

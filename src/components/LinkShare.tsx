@@ -18,9 +18,7 @@ const LinkShare: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
-  const [expiresDays, setExpiresDays] = useState<number>(
-    isAuthenticated ? 30 : MAX_DAYS_ANON
-  );
+  const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
@@ -30,9 +28,7 @@ const LinkShare: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [urlError, setUrlError] = useState<string | null>(null);
-  const [allowAnonLinkShare, setAllowAnonLinkShare] = useState<boolean | null>(
-    null
-  );
+  const [allowAnonLinkShare, setAllowAnonLinkShare] = useState<boolean | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
 
   // Fetch settings to check if anonymous link sharing is allowed
@@ -74,13 +70,7 @@ const LinkShare: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.key === "Enter" &&
-        url.trim() &&
-        !urlError &&
-        !loading
-      ) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && url.trim() && !urlError && !loading) {
         e.preventDefault();
         const form = document.querySelector("form");
         if (form) form.requestSubmit();
@@ -108,9 +98,7 @@ const LinkShare: React.FC = () => {
     if (!isAuthenticated || !neverExpires) {
       const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
       const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-      expiresAt = new Date(
-        Date.now() + days * 24 * 60 * 60 * 1000
-      ).toISOString();
+      expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
     }
 
     const payload: Record<string, unknown> = {
@@ -132,18 +120,12 @@ const LinkShare: React.FC = () => {
       const data = await res.json();
       if (!res.ok) {
         setError(
-          data?.error ||
-            t(
-              "linkshare.creation_error",
-              "Erreur lors de la création du partage"
-            )
+          data?.error || t("linkshare.creation_error", "Erreur lors de la création du partage")
         );
       } else {
         const linkShare = data?.share?.linkShare;
-        if (linkShare?.slug)
-          setSuccess(`${window.location.origin}/l/${linkShare.slug}`);
-        else if (linkShare?.id)
-          setSuccess(`${window.location.origin}/l/${linkShare.id}`);
+        if (linkShare?.slug) setSuccess(`${window.location.origin}/l/${linkShare.slug}`);
+        else if (linkShare?.id) setSuccess(`${window.location.origin}/l/${linkShare.id}`);
         else setSuccess(t("linkshare.created", "Partage créé"));
         setUrl("");
         setSlug("");
@@ -155,12 +137,7 @@ const LinkShare: React.FC = () => {
       }
     } catch (error) {
       console.error("LinkShare error:", error);
-      setError(
-        t(
-          "linkshare.network_error",
-          "Erreur réseau — impossible de créer le partage"
-        )
-      );
+      setError(t("linkshare.network_error", "Erreur réseau — impossible de créer le partage"));
     } finally {
       setLoading(false);
     }
@@ -175,13 +152,7 @@ const LinkShare: React.FC = () => {
   }
 
   if (!isAuthenticated && allowAnonLinkShare === false) {
-    return (
-      <LockedShare
-        type="link"
-        isLoading={settingsLoading}
-        isLocked={!allowAnonLinkShare}
-      />
-    );
+    return <LockedShare type="link" isLoading={settingsLoading} isLocked={!allowAnonLinkShare} />;
   }
 
   return (
@@ -213,10 +184,7 @@ const LinkShare: React.FC = () => {
             {t("linkshare.title", "Partager un lien")}
           </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
-            {t(
-              "linkshare.subtitle",
-              "Créez un lien partageable pour n'importe quelle URL"
-            )}
+            {t("linkshare.subtitle", "Créez un lien partageable pour n'importe quelle URL")}
           </p>
         </div>
       </div>
@@ -224,10 +192,7 @@ const LinkShare: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* URL input */}
         <div className="space-y-2">
-          <label
-            htmlFor="url"
-            className="block text-sm font-medium text-[var(--foreground)]"
-          >
+          <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">
             {t("linkshare.label_url", "URL à partager")}&nbsp;
             <span className="text-red-400">*</span>
           </label>
@@ -235,10 +200,7 @@ const LinkShare: React.FC = () => {
             <input
               id="url"
               type="url"
-              placeholder={t(
-                "linkshare.placeholder_url",
-                "https://exemple.com/ma-page"
-              )}
+              placeholder={t("linkshare.placeholder_url", "https://exemple.com/ma-page")}
               value={url}
               onChange={(e) => handleUrlChange(e.target.value)}
               required
@@ -317,9 +279,7 @@ const LinkShare: React.FC = () => {
 
       {error && <ShareError error={error} translationPrefix="linkshare" />}
 
-      {success && (
-        <ShareSuccess url={success} translationPrefix="linkshare" />
-      )}
+      {success && <ShareSuccess url={success} translationPrefix="linkshare" />}
     </div>
   );
 };

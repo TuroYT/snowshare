@@ -2,48 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import fs from "fs/promises";
-import path from "path";
 import { getClientIp } from "./getClientIp";
 import { convertFromMB, getUnitLabel } from "./formatSize";
-
-/**
- * Get file size in MB from file path
- */
-async function getFileSize(filePath: string): Promise<number> {
-  try {
-    const stats = await fs.stat(filePath);
-    return stats.size / (1024 * 1024); // Convert to MB
-  } catch {
-    return 0;
-  }
-}
-
-/**
- * Calculate total upload size for an IP address
- */
-async function calculateIpUploadSize(ipAddress: string): Promise<number> {
-  const shares = await prisma.share.findMany({
-    where: {
-      ipSource: ipAddress,
-      type: "FILE",
-      filePath: { not: null },
-    },
-    select: {
-      filePath: true,
-    },
-  });
-
-  let totalSize = 0;
-  for (const share of shares) {
-    if (share.filePath) {
-      const fullPath = path.join(process.cwd(), share.filePath);
-      totalSize += await getFileSize(fullPath);
-    }
-  }
-
-  return totalSize;
-}
+import { calculateIpUploadSizeBytes } from "./quota-shared";
 
 /**
  * Check if upload is allowed based on quotas
@@ -73,15 +34,9 @@ export async function checkUploadQuota(
   const ipAddress = getClientIp(request);
 
   // Determine limits based on authentication status
-  const maxFileSize = isAuthenticated
-    ? settings.authMaxUpload
-    : settings.anoMaxUpload;
-  const ipQuota = isAuthenticated
-    ? settings.authIpQuota
-    : settings.anoIpQuota;
-  const useGiBForDisplay = isAuthenticated
-    ? settings.useGiBForAuth
-    : settings.useGiBForAnon;
+  const maxFileSize = isAuthenticated ? settings.authMaxUpload : settings.anoMaxUpload;
+  const ipQuota = isAuthenticated ? settings.authIpQuota : settings.anoIpQuota;
+  const useGiBForDisplay = isAuthenticated ? settings.useGiBForAuth : settings.useGiBForAnon;
 
   const unitLabel = getUnitLabel(useGiBForDisplay);
   const maxFileSizeDisplay = convertFromMB(maxFileSize, useGiBForDisplay);
@@ -98,8 +53,9 @@ export async function checkUploadQuota(
     };
   }
 
-  // Calculate current usage for this IP
-  const currentUsage = await calculateIpUploadSize(ipAddress);
+  // Calculate current usage for this IP (in bytes, convert to MB)
+  const currentUsageBytes = await calculateIpUploadSizeBytes(ipAddress);
+  const currentUsage = currentUsageBytes / (1024 * 1024);
 
   // Check if adding this file would exceed quota
   if (currentUsage + fileSize > ipQuota) {
@@ -140,14 +96,13 @@ export async function getQuotaInfo(request: NextRequest): Promise<{
   const maxFileSize = isAuthenticated
     ? settings?.authMaxUpload || 51200
     : settings?.anoMaxUpload || 2048;
-  const ipQuota = isAuthenticated
-    ? settings?.authIpQuota || 102400
-    : settings?.anoIpQuota || 4096;
+  const ipQuota = isAuthenticated ? settings?.authIpQuota || 102400 : settings?.anoIpQuota || 4096;
   const useGiB = isAuthenticated
-    ? settings?.useGiBForAuth ?? false
-    : settings?.useGiBForAnon ?? false;
+    ? (settings?.useGiBForAuth ?? false)
+    : (settings?.useGiBForAnon ?? false);
 
-  const currentUsage = await calculateIpUploadSize(ipAddress);
+  const currentUsageBytes = await calculateIpUploadSizeBytes(ipAddress);
+  const currentUsage = currentUsageBytes / (1024 * 1024);
   const remainingQuota = Math.max(0, ipQuota - currentUsage);
 
   return {

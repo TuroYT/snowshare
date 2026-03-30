@@ -150,19 +150,34 @@ export default function LogsTab() {
       case "FILE":
         return (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
           </svg>
         );
       case "PASTE":
         return (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
           </svg>
         );
       case "URL":
         return (
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+            />
           </svg>
         );
       default:
@@ -202,7 +217,9 @@ export default function LogsTab() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-[var(--foreground)]">{t("admin.logs.title")}</h2>
+          <h2 className="text-xl font-semibold text-[var(--foreground)]">
+            {t("admin.logs.title")}
+          </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
             {t("admin.logs.total_shares", { count: pagination.total })}
           </p>
@@ -227,7 +244,12 @@ export default function LogsTab() {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
         </form>
@@ -244,7 +266,9 @@ export default function LogsTab() {
                   : "bg-[var(--surface)]/50 text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border)]"
               }`}
             >
-              {type === "all" ? t("admin.logs.filter_all") : t(`admin.logs.filter_${type.toLowerCase()}`)}
+              {type === "all"
+                ? t("admin.logs.filter_all")
+                : t(`admin.logs.filter_${type.toLowerCase()}`)}
             </button>
           ))}
         </div>
@@ -301,14 +325,20 @@ export default function LogsTab() {
               logs.map((log) => (
                 <tr key={log.id} className="hover:bg-[var(--surface)]/30 transition-colors">
                   <td className="py-3 px-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getTypeBadgeColor(log.type)}`}>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getTypeBadgeColor(log.type)}`}
+                    >
                       {getTypeIcon(log.type)}
                       {log.type}
                     </span>
                   </td>
                   <td className="py-3 px-4">
                     <code className="text-sm text-[var(--foreground)] bg-[var(--surface)] px-2 py-1 rounded">
-                      <a href={getTypeUrl(log.type, log.slug)} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={getTypeUrl(log.type, log.slug)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {log.slug}
                       </a>
                     </code>
@@ -316,13 +346,19 @@ export default function LogsTab() {
                   <td className="py-3 px-4">
                     {log.owner ? (
                       <div className="text-sm">
-                        <div className="text-[var(--foreground)]">{log.owner.name || log.owner.email}</div>
+                        <div className="text-[var(--foreground)]">
+                          {log.owner.name || log.owner.email}
+                        </div>
                         {log.owner.name && (
-                          <div className="text-[var(--foreground-muted)] text-xs">{log.owner.email}</div>
+                          <div className="text-[var(--foreground-muted)] text-xs">
+                            {log.owner.email}
+                          </div>
                         )}
                       </div>
                     ) : (
-                      <span className="text-[var(--foreground-muted)] text-sm italic">{t("admin.logs.anonymous")}</span>
+                      <span className="text-[var(--foreground-muted)] text-sm italic">
+                        {t("admin.logs.anonymous")}
+                      </span>
                     )}
                   </td>
                   <td className="py-3 px-4">
@@ -353,7 +389,9 @@ export default function LogsTab() {
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="text-sm text-[var(--foreground)]">{formatDate(log.createdAt)}</span>
+                    <span className="text-sm text-[var(--foreground)]">
+                      {formatDate(log.createdAt)}
+                    </span>
                   </td>
                   <td className="py-3 px-4">
                     <span className="text-sm text-[var(--foreground-muted)]">
@@ -362,7 +400,8 @@ export default function LogsTab() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {isExpired(log.expiresAt) || isViewLimitReached(log.maxViews, log.viewCount) ? (
+                      {isExpired(log.expiresAt) ||
+                      isViewLimitReached(log.maxViews, log.viewCount) ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
                           {t("admin.logs.expired")}
                         </span>
@@ -372,14 +411,27 @@ export default function LogsTab() {
                         </span>
                       )}
                       {log.maxViews && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30" title={`${log.viewCount}/${log.maxViews} views`}>
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                          title={`${log.viewCount}/${log.maxViews} views`}
+                        >
                           👁️ {log.viewCount}/{log.maxViews}
                         </span>
                       )}
                       {log.hasPassword && (
                         <span title={t("admin.logs.password_protected")}>
-                          <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          <svg
+                            className="w-4 h-4 text-yellow-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                            />
                           </svg>
                         </span>
                       )}
@@ -393,13 +445,26 @@ export default function LogsTab() {
                     >
                       {deletingId === log.id ? (
                         <>
-                          <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400" aria-hidden />
+                          <span
+                            className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"
+                            aria-hidden
+                          />
                           {t("admin.logs.deleting")}
                         </>
                       ) : (
                         <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v2M4 7h16" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v2M4 7h16"
+                            />
                           </svg>
                           {t("admin.logs.delete")}
                         </>

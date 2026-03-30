@@ -11,40 +11,44 @@ import pl from "./locales/pl.json";
 import nl from "./locales/nl.json";
 
 export const languages = [
-    { code: "fr", label: "🇫🇷 FR" },
-    { code: "en", label: "🇬🇧 EN" },
-    { code: "es", label: "🇪🇸 ES" },
-    { code: "de", label: "🇩🇪 DE" },
-    { code: "pl", label: "🇵🇱 PL" },
-    { code: "nl", label: "🇳🇱 NL" }
+  { code: "fr", label: "🇫🇷 FR" },
+  { code: "en", label: "🇬🇧 EN" },
+  { code: "es", label: "🇪🇸 ES" },
+  { code: "de", label: "🇩🇪 DE" },
+  { code: "pl", label: "🇵🇱 PL" },
+  { code: "nl", label: "🇳🇱 NL" },
 ] as const;
 
 const translationResources = {
-    en,
-    fr,
-    es,
-    de,
-    pl,
-    nl
+  en,
+  fr,
+  es,
+  de,
+  pl,
+  nl,
 };
 
 const resources = Object.fromEntries(
-    languages.map(lang => [lang.code, { translation: translationResources[lang.code as keyof typeof translationResources] }])
+  languages.map((lang) => [
+    lang.code,
+    { translation: translationResources[lang.code as keyof typeof translationResources] },
+  ])
 );
 
-const supportedLngs = languages.map(lang => lang.code);
+const supportedLngs = languages.map((lang) => lang.code);
 
-i18n.use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-        resources,
-        fallbackLng: "fr",
-        supportedLngs,
-        interpolation: { escapeValue: false },
-        detection: {
-            order: ["querystring", "localStorage", "cookie", "navigator"],
-            caches: ["localStorage", "cookie"]
-        }
-    });
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: "fr",
+    supportedLngs,
+    interpolation: { escapeValue: false },
+    detection: {
+      order: ["querystring", "localStorage", "cookie", "navigator"],
+      caches: ["localStorage", "cookie"],
+    },
+  });
 
 export default i18n;

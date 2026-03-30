@@ -55,8 +55,7 @@ export async function GET(request: NextRequest) {
           data: {
             appName: settings.appName ?? "SnowShare",
             appDescription:
-              settings.appDescription ??
-              "Share your files, pastes, and URLs securely",
+              settings.appDescription ?? "Share your files, pastes, and URLs securely",
             primaryColor: settings.primaryColor ?? "#3B82F6",
             primaryHover: settings.primaryHover ?? "#2563EB",
             primaryDark: settings.primaryDark ?? "#1E40AF",

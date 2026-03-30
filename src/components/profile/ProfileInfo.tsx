@@ -83,8 +83,19 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
   return (
     <div className="modern-card p-6">
       <div className="flex items-center gap-4 mb-6">
-        <div className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))' }}>
-          <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div
+          className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
+          style={{
+            background:
+              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
+          }}
+        >
+          <svg
+            className="w-6 h-6 text-[var(--primary)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -102,7 +113,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_name")}</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              {t("profile.label_name")}
+            </label>
             <input
               type="text"
               value={name}
@@ -128,7 +141,12 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
 
         <div className="border-t border-[var(--border)] pt-6">
           <h3 className="text-lg font-medium text-[var(--foreground)] mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-[var(--secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 text-[var(--secondary)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -141,7 +159,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_current_password")}</label>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("profile.label_current_password")}
+              </label>
               <input
                 type="password"
                 value={currentPassword}
@@ -152,7 +172,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_new_password")}</label>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("profile.label_new_password")}
+              </label>
               <input
                 type="password"
                 value={newPassword}
@@ -163,7 +185,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_confirm_password")}</label>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("profile.label_confirm_password")}
+              </label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -178,8 +202,18 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         {message && (
           <div className="modern-alert modern-alert-success">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-5 h-5 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               <p className="text-sm">{message}</p>
             </div>
@@ -189,7 +223,12 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         {error && (
           <div className="modern-alert modern-alert-error">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -202,11 +241,27 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
           </div>
         )}
 
-        <button type="submit" disabled={saving} className="modern-button modern-button-primary w-full">
+        <button
+          type="submit"
+          disabled={saving}
+          className="modern-button modern-button-primary w-full"
+        >
           {saving ? (
             <>
-              <svg className="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <svg
+                className="animate-spin w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"

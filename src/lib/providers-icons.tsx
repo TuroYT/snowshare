@@ -12,7 +12,7 @@ const DiscordIcon = () => (
 );
 
 export const providerIcons: Record<string, React.ReactNode> = {
-    github: <GitHubIcon />,
-    google: <GoogleIcon />,
-    discord: <DiscordIcon />
+  github: <GitHubIcon />,
+  google: <GoogleIcon />,
+  discord: <DiscordIcon />,
 };

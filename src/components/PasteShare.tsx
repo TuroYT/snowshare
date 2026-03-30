@@ -14,9 +14,7 @@ const PasteShare: React.FC = () => {
     console.log("Hello, world!");
   }`);
   const [language, setLanguage] = React.useState("javascript");
-  const [allowAnonPasteShare, setAllowAnonPasteShare] = React.useState<
-    boolean | null
-  >(null);
+  const [allowAnonPasteShare, setAllowAnonPasteShare] = React.useState<boolean | null>(null);
   const [settingsLoading, setSettingsLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -47,13 +45,7 @@ const PasteShare: React.FC = () => {
   }
 
   if (!isAuthenticated && allowAnonPasteShare === false) {
-    return (
-      <LockedShare
-        type="paste"
-        isLoading={settingsLoading}
-        isLocked={!allowAnonPasteShare}
-      />
-    );
+    return <LockedShare type="paste" isLoading={settingsLoading} isLocked={!allowAnonPasteShare} />;
   }
 
   return (

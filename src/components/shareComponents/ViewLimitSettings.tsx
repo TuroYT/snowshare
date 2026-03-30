@@ -32,11 +32,7 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
               onChange={(e) => setHasViewLimit(e.target.checked)}
               className="sr-only"
             />
-            <div
-              className={`toggle-slider ${
-                hasViewLimit ? "toggle-slider-active" : ""
-              }`}
-            >
+            <div className={`toggle-slider ${hasViewLimit ? "toggle-slider-active" : ""}`}>
               <div
                 className={`toggle-slider-thumb ${
                   hasViewLimit ? "toggle-slider-thumb-active" : ""
@@ -46,10 +42,7 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
-              {t(
-                `${translationPrefix}.view_limit`,
-                "View/download limit"
-              )}
+              {t(`${translationPrefix}.view_limit`, "View/download limit")}
             </div>
             <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
               {t(

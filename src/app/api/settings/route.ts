@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     let settings = await prisma.settings.findFirst();
-    
+
     // Create default settings if not exist
     if (!settings) {
       settings = await prisma.settings.create({
@@ -70,9 +70,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error fetching public settings:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch settings" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
   }
 }

@@ -12,6 +12,7 @@
 ## Features ✨
 
 ### LinkShare 🔗
+
 - Share any URL with a customizable shortened link
 - Set expiration times (1 day to solar explosion) ⏳
 - Option for no expiration (authenticated users)
@@ -20,18 +21,21 @@
 - Instant QR code generation for shared links 📱
 
 ### PasteShare 📋
+
 - Share code snippets and text with syntax highlighting 🎨
 - Support for multiple programming languages
 - Expiration options and password protection 🔒
 - Ideal for sharing code samples, configuration files, or any text content
 
 ### FileShare 📁
+
 - Secure file uploads with size limits
 - Automatic file type detection
 - Download tracking 📥
 - Same expiration and protection features
 
 ### User Management 👥
+
 - User registration and authentication via NextAuth 🔑
 
 - **Frontend**: Next.js 16, React 19.1, TailwindCSS 4
@@ -42,7 +46,9 @@
 
 - Node.js 24+ and npm/yarn
 - PostgreSQL database
+
 ### Prerequisites ✅
+
 - Node.js 24+ and npm/yarn
 - PostgreSQL database
 
@@ -52,22 +58,25 @@
 ### Installation 🛠️
 
 1. Clone the repository
+
    ```
    git clone https://github.com/TuroYT/snowshare
    cd snowshare
    ```
 
 2. Install dependencies
+
    ```
    npm install
    ```
 
 3. Set up environment variables
    Create a `.env` file in the root directory with the following variables:
+
    ```
    # Database
    DATABASE_URL="postgresql://username:password@localhost:5432/snowshare"
-   
+
    # NextAuth
    NEXTAUTH_URL="http://localhost:3000"
    NEXTAUTH_SECRET="your-secret-key"
@@ -75,6 +84,7 @@
    # Auth (allow or disallow user signups)
    ALLOW_SIGNUP=true
    ```
+
 ## Docker
 
 You can run the app and a PostgreSQL database locally using Docker Compose.
@@ -90,13 +100,14 @@ The app will be available at http://localhost:3000 and PostgreSQL at port 5432. 
 
 On startup, the app runs `prisma migrate deploy` to ensure the database schema is up to date.
 
-
 4. Initialize the database
+
    ```
    npx prisma migrate dev
    ```
 
 5. Start the development server
+
    ```
    npm run dev
    ```
@@ -135,6 +146,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Privacy & Analytics 🔒
 
 SnowShare uses [Plausible Analytics](https://plausible.io/) for privacy-friendly, cookie-free usage statistics. Plausible is:
+
 - **GDPR compliant** — No personal data collected
 - **Cookie-free** — No consent banner needed
 - **Open source** — Transparent and auditable
@@ -142,11 +154,13 @@ SnowShare uses [Plausible Analytics](https://plausible.io/) for privacy-friendly
 No personally identifiable information is collected. Analytics help us understand usage patterns to improve the project.
 
 **To disable telemetry**, add to your `.env`:
+
 ```env
 TELEMETRY=false
 ```
 
 **To use your own Plausible instance**:
+
 ```env
 PLAUSIBLE_DOMAIN=your-domain.com
 PLAUSIBLE_HOST=https://your-plausible-instance.com
@@ -162,4 +176,3 @@ PLAUSIBLE_HOST=https://your-plausible-instance.com
 - [Prisma](https://www.prisma.io/) - Next-generation ORM
 - [NextAuth.js](https://next-auth.js.org/) - Authentication for Next.js
 - [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
-

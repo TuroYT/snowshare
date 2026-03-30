@@ -1,7 +1,10 @@
 export class AuthError extends Error {
-  constructor(message: string, public code?: string) {
-    super(message)
-    this.name = "AuthError"
+  constructor(
+    message: string,
+    public code?: string
+  ) {
+    super(message);
+    this.name = "AuthError";
   }
 }
 
@@ -11,16 +14,16 @@ export const AuthErrorCodes = {
   USER_NOT_FOUND: "USER_NOT_FOUND",
   INVALID_TOKEN: "INVALID_TOKEN",
   SESSION_EXPIRED: "SESSION_EXPIRED",
-} as const
+} as const;
 
 export function getErrorMessage(error: unknown): string {
   if (error instanceof AuthError) {
-    return error.message
+    return error.message;
   }
-  
+
   if (error instanceof Error) {
-    return error.message
+    return error.message;
   }
-  
-  return "Une erreur inattendue s'est produite"
+
+  return "Une erreur inattendue s'est produite";
 }

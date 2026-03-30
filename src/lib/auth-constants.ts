@@ -3,7 +3,7 @@ export const AUTH_CONSTANTS = {
   MAX_PASSWORD_LENGTH: 128,
   SESSION_MAX_AGE: 30 * 24 * 60 * 60, // 30 days
   SALT_ROUNDS: 12,
-} as const
+} as const;
 
 export const AUTH_ROUTES = {
   SIGN_IN: "/auth/signin",
@@ -11,4 +11,4 @@ export const AUTH_ROUTES = {
   SIGN_OUT: "/auth/signout",
   HOME: "/",
   DASHBOARD: "/dashboard",
-} as const
+} as const;

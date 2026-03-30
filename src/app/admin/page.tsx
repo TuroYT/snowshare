@@ -1,59 +1,59 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useTranslation } from "react-i18next"
-import Navigation from "@/components/Navigation"
-import Footer from "@/components/Footer"
-import UsersTab from "@/components/admin/UsersTab"
-import SettingsTab from "@/components/admin/SettingsTab"
-import LogsTab from "@/components/admin/LogsTab"
-import BrandingTab from "@/components/admin/BrandingTab"
-import OAuthProvidersTab from "@/components/admin/OAuthProvidersTab"
-import UpdateNotification, { VersionInfo } from "@/components/admin/UpdateNotification"
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import UsersTab from "@/components/admin/UsersTab";
+import SettingsTab from "@/components/admin/SettingsTab";
+import LogsTab from "@/components/admin/LogsTab";
+import BrandingTab from "@/components/admin/BrandingTab";
+import OAuthProvidersTab from "@/components/admin/OAuthProvidersTab";
+import UpdateNotification, { VersionInfo } from "@/components/admin/UpdateNotification";
 
-type Tab = "users" | "settings" | "branding" | "logs" | "oauth"
+type Tab = "users" | "settings" | "branding" | "logs" | "oauth";
 
 export default function AdminPage() {
-  const { status } = useSession()
-  const router = useRouter()
-  const { t } = useTranslation()
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(true)
-   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>("users")
+  const { status } = useSession();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("users");
 
   const checkAdminStatus = useCallback(async () => {
     try {
-      const response = await fetch("/api/user/profile")
+      const response = await fetch("/api/user/profile");
       if (!response.ok) {
-        throw new Error("Failed to fetch profile")
+        throw new Error("Failed to fetch profile");
       }
-      const data = await response.json()
+      const data = await response.json();
       if (data.user.isAdmin) {
-        setIsAdmin(true)
+        setIsAdmin(true);
       } else {
-        router.push("/")
+        router.push("/");
       }
     } catch (error) {
-      console.error("Error checking admin status:", error)
-      router.push("/")
+      console.error("Error checking admin status:", error);
+      router.push("/");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [router])
+  }, [router]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin")
-      return
+      router.push("/auth/signin");
+      return;
     }
 
     if (status === "authenticated") {
-      checkAdminStatus()
+      checkAdminStatus();
     }
-  }, [status, router, checkAdminStatus])
+  }, [status, router, checkAdminStatus]);
 
   if (loading) {
     return (
@@ -67,7 +67,7 @@ export default function AdminPage() {
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   if (!isAdmin) {
@@ -77,8 +77,18 @@ export default function AdminPage() {
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
             <div className="inline-block rounded-full p-3 bg-red-600/10 border border-red-600/20 mb-4">
-              <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="w-12 h-12 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
             </div>
             <h1 className="text-2xl font-bold mb-2">{t("admin.error_access_denied")}</h1>
@@ -86,7 +96,7 @@ export default function AdminPage() {
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   return (
@@ -134,5 +144,5 @@ export default function AdminPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

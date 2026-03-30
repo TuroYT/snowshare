@@ -50,9 +50,7 @@ export function translate(
   params?: Record<string, string | number | undefined>
 ): string {
   let value =
-    resolveKey(translations[locale], key) ??
-    resolveKey(translations[DEFAULT_LOCALE], key) ??
-    key;
+    resolveKey(translations[locale], key) ?? resolveKey(translations[DEFAULT_LOCALE], key) ?? key;
 
   if (params) {
     for (const [k, v] of Object.entries(params)) {

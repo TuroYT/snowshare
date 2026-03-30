@@ -38,10 +38,7 @@ async function _performLookup(ip: string): Promise<void> {
       data: { ip, status: "pending" },
     });
   } catch (err: unknown) {
-    if (
-      err instanceof Error &&
-      err.message.includes("Unique constraint")
-    ) {
+    if (err instanceof Error && err.message.includes("Unique constraint")) {
       return;
     }
     throw err;
@@ -86,17 +83,12 @@ async function _performLookup(ip: string): Promise<void> {
   }
 }
 
-export function countryCodeToFlagEmoji(
-  countryCode: string | null | undefined
-): string {
+export function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
   if (!countryCode || countryCode.length !== 2) {
     return "\u2753";
   }
 
   const code = countryCode.toUpperCase();
   const offset = 0x1f1e6 - 65;
-  return String.fromCodePoint(
-    code.charCodeAt(0) + offset,
-    code.charCodeAt(1) + offset
-  );
+  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
 }

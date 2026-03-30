@@ -46,12 +46,7 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
   return (
     <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
       <div className="h-12 w-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-red-600/20 to-red-800/20 border border-red-700/50 flex items-center justify-center">
-        <svg
-          className="w-6 h-6 text-red-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -63,9 +58,7 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
       <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
         {t(titleKey, defaultTitles[type])}
       </h2>
-      <p className="text-[var(--foreground-muted)] mb-4">
-        {t(messageKey, defaultMessages[type])}
-      </p>
+      <p className="text-[var(--foreground-muted)] mb-4">{t(messageKey, defaultMessages[type])}</p>
     </div>
   );
 };

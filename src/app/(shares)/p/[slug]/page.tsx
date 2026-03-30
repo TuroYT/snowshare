@@ -24,6 +24,15 @@ import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 interface PasteData {
   paste: string;
   language: string;
@@ -43,7 +52,12 @@ interface ApiResponse {
 const PasteViewPage = () => {
   const { t } = useTranslation();
   const params = useParams();
-  const slug = typeof params?.slug === "string" ? params.slug : Array.isArray(params?.slug) ? params.slug[0] : "";
+  const slug =
+    typeof params?.slug === "string"
+      ? params.slug
+      : Array.isArray(params?.slug)
+        ? params.slug[0]
+        : "";
   const [pasteData, setPasteData] = useState<PasteData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,12 +65,12 @@ const PasteViewPage = () => {
 
   useEffect(() => {
     if (!slug) return;
-    
+
     const fetchPaste = async () => {
       setLoading(true);
       setError(null);
       setRequiresPassword(false);
-      
+
       try {
         const res = await fetch(`/p/${slug}/api`, {
           method: "GET",
@@ -64,9 +78,9 @@ const PasteViewPage = () => {
             "Content-Type": "application/json",
           },
         });
-        
+
         const data: ApiResponse = await res.json();
-        
+
         if (res.ok && data.success && data.data) {
           setPasteData(data.data);
         } else if (res.status === 403 && data.requiresPassword) {
@@ -82,13 +96,13 @@ const PasteViewPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchPaste();
   }, [slug, t]);
 
   const [copied, setCopied] = useState(false);
   const [highlighted, setHighlighted] = useState("");
-  
+
   const handleCopy = () => {
     if (pasteData?.paste) {
       navigator.clipboard.writeText(pasteData.paste);
@@ -113,26 +127,34 @@ const PasteViewPage = () => {
       if (lang === "html") lang = "markup";
       // Ensure the language exists, fallback to plaintext
       if (!Prism.languages[lang]) lang = "plaintext";
-      const html = Prism.highlight(pasteData.paste, Prism.languages[lang] || Prism.languages.plaintext, lang);
+      const html = Prism.highlight(
+        pasteData.paste,
+        Prism.languages[lang] || Prism.languages.plaintext,
+        lang
+      );
       setHighlighted(html);
     }
   }, [pasteData]);
 
   return (
-    <div
-      className="max-w-7xl mx-auto py-12 px-4"
-      style={{ color: "var(--foreground)" }}
-    >
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>{t("paste_view.title")}</h1>
-      
+    <div className="max-w-7xl mx-auto py-12 px-4" style={{ color: "var(--foreground)" }}>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>
+        {t("paste_view.title")}
+      </h1>
+
       {loading && (
         <div className="text-center py-8">
-          <div className="text-sm" style={{ color: "var(--primary)" }}>{t("paste_view.loading")}</div>
+          <div className="text-sm" style={{ color: "var(--primary)" }}>
+            {t("paste_view.loading")}
+          </div>
         </div>
       )}
-      
+
       {error && !loading && (
-        <div className="text-sm mb-4 p-4 rounded" style={{ color: "var(--destructive)", background: "var(--muted)" }}>
+        <div
+          className="text-sm mb-4 p-4 rounded"
+          style={{ color: "var(--destructive)", background: "var(--muted)" }}
+        >
           {error}
         </div>
       )}
@@ -146,26 +168,55 @@ const PasteViewPage = () => {
           className="rounded-xl p-6 border mt-6 relative"
           style={{ background: "var(--muted)", borderColor: "var(--border)" }}
         >
-          <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--primary)" }}>{t("paste_view.content_title")}</h2>
+          <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--primary)" }}>
+            {t("paste_view.content_title")}
+          </h2>
           <button
             onClick={handleCopy}
             title={t("paste_view.copy")}
             className="absolute top-6 right-6 flex items-center gap-1 px-2 py-1 rounded hover:bg-[var(--input)] transition-colors"
-            style={{ 
-              background: copied ? "var(--primary)" : "var(--input)", 
-              color: copied ? "var(--primary-foreground)" : "var(--foreground)", 
-              border: "none" 
+            style={{
+              background: copied ? "var(--primary)" : "var(--input)",
+              color: copied ? "var(--primary-foreground)" : "var(--foreground)",
+              border: "none",
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="6" y="6" width="10" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
-              <rect x="2" y="2" width="10" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.5" />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="6"
+                y="6"
+                width="10"
+                height="12"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+              />
+              <rect
+                x="2"
+                y="2"
+                width="10"
+                height="12"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+                opacity="0.5"
+              />
             </svg>
-            <span className="text-xs">{copied ? t("paste_view.copied") : t("paste_view.copy")}</span>
+            <span className="text-xs">
+              {copied ? t("paste_view.copied") : t("paste_view.copy")}
+            </span>
           </button>
-          
+
           {pasteData.language?.toLowerCase() === "markdown" ? (
-            <div 
+            <div
               className="rounded p-4 text-sm overflow-x-auto prose max-w-none"
               style={{ background: "var(--input)", color: "var(--foreground)" }}
             >
@@ -175,15 +226,22 @@ const PasteViewPage = () => {
             <pre
               className={`rounded p-4 text-sm overflow-x-auto whitespace-pre-wrap language-${pasteData.language?.toLowerCase()}`}
               style={{ background: "var(--input)", color: "var(--foreground)" }}
-              dangerouslySetInnerHTML={{ __html: highlighted || pasteData.paste }}
+              dangerouslySetInnerHTML={{ __html: highlighted || escapeHtml(pasteData.paste) }}
             />
           )}
-          
-          <div className="mt-2 text-xs flex justify-between items-center" style={{ color: "var(--muted-foreground)" }}>
-            <span>{t("paste_view.language")} : {pasteData.language || t("paste_view.plain_text")}</span>
-            <span>{t("paste_view.created_on")} : {new Date(pasteData.createdAt).toLocaleDateString()}</span>
+
+          <div
+            className="mt-2 text-xs flex justify-between items-center"
+            style={{ color: "var(--muted-foreground)" }}
+          >
+            <span>
+              {t("paste_view.language")} : {pasteData.language || t("paste_view.plain_text")}
+            </span>
+            <span>
+              {t("paste_view.created_on")} : {new Date(pasteData.createdAt).toLocaleDateString()}
+            </span>
           </div>
-          
+
           {pasteData.expiresAt && (
             <div className="mt-1 text-xs" style={{ color: "var(--muted-foreground)" }}>
               {t("paste_view.expires_on")} : {new Date(pasteData.expiresAt).toLocaleDateString()}
@@ -197,7 +255,10 @@ const PasteViewPage = () => {
 
 export default PasteViewPage;
 
-const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => void }> = ({ slug, onSuccess }) => {
+const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => void }> = ({
+  slug,
+  onSuccess,
+}) => {
   const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -207,16 +268,16 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
     if (e) e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const res = await fetch(`/p/${slug}/api`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-      
+
       const response: ApiResponse = await res.json();
-      
+
       if (res.ok && response.success && response.data) {
         onSuccess(response.data);
       } else {
@@ -241,7 +302,7 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
       <p className="text-sm mb-4" style={{ color: "var(--muted-foreground)" }}>
         {t("paste_view.protected_description")}
       </p>
-      
+
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: "var(--foreground)" }}>
@@ -249,10 +310,10 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
           </label>
           <input
             className="w-full px-3 py-2 rounded border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
-            style={{ 
-              background: "var(--input)", 
-              color: "var(--foreground)", 
-              borderColor: error ? "var(--destructive)" : "var(--border)" 
+            style={{
+              background: "var(--input)",
+              color: "var(--foreground)",
+              borderColor: error ? "var(--destructive)" : "var(--border)",
             }}
             type="password"
             value={password}
@@ -262,20 +323,20 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
             disabled={loading}
           />
         </div>
-        
+
         {error && (
-          <div 
-            className="text-sm p-3 rounded" 
-            style={{ 
-              color: "var(--destructive)", 
+          <div
+            className="text-sm p-3 rounded"
+            style={{
+              color: "var(--destructive)",
               background: "rgba(220, 38, 38, 0.1)",
-              border: "1px solid var(--destructive)"
+              border: "1px solid var(--destructive)",
             }}
           >
             {error}
           </div>
         )}
-        
+
         <div className="flex justify-end">
           <button
             type="submit"
@@ -286,8 +347,22 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
             {loading ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="32">
-                    <animate attributeName="stroke-dasharray" dur="1s" values="0 32;16 16;0 32;0 32" repeatCount="indefinite"/>
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeDasharray="32"
+                    strokeDashoffset="32"
+                  >
+                    <animate
+                      attributeName="stroke-dasharray"
+                      dur="1s"
+                      values="0 32;16 16;0 32;0 32"
+                      repeatCount="indefinite"
+                    />
                   </circle>
                 </svg>
                 {t("paste_view.verifying")}

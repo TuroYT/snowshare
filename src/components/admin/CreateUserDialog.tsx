@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface CreateUserDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  onUserCreated: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onUserCreated: () => void;
 }
 
 export default function CreateUserDialog({
@@ -14,18 +14,18 @@ export default function CreateUserDialog({
   onClose,
   onUserCreated,
 }: CreateUserDialogProps) {
-  const { t } = useTranslation()
-  const [email, setEmail] = useState("")
-  const [name, setName] = useState("")
-  const [password, setPassword] = useState("")
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { t } = useTranslation();
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
       const response = await fetch("/api/admin/users", {
@@ -37,28 +37,28 @@ export default function CreateUserDialog({
           password,
           isAdmin,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Failed to create user")
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create user");
       }
 
       // Reset form and close dialog
-      setEmail("")
-      setName("")
-      setPassword("")
-      setIsAdmin(false)
-      onUserCreated()
-      onClose()
+      setEmail("");
+      setName("");
+      setPassword("");
+      setIsAdmin(false);
+      onUserCreated();
+      onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -160,5 +160,5 @@ export default function CreateUserDialog({
         </form>
       </div>
     </div>
-  )
+  );
 }
