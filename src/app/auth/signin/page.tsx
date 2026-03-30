@@ -32,8 +32,10 @@ export default function SignIn() {
   }, [])
 
   useEffect(() => {
-    if (errorParam === "OAuthSignin") {
-      setError(t('auth.error_oauth_signin', "Aucun email n'est associé à ce compte fournisseur."))
+    if (errorParam === "OAuthNoEmail") {
+      setError(t('auth.error_oauth_no_email', "No email is associated with this provider account. Make sure your identity provider is configured to share the email claim."))
+    } else if (errorParam === "OAuthSignin") {
+      setError(t('auth.error_oauth_signin', "An error occurred while signing in with this provider. Please try again."))
     } else if (errorParam && providers && providers[errorParam]) {
       // Auto-click if error param matches a provider ID (e.g. error=github)
       signIn(errorParam, { callbackUrl: "/" })
