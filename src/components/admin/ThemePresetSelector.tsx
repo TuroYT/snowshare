@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { themePresets } from "@/lib/theme-presets"
+import { themePresets } from "@/lib/theme-presets";
 
 interface ThemePresetSelectorProps {
-  onSelectPreset: (colors: Record<string, string>) => void
+  onSelectPreset: (colors: Record<string, string>) => void;
 }
 
 export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps) {
@@ -29,12 +29,10 @@ export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps
                 style={{ backgroundColor: preset.colors.secondaryColor }}
               />
             </div>
-            
+
             {/* Preset name */}
-            <p className="text-xs font-medium text-[var(--foreground)] truncate">
-              {preset.name}
-            </p>
-            
+            <p className="text-xs font-medium text-[var(--foreground)] truncate">{preset.name}</p>
+
             {/* Hover effect */}
             <div
               className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity"
@@ -49,5 +47,5 @@ export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps
         Click a preset to apply it instantly. You can customize colors after applying.
       </p>
     </div>
-  )
+  );
 }

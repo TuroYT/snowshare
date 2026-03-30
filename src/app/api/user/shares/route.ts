@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         viewCount: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 

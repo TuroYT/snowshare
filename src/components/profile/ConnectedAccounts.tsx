@@ -17,7 +17,6 @@ type AvailableProvider = {
   displayName?: string;
 };
 
-
 export default function ConnectedAccounts() {
   const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -167,8 +166,20 @@ export default function ConnectedAccounts() {
     return (
       <div className="modern-card p-6">
         <div className="flex justify-center items-center py-8">
-          <svg className="animate-spin h-12 w-12 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <svg
+            className="animate-spin h-12 w-12 text-[var(--primary)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
             <path
               className="opacity-75"
               fill="currentColor"
@@ -185,13 +196,27 @@ export default function ConnectedAccounts() {
       <div className="modern-card p-6">
         <div className="flex items-center gap-4 mb-6">
           <div className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center modern-icon-blue">
-            <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            <svg
+              className="w-6 h-6 text-[var(--primary)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-[var(--foreground)]">{t("profile.accounts.title")}</h2>
-            <p className="text-sm text-[var(--foreground-muted)]">{t("profile.accounts.description")}</p>
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
+              {t("profile.accounts.title")}
+            </h2>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {t("profile.accounts.description")}
+            </p>
           </div>
         </div>
 
@@ -199,12 +224,24 @@ export default function ConnectedAccounts() {
           <div className="modern-alert modern-alert-error mb-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-5 h-5 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <p className="text-sm">{error}</p>
               </div>
-              <button onClick={() => setError(null)} className="text-sm hover:opacity-70">✕</button>
+              <button onClick={() => setError(null)} className="text-sm hover:opacity-70">
+                ✕
+              </button>
             </div>
           </div>
         )}
@@ -213,21 +250,37 @@ export default function ConnectedAccounts() {
           <div className="modern-alert modern-alert-success mb-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-5 h-5 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
                 <p className="text-sm">{success}</p>
               </div>
-              <button onClick={() => setSuccess(null)} className="text-sm hover:opacity-70">✕</button>
+              <button onClick={() => setSuccess(null)} className="text-sm hover:opacity-70">
+                ✕
+              </button>
             </div>
           </div>
         )}
 
         {/* Accounts */}
         <div className="mb-6">
-          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">{t("profile.accounts.connected")}</h3>
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">
+            {t("profile.accounts.connected")}
+          </h3>
           {accounts.length === 0 ? (
-            <p className="text-sm text-[var(--foreground-muted)]">{t("profile.accounts.no_connected")}</p>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {t("profile.accounts.no_connected")}
+            </p>
           ) : (
             <div className="space-y-2">
               {accounts.map((account) => (
@@ -238,14 +291,28 @@ export default function ConnectedAccounts() {
                   <div className="flex items-center gap-3">
                     <div className="text-[var(--primary)]">
                       {providerIcons[account.provider] || (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                          />
                         </svg>
                       )}
                     </div>
                     <div>
-                      <p className="font-medium text-[var(--foreground)]">{getProviderDisplayName(account.provider)}</p>
-                      <p className="text-xs text-[var(--foreground-muted)]">{account.providerAccountId}</p>
+                      <p className="font-medium text-[var(--foreground)]">
+                        {getProviderDisplayName(account.provider)}
+                      </p>
+                      <p className="text-xs text-[var(--foreground-muted)]">
+                        {account.providerAccountId}
+                      </p>
                     </div>
                   </div>
                   <button
@@ -254,7 +321,12 @@ export default function ConnectedAccounts() {
                     aria-label={t("profile.accounts.unlink")}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -265,7 +337,9 @@ export default function ConnectedAccounts() {
 
         {/* Providers */}
         <div className="border-t border-[var(--border)] pt-6">
-          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">{t("profile.accounts.available")}</h3>
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">
+            {t("profile.accounts.available")}
+          </h3>
           <div className="flex flex-wrap gap-2">
             {availableProviders.map((provider) => (
               <button
@@ -277,7 +351,12 @@ export default function ConnectedAccounts() {
                 <span className="text-[var(--primary)]">
                   {providerIcons[provider.name] || (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
                     </svg>
                   )}
                 </span>
@@ -290,7 +369,9 @@ export default function ConnectedAccounts() {
               </button>
             ))}
             {availableProviders.length === 0 && (
-              <p className="text-sm text-[var(--foreground-muted)]">{t("profile.accounts.no_available")}</p>
+              <p className="text-sm text-[var(--foreground-muted)]">
+                {t("profile.accounts.no_available")}
+              </p>
             )}
           </div>
         </div>
@@ -298,9 +379,14 @@ export default function ConnectedAccounts() {
 
       {/* Unlink confirmation dialog */}
       {deleteDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setDeleteDialogOpen(false)}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          onClick={() => setDeleteDialogOpen(false)}
+        >
           <div className="modern-card p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-[var(--foreground)] mb-3">{t("profile.accounts.confirm_unlink")}</h3>
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-3">
+              {t("profile.accounts.confirm_unlink")}
+            </h3>
             <p className="text-[var(--foreground-muted)] mb-6">
               {t("profile.accounts.confirm_unlink_message", {
                 provider: accountToDelete ? getProviderDisplayName(accountToDelete.provider) : "",
@@ -320,8 +406,20 @@ export default function ConnectedAccounts() {
                 className="modern-button flex-1 bg-red-600 hover:bg-red-700 text-white border-red-600"
               >
                 {deleting ? (
-                  <svg className="animate-spin h-5 w-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <svg
+                    className="animate-spin h-5 w-5 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
                     <path
                       className="opacity-75"
                       fill="currentColor"

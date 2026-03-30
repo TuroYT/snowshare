@@ -23,7 +23,7 @@ const LANGUAGES = [
   { value: "css", label: "CSS" },
   { value: "sql", label: "SQL" },
   { value: "json", label: "JSON" },
-  { value: "markdown", label: "Markdown" }
+  { value: "markdown", label: "Markdown" },
 ];
 
 const ManageCodeBlock: React.FC<{
@@ -72,7 +72,9 @@ const ManageCodeBlock: React.FC<{
       });
       const data = await res.json();
       if (!res.ok || data?.error) {
-        setError(data?.error || t("pasteshare_ui.creation_error", "Erreur lors de la création du partage"));
+        setError(
+          data?.error || t("pasteshare_ui.creation_error", "Erreur lors de la création du partage")
+        );
       } else {
         const pasteShare = data?.share?.pasteShare;
         if (pasteShare?.slug) setSuccess(`${window.location.origin}/p/${pasteShare.slug}`);
@@ -90,16 +92,18 @@ const ManageCodeBlock: React.FC<{
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <ShareError error={error} translationPrefix="pasteshare_ui" />}
 
-      {success && (
-        <ShareSuccess url={success} translationPrefix="pasteshare_ui" />
-      )}
+      {success && <ShareSuccess url={success} translationPrefix="pasteshare_ui" />}
 
       {/* Language selection */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-[var(--foreground)]">
           {t("pasteshare_ui.label_language")}
         </label>
-        <select value={language} onChange={(e) => onLanguageChange(e.target.value)} className="input-paste w-full">
+        <select
+          value={language}
+          onChange={(e) => onLanguageChange(e.target.value)}
+          className="input-paste w-full"
+        >
           <option value="">{t("pasteshare_ui.language_placeholder")}</option>
           {LANGUAGES.map((l) => (
             <option key={l.value} value={l.value}>

@@ -26,6 +26,7 @@ Core services:
 ```
 
 **Models** (`prisma/schema.prisma`):
+
 - `User` (auth): email, password (bcrypt), isAdmin, shares
 - `Share` (core): type (FILE|PASTE|URL), slug, password, expiresAt, ipSource, owner
 - `Settings`: allowSignup, quotas (fileMax, totalMax)
@@ -51,6 +52,7 @@ if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { st
 # Share creation flow
 
 All shares (File/Link/Paste) follow this pattern in `src/app/api/shares/(shareType)/route.ts`:
+
 1. **Validate**: Input schema, URL format (links), file size (files)
 2. **Check quota**: `checkUploadQuota(request, fileSize)` → tracks by IP + user
 3. **Auth check**: Extract session; set `ownerId` if authenticated (null for anon)
@@ -60,6 +62,7 @@ All shares (File/Link/Paste) follow this pattern in `src/app/api/shares/(shareTy
 7. **Return**: `{ share: { slug, expiresAt, ... } }` or `{ error: "..." }`
 
 **Anonymous limits** (`src/lib/quota.ts`):
+
 - Max 7-day expiration (must set expiration)
 - Lower file/total quotas vs authenticated users
 - IP-based tracking (no session ID)
@@ -67,6 +70,7 @@ All shares (File/Link/Paste) follow this pattern in `src/app/api/shares/(shareTy
 # Developer commands
 
 ## Development
+
 ```bash
 npm run dev          # Next.js dev with Turbopack (default: port 3000)
 npm run build        # Production build (output: .next/)
@@ -76,6 +80,7 @@ npm run lint:fix     # ESLint auto-fix
 ```
 
 ## Testing
+
 ```bash
 npm run test         # Jest unit tests (jsdom environment)
 npm run test:watch   # Watch mode
@@ -83,6 +88,7 @@ npm run test:coverage # Coverage report
 ```
 
 ## Database
+
 ```bash
 npx prisma migrate dev --name <name>  # Create + apply migration
 npx prisma migrate deploy              # Apply migrations (production)
@@ -92,6 +98,7 @@ npx prisma studio                      # Open Prisma Studio GUI
 ```
 
 ## Maintenance
+
 ```bash
 npm run cleanup:expired  # Remove expired shares (tsx script)
 ```
@@ -99,6 +106,7 @@ npm run cleanup:expired  # Remove expired shares (tsx script)
 **Docker**: `docker compose up -d --build` — runs Next.js + PostgreSQL, executes `prisma migrate deploy` on startup. App at http://localhost:3000, DB at port 5432. Volumes: `db-data/` (persistent), `uploads/` (files).
 
 **Environment vars** (`.env` or `docker-compose.yml`):
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_URL`: Base URL (http://localhost:3000)
 - `NEXTAUTH_SECRET`: Random JWT secret (use `openssl rand -base64 32`)
@@ -108,37 +116,46 @@ npm run cleanup:expired  # Remove expired shares (tsx script)
 # Project conventions
 
 ## API responses
+
 Always return JSON with consistent structure (use english for messages):
+
 - **Success**: `{ share: {...} }`, `{ user: {...} }`, `{ message: "..." }`, `{ data: [...] }`
 - **Error**: `{ error: "message" }` with appropriate HTTP status (400, 401, 403, 409, 429, etc.)
 
 ## Imports
+
 - **Prisma**: `import { prisma } from "@/lib/prisma"` and `import { ... } from "@/generated/prisma"`
 - **Paths**: Always use `@/` alias, never relative imports like `../../../`
 
 ## Client components
+
 - Mark with `"use client"` at top of file
 - Use `useTranslation()` from react-i18next for all UI text
 - Access auth with `useSession()` from next-auth/react, or `useAuth()` hook
 - State management: simple `useState` (no Redux/Zustand)
 
 ## Translations
+
 - Add keys to ALL 6 locale files in `src/i18n/locales/` when adding UI text
 - Fallback language is english (`en`)
 - Pattern: `t("section.key", "English default")`
 
 ## Styling
+
 - TailwindCSS 4 and material ui
 - Component library: React Material UI
 - Responsive: Mobile-first approach
 
 ## File uploads
+
 - Store in `uploads/` directory with pattern: `{uuid}_{originalName}` (uuid via crypto)
 - Track file path in `Share.filePath` (relative to project root)
 - Clean up files when shares expire (via cleanup script)
 
 ## Error handling patterns
+
 All API routes should follow this pattern:
+
 ```typescript
 // Validation errors → 400
 if (!isValid) {
@@ -166,15 +183,15 @@ return NextResponse.json({ data: result });
 
 # Key files for common tasks
 
-| Task | Files |
-|------|-------|
-| Add API endpoint | `src/app/api/<name>/route.ts` — export `GET`/`POST`/etc |
-| Modify auth | `src/lib/auth.ts` (callbacks), `src/app/api/auth/register/route.ts` |
-| Add share type | `src/app/api/shares/`, new `(typeShare)/` folder + display at `src/app/(shares)/` |
-| Add UI component | `src/components/` — check Navigation.tsx for client/server patterns |
-| Add translation | All files in `src/i18n/locales/*.json` (fr, en, es, de, nl, pl) |
-| Change quotas | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` enforcement |
-| Database operations | All at `src/app/api/` routes; client at `src/generated/prisma` |
+| Task                | Files                                                                             |
+| ------------------- | --------------------------------------------------------------------------------- |
+| Add API endpoint    | `src/app/api/<name>/route.ts` — export `GET`/`POST`/etc                           |
+| Modify auth         | `src/lib/auth.ts` (callbacks), `src/app/api/auth/register/route.ts`               |
+| Add share type      | `src/app/api/shares/`, new `(typeShare)/` folder + display at `src/app/(shares)/` |
+| Add UI component    | `src/components/` — check Navigation.tsx for client/server patterns               |
+| Add translation     | All files in `src/i18n/locales/*.json` (fr, en, es, de, nl, pl)                   |
+| Change quotas       | `prisma/schema.prisma` Settings model, `src/lib/quota.ts` enforcement             |
+| Database operations | All at `src/app/api/` routes; client at `src/generated/prisma`                    |
 
 # CI/CD workflow
 
@@ -192,6 +209,7 @@ The repository uses GitHub Actions for CI/CD:
 # Environment setup
 
 ## Initial Setup
+
 1. Clone repository: `git clone https://github.com/TuroYT/snowshare.git`
 2. Install dependencies: `npm install`
 3. Copy `.env.example` to `.env` and configure:
@@ -206,6 +224,7 @@ The repository uses GitHub Actions for CI/CD:
 6. Start dev server: `npm run dev`
 
 ## Docker Setup (Alternative)
+
 ```bash
 docker compose up -d --build
 # App: http://localhost:3000
@@ -218,33 +237,39 @@ docker compose up -d --build
 ## Common Issues
 
 **Prisma Client not generated**
+
 ```bash
 npx prisma generate
 ```
 
 **Database connection errors**
+
 - Check `DATABASE_URL` in `.env`
 - Ensure PostgreSQL is running
 - Verify database exists: `psql -l`
 
 **Port 3000 already in use**
+
 ```bash
 # Change PORT in .env or use:
 PORT=3001 npm run dev
 ```
 
 **ESLint errors**
+
 ```bash
 npm run lint:fix  # Auto-fix issues
 ```
 
 **Test failures after DB schema change**
+
 ```bash
 npx prisma generate  # Regenerate client
 npm test             # Re-run tests
 ```
 
 **File upload issues**
+
 - Ensure `uploads/` directory exists and is writable
 - Check disk space and quota limits
 
@@ -266,4 +291,3 @@ npm test             # Re-run tests
 - **Performance**: Use `next/image` for Image optimization; leverage Next.js caching and ISR where applicable
 - **Security**: Sanitize all user inputs; hash passwords with bcrypt (cost 12); use HTTPS in production
 - **Coding**: Use Best Practices for TypeScript, React and next.js; keep functions small and focused; add comments for complex logic
-

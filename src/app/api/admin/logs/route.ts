@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // Check if user is admin
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { isAdmin: true }
+      select: { isAdmin: true },
     });
 
     if (!user?.isAdmin) {
@@ -34,9 +34,13 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: {
       type?: "FILE" | "PASTE" | "URL";
-      OR?: Array<{ slug: { contains: string; mode: "insensitive" } } | { owner: { email: { contains: string; mode: "insensitive" } } } | { ipSource: { contains: string } }>;
+      OR?: Array<
+        | { slug: { contains: string; mode: "insensitive" } }
+        | { owner: { email: { contains: string; mode: "insensitive" } } }
+        | { ipSource: { contains: string } }
+      >;
     } = {};
-    
+
     if (type !== "all") {
       where.type = type as "FILE" | "PASTE" | "URL";
     }
@@ -45,7 +49,7 @@ export async function GET(request: NextRequest) {
       where.OR = [
         { slug: { contains: search, mode: "insensitive" } },
         { owner: { email: { contains: search, mode: "insensitive" } } },
-        { ipSource: { contains: search } }
+        { ipSource: { contains: search } },
       ];
     }
 
@@ -58,32 +62,33 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               email: true,
-              name: true
-            }
-          }
+              name: true,
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,
-        take: limit
+        take: limit,
       }),
-      prisma.share.count({ where })
+      prisma.share.count({ where }),
     ]);
 
     // Batch fetch geolocation data for all IPs on this page
-    const uniqueIps = [...new Set(
-      shares.map(s => s.ipSource).filter((ip): ip is string => !!ip)
-    )];
+    const uniqueIps = [
+      ...new Set(shares.map((s) => s.ipSource).filter((ip): ip is string => !!ip)),
+    ];
 
-    const geoData = uniqueIps.length > 0
-      ? await prisma.ipLocalisation.findMany({
-          where: { ip: { in: uniqueIps } },
-        })
-      : [];
+    const geoData =
+      uniqueIps.length > 0
+        ? await prisma.ipLocalisation.findMany({
+            where: { ip: { in: uniqueIps } },
+          })
+        : [];
 
-    const geoMap = new Map(geoData.map(g => [g.ip, g]));
+    const geoMap = new Map(geoData.map((g) => [g.ip, g]));
 
     // Format shares for response
-    const logs = shares.map(share => {
+    const logs = shares.map((share) => {
       const geo = share.ipSource ? geoMap.get(share.ipSource) : undefined;
       return {
         id: share.id,
@@ -95,20 +100,24 @@ export async function GET(request: NextRequest) {
         hasPassword: !!share.password,
         maxViews: share.maxViews,
         viewCount: share.viewCount,
-        owner: share.owner ? {
-          id: share.owner.id,
-          email: share.owner.email,
-          name: share.owner.name
-        } : null,
-        ipGeo: geo ? {
-          countryCode: geo.countryCode,
-          countryName: geo.countryName,
-          continentCode: geo.continentCode,
-          continentName: geo.continentName,
-          stateProv: geo.stateProv,
-          city: geo.city,
-          status: geo.status,
-        } : null,
+        owner: share.owner
+          ? {
+              id: share.owner.id,
+              email: share.owner.email,
+              name: share.owner.name,
+            }
+          : null,
+        ipGeo: geo
+          ? {
+              countryCode: geo.countryCode,
+              countryName: geo.countryName,
+              continentCode: geo.continentCode,
+              continentName: geo.continentName,
+              stateProv: geo.stateProv,
+              city: geo.city,
+              status: geo.status,
+            }
+          : null,
       };
     });
 
@@ -118,10 +127,9 @@ export async function GET(request: NextRequest) {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     });
-
   } catch (error) {
     console.error("Error fetching logs:", error);
     return internalError(request);

@@ -8,28 +8,28 @@
   --secondary: #8b5cf6;
   --secondary-hover: #7c3aed;
   --secondary-dark: #6d28d9;
-  
+
   /* Background colors (customizable) */
   --background: #111827;
   --background-secondary: rgba(17, 24, 39, 0.9);
   --surface: rgba(31, 41, 55, 0.85);
   --surface-hover: rgba(55, 65, 81, 0.85);
-  
+
   /* Text colors */
   --foreground: #f9fafb;
   --foreground-muted: #d1d5db;
   --foreground-subtle: #9ca3af;
-  
+
   /* Borders and inputs */
   --border: rgba(55, 65, 81, 0.7);
   --border-hover: rgba(75, 85, 99, 0.85);
   --input: #1f2937;
   --input-focus: #111827;
-  
+
   /* Dynamically calculated colors */
   --primary-light: color-mix(in srgb, var(--primary) 10%, transparent);
   --secondary-light: color-mix(in srgb, var(--secondary) 10%, transparent);
-  
+
   /* System accents */
   --accent-green: #10b981;
   --accent-red: #ef4444;
@@ -38,11 +38,11 @@
   --success: #059669;
   --warning: #d97706;
   --info: #0ea5e9;
-  
+
   /* Dynamic gradients using custom colors */
   --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   --gradient-secondary: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -177,12 +177,20 @@ body {
 }
 
 .modern-icon-blue {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 20%, transparent) 0%, color-mix(in srgb, var(--primary-dark) 20%, transparent) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 20%, transparent) 0%,
+    color-mix(in srgb, var(--primary-dark) 20%, transparent) 100%
+  );
   border-color: color-mix(in srgb, var(--primary) 50%, transparent);
 }
 
 .modern-icon-purple {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 20%, transparent) 0%, color-mix(in srgb, var(--secondary-dark) 20%, transparent) 100%);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--secondary) 20%, transparent) 0%,
+    color-mix(in srgb, var(--secondary-dark) 20%, transparent) 100%
+  );
   border-color: color-mix(in srgb, var(--secondary) 50%, transparent);
 }
 
@@ -359,14 +367,20 @@ body {
 /* Focus visible for better accessibility */
 .focus-visible\:modern-focus:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent), 0 0 0 4px var(--background);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent),
+    0 0 0 4px var(--background);
 }
 
 /* Backdrop blur utilities - Removed for performance on low-power devices */
 
 /* Custom gradient backgrounds */
 .bg-gradient-modern {
-  background: linear-gradient(135deg, var(--background-secondary) 0%, color-mix(in srgb, var(--surface) 80%, transparent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--background-secondary) 0%,
+    color-mix(in srgb, var(--surface) 80%, transparent) 100%
+  );
 }
 
 .bg-gradient-primary {
@@ -383,19 +397,36 @@ body {
   max-width: none;
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   color: var(--primary);
   font-weight: 600;
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
 }
 
-.prose h1 { font-size: 2rem; }
-.prose h2 { font-size: 1.75rem; }
-.prose h3 { font-size: 1.5rem; }
-.prose h4 { font-size: 1.25rem; }
-.prose h5 { font-size: 1.125rem; }
-.prose h6 { font-size: 1rem; }
+.prose h1 {
+  font-size: 2rem;
+}
+.prose h2 {
+  font-size: 1.75rem;
+}
+.prose h3 {
+  font-size: 1.5rem;
+}
+.prose h4 {
+  font-size: 1.25rem;
+}
+.prose h5 {
+  font-size: 1.125rem;
+}
+.prose h6 {
+  font-size: 1rem;
+}
 
 .prose p {
   margin-top: 0.75rem;
@@ -426,7 +457,8 @@ body {
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .prose pre {
@@ -450,7 +482,8 @@ body {
   color: var(--muted-foreground);
 }
 
-.prose ul, .prose ol {
+.prose ul,
+.prose ol {
   margin: 1rem 0;
   padding-left: 1.5rem;
 }
@@ -471,7 +504,8 @@ body {
   margin: 1rem 0;
 }
 
-.prose th, .prose td {
+.prose th,
+.prose td {
   border: 1px solid var(--border);
   padding: 0.5rem;
   text-align: left;

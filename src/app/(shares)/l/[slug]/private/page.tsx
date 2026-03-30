@@ -1,71 +1,71 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useParams } from "next/navigation"
-import Link from "next/link"
-import { useTranslation } from "react-i18next"
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useTranslation } from "react-i18next";
 
 export default function PrivateLinkPage() {
-  const { t } = useTranslation()
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const params = useParams()
-  const slug = params?.slug as string
+  const { t } = useTranslation();
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const params = useParams();
+  const slug = params?.slug as string;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
       const response = await fetch(`/l/${slug}`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           slug,
-          password
-        })
-      })
+          password,
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || t("link_private.error_generic"))
-        return
+        setError(data.error || t("link_private.error_generic"));
+        return;
       }
 
       if (data.url) {
         // Rediriger vers l'URL décryptée
-        window.location.href = data.url
+        window.location.href = data.url;
       } else {
-        setError(t("link_private.error_url_not_found"))
+        setError(t("link_private.error_url_not_found"));
       }
     } catch {
-      setError(t("link_private.error_connection"))
+      setError(t("link_private.error_connection"));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-blue-900/20 border border-blue-800">
-            <svg 
-              className="h-8 w-8 text-[var(--primary)]" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="h-8 w-8 text-[var(--primary)]"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
               />
             </svg>
           </div>
@@ -79,7 +79,10 @@ export default function PrivateLinkPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)] mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[var(--foreground)] mb-2"
+            >
               {t("link_private.password_label")}
             </label>
             <input
@@ -99,7 +102,11 @@ export default function PrivateLinkPage() {
             <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">
               <div className="flex items-center justify-center">
                 <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 {error}
               </div>
@@ -114,9 +121,25 @@ export default function PrivateLinkPage() {
             >
               {loading ? (
                 <div className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   {t("link_private.verifying")}
                 </div>
@@ -131,7 +154,12 @@ export default function PrivateLinkPage() {
                 className="inline-flex items-center text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
                 {t("link_private.back_home")}
               </Link>
@@ -140,11 +168,9 @@ export default function PrivateLinkPage() {
         </form>
 
         <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
-          <p>
-            {t("link_private.disclaimer")}
-          </p>
+          <p>{t("link_private.disclaimer")}</p>
         </div>
       </div>
     </div>
-  )
+  );
 }

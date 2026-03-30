@@ -20,11 +20,11 @@ export function formatBytes(bytes: number, useBinary: boolean = false): string {
 
 /**
  * Convert megabytes to appropriate unit value based on settings
- * 
+ *
  * NOTE: Throughout this system, "MB" refers to MiB (binary megabytes = 1024² bytes),
  * NOT decimal MB (1,000,000 bytes). This is a common convention in file systems and
  * storage applications. All quota calculations use binary units internally.
- * 
+ *
  * @param megabytes - Size in MiB (mebibytes, 1024² bytes)
  * @param useGiB - If true, convert to GiB, else keep as MiB
  * @returns Size in requested unit
@@ -41,7 +41,7 @@ export function convertFromMB(megabytes: number, useGiB: boolean): number {
 
 /**
  * Convert from appropriate unit back to megabytes (MiB)
- * 
+ *
  * @param value - Size in units (MiB or GiB)
  * @param useGiB - If true, value is in GiB, else MiB
  * @returns Size in MiB (mebibytes, 1024² bytes)

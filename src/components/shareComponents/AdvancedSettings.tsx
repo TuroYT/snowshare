@@ -30,12 +30,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
   return (
     <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50 space-y-4">
       <h3 className="text-sm font-medium text-[var(--foreground)] flex items-center gap-2">
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -48,25 +43,17 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
 
       <div className="space-y-3">
         <div>
-          <label
-            htmlFor="slug"
-            className="block text-sm font-medium text-[var(--foreground)] mb-2"
-          >
+          <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)] mb-2">
             {t(`${translationPrefix}.custom_slug`, "Lien personnalisé")}
           </label>
           <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2">
             <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">
-              {typeof window !== "undefined"
-                ? window.location.origin + slugPrefix
-                : slugPrefix}
+              {typeof window !== "undefined" ? window.location.origin + slugPrefix : slugPrefix}
             </span>
             <input
               id="slug"
               type="text"
-              placeholder={t(
-                `${translationPrefix}.placeholder_slug`,
-                "mon-lien-custom"
-              )}
+              placeholder={t(`${translationPrefix}.placeholder_slug`, "mon-lien-custom")}
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               pattern="[a-zA-Z0-9-_]+"

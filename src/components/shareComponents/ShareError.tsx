@@ -13,10 +13,7 @@ const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => 
   const { t } = useTranslation();
 
   return (
-    <div
-      role="alert"
-      className="mt-6 bg-red-900/20 border border-red-800 rounded-lg p-4"
-    >
+    <div role="alert" className="mt-6 bg-red-900/20 border border-red-800 rounded-lg p-4">
       <div className="flex items-start gap-3">
         <svg
           className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"

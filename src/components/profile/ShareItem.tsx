@@ -46,7 +46,6 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
     setIsEditing(false);
   };
 
-
   const copyToClipboard = () => {
     const baseUrl = window.location.origin;
     let url = "";
@@ -116,20 +115,25 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   };
 
   const isExpired = share.expiresAt && new Date(share.expiresAt) < new Date();
-  const isViewLimitReached = share.maxViews !== null && share.maxViews !== undefined && share.viewCount >= share.maxViews;
+  const isViewLimitReached =
+    share.maxViews !== null && share.maxViews !== undefined && share.viewCount >= share.maxViews;
 
   return (
-    <div className={`modern-card p-6 ${isExpired ? 'opacity-60 border-red-900/30' : ''}`}>
+    <div className={`modern-card p-6 ${isExpired ? "opacity-60 border-red-900/30" : ""}`}>
       <div className="flex flex-col md:flex-row gap-4">
         {/* Icon and Type */}
-        <div className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center flex-shrink-0 ${isExpired ? 'from-red-600/20 to-red-800/20 border-red-700/50 text-red-400' : getTypeColor()}`}>
+        <div
+          className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center flex-shrink-0 ${isExpired ? "from-red-600/20 to-red-800/20 border-red-700/50 text-red-400" : getTypeColor()}`}
+        >
           {getTypeIcon()}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${isExpired || isViewLimitReached ? 'from-red-600/20 to-red-800/20 border-red-700/50 text-red-400' : getTypeColor()}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${isExpired || isViewLimitReached ? "from-red-600/20 to-red-800/20 border-red-700/50 text-red-400" : getTypeColor()}`}
+            >
               {share.type}
             </span>
             {isExpired && (
@@ -153,18 +157,36 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               className="group flex items-center gap-2 text-[var(--primary)] hover:text-[var(--primary-hover)] font-mono text-sm transition-colors"
               title={t("profile.copy_link")}
             >
-                <span>
-            {(() => {
-                switch (share.type) {
+              <span>
+                {(() => {
+                  switch (share.type) {
                     case "FILE":
-                        return <a href={`/f/${share.slug}`} target="_blank" rel="noopener noreferrer">/f/{share.slug}</a>;
+                      return (
+                        <a href={`/f/${share.slug}`} target="_blank" rel="noopener noreferrer">
+                          /f/{share.slug}
+                        </a>
+                      );
                     case "PASTE":
-                        return <a href={`/p/${share.slug}`} target="_blank" rel="noopener noreferrer">/p/{share.slug}</a>;
+                      return (
+                        <a href={`/p/${share.slug}`} target="_blank" rel="noopener noreferrer">
+                          /p/{share.slug}
+                        </a>
+                      );
                     case "URL":
-                        return <a href={`/l/${share.slug}`} target="_blank" rel="noopener noreferrer">/l/{share.slug}</a>;
-                }
-            })()}</span>
-              <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      return (
+                        <a href={`/l/${share.slug}`} target="_blank" rel="noopener noreferrer">
+                          /l/{share.slug}
+                        </a>
+                      );
+                  }
+                })()}
+              </span>
+              <svg
+                className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -180,7 +202,9 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               {share.type === "PASTE" && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_content")}</label>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                      {t("profile.label_content")}
+                    </label>
                     <textarea
                       value={editForm.paste || ""}
                       onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
@@ -189,7 +213,9 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_language")}</label>
+                    <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                      {t("profile.label_language")}
+                    </label>
                     <select
                       value={editForm.pastelanguage || "PLAINTEXT"}
                       onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
@@ -215,7 +241,9 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
 
               {share.type === "URL" && (
                 <div>
-                  <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_url")}</label>
+                  <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                    {t("profile.label_url")}
+                  </label>
                   <input
                     type="url"
                     value={editForm.urlOriginal || ""}
@@ -226,7 +254,9 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               )}
 
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_password")}</label>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                  {t("profile.label_password")}
+                </label>
                 <input
                   type="text"
                   value={editForm.password || ""}
@@ -237,20 +267,32 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{t("profile.label_expiration")}</label>
+                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                  {t("profile.label_expiration")}
+                </label>
                 <input
                   type="datetime-local"
-                  value={editForm.expiresAt ? new Date(editForm.expiresAt).toISOString().slice(0, 16) : ""}
+                  value={
+                    editForm.expiresAt
+                      ? new Date(editForm.expiresAt).toISOString().slice(0, 16)
+                      : ""
+                  }
                   onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
                   className="modern-input w-full"
                 />
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button onClick={handleUpdate} className="modern-button modern-button-primary flex-1">
+                <button
+                  onClick={handleUpdate}
+                  className="modern-button modern-button-primary flex-1"
+                >
                   {t("profile.save")}
                 </button>
-                <button onClick={() => setIsEditing(false)} className="modern-button modern-button-secondary flex-1">
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="modern-button modern-button-secondary flex-1"
+                >
                   {t("profile.cancel")}
                 </button>
               </div>
@@ -258,11 +300,15 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
           ) : (
             <>
               {share.type === "FILE" && share.filePath && (
-                <p className="text-[var(--foreground)] text-sm truncate">📄 {share.filePath.split("_").slice(1).join("_")}</p>
+                <p className="text-[var(--foreground)] text-sm truncate">
+                  📄 {share.filePath.split("_").slice(1).join("_")}
+                </p>
               )}
               {share.type === "PASTE" && (
                 <div className="modern-section p-3">
-                  <p className="text-[var(--foreground)] font-mono text-xs truncate">{share.paste?.substring(0, 100)}...</p>
+                  <p className="text-[var(--foreground)] font-mono text-xs truncate">
+                    {share.paste?.substring(0, 100)}...
+                  </p>
                 </div>
               )}
               {share.type === "URL" && (
@@ -271,20 +317,26 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
 
               <div className="flex flex-wrap gap-2 mt-3 text-xs">
                 {share.expiresAt && (
-                  <span className={`px-2 py-1 rounded ${
-                    isExpired
-                      ? 'bg-red-900/30 border border-red-800 text-red-400'
-                      : 'bg-yellow-900/20 border border-yellow-800 text-yellow-400'
-                  }`}>
-                    {isExpired ? '⛔' : '⏰'} {isExpired ? t("profile.stats_expired", "Expired") : t("profile.expires_on")} {new Date(share.expiresAt).toLocaleDateString()}
+                  <span
+                    className={`px-2 py-1 rounded ${
+                      isExpired
+                        ? "bg-red-900/30 border border-red-800 text-red-400"
+                        : "bg-yellow-900/20 border border-yellow-800 text-yellow-400"
+                    }`}
+                  >
+                    {isExpired ? "⛔" : "⏰"}{" "}
+                    {isExpired ? t("profile.stats_expired", "Expired") : t("profile.expires_on")}{" "}
+                    {new Date(share.expiresAt).toLocaleDateString()}
                   </span>
                 )}
                 {share.maxViews && (
-                  <span className={`px-2 py-1 rounded ${
-                    isViewLimitReached
-                      ? 'bg-red-900/30 border border-red-800 text-red-400'
-                      : 'bg-blue-900/20 border border-blue-800 text-blue-400'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded ${
+                      isViewLimitReached
+                        ? "bg-red-900/30 border border-red-800 text-red-400"
+                        : "bg-blue-900/20 border border-blue-800 text-blue-400"
+                    }`}
+                  >
                     👁️ {share.viewCount}/{share.maxViews} {t("profile.views")}
                   </span>
                 )}
@@ -302,8 +354,8 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
         {!isEditing && (
           <div className="flex md:flex-col gap-2 flex-shrink-0">
             {share.type !== "FILE" && (
-              <button 
-                onClick={() => setIsEditing(true)} 
+              <button
+                onClick={() => setIsEditing(true)}
                 className="modern-button modern-button-secondary px-4 py-2 text-sm"
                 title={t("profile.edit")}
               >

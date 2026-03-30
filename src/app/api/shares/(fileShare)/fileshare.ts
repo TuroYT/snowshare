@@ -20,7 +20,7 @@ export const getFileShare = async (slug: string, password?: string) => {
       isBulk: true,
       maxViews: true,
       viewCount: true,
-    }
+    },
   });
 
   if (!share || share.type !== "FILE") {
@@ -54,7 +54,7 @@ export const getFileShare = async (slug: string, password?: string) => {
         originalName: true,
         relativePath: true,
         size: true,
-      }
+      },
     });
 
     return {
@@ -75,6 +75,6 @@ export const getFileShare = async (slug: string, password?: string) => {
   return {
     share,
     filePath,
-    originalFilename: share.filePath.split('_').slice(1).join('_')
+    originalFilename: share.filePath.split("_").slice(1).join("_"),
   };
 };

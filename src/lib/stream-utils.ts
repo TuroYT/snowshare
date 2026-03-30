@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from "stream";
 
 /**
  * Helper to convert Node.js stream to Web Stream for Next.js
@@ -7,13 +7,13 @@ import { Readable } from 'stream';
 export function nodeStreamToWebStream(nodeStream: Readable): ReadableStream {
   return new ReadableStream({
     start(controller) {
-      nodeStream.on('data', (chunk) => controller.enqueue(chunk));
-      nodeStream.on('end', () => controller.close());
-      nodeStream.on('error', (err) => controller.error(err));
+      nodeStream.on("data", (chunk) => controller.enqueue(chunk));
+      nodeStream.on("end", () => controller.close());
+      nodeStream.on("error", (err) => controller.error(err));
     },
     cancel() {
       nodeStream.destroy();
-    }
+    },
   });
 }
 
@@ -23,10 +23,13 @@ export function nodeStreamToWebStream(nodeStream: Readable): ReadableStream {
  * @param fileSize - The total size of the file
  * @returns Object with start and end positions, or null if invalid
  */
-export function parseRangeHeader(rangeHeader: string, fileSize: number): { start: number; end: number } | null {
+export function parseRangeHeader(
+  rangeHeader: string,
+  fileSize: number
+): { start: number; end: number } | null {
   // Parse range header
   const parts = rangeHeader.replace(/bytes=/, "").split("-");
-  
+
   if (parts.length !== 2) {
     return null;
   }

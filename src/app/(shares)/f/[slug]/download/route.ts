@@ -1,23 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { createReadStream, statSync, existsSync } from "fs";
+import { createReadStream, existsSync } from "fs";
+import { stat } from "fs/promises";
 import path from "path";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { getMimeType, sanitizeFilenameForHeader } from "@/lib/mime-types";
 
-// Helper function to sanitize filename for Content-Disposition header
-function sanitizeFilename(filename: string): string {
-  const sanitized = filename
-    .replace(/[\r\n]/g, '')
-    .replace(/["\\/]/g, '_')
-    .replace(/[^\x20-\x7E]/g, '_');
-  return sanitized;
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   if (!slug) {
@@ -35,10 +25,13 @@ export async function GET(
     }
 
     if (result.share?.isBulk) {
-      return NextResponse.json({
-        error: "This is a bulk share. Use /bulk-download endpoint instead.",
-        isBulk: true
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "This is a bulk share. Use /bulk-download endpoint instead.",
+          isBulk: true,
+        },
+        { status: 400 }
+      );
     }
 
     const { filePath: fullPath, originalFilename } = result;
@@ -47,35 +40,12 @@ export async function GET(
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const stats = statSync(fullPath);
+    const stats = await stat(fullPath);
     const fileSize = stats.size;
 
     const ext = path.extname(fullPath).toLowerCase();
-    const mimeTypes: Record<string, string> = {
-      '.pdf': 'application/pdf',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
-      '.txt': 'text/plain',
-      '.html': 'text/html',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.xml': 'application/xml',
-      '.zip': 'application/zip',
-      '.doc': 'application/msword',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.xls': 'application/vnd.ms-excel',
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.ppt': 'application/vnd.ms-powerpoint',
-      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    };
-
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
-    const safeFilename = sanitizeFilename(originalFilename || 'download');
+    const contentType = getMimeType(ext);
+    const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
 
     // Handle range request
     const range = request.headers.get("range");
@@ -86,12 +56,12 @@ export async function GET(
       if (!rangeResult) {
         return new Response(null, {
           status: 416,
-          headers: { "Content-Range": `bytes */${fileSize}` }
+          headers: { "Content-Range": `bytes */${fileSize}` },
         });
       }
 
       const { start, end } = rangeResult;
-      const chunksize = (end - start) + 1;
+      const chunksize = end - start + 1;
       const fileStream = createReadStream(fullPath, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);
 
@@ -128,7 +98,6 @@ export async function GET(
       status: 200,
       headers,
     });
-
   } catch (error) {
     console.error("Download error:", error);
     return internalError(request);

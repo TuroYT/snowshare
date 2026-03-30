@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
-import { getPublicSettings } from "@/lib/settings"
+import type { Metadata } from "next";
+import { getPublicSettings } from "@/lib/settings";
 
 export const revalidate = 0; // Disable caching for metadata
 
 export async function generateMetadata(): Promise<Metadata> {
-  const data = await getPublicSettings()
-  const settings = data?.settings
+  const data = await getPublicSettings();
+  const settings = data?.settings;
 
   return {
     title: settings?.appName || "SnowShare",
@@ -17,13 +17,9 @@ export async function generateMetadata(): Promise<Metadata> {
           apple: [{ url: settings.faviconUrl }],
         }
       : undefined,
-  }
+  };
 }
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return children
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }

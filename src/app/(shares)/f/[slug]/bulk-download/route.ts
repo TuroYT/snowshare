@@ -14,10 +14,7 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   if (!slug) {
@@ -45,10 +42,7 @@ export async function GET(
 
     if (share.password) {
       if (!password) {
-        return jsonResponse(
-          { error: "Password required", requiresPassword: true },
-          403
-        );
+        return jsonResponse({ error: "Password required", requiresPassword: true }, 403);
       }
 
       const passwordValid = await bcrypt.compare(password, share.password);
@@ -72,10 +66,7 @@ export async function GET(
 
     const headers = new Headers();
     headers.set("Content-Type", "application/zip");
-    headers.set(
-      "Content-Disposition",
-      `attachment; filename="${slug}_files.zip"`
-    );
+    headers.set("Content-Disposition", `attachment; filename="${slug}_files.zip"`);
     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");

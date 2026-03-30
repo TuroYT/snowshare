@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material"
-import { useTranslation } from "react-i18next"
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 interface WarningModalProps {
-  open: boolean
-  title: string
-  message: string
-  onConfirm: () => void
-  onCancel: () => void
-  confirmText?: string
-  cancelText?: string
+  open: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
 }
 
 export default function WarningModal({
@@ -22,7 +22,7 @@ export default function WarningModal({
   confirmText,
   cancelText,
 }: WarningModalProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Dialog
@@ -117,15 +117,15 @@ export default function WarningModal({
             textTransform: "none",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--primary-hover)"
+            e.currentTarget.style.backgroundColor = "var(--primary-hover)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--primary)"
+            e.currentTarget.style.backgroundColor = "var(--primary)";
           }}
         >
           {confirmText || t("common.confirm")}
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

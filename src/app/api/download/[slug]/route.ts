@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { createReadStream, statSync, existsSync } from "fs";
+import { createReadStream, existsSync } from "fs";
+import { stat } from "fs/promises";
 import path from "path";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
 
-// Helper function to sanitize filename for Content-Disposition header
-function sanitizeFilename(filename: string): string {
-  // Remove or replace characters that could cause header injection
-  const sanitized = filename
-    .replace(/[\r\n]/g, '') // Remove newlines
-    .replace(/["\\/]/g, '_') // Replace quotes and slashes
-    .replace(/[^\x20-\x7E]/g, '_'); // Replace non-ASCII printable characters
-  return sanitized;
-}
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   if (!slug) {
@@ -31,7 +20,7 @@ export async function GET(
     const password = url.searchParams.get("password") || undefined;
 
     const result = await getFileShare(slug, password);
-    
+
     if (result.errorCode) {
       return apiError(request, result.errorCode);
     }
@@ -43,54 +32,31 @@ export async function GET(
     }
 
     // Get file stats for size
-    const stats = statSync(fullPath);
+    const stats = await stat(fullPath);
     const fileSize = stats.size;
-    
+
     // Determine content type
     const ext = path.extname(fullPath).toLowerCase();
-    const mimeTypes: Record<string, string> = {
-      '.pdf': 'application/pdf',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
-      '.txt': 'text/plain',
-      '.html': 'text/html',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.xml': 'application/xml',
-      '.zip': 'application/zip',
-      '.doc': 'application/msword',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.xls': 'application/vnd.ms-excel',
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.ppt': 'application/vnd.ms-powerpoint',
-      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    };
-    
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
-    
+    const contentType = getMimeType(ext);
+
     // Sanitize filename for Content-Disposition header to prevent header injection
-    const safeFilename = sanitizeFilename(originalFilename || 'download');
-    
+    const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
+
     // Handle range request for resumable downloads
     const range = request.headers.get("range");
-    
+
     if (range) {
       const rangeResult = parseRangeHeader(range, fileSize);
-      
+
       if (!rangeResult) {
-        return new Response(null, { 
-          status: 416, 
-          headers: { "Content-Range": `bytes */${fileSize}` } 
+        return new Response(null, {
+          status: 416,
+          headers: { "Content-Range": `bytes */${fileSize}` },
         });
       }
 
       const { start, end } = rangeResult;
-      const chunksize = (end - start) + 1;
+      const chunksize = end - start + 1;
       const fileStream = createReadStream(fullPath, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);
 
@@ -113,28 +79,29 @@ export async function GET(
     // Full file download using streaming
     const fileStream = createReadStream(fullPath);
     const webStream = nodeStreamToWebStream(fileStream);
-    
+
     // Set appropriate headers
     const headers = new Headers();
-    headers.set('Content-Length', fileSize.toString());
-    headers.set('Content-Type', contentType);
-    headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
+    headers.set("Content-Length", fileSize.toString());
+    headers.set("Content-Type", contentType);
+    headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
     headers.set("Accept-Ranges", "bytes");
     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");
-    
-    // For images, PDFs, and text files, allow inline viewing
-    if (contentType.startsWith('image/') || contentType === 'application/pdf' || contentType.startsWith('text/')) {
-      const disposition = request.headers.get('accept')?.includes('text/html') ? 'inline' : 'attachment';
-      headers.set('Content-Disposition', `${disposition}; filename="${safeFilename}"`);
+
+    // Allow inline viewing only for safe types (excludes SVG/HTML to prevent XSS)
+    if (isSafeForInline(contentType)) {
+      const disposition = request.headers.get("accept")?.includes("text/html")
+        ? "inline"
+        : "attachment";
+      headers.set("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
     }
 
     return new NextResponse(webStream as ReadableStream<Uint8Array>, {
       status: 200,
       headers,
     });
-    
   } catch (error) {
     console.error("Download error:", error);
     return internalError(request);

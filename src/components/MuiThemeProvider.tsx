@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import { ReactNode, useMemo } from 'react'
-import { useTheme } from '@/hooks/useTheme'
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ReactNode, useMemo } from "react";
+import { useTheme } from "@/hooks/useTheme";
 
 interface MuiThemeProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 // Helper function to convert hex color to rgba
 function hexToRgba(hex: string, alpha: number): string {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (result) {
-    const r = parseInt(result[1], 16)
-    const g = parseInt(result[2], 16)
-    const b = parseInt(result[3], 16)
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
-  return hex
+  return hex;
 }
 
 export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
-  const { colors } = useTheme()
+  const { colors } = useTheme();
 
   const theme = useMemo(() => {
     // Use dynamic theme colors from ThemeContext
-    const primaryColor = colors.primaryColor
-    const primaryHover = colors.primaryHover
-    const primaryDark = colors.primaryDark
-    const secondaryColor = colors.secondaryColor
-    const backgroundColor = colors.backgroundColor
-    const surfaceColor = colors.surfaceColor
-    const textColor = colors.textColor
-    const textMuted = colors.textMuted
-    const borderColor = colors.borderColor
+    const primaryColor = colors.primaryColor;
+    const primaryHover = colors.primaryHover;
+    const primaryDark = colors.primaryDark;
+    const secondaryColor = colors.secondaryColor;
+    const backgroundColor = colors.backgroundColor;
+    const surfaceColor = colors.surfaceColor;
+    const textColor = colors.textColor;
+    const textMuted = colors.textMuted;
+    const borderColor = colors.borderColor;
 
     // Create rgba variants for transparency effects
-    const surfaceTransparent = hexToRgba(surfaceColor, 0.95)
-    const surfaceTransparentHigh = hexToRgba(surfaceColor, 0.98)
-    const surfaceTransparentLow = hexToRgba(surfaceColor, 0.5)
-    const borderTransparent = hexToRgba(borderColor, 0.5)
-    const borderTransparentHigh = hexToRgba(borderColor, 0.7)
-    
+    const surfaceTransparent = hexToRgba(surfaceColor, 0.95);
+    const surfaceTransparentHigh = hexToRgba(surfaceColor, 0.98);
+    const surfaceTransparentLow = hexToRgba(surfaceColor, 0.5);
+    const borderTransparent = hexToRgba(borderColor, 0.5);
+    const borderTransparentHigh = hexToRgba(borderColor, 0.7);
+
     return createTheme({
       palette: {
-        mode: 'dark',
+        mode: "dark",
         primary: {
           main: primaryColor,
           light: primaryHover,
@@ -67,7 +67,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         divider: borderTransparent,
       },
       typography: {
-        fontFamily: 'var(--font-app, var(--font-geist-sans)), Arial, Helvetica, sans-serif',
+        fontFamily: "var(--font-app, var(--font-geist-sans)), Arial, Helvetica, sans-serif",
       },
       shape: {
         borderRadius: 12,
@@ -76,15 +76,15 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiButton: {
           styleOverrides: {
             root: {
-              textTransform: 'none',
+              textTransform: "none",
               fontWeight: 600,
-              borderRadius: '12px',
-              padding: '10px 24px',
+              borderRadius: "12px",
+              padding: "10px 24px",
             },
             contained: {
-              boxShadow: 'none',
-              '&:hover': {
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.2)',
+              boxShadow: "none",
+              "&:hover": {
+                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.2)",
               },
             },
           },
@@ -92,16 +92,16 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiTextField: {
           styleOverrides: {
             root: {
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 backgroundColor: surfaceTransparentLow,
-                borderRadius: '12px',
-                '& fieldset': {
+                borderRadius: "12px",
+                "& fieldset": {
                   borderColor: borderTransparent,
                 },
-                '&:hover fieldset': {
+                "&:hover fieldset": {
                   borderColor: borderTransparentHigh,
                 },
-                '&.Mui-focused fieldset': {
+                "&.Mui-focused fieldset": {
                   borderColor: primaryColor,
                 },
               },
@@ -112,7 +112,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
           styleOverrides: {
             root: {
               backgroundColor: surfaceTransparent,
-              borderRadius: '16px',
+              borderRadius: "16px",
               border: `1px solid ${borderTransparent}`,
             },
           },
@@ -121,7 +121,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
           styleOverrides: {
             root: {
               backgroundColor: surfaceTransparent,
-              boxShadow: 'none',
+              boxShadow: "none",
             },
           },
         },
@@ -136,7 +136,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiMenuItem: {
           styleOverrides: {
             root: {
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: borderTransparent,
               },
             },
@@ -145,7 +145,7 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
         MuiAlert: {
           styleOverrides: {
             root: {
-              borderRadius: '12px',
+              borderRadius: "12px",
             },
           },
         },
@@ -157,13 +157,13 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
           },
         },
       },
-    })
-  }, [colors])
+    });
+  }, [colors]);
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {children}
     </ThemeProvider>
-  )
+  );
 }

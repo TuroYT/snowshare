@@ -1,20 +1,20 @@
 export interface ThemePreset {
-  id: string
-  name: string
-  description: string
+  id: string;
+  name: string;
+  description: string;
   colors: {
-    primaryColor: string
-    primaryHover: string
-    primaryDark: string
-    secondaryColor: string
-    secondaryHover: string
-    secondaryDark: string
-    backgroundColor: string
-    surfaceColor: string
-    textColor: string
-    textMuted: string
-    borderColor: string
-  }
+    primaryColor: string;
+    primaryHover: string;
+    primaryDark: string;
+    secondaryColor: string;
+    secondaryHover: string;
+    secondaryDark: string;
+    backgroundColor: string;
+    surfaceColor: string;
+    textColor: string;
+    textMuted: string;
+    borderColor: string;
+  };
 }
 
 export const themePresets: ThemePreset[] = [
@@ -144,12 +144,12 @@ export const themePresets: ThemePreset[] = [
       borderColor: "#262626",
     },
   },
-]
+];
 
 export function getPresetById(id: string): ThemePreset | undefined {
-  return themePresets.find((preset) => preset.id === id)
+  return themePresets.find((preset) => preset.id === id);
 }
 
 export function getPresetNames(): string[] {
-  return themePresets.map((preset) => preset.name)
+  return themePresets.map((preset) => preset.name);
 }

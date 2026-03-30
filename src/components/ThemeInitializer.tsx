@@ -17,10 +17,12 @@ export async function ThemeInitializer({ children }: { children: ReactNode }) {
   const themeData = await fetchInitialTheme();
 
   return (
-    <div style={{
-      animation: "fadeIn 0.4s ease-in 0.4s forwards",
-      opacity: 0,
-    }}>
+    <div
+      style={{
+        animation: "fadeIn 0.4s ease-in 0.4s forwards",
+        opacity: 0,
+      }}
+    >
       <style>{`
         @keyframes fadeIn {
           from {
@@ -32,9 +34,7 @@ export async function ThemeInitializer({ children }: { children: ReactNode }) {
         }
       `}</style>
       <ThemeProvider initialData={themeData}>
-        <MuiThemeProvider>
-          {children}
-        </MuiThemeProvider>
+        <MuiThemeProvider>{children}</MuiThemeProvider>
       </ThemeProvider>
     </div>
   );

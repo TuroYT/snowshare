@@ -27,7 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: settings?.appName || "SnowShare",
-    description: settings?.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    description:
+      settings?.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
     icons: settings?.faviconUrl
       ? {
           icon: [{ url: settings.faviconUrl }],
@@ -43,24 +44,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const telemetryEnabled = process.env.TELEMETRY !== 'false' && process.env.TELEMETRY !== 'False';
-  const plausibleDomain = process.env.PLAUSIBLE_DOMAIN || 'snowshare.app';
-  const plausibleHost = process.env.PLAUSIBLE_HOST || 'https://stats.sheephost.fr';
-  
+  const telemetryEnabled = process.env.TELEMETRY !== "false" && process.env.TELEMETRY !== "False";
+  const plausibleDomain = process.env.PLAUSIBLE_DOMAIN || "snowshare.app";
+  const plausibleHost = process.env.PLAUSIBLE_HOST || "https://stats.sheephost.fr";
+
   return (
     <html lang="fr" className="dark">
       <head>
         {/* Privacy-friendly analytics by Plausible - no cookies, GDPR compliant */}
         {/* Disable with TELEMETRY=false in .env */}
 
-          <PlausibleProvider 
-            domain={plausibleDomain} 
-            customDomain={plausibleHost}
-            selfHosted={true}
-            trackLocalhost={true}
-            enabled={telemetryEnabled}
-          />
-
+        <PlausibleProvider
+          domain={plausibleDomain}
+          customDomain={plausibleHost}
+          selfHosted={true}
+          trackLocalhost={true}
+          enabled={telemetryEnabled}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -72,9 +72,7 @@ export default function RootLayout({
       >
         <NextAuthProvider>
           <Suspense fallback={<LoadingScreen />}>
-            <ThemeInitializer>
-              {children}
-            </ThemeInitializer>
+            <ThemeInitializer>{children}</ThemeInitializer>
           </Suspense>
         </NextAuthProvider>
       </body>

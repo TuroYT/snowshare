@@ -6,6 +6,7 @@ import archiver from "archiver";
 import { Readable } from "stream";
 import crypto from "crypto";
 import { getUploadDir } from "./constants";
+import { getMimeType as getMimeTypeFromLib } from "./mime-types";
 
 export interface FileEntry {
   file: File;
@@ -74,39 +75,14 @@ export function generateSafeFilename(originalName: string, shareId: string): str
 }
 
 export function getMimeType(filename: string): string {
-  const ext = path.extname(filename).toLowerCase();
-  const mimeTypes: Record<string, string> = {
-    '.pdf': 'application/pdf',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.webp': 'image/webp',
-    '.svg': 'image/svg+xml',
-    '.txt': 'text/plain',
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.json': 'application/json',
-    '.xml': 'application/xml',
-    '.zip': 'application/zip',
-    '.tar': 'application/x-tar',
-    '.gz': 'application/gzip',
-    '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.xls': 'application/vnd.ms-excel',
-    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    '.ppt': 'application/vnd.ms-powerpoint',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  };
-  return mimeTypes[ext] || 'application/octet-stream';
+  return getMimeTypeFromLib(filename);
 }
 
 export async function createZipStream(
   files: Array<{ filePath: string; originalName: string; relativePath: string }>
 ): Promise<Readable> {
-  const archive = archiver('zip', {
-    zlib: { level: 6 }
+  const archive = archiver("zip", {
+    zlib: { level: 6 },
   });
 
   const uploadsDir = getUploadDir();
@@ -135,8 +111,5 @@ export function validateFilePath(filePath: string): boolean {
 }
 
 export function normalizeRelativePath(relativePath: string): string {
-  return relativePath
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "")
-    .replace(/\.\.+/g, ".");
+  return relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\.\.+/g, ".");
 }
