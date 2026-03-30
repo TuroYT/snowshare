@@ -1,4 +1,8 @@
 /**
+ * @jest-environment node
+ */
+
+/**
  * Tests for file download streaming functionality
  */
 
@@ -9,124 +13,122 @@ jest.mock("@/app/api/shares/(fileShare)/fileshare", () => ({
 
 jest.mock("fs", () => ({
   createReadStream: jest.fn(),
-  statSync: jest.fn(),
   existsSync: jest.fn(),
 }));
 
+jest.mock("fs/promises", () => ({
+  stat: jest.fn(),
+}));
+
+jest.mock("@/lib/mime-types", () => ({
+  getMimeType: jest.fn(() => "application/octet-stream"),
+  isSafeForInline: jest.fn(() => false),
+  sanitizeFilenameForHeader: jest.fn((name: string) => name),
+}));
+
+jest.mock("@/lib/i18n-server", () => ({
+  detectLocale: jest.fn(() => "en"),
+  translate: jest.fn((_locale: string, key: string) => key),
+}));
+
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { createReadStream, statSync, existsSync } from "fs";
+import { createReadStream, existsSync } from "fs";
+import { stat } from "fs/promises";
 import { Readable } from "stream";
+import { NextRequest } from "next/server";
 
 const mockGetFileShare = getFileShare as jest.Mock;
 const mockCreateReadStream = createReadStream as jest.Mock;
-const mockStatSync = statSync as jest.Mock;
 const mockExistsSync = existsSync as jest.Mock;
+const mockStat = stat as jest.Mock;
+
+function makeRequest(headers: Record<string, string> = {}, slug = "test-slug"): NextRequest {
+  return {
+    url: `http://localhost:3000/api/download/${slug}`,
+    headers: {
+      get: (key: string) => headers[key.toLowerCase()] ?? null,
+    },
+    nextUrl: {
+      searchParams: { get: () => null },
+    },
+    cookies: { get: () => null },
+  } as unknown as NextRequest;
+}
 
 describe("File Download Streaming", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  it("should use streaming instead of loading entire file into memory", async () => {
-    // Arrange
-    const mockFilePath = "/path/to/file.txt";
-    const mockSlug = "test-slug";
-
+    mockExistsSync.mockReturnValue(true);
+    mockStat.mockResolvedValue({ size: 1000000 });
     mockGetFileShare.mockResolvedValue({
-      filePath: mockFilePath,
-      originalFilename: "test-file.txt",
+      filePath: "/uploads/share-123_file.txt",
+      originalFilename: "file.txt",
     });
 
-    mockExistsSync.mockReturnValue(true);
-    mockStatSync.mockReturnValue({ size: 1000000 }); // 1MB file
-
-    // Create a mock readable stream
     const mockStream = new Readable({
       read() {
-        this.push("test data");
+        this.push("data");
         this.push(null);
       },
     });
-
     mockCreateReadStream.mockReturnValue(mockStream);
+  });
 
-    // Act
-    // Import the route handler
+  it("should use streaming (createReadStream) instead of loading the entire file into memory", async () => {
     const { GET } = await import("@/app/api/download/[slug]/route");
+    const request = makeRequest({}, "test-slug");
 
-    // Create mock request
-    const mockRequest = {
-      url: `http://localhost:3000/api/download/${mockSlug}`,
-      headers: new Map(),
-    } as unknown as NextRequest;
+    await GET(request, { params: Promise.resolve({ slug: "test-slug" }) });
 
-    const mockParams = Promise.resolve({ slug: mockSlug });
-
-    await GET(mockRequest, { params: mockParams });
-
-    // Assert
-    expect(mockCreateReadStream).toHaveBeenCalledWith(mockFilePath);
+    expect(mockCreateReadStream).toHaveBeenCalledWith("/uploads/share-123_file.txt");
     expect(mockCreateReadStream).toHaveBeenCalledTimes(1);
   });
 
-  it("should handle range requests for resumable downloads", async () => {
-    // Arrange
-    const mockFilePath = "/path/to/large-file.bin";
-    const mockSlug = "large-file-slug";
-    const fileSize = 10000000; // 10MB
-
+  it("should support range requests for resumable downloads", async () => {
+    const fileSize = 10000000;
+    mockStat.mockResolvedValue({ size: fileSize });
     mockGetFileShare.mockResolvedValue({
-      filePath: mockFilePath,
-      originalFilename: "large-file.bin",
+      filePath: "/uploads/share-456_large.bin",
+      originalFilename: "large.bin",
     });
 
-    mockExistsSync.mockReturnValue(true);
-    mockStatSync.mockReturnValue({ size: fileSize });
-
-    // Create a mock readable stream
-    const mockStream = new Readable({
-      read() {
-        this.push("partial data");
-        this.push(null);
-      },
-    });
-
-    mockCreateReadStream.mockReturnValue(mockStream);
-
-    // Act
     const { GET } = await import("@/app/api/download/[slug]/route");
+    const request = makeRequest({ range: "bytes=0-999999" }, "large-file-slug");
 
-    // Create mock request with Range header
-    const mockHeaders = new Map();
-    mockHeaders.set("range", "bytes=0-999999");
+    await GET(request, { params: Promise.resolve({ slug: "large-file-slug" }) });
 
-    const mockRequest = {
-      url: `http://localhost:3000/api/download/${mockSlug}`,
-      headers: {
-        get: (key: string) => mockHeaders.get(key),
-      },
-    } as unknown as NextRequest;
-
-    const mockParams = Promise.resolve({ slug: mockSlug });
-
-    await GET(mockRequest, { params: mockParams });
-
-    // Assert
     expect(mockCreateReadStream).toHaveBeenCalledWith(
-      mockFilePath,
-      expect.objectContaining({
-        start: 0,
-        end: 999999,
-      })
+      "/uploads/share-456_large.bin",
+      expect.objectContaining({ start: 0, end: 999999 })
     );
   });
 
-  it("should verify streaming is used in all download endpoints", () => {
-    // This test documents that streaming should be used in:
-    // 1. /api/download/[slug]/route.ts
-    // 2. /f/[slug]/api/route.ts
-    // 3. /f/[slug]/download/route.ts (already implemented)
+  it("should return 404 when the share does not exist", async () => {
+    const { ErrorCode } = await import("@/lib/api-errors");
+    mockGetFileShare.mockResolvedValue({ errorCode: ErrorCode.SHARE_NOT_FOUND });
 
+    const { GET } = await import("@/app/api/download/[slug]/route");
+    const request = makeRequest({}, "missing-slug");
+    const response = await GET(request, { params: Promise.resolve({ slug: "missing-slug" }) });
+
+    expect(response.status).toBe(404);
+    expect(mockCreateReadStream).not.toHaveBeenCalled();
+  });
+
+  it("should return 416 for an invalid range header", async () => {
+    // Range header beyond file size
+    mockStat.mockResolvedValue({ size: 100 });
+
+    const { GET } = await import("@/app/api/download/[slug]/route");
+    const request = makeRequest({ range: "bytes=500-999" }, "test-slug");
+
+    const response = await GET(request, { params: Promise.resolve({ slug: "test-slug" }) });
+
+    expect(response.status).toBe(416);
+    expect(mockCreateReadStream).not.toHaveBeenCalled();
+  });
+
+  it("should confirm createReadStream is available as a streaming API", () => {
     expect(mockCreateReadStream).toBeDefined();
     expect(typeof mockCreateReadStream).toBe("function");
   });
