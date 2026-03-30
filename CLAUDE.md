@@ -23,7 +23,10 @@ npx prisma migrate dev --name <name>  # Create migration
 npx prisma generate      # Regenerate client to src/generated/prisma/
 npx prisma studio        # DB GUI
 npm run cleanup:expired  # Remove expired shares
+docker compose up -d --build  # Alternative: full stack (Next.js + PostgreSQL)
 ```
+
+**Required env vars** (`.env`): `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET` (`openssl rand -base64 32`), `ALLOW_SIGNUP`.
 
 ## Architecture
 
@@ -42,9 +45,15 @@ A Node.js HTTP server wraps Next.js to add **tus protocol** support for resumabl
 
 - NextAuth with CredentialsProvider + dynamic OAuth providers (configured in DB `OAuthProvider` table)
 - JWT strategy: `token.id` and `token.name` synced to session via callbacks in `src/lib/auth.ts`
-- `getAuthOptions()` returns dynamic options (with OAuth); static `authOptions` export for middleware
+- `getAuthOptions()` returns dynamic options (with OAuth); static `authOptions` export for middleware only
 - First registered user becomes admin automatically
 - Setup flow: middleware redirects to `/setup` if no users exist
+
+```typescript
+// Standard auth check in API routes:
+const session = await getServerSession(authOptions);
+if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+```
 
 ### Share Creation Flow
 
@@ -72,6 +81,17 @@ PostgreSQL via Prisma. Schema at `prisma/schema.prisma`, generated client at `sr
 - **Server-side (API routes)**: `src/lib/i18n-server.ts` provides `getT(request)` which returns a synchronous `t()` function. Locale is resolved from `?lang=` query param, cookies (`i18next`, `i18nextLng`, `NEXT_LOCALE`), or `Accept-Language` header.
 - **API error/success messages are translated** — use `t("key")` from `getT(request)` in API routes, not hardcoded English strings.
 - **Add keys to all 6 locale files** when adding any user-facing text (client or API).
+
+## Key files for common tasks
+
+| Task                | Files                                                                          |
+| ------------------- | ------------------------------------------------------------------------------ |
+| Add API endpoint    | `src/app/api/<name>/route.ts`                                                  |
+| Modify auth         | `src/lib/auth.ts`, `src/app/api/auth/register/route.ts`                        |
+| Add share type      | `src/app/api/shares/<type>/route.ts` + display at `src/app/(shares)/<prefix>/` |
+| Add UI component    | `src/components/`                                                              |
+| Add translation key | All 6 files in `src/i18n/locales/*.json`                                       |
+| Change quotas       | `prisma/schema.prisma` Settings model + `src/lib/quota.ts`                     |
 
 ## Conventions
 
