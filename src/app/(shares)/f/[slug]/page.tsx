@@ -33,6 +33,11 @@ export default function FileSharePage() {
   const [useGiB, setUseGiB] = useState(false);
   const [passwordSubmitted, setPasswordSubmitted] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null);
+  const [downloadedBytes, setDownloadedBytes] = useState(0);
+  const [totalBytes, setTotalBytes] = useState(0);
+  const [downloadAbortController, setDownloadAbortController] = useState<AbortController | null>(
+    null
+  );
   const params = useParams();
   const slug = params?.slug as string;
 
@@ -151,12 +156,16 @@ export default function FileSharePage() {
       if (response.ok) {
         const data = await response.json();
         if (data.downloadUrl) {
-          const link = document.createElement("a");
-          link.href = data.downloadUrl;
-          link.download = fileInfo?.filename || "download";
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          if (data.isBulk) {
+            await handleBulkDownload(data.downloadUrl);
+          } else {
+            const link = document.createElement("a");
+            link.href = data.downloadUrl;
+            link.download = fileInfo?.filename || "download";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          }
         }
       } else {
         const data = await response.json();
@@ -167,6 +176,65 @@ export default function FileSharePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBulkDownload = async (downloadUrl: string) => {
+    const controller = new AbortController();
+    setDownloadAbortController(controller);
+    setDownloadedBytes(0);
+    setTotalBytes(0);
+
+    try {
+      const response = await fetch(downloadUrl, { signal: controller.signal });
+
+      if (!response.ok) {
+        setError(t("file_download.download_error"));
+        return;
+      }
+
+      const uncompressedSize = parseInt(response.headers.get("X-Uncompressed-Size") || "0", 10);
+      setTotalBytes(uncompressedSize);
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        setError(t("file_download.download_error"));
+        return;
+      }
+
+      const chunks: Uint8Array[] = [];
+      let received = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        setDownloadedBytes(received);
+      }
+
+      const blob = new Blob(chunks, { type: "application/zip" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${slug}_files.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError(t("file_download.download_cancelled", "Download cancelled"));
+      } else {
+        setError(t("file_download.download_error"));
+      }
+    } finally {
+      setDownloadAbortController(null);
+      setDownloadedBytes(0);
+      setTotalBytes(0);
+    }
+  };
+
+  const handleCancelDownload = () => {
+    downloadAbortController?.abort();
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -489,37 +557,43 @@ export default function FileSharePage() {
                 </button>
               )}
 
-              <button
-                onClick={() => handleDownload()}
-                disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    {t("file_download.downloading")}
+              {downloadAbortController ? (
+                <div className="space-y-3">
+                  <div className="bg-[var(--surface)] rounded-lg p-4 border border-[var(--border)]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-[var(--foreground)]">
+                        {totalBytes > 0
+                          ? t("file_download.download_progress", "Downloading: {{percent}}%", {
+                              percent: Math.min(
+                                99,
+                                Math.round((downloadedBytes / totalBytes) * 100)
+                              ),
+                            })
+                          : t("file_download.downloading")}
+                      </span>
+                      <span className="text-xs text-[var(--foreground-muted)]">
+                        {formatFileSize(downloadedBytes)}
+                        {totalBytes > 0 ? ` / ~${formatFileSize(totalBytes)}` : ""}
+                      </span>
+                    </div>
+                    <div className="w-full bg-[var(--background)] rounded-full h-2">
+                      <div
+                        className="bg-[var(--secondary)] h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width:
+                            totalBytes > 0
+                              ? `${Math.min(99, Math.round((downloadedBytes / totalBytes) * 100))}%`
+                              : "100%",
+                          animation:
+                            totalBytes === 0 ? "pulse 1.5s ease-in-out infinite" : undefined,
+                        }}
+                      />
+                    </div>
                   </div>
-                ) : (
-                  <>
+                  <button
+                    onClick={handleCancelDownload}
+                    className="group relative w-full flex justify-center py-3 px-4 border border-red-700 text-sm font-medium rounded-md text-red-400 bg-red-900/20 hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 transition-colors"
+                  >
                     <svg
                       className="h-5 w-5 mr-2"
                       fill="none"
@@ -530,13 +604,62 @@ export default function FileSharePage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3M4 7h16"
+                        d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
-                    {t("file_download.download")}
-                  </>
-                )}
-              </button>
+                    {t("file_download.cancel_download", "Cancel download")}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleDownload()}
+                  disabled={loading}
+                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      {t("file_download.downloading")}
+                    </div>
+                  ) : (
+                    <>
+                      <svg
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3M4 7h16"
+                        />
+                      </svg>
+                      {t("file_download.download")}
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
 
