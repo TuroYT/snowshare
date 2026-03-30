@@ -130,7 +130,14 @@ const ProfilePage = () => {
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
               <path
                 className="opacity-75"
                 fill="currentColor"
@@ -155,12 +162,16 @@ const ProfilePage = () => {
       <main className="flex-grow max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8 w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold sm:text-6xl bg-clip-text text-transparent mb-4" style={{ backgroundImage: 'linear-gradient(to right, var(--primary), var(--secondary), var(--primary))' }}>
+          <h1
+            className="text-5xl font-extrabold sm:text-6xl bg-clip-text text-transparent mb-4"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, var(--primary), var(--secondary), var(--primary))",
+            }}
+          >
             {t("profile.title")}
           </h1>
-          <p className="text-xl text-[var(--foreground)]">
-            {t("profile.subtitle")}
-          </p>
+          <p className="text-xl text-[var(--foreground)]">{t("profile.subtitle")}</p>
         </div>
 
         {/* Tabs */}
@@ -171,7 +182,12 @@ const ProfilePage = () => {
               activeTab === "profile" ? "modern-tab-active" : "modern-tab-inactive"
             }`}
           >
-            <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -187,7 +203,12 @@ const ProfilePage = () => {
               activeTab === "shares" ? "modern-tab-active" : "modern-tab-inactive"
             }`}
           >
-            <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -203,7 +224,12 @@ const ProfilePage = () => {
               activeTab === "accounts" ? "modern-tab-active" : "modern-tab-inactive"
             }`}
           >
-            <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-4 h-4 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -217,9 +243,7 @@ const ProfilePage = () => {
 
         {/* Content */}
         <div className="mt-8 ">
-          {activeTab === "profile" && user && (
-            <ProfileInfo user={user} onUpdate={setUser} />
-          )}
+          {activeTab === "profile" && user && <ProfileInfo user={user} onUpdate={setUser} />}
 
           {activeTab === "shares" && (
             <>

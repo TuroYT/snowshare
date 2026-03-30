@@ -9,19 +9,19 @@ jobs:
     runs-on: self-hosted
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.target_commitish }}
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      
+          node-version: "20"
+
       - name: Update version on main and dev
         run: |
           # Extract version from tag (removes 'v' prefix if present)
@@ -50,4 +50,3 @@ jobs:
               git push origin ${BRANCH}
             fi
           done
-      

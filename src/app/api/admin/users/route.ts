@@ -2,9 +2,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { isValidEmail, isValidPassword, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
-import bcryptjs from "bcryptjs";
+import {
+  isValidEmail,
+  isValidPassword,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+} from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { hashPassword } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -137,7 +142,7 @@ export async function POST(request: NextRequest) {
     if (!isValidPassword(password)) {
       return apiError(request, ErrorCode.PASSWORD_LENGTH, {
         min: PASSWORD_MIN_LENGTH,
-        max: PASSWORD_MAX_LENGTH
+        max: PASSWORD_MAX_LENGTH,
       });
     }
 
@@ -151,7 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcryptjs.hash(password, 12);
+    const hashedPassword = await hashPassword(password);
 
     // Create user
     const newUser = await prisma.user.create({

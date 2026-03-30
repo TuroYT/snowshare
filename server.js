@@ -15,6 +15,10 @@ import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
 
+// Security constants (mirrored from src/lib/security.ts for use in plain JS server)
+const BCRYPT_COST = 12;
+const SLUG_REGEX = /^[a-zA-Z0-9_-]{3,30}$/;
+const MAX_ANON_EXPIRY_DAYS = 7;
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -46,13 +50,13 @@ function getClientIpFromHttpReq(req) {
   if (Array.isArray(forwarded)) {
     return forwarded[0];
   }
-  
+
   // Try x-real-ip header
   const realIp = req.headers?.["x-real-ip"];
   if (realIp) {
     return realIp;
   }
-  
+
   // Try socket.remoteAddress
   const socketAddress = req.socket?.remoteAddress;
   if (socketAddress) {
@@ -62,7 +66,7 @@ function getClientIpFromHttpReq(req) {
     }
     return socketAddress;
   }
-  
+
   // Try connection.remoteAddress (older Node.js versions)
   const connectionAddress = req.connection?.remoteAddress;
   if (connectionAddress) {
@@ -71,7 +75,7 @@ function getClientIpFromHttpReq(req) {
     }
     return connectionAddress;
   }
-  
+
   return "127.0.0.1";
 }
 
@@ -79,7 +83,7 @@ function getClientIpFromHttpReq(req) {
 function parseCookies(cookieHeader) {
   const cookies = {};
   if (!cookieHeader) return cookies;
-  
+
   cookieHeader.split(";").forEach((cookie) => {
     const parts = cookie.split("=");
     const name = parts[0]?.trim();
@@ -95,14 +99,14 @@ function parseCookies(cookieHeader) {
 async function authenticateFromRequest(req) {
   try {
     const cookies = parseCookies(req.headers?.cookie || "");
-    const token = await getToken({ 
-      req: { 
+    const token = await getToken({
+      req: {
         headers: req.headers || {},
-        cookies
-      }, 
-      secret: process.env.NEXTAUTH_SECRET 
+        cookies,
+      },
+      secret: process.env.NEXTAUTH_SECRET,
     });
-    
+
     if (token?.id) {
       return {
         userId: token.id,
@@ -112,7 +116,7 @@ async function authenticateFromRequest(req) {
   } catch (error) {
     console.error("[Auth] Error:", error.message);
   }
-  
+
   return {
     userId: null,
     isAuthenticated: false,
@@ -169,8 +173,22 @@ if (!existsSync(tusTempDir)) {
   mkdirSync(tusTempDir, { recursive: true });
 }
 
-// Store upload metadata indexed by upload ID
+// Store upload metadata indexed by upload ID (with TTL cleanup to prevent memory leaks)
 const uploadMetadata = new Map();
+const UPLOAD_METADATA_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+// Periodically clean up stale upload metadata entries
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, value] of uploadMetadata.entries()) {
+      if (now - value.timestamp > UPLOAD_METADATA_TTL_MS) {
+        uploadMetadata.delete(key);
+      }
+    }
+  },
+  10 * 60 * 1000
+); // Run every 10 minutes
 
 // Create tus server with FileStore
 const tusServer = new TusServer({
@@ -184,7 +202,7 @@ const tusServer = new TusServer({
     // Return the URL without query strings to fix potential parsing issues
     return `${proto}://${host}${path}/${id}`;
   },
-  
+
   // Called when a new upload is created
   async onUploadCreate(req, upload) {
     if (!upload) {
@@ -193,13 +211,13 @@ const tusServer = new TusServer({
     }
 
     const { prisma } = await import("./src/lib/prisma.js");
-    
+
     const uploadId = upload.id;
     let clientIp, userId, isAuthenticated;
-    
+
     // Try to get metadata from AsyncLocalStorage context
     const store = requestContext.getStore();
-    
+
     if (store) {
       ({ clientIp, userId, isAuthenticated } = store);
     } else {
@@ -210,17 +228,18 @@ const tusServer = new TusServer({
       userId = auth.userId;
       isAuthenticated = auth.isAuthenticated;
     }
-    
-    // Store metadata for onUploadFinish
+
+    // Store metadata for onUploadFinish (timestamp for TTL cleanup)
     uploadMetadata.set(uploadId, {
       clientIp,
       userId,
-      isAuthenticated
+      isAuthenticated,
+      timestamp: Date.now(),
     });
 
     // Get settings
     const settings = await prisma.settings.findFirst();
-    
+
     let maxFileSizeMB, ipQuotaMB;
     if (isAuthenticated) {
       maxFileSizeMB = settings?.authMaxUpload || 51200;
@@ -237,7 +256,7 @@ const tusServer = new TusServer({
     // upload.size property contains the size from the Upload-Length header
     // It might be undefined if Upload-Defer-Length: 1 is sent
     const uploadSize = upload.size;
-    
+
     // If size is available, check it against limits
     if (uploadSize !== undefined && uploadSize !== null) {
       if (uploadSize > maxFileSizeBytes) {
@@ -261,22 +280,28 @@ const tusServer = new TusServer({
         throw { status_code: 429, body: JSON.stringify(body) };
       }
     } else {
-        // If size is NOT available (deferred length), checking quota is harder.
-        // For now, we allow start, but we should probably limit max content length header if possible
+      // If size is NOT available (deferred length), checking quota is harder.
+      // For now, we allow start, but we should probably limit max content length header if possible
     }
 
     // Validate slug before upload starts
     const metadata = upload.metadata || {};
     const slug = metadata.slug?.trim();
+    const isBulkSubsequent =
+      metadata.isBulk === "true" &&
+      (metadata.bulkShareId || (metadata.fileIndex && parseInt(metadata.fileIndex) > 0));
     if (slug) {
-      if (!/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
+      if (!SLUG_REGEX.test(slug)) {
         const body = { error: "SLUG_INVALID" };
         throw { status_code: 400, body: JSON.stringify(body) };
       }
-      const existingShare = await prisma.share.findUnique({ where: { slug } });
-      if (existingShare) {
-        const body = { error: "SLUG_ALREADY_TAKEN" };
-        throw { status_code: 409, body: JSON.stringify(body) };
+      // For subsequent bulk files the share (and its slug) was already created by file 0
+      if (!isBulkSubsequent) {
+        const existingShare = await prisma.share.findUnique({ where: { slug } });
+        if (existingShare) {
+          const body = { error: "SLUG_ALREADY_TAKEN" };
+          throw { status_code: 409, body: JSON.stringify(body) };
+        }
       }
     }
 
@@ -289,7 +314,7 @@ const tusServer = new TusServer({
   // Called when upload is complete
   async onUploadFinish(req, upload) {
     const { prisma } = await import("./src/lib/prisma.js");
-    
+
     try {
       const metadata = upload.metadata || {};
       const filename = metadata.filename || "upload";
@@ -303,33 +328,33 @@ const tusServer = new TusServer({
       const relativePath = metadata.relativePath || filename;
       const fileIndex = metadata.fileIndex ? parseInt(metadata.fileIndex) : 0;
       const totalFiles = metadata.totalFiles ? parseInt(metadata.totalFiles) : 1;
-      
+
       // Get metadata by upload ID
       const uploadId = upload.id;
       const storedMetadata = uploadMetadata.get(uploadId);
-      
+
       if (!storedMetadata) {
         console.error(`[Upload] No metadata found for upload ${uploadId}`);
         throw new Error("Missing upload metadata");
       }
-      
+
       const { clientIp, userId, isAuthenticated } = storedMetadata;
-      
+
       // Clean up
       uploadMetadata.delete(uploadId);
 
       let share;
-      
+
       if (isBulk && bulkShareId) {
         share = await prisma.share.findUnique({ where: { id: bulkShareId } });
-        
+
         if (!share) {
           console.error(`[Upload] Bulk share not found: ${bulkShareId}`);
           throw new Error("Bulk share not found");
         }
       } else if (isBulk && fileIndex === 0) {
         let finalSlug = slug;
-        if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
+        if (finalSlug && !SLUG_REGEX.test(finalSlug)) {
           const body = { error: "SLUG_INVALID" };
           throw { status_code: 400, body: JSON.stringify(body) };
         }
@@ -355,13 +380,13 @@ const tusServer = new TusServer({
 
         if (!isAuthenticated) {
           const defaultExpiry = new Date();
-          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
-          
+          defaultExpiry.setDate(defaultExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
+
           if (!parsedExpiresAt) {
             parsedExpiresAt = defaultExpiry;
           } else {
             const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
+            maxExpiry.setDate(maxExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
             if (parsedExpiresAt > maxExpiry) {
               parsedExpiresAt = maxExpiry;
             }
@@ -371,7 +396,7 @@ const tusServer = new TusServer({
         let hashedPassword = null;
         if (password) {
           const bcrypt = await import("bcryptjs");
-          hashedPassword = await bcrypt.default.hash(password, 12);
+          hashedPassword = await bcrypt.default.hash(password, BCRYPT_COST);
         }
 
         share = await prisma.share.create({
@@ -390,7 +415,7 @@ const tusServer = new TusServer({
         console.log(`Created bulk share: ${share.slug}`);
       } else {
         let finalSlug = slug;
-        if (finalSlug && !/^[a-zA-Z0-9_-]{3,30}$/.test(finalSlug)) {
+        if (finalSlug && !SLUG_REGEX.test(finalSlug)) {
           const body = { error: "SLUG_INVALID" };
           throw { status_code: 400, body: JSON.stringify(body) };
         }
@@ -416,13 +441,13 @@ const tusServer = new TusServer({
 
         if (!isAuthenticated) {
           const defaultExpiry = new Date();
-          defaultExpiry.setDate(defaultExpiry.getDate() + 7);
-          
+          defaultExpiry.setDate(defaultExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
+
           if (!parsedExpiresAt) {
             parsedExpiresAt = defaultExpiry;
           } else {
             const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
+            maxExpiry.setDate(maxExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
             if (parsedExpiresAt > maxExpiry) {
               parsedExpiresAt = maxExpiry;
             }
@@ -432,7 +457,7 @@ const tusServer = new TusServer({
         let hashedPassword = null;
         if (password) {
           const bcrypt = await import("bcryptjs");
-          hashedPassword = await bcrypt.default.hash(password, 12);
+          hashedPassword = await bcrypt.default.hash(password, BCRYPT_COST);
         }
 
         share = await prisma.share.create({
@@ -464,14 +489,17 @@ const tusServer = new TusServer({
       if (isBulk) {
         const fileStats = await stat(finalFilePath);
         // Re-validate the bulk share exists to avoid FK errors if it was removed between checks
-        const currentShare = await prisma.share.findUnique({ where: { id: share.id }, select: { id: true, slug: true } });
+        const currentShare = await prisma.share.findUnique({
+          where: { id: share.id },
+          select: { id: true, slug: true },
+        });
 
         if (!currentShare) {
           console.error(`[Upload] Bulk share disappeared before linking file: ${share.id}`);
           await unlink(finalFilePath).catch(() => {});
           throw new Error("Bulk share no longer exists");
         }
-        
+
         try {
           await prisma.shareFile.create({
             data: {
@@ -483,13 +511,18 @@ const tusServer = new TusServer({
               mimeType: metadata.filetype || "application/octet-stream",
             },
           });
-          
-          console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
+
+          console.log(
+            `Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`
+          );
         } catch (error) {
           // Clean up the file if we fail to persist the DB relation to avoid orphaned disk usage
           await unlink(finalFilePath).catch(() => {});
           if (error?.code === "P2003") {
-            console.error(`[Upload] FK constraint when linking bulk file to share ${share.id}:`, error);
+            console.error(
+              `[Upload] FK constraint when linking bulk file to share ${share.id}:`,
+              error
+            );
             throw new Error("Bulk share reference missing during file finalize");
           }
           throw error;
@@ -499,7 +532,7 @@ const tusServer = new TusServer({
           where: { id: share.id },
           data: { filePath: finalFileName },
         });
-        
+
         console.log(`Upload complete: ${filename} -> ${share.slug}`);
       }
 
@@ -509,7 +542,7 @@ const tusServer = new TusServer({
           "X-Share-Id": share.id,
           "X-Share-Expires": share.expiresAt?.toISOString() || "",
           "X-Is-Bulk": isBulk ? "true" : "false",
-        }
+        },
       };
     } catch (err) {
       console.error("Error finalizing upload:", err);
@@ -522,14 +555,14 @@ const tusServer = new TusServer({
 async function handleTus(req, res) {
   const clientIp = getClientIpFromHttpReq(req);
   const { userId, isAuthenticated } = await authenticateFromRequest(req);
-  
+
   const context = {
     clientIp,
     userId,
     isAuthenticated,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-  
+
   return requestContext.run(context, () => {
     return tusServer.handle(req, res);
   });
@@ -556,6 +589,8 @@ app.prepare().then(() => {
     }
   }).listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`);
-    console.log(`> Tus upload endpoint: http://${hostname}:${port}/api/tus (resumable uploads enabled)`);
+    console.log(
+      `> Tus upload endpoint: http://${hostname}:${port}/api/tus (resumable uploads enabled)`
+    );
   });
 });

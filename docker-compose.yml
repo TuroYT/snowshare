@@ -41,7 +41,7 @@ services:
       - "3000:3000"
     volumes:
       - uploads:/app/uploads
-      - /var/log/snowshare:/var/log  # Mount pour les logs de cron
+      - /var/log/snowshare:/var/log # Mount pour les logs de cron
     networks:
       - snownetwork
 

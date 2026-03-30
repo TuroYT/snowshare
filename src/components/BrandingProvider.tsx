@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 export interface Branding {
-  appName: string
-  appDescription: string
-  logoUrl: string | null
-  faviconUrl: string | null
+  appName: string;
+  appDescription: string;
+  logoUrl: string | null;
+  faviconUrl: string | null;
 }
 
 const defaultBranding: Branding = {
@@ -14,69 +14,69 @@ const defaultBranding: Branding = {
   appDescription: "Securely share your files with ease.",
   logoUrl: null,
   faviconUrl: null,
-}
+};
 
 interface BrandingContextType {
-  branding: Branding
-  loading: boolean
-  refreshBranding: () => Promise<void>
+  branding: Branding;
+  loading: boolean;
+  refreshBranding: () => Promise<void>;
 }
 
 const BrandingContext = createContext<BrandingContextType>({
   branding: defaultBranding,
   loading: true,
   refreshBranding: async () => {},
-})
+});
 
 export function useBranding() {
-  return useContext(BrandingContext)
+  return useContext(BrandingContext);
 }
 
 export function BrandingProvider({ children }: { children: ReactNode }) {
-  const [branding, setBranding] = useState<Branding>(defaultBranding)
-  const [loading, setLoading] = useState(true)
+  const [branding, setBranding] = useState<Branding>(defaultBranding);
+  const [loading, setLoading] = useState(true);
 
   const fetchBranding = async () => {
     try {
-      const response = await fetch("/api/settings/branding")
+      const response = await fetch("/api/settings/branding");
       if (response.ok) {
-        const data = await response.json()
-        setBranding(data.branding)
+        const data = await response.json();
+        setBranding(data.branding);
       }
     } catch (error) {
-      console.error("Failed to fetch branding:", error)
+      console.error("Failed to fetch branding:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchBranding()
-  }, [])
+    fetchBranding();
+  }, []);
 
   // Update favicon dynamically
   useEffect(() => {
     if (!loading && branding.faviconUrl) {
-      const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null
+      const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
       if (link) {
-        link.href = branding.faviconUrl
+        link.href = branding.faviconUrl;
       } else {
-        const newLink = document.createElement("link")
-        newLink.rel = "icon"
-        newLink.href = branding.faviconUrl
-        document.head.appendChild(newLink)
+        const newLink = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = branding.faviconUrl;
+        document.head.appendChild(newLink);
       }
     }
-  }, [branding.faviconUrl, loading])
+  }, [branding.faviconUrl, loading]);
 
   // Update document title on every route change
   useEffect(() => {
-    document.title = branding.appName
-  }, [branding.appName])
+    document.title = branding.appName;
+  }, [branding.appName]);
 
   return (
     <BrandingContext.Provider value={{ branding, loading, refreshBranding: fetchBranding }}>
       {children}
     </BrandingContext.Provider>
-  )
+  );
 }

@@ -1,89 +1,92 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import CreateUserDialog from "./CreateUserDialog"
+import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import CreateUserDialog from "./CreateUserDialog";
 
 interface User {
-  id: string
-  email: string
-  name?: string
-  isAdmin: boolean
-  createdAt: string
+  id: string;
+  email: string;
+  name?: string;
+  isAdmin: boolean;
+  createdAt: string;
   _count: {
-    shares: number
-  }
+    shares: number;
+  };
 }
 
 export default function UsersTab() {
-  const { t } = useTranslation()
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const { t } = useTranslation();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
-      setLoading(true)
-      const response = await fetch("/api/admin/users")
-      if (!response.ok) throw new Error("Failed to fetch users")
-      const data = await response.json()
-      setUsers(data.users)
-      setError(null)
+      setLoading(true);
+      const response = await fetch("/api/admin/users");
+      if (!response.ok) throw new Error("Failed to fetch users");
+      const data = await response.json();
+      setUsers(data.users);
+      setError(null);
     } catch (err) {
-      setError(t("admin.error_load_data"))
-      console.error(err)
+      setError(t("admin.error_load_data"));
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [t])
+  }, [t]);
 
   useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleAction = async (userId: string, action: "promote" | "demote" | "delete") => {
-    let confirmKey = "admin.users.confirm_delete"
+    let confirmKey = "admin.users.confirm_delete";
     if (action === "promote") {
-      confirmKey = "admin.users.confirm_make_admin"
+      confirmKey = "admin.users.confirm_make_admin";
     } else if (action === "demote") {
-      confirmKey = "admin.users.confirm_remove_admin"
+      confirmKey = "admin.users.confirm_remove_admin";
     }
 
-    if (!window.confirm(t(confirmKey, { email: users.find(u => u.id === userId)?.email || "user" }))) {
-      return
+    if (
+      !window.confirm(t(confirmKey, { email: users.find((u) => u.id === userId)?.email || "user" }))
+    ) {
+      return;
     }
 
     try {
-      setActionLoading(userId)
+      setActionLoading(userId);
       const response = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, action }),
-      })
+      });
 
-      if (!response.ok) throw new Error("Failed to update user")
-      
+      if (!response.ok) throw new Error("Failed to update user");
+
       // Refresh users list
-      await fetchUsers()
-      setError(null)
+      await fetchUsers();
+      setError(null);
     } catch (err) {
-      setError(t("admin.error_load_data"))
-      console.error(err)
+      setError(t("admin.error_load_data"));
+      console.error(err);
     } finally {
-      setActionLoading(null)
+      setActionLoading(null);
     }
-  }
+  };
 
   const filteredUsers = users.filter(
-    (user) => user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user) =>
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
+  );
 
-  const totalUsers = users.length
-  const adminUsers = users.filter((u) => u.isAdmin).length
+  const totalUsers = users.length;
+  const adminUsers = users.filter((u) => u.isAdmin).length;
 
   if (loading) {
     return (
@@ -93,19 +96,35 @@ export default function UsersTab() {
           <p className="mt-2 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border border-[var(--primary-dark)]/30 rounded-xl p-4" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.1), rgb(from var(--primary-dark) r g b / 0.1))' }}>
-          <div className="text-sm text-[var(--foreground-muted)]">{t("admin.users.total_users")}</div>
+        <div
+          className="border border-[var(--primary-dark)]/30 rounded-xl p-4"
+          style={{
+            background:
+              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.1), rgb(from var(--primary-dark) r g b / 0.1))",
+          }}
+        >
+          <div className="text-sm text-[var(--foreground-muted)]">
+            {t("admin.users.total_users")}
+          </div>
           <div className="text-3xl font-bold text-[var(--primary)] mt-1">{totalUsers}</div>
         </div>
-        <div className="border border-[var(--secondary-dark)]/30 rounded-xl p-4" style={{ background: 'linear-gradient(to bottom right, rgb(from var(--secondary) r g b / 0.1), rgb(from var(--secondary-dark) r g b / 0.1))' }}>
-          <div className="text-sm text-[var(--foreground-muted)]">{t("admin.users.admin_users")}</div>
+        <div
+          className="border border-[var(--secondary-dark)]/30 rounded-xl p-4"
+          style={{
+            background:
+              "linear-gradient(to bottom right, rgb(from var(--secondary) r g b / 0.1), rgb(from var(--secondary-dark) r g b / 0.1))",
+          }}
+        >
+          <div className="text-sm text-[var(--foreground-muted)]">
+            {t("admin.users.admin_users")}
+          </div>
           <div className="text-3xl font-bold text-[var(--secondary)] mt-1">{adminUsers}</div>
         </div>
       </div>
@@ -138,12 +157,24 @@ export default function UsersTab() {
         <table className="w-full">
           <thead>
             <tr className="bg-[var(--surface)]/30 border-b border-[var(--border)]/50">
-              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.email")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.name")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.role")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.shares")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.created")}</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">{t("admin.users.table_headers.actions")}</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
+                {t("admin.users.table_headers.email")}
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
+                {t("admin.users.table_headers.name")}
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
+                {t("admin.users.table_headers.role")}
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
+                {t("admin.users.table_headers.shares")}
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
+                {t("admin.users.table_headers.created")}
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
+                {t("admin.users.table_headers.actions")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700/50">
@@ -157,7 +188,9 @@ export default function UsersTab() {
               filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-[var(--surface)]/20 transition-colors">
                   <td className="px-6 py-3 text-sm text-[var(--foreground)]">{user.email}</td>
-                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">{user.name || "-"}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
+                    {user.name || "-"}
+                  </td>
                   <td className="px-6 py-3 text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -169,7 +202,9 @@ export default function UsersTab() {
                       {user.isAdmin ? t("admin.users.role_admin") : t("admin.users.role_user")}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">{user._count.shares}</td>
+                  <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
+                    {user._count.shares}
+                  </td>
                   <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
@@ -214,5 +249,5 @@ export default function UsersTab() {
         onUserCreated={fetchUsers}
       />
     </div>
-  )
+  );
 }

@@ -6,8 +6,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
-import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { hashPassword, isValidSlug, resolveAnonExpiry } from "@/lib/security";
+import { getUploadLimits } from "@/lib/quota-shared";
 import {
   saveBulkFile,
   validateFilePath,
@@ -26,61 +27,6 @@ interface FileData {
   mimeType: string;
 }
 
-async function calculateIpUploadSizeBytes(ipAddress: string): Promise<number> {
-  const shares = await prisma.share.findMany({
-    where: {
-      ipSource: ipAddress,
-      type: "FILE",
-    },
-    select: {
-      filePath: true,
-      files: {
-        select: {
-          size: true,
-        },
-      },
-    },
-  });
-
-  let totalSize = 0;
-
-  for (const share of shares) {
-    if (share.files && share.files.length > 0) {
-      for (const file of share.files) {
-        totalSize += Number(file.size);
-      }
-    }
-  }
-
-  return totalSize;
-}
-
-async function getUploadLimits(req: NextRequest, isAuthenticated: boolean) {
-  const ipAddress = getClientIp(req);
-  const settings = await prisma.settings.findFirst();
-
-  const maxFileSizeMB = isAuthenticated
-    ? settings?.authMaxUpload || 51200
-    : settings?.anoMaxUpload || 2048;
-
-  const ipQuotaMB = isAuthenticated
-    ? settings?.authIpQuota || 102400
-    : settings?.anoIpQuota || 4096;
-
-  const currentUsageBytes = await calculateIpUploadSizeBytes(ipAddress);
-  const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-  const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
-  const remainingQuotaBytes = Math.max(0, ipQuotaBytes - currentUsageBytes);
-
-  return {
-    maxFileSizeBytes,
-    ipQuotaBytes,
-    currentUsageBytes,
-    remainingQuotaBytes,
-    isAuthenticated,
-  };
-}
-
 export async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
@@ -91,17 +37,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (!req.body) {
-    return NextResponse.json(
-      { error: "Request body is required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Request body is required" }, { status: 400 });
   }
 
   const session = await getServerSession(authOptions);
   const isAuthenticated = !!session?.user;
   const clientIp = getClientIp(req);
 
-  const limits = await getUploadLimits(req, isAuthenticated);
+  const limits = await getUploadLimits(clientIp, isAuthenticated);
 
   if (limits.remainingQuotaBytes <= 0) {
     return NextResponse.json(
@@ -150,11 +93,7 @@ export async function POST(req: NextRequest) {
         return;
       }
 
-      if (
-        filename.includes("..") ||
-        filename.includes("\\") ||
-        filename.length > 255
-      ) {
+      if (filename.includes("..") || filename.includes("\\") || filename.length > 255) {
         fileStream.resume();
         aborted = true;
         sendError(400, "Invalid filename");
@@ -216,7 +155,7 @@ export async function POST(req: NextRequest) {
         const password = fields.password?.trim();
         const expiresAtStr = fields.expiresAt;
 
-        if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
+        if (slug && !isValidSlug(slug)) {
           return sendError(400, "Invalid slug");
         }
 
@@ -238,26 +177,16 @@ export async function POST(req: NextRequest) {
         }
 
         if (!isAuthenticated) {
-          const defaultAnonExpiry = new Date();
-          defaultAnonExpiry.setDate(defaultAnonExpiry.getDate() + 7);
-
-          if (!expiresAt) {
-            expiresAt = defaultAnonExpiry;
-          } else {
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + 7);
-            if (expiresAt > maxExpiry) {
-              return sendError(
-                400,
-                "Anonymous uploads cannot expire more than 7 days in the future"
-              );
-            }
+          const anonResult = resolveAnonExpiry(expiresAt);
+          if (anonResult.error) {
+            return sendError(400, anonResult.error);
           }
+          expiresAt = anonResult.date!;
         }
 
         let hashedPassword: string | null = null;
         if (password) {
-          hashedPassword = await bcrypt.hash(password, 12);
+          hashedPassword = await hashPassword(password);
         }
 
         const finalSlug = slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
@@ -322,9 +251,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    const nodeStream = Readable.fromWeb(
-      req.body as unknown as import("stream/web").ReadableStream
-    );
+    const nodeStream = Readable.fromWeb(req.body as unknown as import("stream/web").ReadableStream);
 
     nodeStream.on("error", (err) => {
       console.error("Error reading request stream for bulk upload:", err);

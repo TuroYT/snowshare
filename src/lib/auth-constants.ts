@@ -1,14 +1,11 @@
-export const AUTH_CONSTANTS = {
-  MIN_PASSWORD_LENGTH: 6,
-  MAX_PASSWORD_LENGTH: 128,
-  SESSION_MAX_AGE: 30 * 24 * 60 * 60, // 30 days
-  SALT_ROUNDS: 12,
-} as const
-
-export const AUTH_ROUTES = {
-  SIGN_IN: "/auth/signin",
-  SIGN_UP: "/auth/signup",
-  SIGN_OUT: "/auth/signout",
-  HOME: "/",
-  DASHBOARD: "/dashboard",
-} as const
+export const AUTH_MESSAGES = {
+  SIGN_IN_SUCCESS: "Sign in successful",
+  SIGN_OUT_SUCCESS: "Sign out successful",
+  SIGN_UP_SUCCESS: "Account created successfully",
+  INVALID_CREDENTIALS: "Invalid email or password",
+  PASSWORD_TOO_SHORT: `Password must be at least 6 characters`,
+  EMAIL_REQUIRED: "Email is required",
+  PASSWORD_REQUIRED: "Password is required",
+  PASSWORDS_DO_NOT_MATCH: "Passwords do not match",
+  USER_ALREADY_EXISTS: "A user with this email already exists",
+} as const;

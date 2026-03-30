@@ -140,7 +140,10 @@
     "verify_password": "Verificar contraseña",
     "verifying": "Verificando...",
     "files_in_share": "Archivos en este compartido",
-    "password_incorrect": "Contraseña incorrecta"
+    "password_incorrect": "Contraseña incorrecta",
+    "download_progress": "Descargando: {{percent}}%",
+    "cancel_download": "Cancelar descarga",
+    "download_cancelled": "Descarga cancelada"
   },
   "home": {
     "title": "Bienvenido a SnowShare",

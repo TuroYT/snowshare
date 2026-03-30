@@ -38,11 +38,9 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
 
   const getDurationText = () => {
     const days = expiresDays;
-    if (isAuthenticated && neverExpires)
-      return t(`${translationPrefix}.duration_never`);
+    if (isAuthenticated && neverExpires) return t(`${translationPrefix}.duration_never`);
     if (days === 1) return t(`${translationPrefix}.duration_in_1_day`);
-    if (days < 7)
-      return t(`${translationPrefix}.duration_in_x_days`, { count: days });
+    if (days < 7) return t(`${translationPrefix}.duration_in_x_days`, { count: days });
     if (days === 7) return t(`${translationPrefix}.duration_in_1_week`);
     if (days < 30)
       return t(`${translationPrefix}.duration_in_x_weeks`, {
@@ -61,7 +59,10 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-[var(--foreground)]">
-        {t(labelOverrides?.validityLabel || `${translationPrefix}.validity_label`, "Durée de validité")}
+        {t(
+          labelOverrides?.validityLabel || `${translationPrefix}.validity_label`,
+          "Durée de validité"
+        )}
       </label>
 
       {isAuthenticated && (
@@ -74,11 +75,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
                 onChange={(e) => setNeverExpires(e.target.checked)}
                 className="sr-only"
               />
-              <div
-                className={`toggle-slider ${
-                  neverExpires ? "toggle-slider-active" : ""
-                }`}
-              >
+              <div className={`toggle-slider ${neverExpires ? "toggle-slider-active" : ""}`}>
                 <div
                   className={`toggle-slider-thumb ${
                     neverExpires ? "toggle-slider-thumb-active" : ""
@@ -105,9 +102,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
       )}
 
       <div
-        className={`flex items-center gap-3 ${
-          isAuthenticated && neverExpires ? "opacity-50" : ""
-        }`}
+        className={`flex items-center gap-3 ${isAuthenticated && neverExpires ? "opacity-50" : ""}`}
       >
         <div className="flex-1">
           <input

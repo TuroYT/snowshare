@@ -1,13 +1,18 @@
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
-import { isValidPasteLanguage, MAX_PASTE_SIZE, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/constants";
+import {
+  isValidPasteLanguage,
+  MAX_PASTE_SIZE,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+} from "@/lib/constants";
 import { NextRequest } from "next/server";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { ErrorCode } from "@/lib/api-errors";
+import { hashPassword, isValidSlug, resolveAnonExpiry, MAX_ANON_EXPIRY_DAYS } from "@/lib/security";
 
 export const createPasteShare = async (
   paste: string,
@@ -25,7 +30,10 @@ export const createPasteShare = async (
 
   // Validate paste size limit
   if (paste.length > MAX_PASTE_SIZE) {
-    return { errorCode: ErrorCode.FILE_TOO_LARGE, params: { maxSizeMB: Math.round(MAX_PASTE_SIZE / (1024 * 1024)) } };
+    return {
+      errorCode: ErrorCode.FILE_TOO_LARGE,
+      params: { maxSizeMB: Math.round(MAX_PASTE_SIZE / (1024 * 1024)) },
+    };
   }
 
   // Validate language against allowed enum values
@@ -34,7 +42,7 @@ export const createPasteShare = async (
   }
 
   // Validate slug if provided
-  if (slug && !/^[a-zA-Z0-9_-]{3,30}$/.test(slug)) {
+  if (slug && !isValidSlug(slug)) {
     return { errorCode: ErrorCode.SLUG_INVALID };
   }
 
@@ -55,7 +63,7 @@ export const createPasteShare = async (
     if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
       return {
         errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
-        params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH }
+        params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
       };
     }
   }
@@ -69,14 +77,13 @@ export const createPasteShare = async (
       return { errorCode: ErrorCode.ANON_PASTE_SHARE_DISABLED };
     }
 
-    // Check if expiry is greater than 7 days
+    // Check if expiry is greater than max anon days
     if (expiresAt) {
-      const maxExpiry = new Date();
-      maxExpiry.setDate(maxExpiry.getDate() + 7);
-      if (new Date(expiresAt) > maxExpiry) {
+      const result = resolveAnonExpiry(new Date(expiresAt));
+      if (result.error) {
         return {
           errorCode: ErrorCode.EXPIRATION_TOO_FAR,
-          params: { days: 7 }
+          params: { days: MAX_ANON_EXPIRY_DAYS },
         };
       }
     } else {
@@ -86,13 +93,13 @@ export const createPasteShare = async (
 
   // Hash password if provided
   if (password) {
-    password = await bcrypt.hash(password, 12);
+    password = await hashPassword(password);
   }
 
   // generate unique slug if not provided using cryptographically secure random
   if (!slug) {
     const generateSecureSlug = () => {
-      return crypto.randomBytes(6).toString('base64url');
+      return crypto.randomBytes(6).toString("base64url");
     };
     do {
       slug = generateSecureSlug();

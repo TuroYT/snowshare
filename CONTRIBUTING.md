@@ -99,6 +99,7 @@ Create descriptive branch names using one of these prefixes:
 - `chore/` - Maintenance tasks
 
 Examples:
+
 - `feature/password-protected-shares`
 - `fix/qr-code-generation-bug`
 - `docs/update-api-documentation`
@@ -106,6 +107,7 @@ Examples:
 ### Workflow
 
 1. **Create a new branch** from `main`:
+
    ```bash
    git checkout main
    git pull upstream main
@@ -117,6 +119,7 @@ Examples:
 3. **Test your changes** thoroughly
 
 4. **Commit your changes** with descriptive messages:
+
    ```bash
    git add .
    git commit -m "feat: add password protection for link shares"
@@ -147,6 +150,7 @@ Examples:
 ### PR Title Format
 
 Use conventional commit format:
+
 - `feat: add new feature`
 - `fix: resolve specific bug`
 - `docs: update documentation`
@@ -234,7 +238,7 @@ When adding new API routes, document them in the following format:
 /**
  * GET /api/shares
  * Retrieves user's shares with pagination
- * 
+ *
  * @param page - Page number (default: 1)
  * @param limit - Items per page (default: 10)
  * @returns Array of user shares

@@ -9,25 +9,22 @@ export async function GET() {
   try {
     const providers = await prisma.oAuthProvider.findMany({
       where: {
-        enabled: true
+        enabled: true,
       },
       select: {
         id: true,
         name: true,
         displayName: true,
-        enabled: true
+        enabled: true,
       },
       orderBy: {
-        displayName: "asc"
-      }
+        displayName: "asc",
+      },
     });
 
     return NextResponse.json({ providers });
   } catch (error) {
     console.error("Error fetching OAuth providers:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch providers" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch providers" }, { status: 500 });
   }
 }

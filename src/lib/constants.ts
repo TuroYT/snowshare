@@ -1,22 +1,22 @@
-import path from 'path';
+import path from "path";
 
 /**
  * Valid paste language types - must match the pasteType enum in the Prisma schema
  */
 export const VALID_PASTE_LANGUAGES = [
-  'PLAINTEXT',
-  'JAVASCRIPT',
-  'TYPESCRIPT',
-  'PYTHON',
-  'JAVA',
-  'PHP',
-  'GO',
-  'POWERSHELL',
-  'HTML',
-  'CSS',
-  'SQL',
-  'JSON',
-  'MARKDOWN',
+  "PLAINTEXT",
+  "JAVASCRIPT",
+  "TYPESCRIPT",
+  "PYTHON",
+  "JAVA",
+  "PHP",
+  "GO",
+  "POWERSHELL",
+  "HTML",
+  "CSS",
+  "SQL",
+  "JSON",
+  "MARKDOWN",
 ] as const;
 
 export type PasteLanguage = (typeof VALID_PASTE_LANGUAGES)[number];
@@ -46,7 +46,8 @@ export const PASSWORD_MAX_LENGTH = 100;
  * Allows alphanumeric, dots, hyphens, underscores, plus signs
  * Does not allow potentially dangerous characters like backticks
  */
-export const EMAIL_REGEX = /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+export const EMAIL_REGEX =
+  /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 /**
  * Validate email format
@@ -59,23 +60,23 @@ export function isValidEmail(email: string): boolean {
  * Validate URL format and restrict to safe protocols
  */
 export function isValidUrl(url: string): { valid: boolean; error?: string } {
-  if (!url || typeof url !== 'string') {
-    return { valid: false, error: 'URL invalide' };
+  if (!url || typeof url !== "string") {
+    return { valid: false, error: "URL invalide" };
   }
-  
+
   if (url.length > MAX_URL_LENGTH) {
-    return { valid: false, error: 'URL trop longue' };
+    return { valid: false, error: "URL trop longue" };
   }
-  
+
   try {
     const parsed = new URL(url);
     // Only allow http and https protocols
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return { valid: false, error: 'Seuls les protocoles HTTP et HTTPS sont autorisés' };
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return { valid: false, error: "Seuls les protocoles HTTP et HTTPS sont autorisés" };
     }
     return { valid: true };
   } catch {
-    return { valid: false, error: 'Format URL invalide' };
+    return { valid: false, error: "Format URL invalide" };
   }
 }
 
@@ -92,5 +93,5 @@ export function isValidPassword(password: string): boolean {
  * Defaults to 'uploads' folder in project root
  */
 export function getUploadDir(): string {
-  return process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+  return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
 }

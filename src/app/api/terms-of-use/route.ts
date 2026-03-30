@@ -1,15 +1,15 @@
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-    const termsOfUse = await prisma.settings.findFirst({
-        select: {
-            termsOfUses: true
-        }
-    });
+  const termsOfUse = await prisma.settings.findFirst({
+    select: {
+      termsOfUses: true,
+    },
+  });
 
-    let termsOfUseText = termsOfUse?.termsOfUses;
-    if (!termsOfUseText) {
-        termsOfUseText = `# Terms of Use
+  let termsOfUseText = termsOfUse?.termsOfUses;
+  if (!termsOfUseText) {
+    termsOfUseText = `# Terms of Use
 
 Welcome to SnowShare! By using our platform, you agree to the following terms and conditions. Please read them carefully.
 
@@ -41,12 +41,11 @@ We reserve the right to update these Terms of Use at any time. Changes will be e
 If you have any questions about these Terms of Use, please contact us at support@snowshare.com.
 
 Thank you for using SnowShare!`;
-    }
+  }
 
-    
-    return new Response(termsOfUseText, {
-        headers: {
-            "Content-Type": "text/plain; charset=utf-8"
-        }
-    });
+  return new Response(termsOfUseText, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+    },
+  });
 }

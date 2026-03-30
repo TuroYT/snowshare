@@ -32,9 +32,7 @@ const FileShare: React.FC = () => {
 
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [dragOver, setDragOver] = useState(false);
-  const [expiresDays, setExpiresDays] = useState<number>(
-    isAuthenticated ? 30 : MAX_DAYS_ANON
-  );
+  const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
@@ -44,14 +42,10 @@ const FileShare: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(
-    null
-  );
+  const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
-  const [maxFileSizeAnon, setMaxFileSizeAnon] =
-    useState<number>(MAX_FILE_SIZE_ANON);
-  const [maxFileSizeAuth, setMaxFileSizeAuth] =
-    useState<number>(MAX_FILE_SIZE_AUTH);
+  const [maxFileSizeAnon, setMaxFileSizeAnon] = useState<number>(MAX_FILE_SIZE_ANON);
+  const [maxFileSizeAuth, setMaxFileSizeAuth] = useState<number>(MAX_FILE_SIZE_AUTH);
   const [useGiBForAnon, setUseGiBForAnon] = useState(false);
   const [useGiBForAuth, setUseGiBForAuth] = useState(false);
 
@@ -92,16 +86,12 @@ const FileShare: React.FC = () => {
 
   const validateFile = (file: File): string | null => {
     if (file.size > maxFileSize) {
-      const maxValue = convertFromMB(
-        Math.round(maxFileSize / (1024 * 1024)),
-        useGiB
-      );
+      const maxValue = convertFromMB(Math.round(maxFileSize / (1024 * 1024)), useGiB);
       const unit = useGiB ? "GiB" : "MiB";
-      return t(
-        "fileshare.file_too_large",
-        "File is too large (max {{max}} {{unit}})",
-        { max: maxValue, unit }
-      );
+      return t("fileshare.file_too_large", "File is too large (max {{max}} {{unit}})", {
+        max: maxValue,
+        unit,
+      });
     }
     return null;
   };
@@ -128,7 +118,8 @@ const FileShare: React.FC = () => {
     const selectedFiles = e.target.files;
     if (selectedFiles) {
       const fileList: FileWithPath[] = Array.from(selectedFiles).map((file) => {
-        const fullPath = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+        const fullPath =
+          (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
         return {
           file,
           relativePath: fullPath,
@@ -208,9 +199,7 @@ const FileShare: React.FC = () => {
         (async () => {
           const entries = await readAllEntries();
           const results = await Promise.all(
-            entries.map((e) =>
-              traverseFileTree(e, path + entry.name + "/")
-            )
+            entries.map((e) => traverseFileTree(e, path + entry.name + "/"))
           );
           resolve(results.flat());
         })();
@@ -253,8 +242,14 @@ const FileShare: React.FC = () => {
 
   // Map server error codes to translated messages
   const errorCodeMap: Record<string, string> = {
-    SLUG_ALREADY_TAKEN: t("api.errors.slug_already_taken", "This custom URL is already taken. Please choose another one."),
-    SLUG_INVALID: t("api.errors.slug_invalid", "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."),
+    SLUG_ALREADY_TAKEN: t(
+      "api.errors.slug_already_taken",
+      "This custom URL is already taken. Please choose another one."
+    ),
+    SLUG_INVALID: t(
+      "api.errors.slug_invalid",
+      "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."
+    ),
     IP_QUOTA_EXCEEDED: t("fileshare.upload_ip_quota_exceeded", "IP quota exceeded."),
     FILE_TOO_LARGE: t("fileshare.upload_file_too_large", "File size exceeds the allowed limit."),
   };
@@ -275,18 +270,19 @@ const FileShare: React.FC = () => {
     }
 
     const totalSize = getTotalSize();
-    const maxTotalMB = isAuthenticated ? (maxFileSizeAuth / (1024 * 1024)) : (maxFileSizeAnon / (1024 * 1024));
+    const maxTotalMB = isAuthenticated
+      ? maxFileSizeAuth / (1024 * 1024)
+      : maxFileSizeAnon / (1024 * 1024);
     const maxTotalBytes = maxTotalMB * 1024 * 1024;
 
     if (totalSize > maxTotalBytes) {
       const maxValue = convertFromMB(maxTotalMB, useGiB);
       const unit = useGiB ? "GiB" : "MiB";
       setError(
-        t(
-          "fileshare.total_size_too_large",
-          "Total size exceeds limit (max {{max}} {{unit}})",
-          { max: maxValue, unit }
-        )
+        t("fileshare.total_size_too_large", "Total size exceeds limit (max {{max}} {{unit}})", {
+          max: maxValue,
+          unit,
+        })
       );
       return;
     }
@@ -295,7 +291,9 @@ const FileShare: React.FC = () => {
     setUploadProgress(0);
 
     if (!tus.isSupported) {
-      setError(t("fileshare.browser_not_supported", "Your browser does not support resumable uploads"));
+      setError(
+        t("fileshare.browser_not_supported", "Your browser does not support resumable uploads")
+      );
       setLoading(false);
       return;
     }
@@ -306,9 +304,7 @@ const FileShare: React.FC = () => {
       if (!isAuthenticated || !neverExpires) {
         const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
         const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-        const expiresAt = new Date(
-          Date.now() + days * 24 * 60 * 60 * 1000
-        ).toISOString();
+        const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
         baseMetadata.expiresAt = expiresAt;
       }
 
@@ -348,8 +344,14 @@ const FileShare: React.FC = () => {
           },
           onError: (error: unknown) => {
             console.error("Tus upload error:", error);
-            let errorMessage = t("fileshare.network_error", "Network error — could not create share");
-            const tusError = error as { originalResponse?: { getBody?: () => string }; message?: string };
+            let errorMessage = t(
+              "fileshare.network_error",
+              "Network error — could not create share"
+            );
+            const tusError = error as {
+              originalResponse?: { getBody?: () => string };
+              message?: string;
+            };
             const body = tusError?.originalResponse?.getBody?.();
             if (body) {
               try {
@@ -411,7 +413,6 @@ const FileShare: React.FC = () => {
       } else {
         let shareSlug: string | null = null;
         let shareId: string | null = null;
-        let completedFiles = 0;
         const totalSize = getTotalSize();
 
         const uploadNextFile = async (index: number) => {
@@ -484,8 +485,14 @@ const FileShare: React.FC = () => {
             },
             onError: (error: unknown) => {
               console.error(`Tus upload error for file ${index + 1}:`, error);
-              let errorMessage = t("fileshare.network_error", "Network error — could not create share");
-              const tusError = error as { originalResponse?: { getBody?: () => string }; message?: string };
+              let errorMessage = t(
+                "fileshare.network_error",
+                "Network error — could not create share"
+              );
+              const tusError = error as {
+                originalResponse?: { getBody?: () => string };
+                message?: string;
+              };
               const body = tusError?.originalResponse?.getBody?.();
               if (body) {
                 try {
@@ -518,7 +525,6 @@ const FileShare: React.FC = () => {
               }
             },
             onSuccess: () => {
-              completedFiles++;
               uploadNextFile(index + 1);
             },
           });
@@ -533,9 +539,7 @@ const FileShare: React.FC = () => {
       if (error instanceof Error && error.message) {
         setError(error.message);
       } else {
-        setError(
-          t("fileshare.network_error", "Network error — could not create share")
-        );
+        setError(t("fileshare.network_error", "Network error — could not create share"));
       }
       setLoading(false);
       setUploadProgress(0);
@@ -575,10 +579,7 @@ const FileShare: React.FC = () => {
             {t("fileshare.title", "Partager un fichier")}
           </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
-            {t(
-              "fileshare.subtitle",
-              "Uploadez et partagez vos fichiers en toute sécurité"
-            )}
+            {t("fileshare.subtitle", "Uploadez et partagez vos fichiers en toute sécurité")}
           </p>
         </div>
       </div>
@@ -629,10 +630,7 @@ const FileShare: React.FC = () => {
                     {t("fileshare.drag_drop", "Drag & drop files or folders here")}
                   </p>
                   <p className="text-[var(--foreground-muted)] text-sm mt-1">
-                    {t(
-                      "fileshare.or_click",
-                      "or click to select"
-                    )}
+                    {t("fileshare.or_click", "or click to select")}
                   </p>
                 </div>
                 <div className="flex gap-2 justify-center flex-wrap">
@@ -664,17 +662,13 @@ const FileShare: React.FC = () => {
                         "{{max}} {{unit}} maximum for authenticated users",
                         {
                           max: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
-                          unit: useGiB ? "GiB" : "MiB"
+                          unit: useGiB ? "GiB" : "MiB",
                         }
                       )
-                    : t(
-                        "fileshare.max_size_anon",
-                        "{{max}} {{unit}} maximum for anonymous users",
-                        {
-                          max: convertFromMB(Math.round(maxFileSizeAnon / (1024 * 1024)), useGiB),
-                          unit: useGiB ? "GiB" : "MiB"
-                        }
-                      )}
+                    : t("fileshare.max_size_anon", "{{max}} {{unit}} maximum for anonymous users", {
+                        max: convertFromMB(Math.round(maxFileSizeAnon / (1024 * 1024)), useGiB),
+                        unit: useGiB ? "GiB" : "MiB",
+                      })}
                 </p>
               </div>
             </div>
@@ -766,10 +760,8 @@ const FileShare: React.FC = () => {
                 className="h-3 rounded-full transition-all duration-300"
                 style={{
                   width: `${uploadProgress}%`,
-                  background:
-                    "linear-gradient(to right, var(--secondary), var(--primary))",
-                  boxShadow:
-                    "0 10px 15px -3px rgb(from var(--secondary) r g b / 0.25)",
+                  background: "linear-gradient(to right, var(--secondary), var(--primary))",
+                  boxShadow: "0 10px 15px -3px rgb(from var(--secondary) r g b / 0.25)",
                 }}
               />
             </div>
@@ -812,9 +804,7 @@ const FileShare: React.FC = () => {
 
       {error && <ShareError error={error} translationPrefix="fileshare" />}
 
-      {success && (
-        <ShareSuccess url={success} translationPrefix="fileshare" />
-      )}
+      {success && <ShareSuccess url={success} translationPrefix="fileshare" />}
     </div>
   );
 };

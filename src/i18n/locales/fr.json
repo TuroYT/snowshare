@@ -144,7 +144,10 @@
     "verify_password": "Vérifier le mot de passe",
     "verifying": "Vérification...",
     "files_in_share": "Fichiers dans ce partage",
-    "password_incorrect": "Mot de passe incorrect"
+    "password_incorrect": "Mot de passe incorrect",
+    "download_progress": "Téléchargement : {{percent}}%",
+    "cancel_download": "Annuler le téléchargement",
+    "download_cancelled": "Téléchargement annulé"
   },
   "home": {
     "title": "Bienvenue sur SnowShare",

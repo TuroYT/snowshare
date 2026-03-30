@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { statSync, existsSync } from "fs";
+import { existsSync } from "fs";
+import { stat } from "fs/promises";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { prisma } from "@/lib/prisma";
 
@@ -43,13 +45,16 @@ export async function POST(
         return NextResponse.json({
           filename: translate(locale, "api.file_protected"),
           requiresPassword: true,
-          isBulk: result.isBulk || false
+          isBulk: result.isBulk || false,
         });
       }
 
       if (result.isBulk && result.share) {
         const files = result.share.files || [];
-        const totalSize = files.reduce((sum: number, file: { size: bigint }) => sum + Number(file.size), 0);
+        const totalSize = files.reduce(
+          (sum: number, file: { size: bigint }) => sum + Number(file.size),
+          0
+        );
         const fileList = files.map((file) => ({
           name: file.originalName,
           path: file.relativePath || file.originalName,
@@ -71,13 +76,13 @@ export async function POST(
         return apiError(request, ErrorCode.FILE_NOT_FOUND);
       }
 
-      const stats = statSync(fullPath);
+      const stats = await stat(fullPath);
 
       return NextResponse.json({
         filename: originalFilename,
         fileSize: stats.size,
         requiresPassword: false,
-        isBulk: false
+        isBulk: false,
       });
     }
 
@@ -97,7 +102,7 @@ export async function POST(
       }
 
       if (result.isBulk) {
-        const downloadUrl = `/f/${slug}/bulk-download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
+        const downloadUrl = `/f/${slug}/bulk-download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
         return NextResponse.json({ downloadUrl, isBulk: true });
       }
 
@@ -107,13 +112,12 @@ export async function POST(
         return apiError(request, ErrorCode.FILE_NOT_FOUND);
       }
 
-      const downloadUrl = `/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ''}`;
+      const downloadUrl = `/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
 
       return NextResponse.json({ downloadUrl, isBulk: false });
     }
 
     return apiError(request, ErrorCode.INVALID_REQUEST);
-
   } catch (error) {
     console.error("File share error:", error);
     return internalError(request);
@@ -121,10 +125,7 @@ export async function POST(
 }
 
 // Keep GET for backward compatibility and direct downloads
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   if (!slug) {
@@ -155,41 +156,15 @@ export async function GET(
     }
 
     // Get file stats for size
-    const stats = statSync(fullPath);
+    const stats = await stat(fullPath);
     const fileSize = stats.size;
 
     // Determine content type
     const ext = (await import("path")).extname(fullPath).toLowerCase();
-    const mimeTypes: Record<string, string> = {
-      '.pdf': 'application/pdf',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
-      '.txt': 'text/plain',
-      '.html': 'text/html',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.xml': 'application/xml',
-      '.zip': 'application/zip',
-      '.doc': 'application/msword',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.xls': 'application/vnd.ms-excel',
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.ppt': 'application/vnd.ms-powerpoint',
-      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    };
-
-    const contentType = mimeTypes[ext] || 'application/octet-stream';
+    const contentType = getMimeType(ext);
 
     // Sanitize filename for Content-Disposition header
-    const safeFilename = (originalFilename || 'download')
-      .replace(/[\r\n]/g, '')
-      .replace(/["\\/]/g, '_')
-      .replace(/[^\x20-\x7E]/g, '_');
+    const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
 
     // Handle range request for resumable downloads
     const { createReadStream } = await import("fs");
@@ -202,12 +177,12 @@ export async function GET(
       if (!rangeResult) {
         return new Response(null, {
           status: 416,
-          headers: { "Content-Range": `bytes */${fileSize}` }
+          headers: { "Content-Range": `bytes */${fileSize}` },
         });
       }
 
       const { start, end } = rangeResult;
-      const chunksize = (end - start) + 1;
+      const chunksize = end - start + 1;
       const fileStream = createReadStream(fullPath, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);
 
@@ -232,25 +207,26 @@ export async function GET(
     const webStream = nodeStreamToWebStream(fileStream);
 
     const headers = new Headers();
-    headers.set('Content-Length', fileSize.toString());
-    headers.set('Content-Type', contentType);
-    headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
+    headers.set("Content-Length", fileSize.toString());
+    headers.set("Content-Type", contentType);
+    headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
     headers.set("Accept-Ranges", "bytes");
     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");
 
-    // For images, PDFs, and text files, allow inline viewing
-    if (contentType.startsWith('image/') || contentType === 'application/pdf' || contentType.startsWith('text/')) {
-      const disposition = request.headers.get('accept')?.includes('text/html') ? 'inline' : 'attachment';
-      headers.set('Content-Disposition', `${disposition}; filename="${safeFilename}"`);
+    // Allow inline viewing only for safe types (excludes SVG/HTML to prevent XSS)
+    if (isSafeForInline(contentType)) {
+      const disposition = request.headers.get("accept")?.includes("text/html")
+        ? "inline"
+        : "attachment";
+      headers.set("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
     }
 
     return new NextResponse(webStream as ReadableStream<Uint8Array>, {
       status: 200,
       headers,
     });
-
   } catch (error) {
     console.error("Download error:", error);
     return internalError(request);

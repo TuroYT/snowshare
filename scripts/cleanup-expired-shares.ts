@@ -1,26 +1,24 @@
 #!/usr/bin/env node
 import { prisma } from "@/lib/prisma";
-import fs from 'fs';
-import path from 'path';
-
-
+import fs from "fs";
+import path from "path";
 
 // Get upload directory from env or default to ./uploads
 function getUploadDir(): string {
-  return process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+  return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
 }
 
 async function cleanupExpiredShares() {
-  console.log('🧹 Starting cleanup of expired shares...');
-  
+  console.log("🧹 Starting cleanup of expired shares...");
+
   try {
     const now = new Date();
-    
+
     const expiredShares = await prisma.share.findMany({
       where: {
         expiresAt: {
-          lt: now
-        }
+          lt: now,
+        },
       },
       select: {
         id: true,
@@ -32,23 +30,26 @@ async function cleanupExpiredShares() {
         isBulk: true,
         files: {
           select: {
-            filePath: true
-          }
-        }
-      }
+            filePath: true,
+          },
+        },
+      },
     });
 
     console.log(`📊 ${expiredShares.length} expired share(s) found`);
 
     if (expiredShares.length === 0) {
-      console.log('✨ No expired shares to clean up');
+      console.log("✨ No expired shares to clean up");
       return;
     }
 
     let deletedFiles = 0;
     let deletedShares = 0;
 
-    const deleteFileIfExists = async (relativePath: string, shareSlug: string): Promise<boolean> => {
+    const deleteFileIfExists = async (
+      relativePath: string,
+      shareSlug: string
+    ): Promise<boolean> => {
       const fullFilePath = path.join(getUploadDir(), relativePath);
 
       try {
@@ -59,7 +60,7 @@ async function cleanupExpiredShares() {
         return true;
       } catch (error) {
         // Access throws if the file does not exist; ignore ENOENT but surface other errors for visibility.
-        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
           console.error(`❌ Error deleting file ${relativePath}:`, error);
         }
         return false;
@@ -67,9 +68,11 @@ async function cleanupExpiredShares() {
     };
 
     for (const share of expiredShares) {
-      if (share.type === 'FILE') {
+      if (share.type === "FILE") {
         if (share.isBulk && share.files) {
-          const bulkDeletionTasks = share.files.map((file) => deleteFileIfExists(file.filePath, share.slug));
+          const bulkDeletionTasks = share.files.map((file) =>
+            deleteFileIfExists(file.filePath, share.slug)
+          );
           await Promise.all(bulkDeletionTasks);
         } else if (share.filePath) {
           await deleteFileIfExists(share.filePath, share.slug);
@@ -81,9 +84,9 @@ async function cleanupExpiredShares() {
     const deleteResult = await prisma.share.deleteMany({
       where: {
         expiresAt: {
-          lt: now
-        }
-      }
+          lt: now,
+        },
+      },
     });
 
     deletedShares = deleteResult.count;
@@ -91,9 +94,8 @@ async function cleanupExpiredShares() {
     console.log(`✅ Cleanup completed:`);
     console.log(`   - ${deletedShares} share(s) deleted from the database`);
     console.log(`   - ${deletedFiles} physical file(s) deleted`);
-    
   } catch (error) {
-    console.error('❌ Error during cleanup of expired shares:', error);
+    console.error("❌ Error during cleanup of expired shares:", error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();
@@ -104,11 +106,11 @@ async function cleanupExpiredShares() {
 if (require.main === module) {
   cleanupExpiredShares()
     .then(() => {
-      console.log('🎉 Cleanup completed successfully');
+      console.log("🎉 Cleanup completed successfully");
       process.exit(0);
     })
     .catch((error) => {
-      console.error('💥 Cleanup failed:', error);
+      console.error("💥 Cleanup failed:", error);
       process.exit(1);
     });
 }
