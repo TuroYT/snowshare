@@ -16,6 +16,9 @@ jest.mock("@/lib/prisma", () => ({
     settings: {
       findFirst: jest.fn(),
     },
+    verificationToken: {
+      create: jest.fn(),
+    },
   },
 }));
 
@@ -28,14 +31,32 @@ jest.mock("@/lib/i18n-server", () => ({
   translate: jest.fn((_locale: string, key: string) => key),
 }));
 
+jest.mock("@/lib/captcha", () => ({
+  verifyCaptcha: jest.fn(),
+}));
+
+jest.mock("@/lib/email", () => ({
+  sendVerificationEmail: jest.fn(),
+}));
+
+jest.mock("crypto", () => ({
+  ...jest.requireActual("crypto"),
+  randomBytes: jest.fn(() => ({ toString: () => "test-token-hex" })),
+}));
+
 import { POST } from "@/app/api/auth/register/route";
 import { prisma } from "@/lib/prisma";
+import { verifyCaptcha } from "@/lib/captcha";
+import { sendVerificationEmail } from "@/lib/email";
 import { NextRequest } from "next/server";
 
 const mockUserCount = prisma.user.count as jest.Mock;
 const mockUserFindUnique = prisma.user.findUnique as jest.Mock;
 const mockUserCreate = prisma.user.create as jest.Mock;
 const mockSettingsFindFirst = prisma.settings.findFirst as jest.Mock;
+const mockVerificationTokenCreate = prisma.verificationToken.create as jest.Mock;
+const mockVerifyCaptcha = verifyCaptcha as jest.Mock;
+const mockSendVerificationEmail = sendVerificationEmail as jest.Mock;
 
 function makeRequest(body: Record<string, unknown>): NextRequest {
   return {
@@ -46,22 +67,32 @@ function makeRequest(body: Record<string, unknown>): NextRequest {
   } as unknown as NextRequest;
 }
 
+const baseSettings = {
+  allowSignin: true,
+  disableCredentialsLogin: false,
+  captchaEnabled: false,
+  captchaProvider: null,
+  captchaSecretKey: null,
+  emailVerificationRequired: false,
+  smtpEnabled: false,
+};
+
 describe("POST /api/auth/register", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Defaults: signup enabled, first user
     mockUserCount.mockResolvedValue(0);
-    mockSettingsFindFirst.mockResolvedValue({
-      allowSignin: true,
-      disableCredentialsLogin: false,
-    });
+    mockSettingsFindFirst.mockResolvedValue(baseSettings);
     mockUserFindUnique.mockResolvedValue(null);
     mockUserCreate.mockResolvedValue({
       id: "user-1",
       email: "user@example.com",
       isAdmin: true,
     });
+    mockVerificationTokenCreate.mockResolvedValue({});
+    mockSendVerificationEmail.mockResolvedValue(true);
   });
+
+  // ─── Existing registration tests ───────────────────────────────────────────
 
   describe("first user registration", () => {
     it("should create the first user as admin", async () => {
@@ -99,7 +130,7 @@ describe("POST /api/auth/register", () => {
 
   describe("subsequent user registration", () => {
     beforeEach(() => {
-      mockUserCount.mockResolvedValue(1); // Already has users
+      mockUserCount.mockResolvedValue(1);
     });
 
     it("should register a new user when signup is enabled", async () => {
@@ -127,8 +158,8 @@ describe("POST /api/auth/register", () => {
 
     it("should reject registration when signup is disabled", async () => {
       mockSettingsFindFirst.mockResolvedValue({
+        ...baseSettings,
         allowSignin: false,
-        disableCredentialsLogin: false,
       });
 
       const req = makeRequest({ email: "user@example.com", password: "password123" });
@@ -140,7 +171,7 @@ describe("POST /api/auth/register", () => {
 
     it("should reject registration when credentials login is disabled", async () => {
       mockSettingsFindFirst.mockResolvedValue({
-        allowSignin: true,
+        ...baseSettings,
         disableCredentialsLogin: true,
       });
 
@@ -242,6 +273,199 @@ describe("POST /api/auth/register", () => {
       const response = await POST(req);
 
       expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── CAPTCHA tests ──────────────────────────────────────────────────────────
+
+  describe("CAPTCHA verification", () => {
+    beforeEach(() => {
+      mockUserCount.mockResolvedValue(1);
+      mockSettingsFindFirst.mockResolvedValue({
+        ...baseSettings,
+        captchaEnabled: true,
+        captchaProvider: "turnstile",
+        captchaSecretKey: "secret-key",
+      });
+    });
+
+    it("should reject registration when CAPTCHA token is missing", async () => {
+      const req = makeRequest({ email: "user@example.com", password: "password123" });
+      const response = await POST(req);
+
+      expect(response.status).toBe(400);
+      expect(mockVerifyCaptcha).not.toHaveBeenCalled();
+      expect(mockUserCreate).not.toHaveBeenCalled();
+    });
+
+    it("should reject registration when CAPTCHA verification fails", async () => {
+      mockVerifyCaptcha.mockResolvedValue(false);
+
+      const req = makeRequest({
+        email: "user@example.com",
+        password: "password123",
+        captchaToken: "invalid-token",
+      });
+      const response = await POST(req);
+
+      expect(response.status).toBe(400);
+      expect(mockVerifyCaptcha).toHaveBeenCalledWith(
+        "invalid-token",
+        "secret-key",
+        "turnstile"
+      );
+      expect(mockUserCreate).not.toHaveBeenCalled();
+    });
+
+    it("should allow registration when CAPTCHA verification succeeds", async () => {
+      mockVerifyCaptcha.mockResolvedValue(true);
+      mockUserCreate.mockResolvedValue({ id: "user-2", email: "user@example.com", isAdmin: false });
+
+      const req = makeRequest({
+        email: "user@example.com",
+        password: "password123",
+        captchaToken: "valid-token",
+      });
+      const response = await POST(req);
+
+      expect(response.status).toBe(200);
+      expect(mockVerifyCaptcha).toHaveBeenCalledWith("valid-token", "secret-key", "turnstile");
+      expect(mockUserCreate).toHaveBeenCalled();
+    });
+
+    it("should skip CAPTCHA verification for the first user", async () => {
+      mockUserCount.mockResolvedValue(0);
+      mockVerifyCaptcha.mockResolvedValue(false); // Would fail if called
+
+      const req = makeRequest({ email: "admin@example.com", password: "password123" });
+      const response = await POST(req);
+
+      expect(response.status).toBe(200);
+      expect(mockVerifyCaptcha).not.toHaveBeenCalled();
+    });
+
+    it("should pass the correct provider to verifyCaptcha", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...baseSettings,
+        captchaEnabled: true,
+        captchaProvider: "recaptcha",
+        captchaSecretKey: "recaptcha-secret",
+      });
+      mockVerifyCaptcha.mockResolvedValue(true);
+      mockUserCreate.mockResolvedValue({ id: "user-2", email: "user@example.com", isAdmin: false });
+
+      const req = makeRequest({
+        email: "user@example.com",
+        password: "password123",
+        captchaToken: "recaptcha-token",
+      });
+      await POST(req);
+
+      expect(mockVerifyCaptcha).toHaveBeenCalledWith(
+        "recaptcha-token",
+        "recaptcha-secret",
+        "recaptcha"
+      );
+    });
+  });
+
+  // ─── Email verification tests ───────────────────────────────────────────────
+
+  describe("email verification", () => {
+    beforeEach(() => {
+      mockUserCount.mockResolvedValue(1);
+      mockSettingsFindFirst.mockResolvedValue({
+        ...baseSettings,
+        emailVerificationRequired: true,
+        smtpEnabled: true,
+      });
+      mockUserCreate.mockResolvedValue({ id: "user-2", email: "user@example.com", isAdmin: false });
+    });
+
+    it("should create an unverified user and send a verification email", async () => {
+      const req = makeRequest({ email: "user@example.com", password: "password123" });
+      const response = await POST(req);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.requiresVerification).toBe(true);
+      expect(mockUserCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ emailVerified: null }),
+        })
+      );
+      expect(mockVerificationTokenCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            identifier: "email-verify:user@example.com",
+          }),
+        })
+      );
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith("user@example.com", "test-token-hex");
+    });
+
+    it("should return requiresVerification: false when SMTP is disabled", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...baseSettings,
+        emailVerificationRequired: true,
+        smtpEnabled: false, // SMTP off → no email verification
+      });
+      mockUserCreate.mockResolvedValue({ id: "user-2", email: "user@example.com", isAdmin: false });
+
+      const req = makeRequest({ email: "user@example.com", password: "password123" });
+      const response = await POST(req);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.requiresVerification).toBe(false);
+      expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+    });
+
+    it("should mark the user as verified immediately when email verification is off", async () => {
+      mockSettingsFindFirst.mockResolvedValue(baseSettings); // emailVerificationRequired: false
+
+      const req = makeRequest({ email: "user@example.com", password: "password123" });
+      const response = await POST(req);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.requiresVerification).toBe(false);
+      expect(mockUserCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ emailVerified: expect.any(Date) }),
+        })
+      );
+      expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+    });
+
+    it("should skip email verification for the first user even when enabled", async () => {
+      mockUserCount.mockResolvedValue(0);
+
+      const req = makeRequest({ email: "admin@example.com", password: "password123" });
+      const response = await POST(req);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.requiresVerification).toBe(false);
+      expect(mockSendVerificationEmail).not.toHaveBeenCalled();
+      // First user is always marked as verified
+      expect(mockUserCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ emailVerified: expect.any(Date) }),
+        })
+      );
+    });
+
+    it("should succeed even if sending the verification email throws", async () => {
+      mockSendVerificationEmail.mockRejectedValue(new Error("SMTP connection refused"));
+
+      const req = makeRequest({ email: "user@example.com", password: "password123" });
+      const response = await POST(req);
+      const data = await response.json();
+
+      // Registration should succeed; email failure is non-fatal
+      expect(response.status).toBe(200);
+      expect(data.requiresVerification).toBe(true);
     });
   });
 });
