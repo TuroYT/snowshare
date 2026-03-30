@@ -1,11 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { signIn, type SignInResponse } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { useBranding } from "@/components/BrandingProvider";
+
+declare global {
+  interface Window {
+    grecaptcha: {
+      render: (container: HTMLElement, options: Record<string, unknown>) => number;
+      reset: (widgetId?: number) => void;
+      getResponse: (widgetId?: number) => string;
+    };
+    turnstile: {
+      render: (container: HTMLElement, options: Record<string, unknown>) => string;
+      reset: (widgetId?: string) => void;
+    };
+    onRecaptchaLoad?: () => void;
+    onTurnstileLoad?: () => void;
+  }
+}
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -17,6 +33,12 @@ export default function SignUp() {
   const [allowSignup, setAllowSignup] = useState(true);
   const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [captchaEnabled, setCaptchaEnabled] = useState(false);
+  const [captchaProvider, setCaptchaProvider] = useState<string | null>(null);
+  const [captchaSiteKey, setCaptchaSiteKey] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const captchaWidgetId = useRef<string | number | null>(null);
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -29,10 +51,13 @@ export default function SignUp() {
           const data = await response.json();
           setAllowSignup(data.allowSignup ?? true);
           setDisableCredentialsLogin(data.disableCredentialsLogin ?? false);
+          setCaptchaEnabled(data.captchaEnabled ?? false);
+          setCaptchaProvider(data.captchaProvider ?? null);
+          setCaptchaSiteKey(data.captchaSiteKey ?? null);
         }
       } catch (error) {
         console.error("Error fetching signup status:", error);
-        setAllowSignup(true); // Default to true on error
+        setAllowSignup(true);
       } finally {
         setCheckingStatus(false);
       }
@@ -40,6 +65,67 @@ export default function SignUp() {
 
     fetchSignupStatus();
   }, []);
+
+  // Load and render the CAPTCHA widget once settings are available
+  useEffect(() => {
+    if (!captchaEnabled || !captchaSiteKey || !captchaProvider || !captchaRef.current) return;
+
+    const container = captchaRef.current;
+
+    if (captchaProvider === "recaptcha") {
+      const scriptId = "recaptcha-script";
+      if (!document.getElementById(scriptId)) {
+        window.onRecaptchaLoad = () => {
+          if (container && window.grecaptcha) {
+            captchaWidgetId.current = window.grecaptcha.render(container, {
+              sitekey: captchaSiteKey,
+              callback: (token: string) => setCaptchaToken(token),
+              "expired-callback": () => setCaptchaToken(""),
+            });
+          }
+        };
+        const script = document.createElement("script");
+        script.id = scriptId;
+        script.src =
+          "https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      } else if (window.grecaptcha) {
+        captchaWidgetId.current = window.grecaptcha.render(container, {
+          sitekey: captchaSiteKey,
+          callback: (token: string) => setCaptchaToken(token),
+          "expired-callback": () => setCaptchaToken(""),
+        });
+      }
+    } else if (captchaProvider === "turnstile") {
+      const scriptId = "turnstile-script";
+      if (!document.getElementById(scriptId)) {
+        window.onTurnstileLoad = () => {
+          if (container && window.turnstile) {
+            captchaWidgetId.current = window.turnstile.render(container, {
+              sitekey: captchaSiteKey,
+              callback: (token: string) => setCaptchaToken(token),
+              "expired-callback": () => setCaptchaToken(""),
+            });
+          }
+        };
+        const script = document.createElement("script");
+        script.id = scriptId;
+        script.src =
+          "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      } else if (window.turnstile) {
+        captchaWidgetId.current = window.turnstile.render(container, {
+          sitekey: captchaSiteKey,
+          callback: (token: string) => setCaptchaToken(token),
+          "expired-callback": () => setCaptchaToken(""),
+        });
+      }
+    }
+  }, [captchaEnabled, captchaSiteKey, captchaProvider, checkingStatus]);
 
   // Show loading state while checking signup status
   if (checkingStatus) {
@@ -118,18 +204,30 @@ export default function SignUp() {
       return;
     }
 
+    if (captchaEnabled && !captchaToken) {
+      setError(t("auth.error_captcha_required"));
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, captchaToken: captchaToken || undefined }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        if (data.requiresVerification) {
+          // Redirect to the "check your email" page
+          router.push("/auth/verify-email");
+          return;
+        }
+
         // Auto-login after successful registration using NextAuth credentials provider
         const signInResult = (await signIn("credentials", {
           redirect: false,
@@ -138,16 +236,23 @@ export default function SignUp() {
         })) as SignInResponse | undefined;
 
         if (signInResult?.ok) {
-          // Redirect to home after successful sign-in
           router.push("/");
         } else {
-          // If auto-login failed, redirect to sign-in with a message
           router.push(
             `/auth/signin?message=${encodeURIComponent(t("auth.success_account_created"))}`
           );
         }
       } else {
         setError(data.error || t("auth.error_generic").replace(" : ", ""));
+        // Reset CAPTCHA on error
+        if (captchaEnabled) {
+          if (captchaProvider === "recaptcha" && window.grecaptcha) {
+            window.grecaptcha.reset(captchaWidgetId.current as number);
+          } else if (captchaProvider === "turnstile" && window.turnstile) {
+            window.turnstile.reset(captchaWidgetId.current as string);
+          }
+          setCaptchaToken("");
+        }
       }
     } catch {
       setError(t("auth.error_generic").replace(" : ", ""));
@@ -259,6 +364,13 @@ export default function SignUp() {
               />
             </div>
           </div>
+
+          {/* CAPTCHA Widget */}
+          {captchaEnabled && captchaSiteKey && (
+            <div className="flex justify-center">
+              <div ref={captchaRef}></div>
+            </div>
+          )}
 
           {error && (
             <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">

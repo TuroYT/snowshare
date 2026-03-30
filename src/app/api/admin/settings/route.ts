@@ -78,7 +78,14 @@ Thank you for using SnowShare!`,
       });
     }
 
-    return NextResponse.json({ settings, hasActiveSSO: activeProvidersCount > 0 });
+    // Never expose CAPTCHA secret key or SMTP password to the client
+    const safeSettings = {
+      ...settings,
+      captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
+      smtpPassword: settings.smtpPassword ? "••••••••" : null,
+    };
+
+    return NextResponse.json({ settings: safeSettings, hasActiveSSO: activeProvidersCount > 0 });
   } catch (error) {
     console.error("Error fetching settings:", error);
     return internalError(request);
@@ -241,11 +248,44 @@ Thank you for using SnowShare!`,
           borderColor: data.borderColor !== undefined ? data.borderColor : settings.borderColor,
           fontFamily: data.fontFamily !== undefined ? data.fontFamily : settings.fontFamily,
           termsOfUses: data.termsOfUses !== undefined ? data.termsOfUses : settings.termsOfUses,
+          // CAPTCHA
+          captchaEnabled:
+            data.captchaEnabled !== undefined ? data.captchaEnabled : settings.captchaEnabled,
+          captchaProvider:
+            data.captchaProvider !== undefined ? data.captchaProvider : settings.captchaProvider,
+          captchaSiteKey:
+            data.captchaSiteKey !== undefined ? data.captchaSiteKey : settings.captchaSiteKey,
+          // Only update secret if a real value is provided (not the masked placeholder)
+          captchaSecretKey:
+            data.captchaSecretKey !== undefined && data.captchaSecretKey !== "••••••••"
+              ? data.captchaSecretKey || null
+              : settings.captchaSecretKey,
+          // SMTP
+          smtpEnabled: data.smtpEnabled !== undefined ? data.smtpEnabled : settings.smtpEnabled,
+          smtpHost: data.smtpHost !== undefined ? data.smtpHost || null : settings.smtpHost,
+          smtpPort: data.smtpPort !== undefined ? data.smtpPort : settings.smtpPort,
+          smtpUser: data.smtpUser !== undefined ? data.smtpUser || null : settings.smtpUser,
+          smtpPassword:
+            data.smtpPassword !== undefined && data.smtpPassword !== "••••••••"
+              ? data.smtpPassword || null
+              : settings.smtpPassword,
+          smtpFrom: data.smtpFrom !== undefined ? data.smtpFrom || null : settings.smtpFrom,
+          smtpSecure: data.smtpSecure !== undefined ? data.smtpSecure : settings.smtpSecure,
+          emailVerificationRequired:
+            data.emailVerificationRequired !== undefined
+              ? data.emailVerificationRequired
+              : settings.emailVerificationRequired,
         },
       });
     }
 
-    return NextResponse.json({ settings });
+    const safeUpdated = {
+      ...settings,
+      captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
+      smtpPassword: settings.smtpPassword ? "••••••••" : null,
+    };
+
+    return NextResponse.json({ settings: safeUpdated });
   } catch (error) {
     console.error("Error updating settings:", error);
     return internalError(request);

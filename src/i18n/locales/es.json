@@ -237,7 +237,16 @@
     "signup_disabled_title": "Registro deshabilitado",
     "signup_disabled_message": "Las nuevas registraciones no están permitidas actualmente.",
     "return_to_main_page": "Volver a la página principal",
-    "or_continue_with": "O continúa con"
+    "or_continue_with": "O continúa con",
+    "error_captcha_required": "Por favor completa el desafío CAPTCHA",
+    "error_email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión",
+    "verify_email_verifying": "Verificando tu email...",
+    "verify_email_check_inbox_title": "Revisa tu bandeja de entrada",
+    "verify_email_check_inbox_message": "Se ha enviado un email de verificación a tu dirección. Haz clic en el enlace del email para activar tu cuenta.",
+    "verify_email_success_title": "¡Email verificado!",
+    "verify_email_success_message": "Tu email ha sido verificado. Ahora puedes iniciar sesión.",
+    "verify_email_error_title": "Error de verificación",
+    "verify_email_error_generic": "Ocurrió un error durante la verificación"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -435,7 +444,31 @@
       "section_general": "General",
       "section_storage": "Almacenamiento",
       "saving": "Guardando...",
-      "save": "Guardar Cambios"
+      "save": "Guardar Cambios",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "Activar CAPTCHA",
+      "captcha_enabled_desc": "Requerir que los usuarios completen un desafío CAPTCHA al registrarse",
+      "captcha_provider": "Proveedor de CAPTCHA",
+      "captcha_provider_select": "Seleccionar un proveedor...",
+      "captcha_site_key": "Clave de sitio",
+      "captcha_site_key_placeholder": "Tu clave de sitio",
+      "captcha_secret_key": "Clave secreta",
+      "captcha_secret_key_placeholder": "Tu clave secreta",
+      "captcha_secret_key_hint": "La clave secreta se almacena de forma segura. Deje en blanco para mantener el valor existente.",
+      "section_smtp": "Email y SMTP",
+      "smtp_enabled": "Activar SMTP",
+      "smtp_enabled_desc": "Enviar emails mediante SMTP (requerido para la verificación de email)",
+      "smtp_host": "Servidor SMTP",
+      "smtp_port": "Puerto SMTP",
+      "smtp_user": "Usuario",
+      "smtp_password": "Contraseña",
+      "smtp_password_placeholder": "Dejar en blanco para mantener el existente",
+      "smtp_from": "Dirección de remitente",
+      "smtp_from_hint": "Dirección del remitente mostrada en los emails enviados",
+      "smtp_secure": "Usar SSL/TLS",
+      "smtp_secure_hint": "Activar para el puerto 465, desactivar para el puerto 587 (STARTTLS)",
+      "email_verification_required": "Requerir verificación de email",
+      "email_verification_required_desc": "Los nuevos usuarios deben verificar su dirección de email antes de iniciar sesión"
     },
     "quotas": {
       "title": "Cuotas de Carga",
@@ -671,7 +704,10 @@
       "token_expired": "Token expirado",
       "token_invalid_or_expired": "Token inválido o expirado",
       "invalid_date_format": "Formato de fecha inválido",
-      "invalid_expiration_date": "Fecha de expiración inválida"
+      "invalid_expiration_date": "Fecha de expiración inválida",
+      "captcha_required": "Por favor completa el desafío CAPTCHA",
+      "captcha_invalid": "La verificación CAPTCHA falló. Por favor inténtalo de nuevo.",
+      "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión"
     },
     "file_protected": "Archivo protegido"
   }
