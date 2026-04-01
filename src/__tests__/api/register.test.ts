@@ -309,11 +309,7 @@ describe("POST /api/auth/register", () => {
       const response = await POST(req);
 
       expect(response.status).toBe(400);
-      expect(mockVerifyCaptcha).toHaveBeenCalledWith(
-        "invalid-token",
-        "secret-key",
-        "turnstile"
-      );
+      expect(mockVerifyCaptcha).toHaveBeenCalledWith("invalid-token", "secret-key", "turnstile");
       expect(mockUserCreate).not.toHaveBeenCalled();
     });
 

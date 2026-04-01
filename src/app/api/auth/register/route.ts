@@ -108,8 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Determine if email verification is needed
     // First users are auto-verified (they're admins), skip verification
-    const needsEmailVerification =
-      emailVerificationRequired && smtpEnabled && !isActuallyFirstUser;
+    const needsEmailVerification = emailVerificationRequired && smtpEnabled && !isActuallyFirstUser;
 
     // Create the user
     const user = await prisma.user.create({

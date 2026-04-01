@@ -136,12 +136,8 @@ describe("email utility", () => {
       await sendVerificationEmail("user@example.com", "abc123");
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(
-        "/auth/verify-email?token=abc123&email=user%40example.com"
-      );
-      expect(callArgs.text).toContain(
-        "/auth/verify-email?token=abc123&email=user%40example.com"
-      );
+      expect(callArgs.html).toContain("/auth/verify-email?token=abc123&email=user%40example.com");
+      expect(callArgs.text).toContain("/auth/verify-email?token=abc123&email=user%40example.com");
     });
 
     it("should use the appName in the email subject", async () => {
@@ -220,9 +216,7 @@ describe("email utility", () => {
 
       await sendVerificationEmail("user@example.com", "tok");
 
-      expect(mockCreateTransport).toHaveBeenCalledWith(
-        expect.objectContaining({ secure: true })
-      );
+      expect(mockCreateTransport).toHaveBeenCalledWith(expect.objectContaining({ secure: true }));
     });
 
     it("should use default port 587 when smtpPort is null", async () => {
@@ -230,9 +224,7 @@ describe("email utility", () => {
 
       await sendVerificationEmail("user@example.com", "tok");
 
-      expect(mockCreateTransport).toHaveBeenCalledWith(
-        expect.objectContaining({ port: 587 })
-      );
+      expect(mockCreateTransport).toHaveBeenCalledWith(expect.objectContaining({ port: 587 }));
     });
   });
 });

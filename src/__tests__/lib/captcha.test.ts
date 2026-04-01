@@ -15,7 +15,9 @@ function mockSuccess() {
 
 function mockFailure() {
   mockFetch.mockResolvedValue({
-    json: jest.fn().mockResolvedValue({ success: false, "error-codes": ["invalid-input-response"] }),
+    json: jest
+      .fn()
+      .mockResolvedValue({ success: false, "error-codes": ["invalid-input-response"] }),
   });
 }
 

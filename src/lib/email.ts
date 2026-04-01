@@ -27,10 +27,7 @@ export async function isEmailEnabled(): Promise<boolean> {
   return config !== null;
 }
 
-export async function sendVerificationEmail(
-  email: string,
-  token: string
-): Promise<boolean> {
+export async function sendVerificationEmail(email: string, token: string): Promise<boolean> {
   const config = await getSmtpConfig();
   if (!config) return false;
 
