@@ -245,7 +245,16 @@
     "signup_disabled_title": "Registreren uitgeschakeld",
     "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan.",
     "return_to_main_page": "Terug naar hoofdpagina",
-    "or_continue_with": "Of ga verder met"
+    "or_continue_with": "Of ga verder met",
+    "error_captcha_required": "Voltooi de CAPTCHA-uitdaging",
+    "error_email_not_verified": "Verifieer uw e-mailadres voordat u inlogt",
+    "verify_email_verifying": "E-mail wordt geverifieerd...",
+    "verify_email_check_inbox_title": "Controleer uw inbox",
+    "verify_email_check_inbox_message": "Er is een verificatie-e-mail naar uw adres gestuurd. Klik op de link in de e-mail om uw account te activeren.",
+    "verify_email_success_title": "E-mail geverifieerd!",
+    "verify_email_success_message": "Uw e-mail is geverifieerd. U kunt nu inloggen.",
+    "verify_email_error_title": "Verificatie mislukt",
+    "verify_email_error_generic": "Er is een fout opgetreden tijdens de verificatie"
   },
   "profile": {
     "title": "Mijn profiel",
@@ -443,7 +452,31 @@
       "section_general": "Algemeen",
       "section_storage": "Opslag",
       "saving": "Opslaan...",
-      "save": "Wijzigingen opslaan"
+      "save": "Wijzigingen opslaan",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "CAPTCHA inschakelen",
+      "captcha_enabled_desc": "Gebruikers moeten bij registratie een CAPTCHA-uitdaging voltooien",
+      "captcha_provider": "CAPTCHA-aanbieder",
+      "captcha_provider_select": "Selecteer een aanbieder...",
+      "captcha_site_key": "Sitesleutel",
+      "captcha_site_key_placeholder": "Uw sitesleutel",
+      "captcha_secret_key": "Geheime sleutel",
+      "captcha_secret_key_placeholder": "Uw geheime sleutel",
+      "captcha_secret_key_hint": "De geheime sleutel wordt veilig opgeslagen. Laat leeg om de bestaande waarde te bewaren.",
+      "section_smtp": "E-mail & SMTP",
+      "smtp_enabled": "SMTP inschakelen",
+      "smtp_enabled_desc": "E-mails versturen via SMTP (vereist voor e-mailverificatie)",
+      "smtp_host": "SMTP-host",
+      "smtp_port": "SMTP-poort",
+      "smtp_user": "Gebruikersnaam",
+      "smtp_password": "Wachtwoord",
+      "smtp_password_placeholder": "Leeg laten om bestaande te bewaren",
+      "smtp_from": "Afzenderadres",
+      "smtp_from_hint": "Afzenderadres in uitgaande e-mails",
+      "smtp_secure": "SSL/TLS gebruiken",
+      "smtp_secure_hint": "Inschakelen voor poort 465, uitschakelen voor poort 587 (STARTTLS)",
+      "email_verification_required": "E-mailverificatie vereisen",
+      "email_verification_required_desc": "Nieuwe gebruikers moeten hun e-mailadres verifiëren voordat ze kunnen inloggen"
     },
     "quotas": {
       "title": "Uploadquota",
@@ -678,7 +711,10 @@
       "token_expired": "Token verlopen",
       "token_invalid_or_expired": "Ongeldige of verlopen token",
       "invalid_date_format": "Ongeldig datumformaat",
-      "invalid_expiration_date": "Ongeldige vervaldatum"
+      "invalid_expiration_date": "Ongeldige vervaldatum",
+      "captcha_required": "Voltooi de CAPTCHA-uitdaging",
+      "captcha_invalid": "CAPTCHA-verificatie mislukt. Probeer het opnieuw.",
+      "email_not_verified": "Verifieer uw e-mailadres voordat u inlogt"
     },
     "file_protected": "Beveiligd bestand"
   }

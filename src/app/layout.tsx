@@ -8,6 +8,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense } from "react";
 import "@/i18n/client";
 import { getPublicSettings } from "@/lib/settings";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 export const revalidate = 0; // Disable caching for metadata
 
@@ -70,11 +71,13 @@ export default function RootLayout({
           minHeight: "100vh",
         }}
       >
-        <NextAuthProvider>
-          <Suspense fallback={<LoadingScreen />}>
-            <ThemeInitializer>{children}</ThemeInitializer>
-          </Suspense>
-        </NextAuthProvider>
+        <AppRouterCacheProvider>
+          <NextAuthProvider>
+            <Suspense fallback={<LoadingScreen />}>
+              <ThemeInitializer>{children}</ThemeInitializer>
+            </Suspense>
+          </NextAuthProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
