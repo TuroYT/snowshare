@@ -3,17 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendShareEmail, isEmailEnabled } from "@/lib/email";
-
-function isValidEmail(email: string): boolean {
-  if (email.length > 254) return false;
-  const atIndex = email.indexOf("@");
-  if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
-  const domain = email.slice(atIndex + 1);
-  return (
-    domain.length > 0 && domain.includes(".") && !domain.startsWith(".") && !domain.endsWith(".")
-  );
-}
-
+import { isValidEmail } from "@/lib/constants";
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
