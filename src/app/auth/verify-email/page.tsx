@@ -144,7 +144,7 @@ export default function VerifyEmailPage() {
               href="/auth/signin"
               className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
             >
-              {t("auth.return_to_main_page")}
+              {t("nav.signin")}
             </Link>
           </>
         )}
