@@ -15,7 +15,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Email sending is not configured" }, { status: 503 });
   }
 
-  const body = await request.json();
+  let body: { slug?: unknown; recipients?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const { slug, recipients } = body;
 
   if (!slug || typeof slug !== "string") {
