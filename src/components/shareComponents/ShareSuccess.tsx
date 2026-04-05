@@ -11,7 +11,15 @@ interface ShareSuccessProps {
   translationPrefix: string;
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(email: string): boolean {
+  if (email.length > 254) return false;
+  const atIndex = email.indexOf("@");
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
+  const domain = email.slice(atIndex + 1);
+  return (
+    domain.length > 0 && domain.includes(".") && !domain.startsWith(".") && !domain.endsWith(".")
+  );
+}
 
 function parseRecipients(raw: string): string[] {
   return raw
@@ -83,7 +91,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
   const handleSendEmail = async () => {
     setEmailError("");
     const recipients = parseRecipients(recipientsRaw);
-    const invalid = recipients.length === 0 || recipients.some((r) => !EMAIL_REGEX.test(r));
+    const invalid = recipients.length === 0 || recipients.some((r) => !isValidEmail(r));
     if (invalid) {
       setEmailError(
         t("share_email.error_invalid", "Please enter at least one valid email address.")
