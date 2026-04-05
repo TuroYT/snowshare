@@ -22,6 +22,26 @@ async function getSmtpConfig() {
   return settings;
 }
 
+function createSmtpTransporter(config: NonNullable<Awaited<ReturnType<typeof getSmtpConfig>>>) {
+  return nodemailer.createTransport({
+    host: config.smtpHost!,
+    port: config.smtpPort ?? 587,
+    secure: config.smtpSecure,
+    auth:
+      config.smtpUser && config.smtpPassword
+        ? { user: config.smtpUser, pass: config.smtpPassword }
+        : undefined,
+  });
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export async function isEmailEnabled(): Promise<boolean> {
   const config = await getSmtpConfig();
   return config !== null;
@@ -35,15 +55,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   const verifyUrl = `${baseUrl}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
   const appName = config.appName || "SnowShare";
 
-  const transporter = nodemailer.createTransport({
-    host: config.smtpHost!,
-    port: config.smtpPort ?? 587,
-    secure: config.smtpSecure,
-    auth:
-      config.smtpUser && config.smtpPassword
-        ? { user: config.smtpUser, pass: config.smtpPassword }
-        : undefined,
-  });
+  const transporter = createSmtpTransporter(config);
 
   const fromAddress = config.smtpFrom || config.smtpUser || `noreply@snowshare`;
 
@@ -79,18 +91,12 @@ export async function sendShareEmail(
   const config = await getSmtpConfig();
   if (!config) return false;
 
+  if (recipients.length === 0) return false;
+
   const appName = config.appName || "SnowShare";
   const fromAddress = config.smtpFrom || config.smtpUser || `noreply@snowshare`;
 
-  const transporter = nodemailer.createTransport({
-    host: config.smtpHost!,
-    port: config.smtpPort ?? 587,
-    secure: config.smtpSecure,
-    auth:
-      config.smtpUser && config.smtpPassword
-        ? { user: config.smtpUser, pass: config.smtpPassword }
-        : undefined,
-  });
+  const transporter = createSmtpTransporter(config);
 
   for (const recipient of recipients) {
     await transporter.sendMail({
@@ -100,7 +106,7 @@ export async function sendShareEmail(
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #111827;">You received a share</h2>
-          <p style="color: #374151;">Someone shared <strong>${shareTitle}</strong> with you via <strong>${appName}</strong>.</p>
+          <p style="color: #374151;">Someone shared <strong>${escapeHtml(shareTitle)}</strong> with you via <strong>${appName}</strong>.</p>
           <a href="${shareUrl}"
              style="display: inline-block; margin: 16px 0; padding: 12px 24px; background: #3B82F6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">
             Access the share

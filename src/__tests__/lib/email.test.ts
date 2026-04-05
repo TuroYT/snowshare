@@ -301,5 +301,41 @@ describe("email utility", () => {
 
       expect(result).toBe(true);
     });
+
+    it("should return false when recipients array is empty", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      const result = await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", []);
+
+      expect(result).toBe(false);
+      expect(mockSendMail).not.toHaveBeenCalled();
+    });
+
+    it("should send to each recipient individually", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", [
+        "alice@example.com",
+        "bob@example.com",
+      ]);
+
+      expect(mockSendMail).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ to: "alice@example.com" })
+      );
+      expect(mockSendMail).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ to: "bob@example.com" })
+      );
+    });
+
+    it("should propagate errors thrown by nodemailer sendMail", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+      mockSendMail.mockRejectedValue(new Error("SMTP connection refused"));
+
+      await expect(
+        sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"])
+      ).rejects.toThrow("SMTP connection refused");
+    });
   });
 });
