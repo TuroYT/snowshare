@@ -14,7 +14,7 @@ RUN apk add --no-cache openssl dcron
 
 # Copy source and install dependencies as root (needed for npm ci)
 COPY . .
-RUN npm ci
+RUN npm install
 
 RUN npx prisma generate
 
