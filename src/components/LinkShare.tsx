@@ -27,6 +27,7 @@ const LinkShare: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [successSlug, setSuccessSlug] = useState<string>("");
   const [urlError, setUrlError] = useState<string | null>(null);
   const [allowAnonLinkShare, setAllowAnonLinkShare] = useState<boolean | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
@@ -124,8 +125,10 @@ const LinkShare: React.FC = () => {
         );
       } else {
         const linkShare = data?.share?.linkShare;
-        if (linkShare?.slug) setSuccess(`${window.location.origin}/l/${linkShare.slug}`);
-        else if (linkShare?.id) setSuccess(`${window.location.origin}/l/${linkShare.id}`);
+        if (linkShare?.slug) {
+          setSuccess(`${window.location.origin}/l/${linkShare.slug}`);
+          setSuccessSlug(linkShare.slug);
+        } else if (linkShare?.id) setSuccess(`${window.location.origin}/l/${linkShare.id}`);
         else setSuccess(t("linkshare.created", "Partage créé"));
         setUrl("");
         setSlug("");
@@ -279,7 +282,7 @@ const LinkShare: React.FC = () => {
 
       {error && <ShareError error={error} translationPrefix="linkshare" />}
 
-      {success && <ShareSuccess url={success} translationPrefix="linkshare" />}
+      {success && <ShareSuccess url={success} slug={successSlug} translationPrefix="linkshare" />}
     </div>
   );
 };

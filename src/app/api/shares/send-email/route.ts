@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   }
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const prefix = share.shareType === "FILE" ? "f" : share.shareType === "PASTE" ? "p" : "l";
+  const prefix = share.type === "FILE" ? "f" : share.type === "PASTE" ? "p" : "l";
   const shareUrl = `${baseUrl}/${prefix}/${slug}`;
 
   await sendShareEmail(shareUrl, slug, recipients);

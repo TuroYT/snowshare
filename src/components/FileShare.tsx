@@ -42,6 +42,7 @@ const FileShare: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [successSlug, setSuccessSlug] = useState<string>("");
   const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [maxFileSizeAnon, setMaxFileSizeAnon] = useState<number>(MAX_FILE_SIZE_ANON);
@@ -383,6 +384,7 @@ const FileShare: React.FC = () => {
           onSuccess: () => {
             if (shareSlug) {
               setSuccess(`${window.location.origin}/f/${shareSlug}`);
+              setSuccessSlug(shareSlug);
             } else {
               setSuccess(t("fileshare.success_title", "File shared successfully!"));
             }
@@ -419,6 +421,7 @@ const FileShare: React.FC = () => {
           if (index >= files.length) {
             if (shareSlug) {
               setSuccess(`${window.location.origin}/f/${shareSlug}`);
+              setSuccessSlug(shareSlug);
             }
             setFiles([]);
             setSlug("");
@@ -804,7 +807,7 @@ const FileShare: React.FC = () => {
 
       {error && <ShareError error={error} translationPrefix="fileshare" />}
 
-      {success && <ShareSuccess url={success} translationPrefix="fileshare" />}
+      {success && <ShareSuccess url={success} slug={successSlug} translationPrefix="fileshare" />}
     </div>
   );
 };

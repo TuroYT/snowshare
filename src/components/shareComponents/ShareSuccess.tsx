@@ -6,14 +6,30 @@ import { QRCodeSVG } from "qrcode.react";
 
 interface ShareSuccessProps {
   url: string;
+  slug: string;
   /** i18n prefix for translation keys (e.g. "linkshare", "fileshare") */
   translationPrefix: string;
 }
 
-const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, translationPrefix }) => {
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function parseRecipients(raw: string): string[] {
+  return raw
+    .split(/[\s,;]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefix }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
+
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [recipientsRaw, setRecipientsRaw] = useState("");
+  const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [emailError, setEmailError] = useState("");
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -41,6 +57,59 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, translationPrefix }) =
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
+  useEffect(() => {
+    async function checkFeatures() {
+      try {
+        const [settingsRes, sessionRes] = await Promise.all([
+          fetch("/api/settings"),
+          fetch("/api/auth/session"),
+        ]);
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          setEmailEnabled(!!data.settings?.emailEnabled);
+        }
+        if (sessionRes.ok) {
+          const session = await sessionRes.json();
+          setIsAuthenticated(!!session?.user?.id);
+        }
+      } catch {
+        // silently ignore — email section simply won't show
+      }
+    }
+    checkFeatures();
+  }, []);
+
+  const handleSendEmail = async () => {
+    setEmailError("");
+    const recipients = parseRecipients(recipientsRaw);
+    const invalid = recipients.length === 0 || recipients.some((r) => !EMAIL_REGEX.test(r));
+    if (invalid) {
+      setEmailError(
+        t("share_email.error_invalid", "Please enter at least one valid email address.")
+      );
+      return;
+    }
+
+    setEmailStatus("sending");
+    try {
+      const res = await fetch("/api/shares/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, recipients }),
+      });
+      if (res.ok) {
+        setEmailStatus("success");
+        setRecipientsRaw("");
+      } else {
+        setEmailStatus("error");
+        setEmailError(t("share_email.error_send", "Failed to send email. Please try again."));
+      }
+    } catch {
+      setEmailStatus("error");
+      setEmailError(t("share_email.error_send", "Failed to send email. Please try again."));
+    }
+  };
 
   return (
     <div role="status" className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4">
@@ -111,6 +180,91 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, translationPrefix }) =
               </button>
             </div>
           </div>
+
+          {/* Email sending section — only shown when SMTP is enabled and user is logged in */}
+          {emailEnabled && isAuthenticated && (
+            <div className="mt-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3">
+              <p className="text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("share_email.section_title", "Send by email")}
+              </p>
+              <label htmlFor="share-email-recipients" className="sr-only">
+                {t("share_email.recipients_label", "Recipients (comma-separated)")}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="share-email-recipients"
+                  type="text"
+                  value={recipientsRaw}
+                  onChange={(e) => {
+                    setRecipientsRaw(e.target.value);
+                    if (emailStatus !== "idle") setEmailStatus("idle");
+                    setEmailError("");
+                  }}
+                  placeholder={t(
+                    "share_email.recipients_placeholder",
+                    "alice@example.com, bob@example.com"
+                  )}
+                  className="flex-1 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
+                  disabled={emailStatus === "sending"}
+                />
+                <button
+                  onClick={handleSendEmail}
+                  disabled={emailStatus === "sending" || !recipientsRaw.trim()}
+                  className="px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  {emailStatus === "sending" ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      {t("share_email.sending", "Sending...")}
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      {t("share_email.send_button", "Send")}
+                    </>
+                  )}
+                </button>
+              </div>
+              {emailError && <p className="mt-2 text-xs text-red-400">{emailError}</p>}
+              {emailStatus === "success" && (
+                <p className="mt-2 text-xs text-green-400">
+                  {t("share_email.success", "Email sent successfully!")}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="mt-4 flex justify-center">
             <div className="flex flex-col items-center bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
               <p className="text-sm text-[var(--foreground)] mb-2 text-center">
