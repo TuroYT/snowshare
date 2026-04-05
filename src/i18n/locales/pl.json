@@ -711,7 +711,10 @@
       "invalid_expiration_date": "Nieprawidłowa data wygaśnięcia",
       "captcha_required": "Proszę wypełnić wyzwanie CAPTCHA",
       "captcha_invalid": "Weryfikacja CAPTCHA nie powiodła się. Spróbuj ponownie.",
-      "email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem"
+      "email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem",
+      "recipients_required": "Wymagany jest co najmniej jeden odbiorca",
+      "email_not_configured": "Wysyłanie e-maili nie jest skonfigurowane",
+      "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później."
     },
     "file_protected": "Chroniony plik"
   },

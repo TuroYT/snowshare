@@ -707,7 +707,10 @@
       "invalid_expiration_date": "Ungültiges Ablaufdatum",
       "captcha_required": "Bitte lösen Sie die CAPTCHA-Herausforderung",
       "captcha_invalid": "CAPTCHA-Verifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
-      "email_not_verified": "Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden"
+      "email_not_verified": "Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden",
+      "recipients_required": "Mindestens ein Empfänger ist erforderlich",
+      "email_not_configured": "E-Mail-Versand ist nicht konfiguriert",
+      "email_send_failed": "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
     },
     "file_protected": "Geschützte Datei"
   },

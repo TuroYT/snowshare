@@ -123,6 +123,11 @@ export enum ErrorCode {
 
   // Email verification (403)
   EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED",
+
+  // Email sending (400, 502, 503)
+  RECIPIENTS_REQUIRED = "RECIPIENTS_REQUIRED",
+  EMAIL_NOT_CONFIGURED = "EMAIL_NOT_CONFIGURED",
+  EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
 }
 
 /**
@@ -219,6 +224,11 @@ const ERROR_STATUS_MAP: Record<ErrorCode, number> = {
   // 413 errors (Payload Too Large)
   [ErrorCode.FILE_TOO_LARGE]: 413,
   [ErrorCode.FILE_TYPE_NOT_ALLOWED]: 415,
+
+  // Email sending errors
+  [ErrorCode.RECIPIENTS_REQUIRED]: 400,
+  [ErrorCode.EMAIL_NOT_CONFIGURED]: 503,
+  [ErrorCode.EMAIL_SEND_FAILED]: 502,
 };
 
 /**

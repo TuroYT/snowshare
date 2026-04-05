@@ -9,7 +9,7 @@ jest.mock("next-auth/next", () => ({
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     share: {
-      findUnique: jest.fn(),
+      findFirst: jest.fn(),
     },
   },
 }));
@@ -30,7 +30,7 @@ import { sendShareEmail, isEmailEnabled } from "@/lib/email";
 import { NextRequest } from "next/server";
 
 const mockGetServerSession = getServerSession as jest.Mock;
-const mockFindUnique = prisma.share.findUnique as jest.Mock;
+const mockFindFirst = prisma.share.findFirst as jest.Mock;
 const mockSendShareEmail = sendShareEmail as jest.Mock;
 const mockIsEmailEnabled = isEmailEnabled as jest.Mock;
 
@@ -51,7 +51,7 @@ describe("POST /api/shares/send-email", () => {
     mockIsEmailEnabled.mockResolvedValue(true);
     mockSendShareEmail.mockResolvedValue(true);
     mockGetServerSession.mockResolvedValue(authenticatedSession);
-    mockFindUnique.mockResolvedValue(existingShare);
+    mockFindFirst.mockResolvedValue(existingShare);
   });
 
   it("should return 401 when user is not authenticated", async () => {
@@ -95,7 +95,7 @@ describe("POST /api/shares/send-email", () => {
   });
 
   it("should return 404 when the share does not exist", async () => {
-    mockFindUnique.mockResolvedValue(null);
+    mockFindFirst.mockResolvedValue(null);
 
     const res = await POST(makeRequest({ slug: "abc123", recipients: ["alice@example.com"] }));
 

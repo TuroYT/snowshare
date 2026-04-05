@@ -3,40 +3,39 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendShareEmail, isEmailEnabled } from "@/lib/email";
+import { apiError, ErrorCode } from "@/lib/api-errors";
 import { isValidEmail } from "@/lib/constants";
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
   const emailEnabled = await isEmailEnabled();
   if (!emailEnabled) {
-    return NextResponse.json({ error: "Email sending is not configured" }, { status: 503 });
+    return apiError(request, ErrorCode.EMAIL_NOT_CONFIGURED);
   }
 
   let body: { slug?: unknown; recipients?: unknown };
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return apiError(request, ErrorCode.INVALID_JSON);
   }
   const { slug, recipients } = body;
 
   if (!slug || typeof slug !== "string") {
-    return NextResponse.json({ error: "slug is required" }, { status: 400 });
+    return apiError(request, ErrorCode.MISSING_DATA);
   }
 
   if (!Array.isArray(recipients) || recipients.length === 0) {
-    return NextResponse.json({ error: "At least one recipient is required" }, { status: 400 });
+    return apiError(request, ErrorCode.RECIPIENTS_REQUIRED);
   }
 
   const invalidEmail = recipients.find((r: unknown) => typeof r !== "string" || !isValidEmail(r));
   if (invalidEmail !== undefined) {
-    return NextResponse.json(
-      { error: "One or more recipient email addresses are invalid" },
-      { status: 400 }
-    );
+    return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
   }
 
   const share = await prisma.share.findFirst({
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
     },
   });
   if (!share) {
-    return NextResponse.json({ error: "Share not found" }, { status: 404 });
+    return apiError(request, ErrorCode.SHARE_NOT_FOUND);
   }
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
   try {
     await sendShareEmail(shareUrl, slug, recipients);
   } catch {
-    return NextResponse.json({ error: "Failed to send email" }, { status: 502 });
+    return apiError(request, ErrorCode.EMAIL_SEND_FAILED);
   }
 
   return NextResponse.json({ message: "Email sent successfully" });

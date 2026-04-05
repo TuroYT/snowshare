@@ -189,8 +189,8 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
             </div>
           </div>
 
-          {/* Email sending section — only shown when SMTP is enabled and user is logged in */}
-          {emailEnabled && isAuthenticated && (
+          {/* Email sending section — only shown when SMTP is enabled, user is logged in, and slug is available */}
+          {emailEnabled && isAuthenticated && !!slug && (
             <div className="mt-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3">
               <p className="text-sm font-medium text-[var(--foreground)] mb-2">
                 {t("share_email.section_title", "Send by email")}

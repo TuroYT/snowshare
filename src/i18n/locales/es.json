@@ -707,7 +707,10 @@
       "invalid_expiration_date": "Fecha de expiración inválida",
       "captcha_required": "Por favor completa el desafío CAPTCHA",
       "captcha_invalid": "La verificación CAPTCHA falló. Por favor inténtalo de nuevo.",
-      "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión"
+      "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión",
+      "recipients_required": "Se requiere al menos un destinatario",
+      "email_not_configured": "El envío de correos no está configurado",
+      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde."
     },
     "file_protected": "Archivo protegido"
   },
