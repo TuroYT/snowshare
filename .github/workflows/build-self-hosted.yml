@@ -10,35 +10,31 @@ permissions:
   contents: read
 
 jobs:
-  lint-and-test:
-    name: Lint & Test
+  lint:
+    name: Lint
     runs-on: [self-hosted]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+      - run: npm ci
+      - run: npm run lint
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test -- --ci --coverage --coverageReporters=text-summary
+  test:
+    name: Test
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm test -- --ci --coverage --coverageReporters=text-summary
 
   build:
     name: Docker Build
     runs-on: [self-hosted]
-    needs: lint-and-test
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Docker build
-        run: docker compose build
+      - uses: actions/checkout@v4
+      - run: docker compose build
