@@ -58,7 +58,11 @@ export async function POST(request: NextRequest) {
   const prefix = share.type === "FILE" ? "f" : share.type === "PASTE" ? "p" : "l";
   const shareUrl = `${baseUrl}/${prefix}/${slug}`;
 
-  await sendShareEmail(shareUrl, slug, recipients);
+  try {
+    await sendShareEmail(shareUrl, slug, recipients);
+  } catch {
+    return NextResponse.json({ error: "Failed to send email" }, { status: 502 });
+  }
 
   return NextResponse.json({ message: "Email sent successfully" });
 }
