@@ -714,5 +714,15 @@
       "email_not_verified": "Please verify your email address before signing in"
     },
     "file_protected": "Protected file"
+  },
+  "share_email": {
+    "section_title": "Send by email",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Recipients (comma-separated)",
+    "send_button": "Send",
+    "sending": "Sending...",
+    "success": "Email sent successfully!",
+    "error_invalid": "Please enter at least one valid email address.",
+    "error_send": "Failed to send email. Please try again."
   }
 }

@@ -710,5 +710,15 @@
       "email_not_verified": "Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden"
     },
     "file_protected": "Geschützte Datei"
+  },
+  "share_email": {
+    "section_title": "Per E-Mail senden",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Empfänger (kommagetrennt)",
+    "send_button": "Senden",
+    "sending": "Wird gesendet...",
+    "success": "E-Mail erfolgreich gesendet!",
+    "error_invalid": "Bitte geben Sie mindestens eine gültige E-Mail-Adresse ein.",
+    "error_send": "Senden fehlgeschlagen. Bitte versuchen Sie es erneut."
   }
 }

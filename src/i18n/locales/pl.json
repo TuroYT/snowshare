@@ -714,5 +714,15 @@
       "email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem"
     },
     "file_protected": "Chroniony plik"
+  },
+  "share_email": {
+    "section_title": "Wyślij e-mailem",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Odbiorcy (oddzieleni przecinkami)",
+    "send_button": "Wyślij",
+    "sending": "Wysyłanie...",
+    "success": "E-mail wysłany pomyślnie!",
+    "error_invalid": "Wprowadź co najmniej jeden prawidłowy adres e-mail.",
+    "error_send": "Wysyłanie nie powiodło się. Spróbuj ponownie."
   }
 }

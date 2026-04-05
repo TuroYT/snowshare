@@ -717,5 +717,15 @@
       "email_not_verified": "Verifieer uw e-mailadres voordat u inlogt"
     },
     "file_protected": "Beveiligd bestand"
+  },
+  "share_email": {
+    "section_title": "Verstuur per e-mail",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Ontvangers (kommagescheiden)",
+    "send_button": "Versturen",
+    "sending": "Verzenden...",
+    "success": "E-mail succesvol verzonden!",
+    "error_invalid": "Voer ten minste één geldig e-mailadres in.",
+    "error_send": "Verzenden mislukt. Probeer het opnieuw."
   }
 }

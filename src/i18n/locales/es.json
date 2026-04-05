@@ -710,5 +710,15 @@
       "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión"
     },
     "file_protected": "Archivo protegido"
+  },
+  "share_email": {
+    "section_title": "Enviar por correo",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Destinatarios (separados por comas)",
+    "send_button": "Enviar",
+    "sending": "Enviando...",
+    "success": "¡Correo enviado con éxito!",
+    "error_invalid": "Por favor, introduce al menos una dirección de correo válida.",
+    "error_send": "Error al enviar el correo. Por favor, inténtelo de nuevo."
   }
 }

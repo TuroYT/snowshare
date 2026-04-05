@@ -714,5 +714,15 @@
       "email_not_verified": "Veuillez vérifier votre adresse email avant de vous connecter"
     },
     "file_protected": "Fichier protégé"
+  },
+  "share_email": {
+    "section_title": "Envoyer par email",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Destinataires (séparés par des virgules)",
+    "send_button": "Envoyer",
+    "sending": "Envoi en cours...",
+    "success": "Email envoyé avec succès !",
+    "error_invalid": "Veuillez saisir au moins une adresse email valide.",
+    "error_send": "Échec de l'envoi. Veuillez réessayer."
   }
 }
