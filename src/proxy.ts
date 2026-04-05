@@ -24,11 +24,12 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://stats.sheephost.fr https://www.google.com https://www.gstatic.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
-      "connect-src 'self'",
+      "frame-src https://challenges.cloudflare.com https://www.google.com",
+      "connect-src 'self' https://challenges.cloudflare.com https://stats.sheephost.fr",
       "frame-ancestors 'none'",
     ].join("; ")
   );

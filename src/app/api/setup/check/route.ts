@@ -27,6 +27,11 @@ export async function GET(request: NextRequest) {
         textColor: true,
         textMuted: true,
         borderColor: true,
+        captchaEnabled: true,
+        captchaProvider: true,
+        captchaSiteKey: true,
+        emailVerificationRequired: true,
+        smtpEnabled: true,
       },
     });
 
@@ -106,6 +111,11 @@ export async function GET(request: NextRequest) {
       allowSignup,
       disableCredentialsLogin: settings?.disableCredentialsLogin ?? false,
       onlySSOMode: settings ? settings.disableCredentialsLogin : false,
+      captchaEnabled: settings?.captchaEnabled ?? false,
+      captchaProvider: settings?.captchaProvider ?? null,
+      captchaSiteKey: settings?.captchaSiteKey ?? null,
+      emailVerificationRequired:
+        (settings?.emailVerificationRequired ?? false) && (settings?.smtpEnabled ?? false),
     });
   } catch (error) {
     console.error("Error checking setup status:", error);
