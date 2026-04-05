@@ -70,3 +70,48 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 
   return true;
 }
+
+export async function sendShareEmail(
+  shareUrl: string,
+  shareTitle: string,
+  recipients: string[]
+): Promise<boolean> {
+  const config = await getSmtpConfig();
+  if (!config) return false;
+
+  const appName = config.appName || "SnowShare";
+  const fromAddress = config.smtpFrom || config.smtpUser || `noreply@snowshare`;
+
+  const transporter = nodemailer.createTransport({
+    host: config.smtpHost!,
+    port: config.smtpPort ?? 587,
+    secure: config.smtpSecure,
+    auth:
+      config.smtpUser && config.smtpPassword
+        ? { user: config.smtpUser, pass: config.smtpPassword }
+        : undefined,
+  });
+
+  for (const recipient of recipients) {
+    await transporter.sendMail({
+      from: `"${appName}" <${fromAddress}>`,
+      to: recipient,
+      subject: `Someone shared "${shareTitle}" with you – ${appName}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #111827;">You received a share</h2>
+          <p style="color: #374151;">Someone shared <strong>${shareTitle}</strong> with you via <strong>${appName}</strong>.</p>
+          <a href="${shareUrl}"
+             style="display: inline-block; margin: 16px 0; padding: 12px 24px; background: #3B82F6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            Access the share
+          </a>
+          <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 24px 0;" />
+          <p style="color: #9CA3AF; font-size: 12px;">Or copy this URL: ${shareUrl}</p>
+        </div>
+      `,
+      text: `Someone shared "${shareTitle}" with you via ${appName}:\n\n${shareUrl}`,
+    });
+  }
+
+  return true;
+}

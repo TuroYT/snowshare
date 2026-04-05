@@ -21,7 +21,7 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { sendVerificationEmail, isEmailEnabled } from "@/lib/email";
+import { sendVerificationEmail, isEmailEnabled, sendShareEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 const mockSettingsFindFirst = prisma.settings.findFirst as jest.Mock;
@@ -225,6 +225,81 @@ describe("email utility", () => {
       await sendVerificationEmail("user@example.com", "tok");
 
       expect(mockCreateTransport).toHaveBeenCalledWith(expect.objectContaining({ port: 587 }));
+    });
+  });
+
+  // ─── sendShareEmail ────────────────────────────────────────────────────────────
+
+  describe("sendShareEmail", () => {
+    it("should return false when SMTP is not configured", async () => {
+      mockSettingsFindFirst.mockResolvedValue({ ...smtpSettings, smtpEnabled: false });
+
+      const result = await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", [
+        "alice@example.com",
+      ]);
+
+      expect(result).toBe(false);
+      expect(mockSendMail).not.toHaveBeenCalled();
+    });
+
+    it("should send one email per recipient", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", [
+        "alice@example.com",
+        "bob@example.com",
+      ]);
+
+      expect(mockSendMail).toHaveBeenCalledTimes(2);
+    });
+
+    it("should include the share URL in the email body", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      const callArgs = mockSendMail.mock.calls[0][0];
+      expect(callArgs.html).toContain("https://app.example.com/f/abc");
+      expect(callArgs.text).toContain("https://app.example.com/f/abc");
+    });
+
+    it("should include the share title in the email body", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      const callArgs = mockSendMail.mock.calls[0][0];
+      expect(callArgs.html).toContain("photo.jpg");
+    });
+
+    it("should address the email to the correct recipient", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ to: "alice@example.com" })
+      );
+    });
+
+    it("should use the appName in the subject", async () => {
+      mockSettingsFindFirst.mockResolvedValue({ ...smtpSettings, appName: "MyApp" });
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ subject: expect.stringContaining("MyApp") })
+      );
+    });
+
+    it("should return true on success", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+
+      const result = await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", [
+        "alice@example.com",
+      ]);
+
+      expect(result).toBe(true);
     });
   });
 });
