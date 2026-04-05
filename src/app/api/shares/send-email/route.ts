@@ -44,7 +44,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const share = await prisma.share.findUnique({ where: { slug } });
+  const share = await prisma.share.findFirst({
+    where: {
+      slug,
+      ownerId: session.user.id,
+    },
+  });
   if (!share) {
     return NextResponse.json({ error: "Share not found" }, { status: 404 });
   }
