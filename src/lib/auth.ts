@@ -133,46 +133,64 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         if (!account) return false;
         if (account.provider === "credentials") return true;
 
-        // For OAuth providers – email is required to identify users
         if (!user.email) {
           return "/auth/signin?error=OAuthNoEmail";
         }
 
         const settings = await prisma.settings.findFirst();
 
-        // Check if user already exists
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
           include: { accounts: true },
         });
 
         if (existingUser) {
-          // Verify if the account is already linked
+          // Account already linked — allow sign in
           const accountExists = existingUser.accounts.find(
             (acc) => acc.provider === account.provider
           );
+          if (accountExists) return true;
 
-          if (accountExists) {
-            // Already linked - allow sign in
-            return true;
+          // Admin flagged this user for SSO auto-link
+          if (existingUser.ssoAutoLink) {
+            try {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  refresh_token: account.refresh_token,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state as string | null,
+                },
+              });
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { ssoAutoLink: false },
+              });
+              console.log(`✅ SSO auto-link: account linked for ${existingUser.email}`);
+              return true;
+            } catch (error) {
+              console.error(`❌ SSO auto-link error:`, error);
+              return false;
+            }
           }
 
-          // Not linked yet → check if this is an explicit linking attempt
-          // Look for a valid link token for this email and provider
+          // Explicit link token flow (existing behaviour)
           const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
-
           const linkToken = await prisma.verificationToken.findFirst({
             where: {
               identifier: linkTokenIdentifier,
-              expires: {
-                gt: new Date(),
-              },
+              expires: { gt: new Date() },
             },
           });
 
-          if (!linkToken) {
-            return false;
-          }
+          if (!linkToken) return false;
 
           try {
             await prisma.account.create({
@@ -190,8 +208,6 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
                 session_state: account.session_state as string | null,
               },
             });
-
-            // Delete the token (one-time use)
             await prisma.verificationToken.delete({
               where: {
                 identifier_token: {
@@ -200,7 +216,6 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
                 },
               },
             });
-
             console.log(`✅ Account linked successfully`);
             return true;
           } catch (error) {
@@ -209,9 +224,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           }
         }
 
-        if (settings && !settings.allowSignin) {
-          return false;
-        }
+        if (settings && !settings.allowSignin) return false;
 
         return true;
       },
