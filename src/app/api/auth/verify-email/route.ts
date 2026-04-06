@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return apiError(request, ErrorCode.TOKEN_REQUIRED);
     }
     if (!email) {
-      return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     const identifier = `email-verify:${email}`;
