@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -13,6 +13,7 @@ jobs:
   lint:
     name: Lint
     runs-on: [self-hosted]
+    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,6 +25,7 @@ jobs:
   test:
     name: Test
     runs-on: [self-hosted]
+    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,6 +37,7 @@ jobs:
   build:
     name: Docker Build
     runs-on: [self-hosted]
+    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - run: docker compose build
