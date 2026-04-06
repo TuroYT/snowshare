@@ -45,7 +45,17 @@ describe("signIn callback - SSO auto-link", () => {
     (prisma.oAuthProvider as any).findMany.mockResolvedValue([]);
   });
 
-  it("auto-links account when ssoAutoLink is true", async () => {
+  it("auto-links account and resets flag when ssoAutoLink is true", async () => {
+    const callOrder: string[] = [];
+    (prisma.account.create as jest.Mock).mockImplementation(() => {
+      callOrder.push("account.create");
+      return Promise.resolve({});
+    });
+    (prisma.user.update as jest.Mock).mockImplementation(() => {
+      callOrder.push("user.update");
+      return Promise.resolve({});
+    });
+
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: "u1",
       email: "user@example.com",
@@ -69,9 +79,15 @@ describe("signIn callback - SSO auto-link", () => {
         data: expect.objectContaining({ userId: "u1", provider: "azure-ad" }),
       })
     );
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: "u1" },
+      data: { ssoAutoLink: false },
+    });
+    expect(callOrder).toEqual(["account.create", "user.update"]);
   });
 
-  it("resets ssoAutoLink to false after auto-linking", async () => {
+  it("blocks ssoAutoLink user when allowSignin is false", async () => {
+    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: false });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: "u1",
       email: "user@example.com",
@@ -81,7 +97,7 @@ describe("signIn callback - SSO auto-link", () => {
 
     const options = await getAuthOptions();
     const signIn = options.callbacks!.signIn!;
-    await signIn({
+    const result = await signIn({
       user: mockUser,
       account: mockAccount,
       profile: undefined,
@@ -89,10 +105,8 @@ describe("signIn callback - SSO auto-link", () => {
       credentials: undefined,
     });
 
-    expect(prisma.user.update).toHaveBeenCalledWith({
-      where: { id: "u1" },
-      data: { ssoAutoLink: false },
-    });
+    expect(result).toBe(false);
+    expect(prisma.account.create).not.toHaveBeenCalled();
   });
 
   it("blocks SSO login when user exists, no ssoAutoLink, and no link token", async () => {
