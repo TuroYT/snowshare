@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
 
     const identifier = `email-verify:${email}`;
 
-    const verificationToken = await prisma.verificationToken.findFirst({
-      where: { identifier, token },
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { identifier_token: { identifier, token } },
     });
 
     if (!verificationToken) {
