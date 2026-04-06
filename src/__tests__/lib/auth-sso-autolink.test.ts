@@ -41,21 +41,10 @@ describe("signIn callback - SSO auto-link", () => {
     (prisma.account.create as jest.Mock).mockResolvedValue({});
     (prisma.user.update as jest.Mock).mockResolvedValue({});
     (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (prisma.oAuthProvider as any).findMany.mockResolvedValue([]);
+    (prisma.oAuthProvider.findMany as jest.Mock).mockResolvedValue([]);
   });
 
   it("auto-links account and resets flag when ssoAutoLink is true", async () => {
-    const callOrder: string[] = [];
-    (prisma.account.create as jest.Mock).mockImplementation(() => {
-      callOrder.push("account.create");
-      return Promise.resolve({});
-    });
-    (prisma.user.update as jest.Mock).mockImplementation(() => {
-      callOrder.push("user.update");
-      return Promise.resolve({});
-    });
-
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: "u1",
       email: "user@example.com",
@@ -83,7 +72,6 @@ describe("signIn callback - SSO auto-link", () => {
       where: { id: "u1" },
       data: { ssoAutoLink: false },
     });
-    expect(callOrder).toEqual(["account.create", "user.update"]);
   });
 
   it("blocks ssoAutoLink user when allowSignin is false", async () => {

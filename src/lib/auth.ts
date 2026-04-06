@@ -151,7 +151,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           );
           if (accountExists) return true;
 
-          // Respect allowSignin setting for new links
+          // allowSignin applies to all new link attempts, including ssoAutoLink
           if (settings && !settings.allowSignin) return false;
 
           // Admin flagged this user for SSO auto-link
@@ -176,7 +176,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
                 where: { id: existingUser.id },
                 data: { ssoAutoLink: false },
               });
-              console.log(`SSO auto-link: account linked for ${existingUser.email}`);
+              console.log(`SSO auto-link: account linked for user ${existingUser.id}`);
               return true;
             } catch (error) {
               console.error("SSO auto-link error:", error);
