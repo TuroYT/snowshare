@@ -32,7 +32,7 @@ RUN crontab scripts/crontab
 # Create a non-root user and give ownership of writable directories only
 RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
     && mkdir -p uploads .tus-temp \
-    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next node_modules/.prisma
+    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next
 
 # Default command via entrypoint (starts crond as root, then drops to snowshare)
 ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
