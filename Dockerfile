@@ -29,10 +29,10 @@ RUN chmod +x scripts/cleanup.sh scripts/entrypoint.sh
 # Setup cron job for root's crontab (crond requires root)
 RUN crontab scripts/crontab
 
-# Create a non-root user and give ownership of app files
+# Create a non-root user and give ownership of writable directories only
 RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
     && mkdir -p uploads .tus-temp \
-    && chown -R snowshare:snowshare /app
+    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next node_modules/.prisma
 
 # Default command via entrypoint (starts crond as root, then drops to snowshare)
 ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
