@@ -9,7 +9,7 @@
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     verificationToken: {
-      findFirst: jest.fn(),
+      findUnique: jest.fn(),
       delete: jest.fn(),
     },
     user: {
@@ -28,7 +28,7 @@ import { GET } from "@/app/api/auth/verify-email/route";
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
-const mockTokenFindFirst = prisma.verificationToken.findFirst as jest.Mock;
+const mockTokenFindFirst = prisma.verificationToken.findUnique as jest.Mock;
 const mockTokenDelete = prisma.verificationToken.delete as jest.Mock;
 const mockUserFindUnique = prisma.user.findUnique as jest.Mock;
 const mockUserUpdate = prisma.user.update as jest.Mock;
@@ -146,7 +146,12 @@ describe("GET /api/auth/verify-email", () => {
       await GET(req);
 
       expect(mockTokenFindFirst).toHaveBeenCalledWith({
-        where: { identifier: "email-verify:user@example.com", token: "valid-token" },
+        where: {
+          identifier_token: {
+            identifier: "email-verify:user@example.com",
+            token: "valid-token",
+          },
+        },
       });
     });
 
