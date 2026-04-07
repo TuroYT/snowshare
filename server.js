@@ -199,8 +199,11 @@ const tusServer = new TusServer({
   // Expose custom headers to client
   respectForwardedHeaders: true,
   generateUrl(req, { proto, host, path, id }) {
+    // Prefer x-forwarded-proto so URLs are correct when behind a reverse proxy
+    const forwardedProto = req.headers?.["x-forwarded-proto"];
+    const resolvedProto = (typeof forwardedProto === "string" ? forwardedProto.split(",")[0].trim() : null) || proto;
     // Return the URL without query strings to fix potential parsing issues
-    return `${proto}://${host}${path}/${id}`;
+    return `${resolvedProto}://${host}${path}/${id}`;
   },
 
   // Called when a new upload is created
