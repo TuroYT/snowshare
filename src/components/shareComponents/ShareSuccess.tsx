@@ -198,7 +198,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
               <label htmlFor="share-email-recipients" className="sr-only">
                 {t("share_email.recipients_label", "Recipients (comma-separated)")}
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   id="share-email-recipients"
                   type="text"
@@ -212,13 +212,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                     "share_email.recipients_placeholder",
                     "alice@example.com, bob@example.com"
                   )}
-                  className="flex-1 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
+                  className="flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
                   disabled={emailStatus === "sending"}
                 />
                 <button
                   onClick={handleSendEmail}
                   disabled={emailStatus === "sending" || !recipientsRaw.trim()}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   {emailStatus === "sending" ? (
                     <>

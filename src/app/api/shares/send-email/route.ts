@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     return apiError(request, ErrorCode.SHARE_NOT_FOUND);
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || `${request.nextUrl.protocol}//${request.nextUrl.host}`;
   const prefix = share.type === "FILE" ? "f" : share.type === "PASTE" ? "p" : "l";
   const shareUrl = `${baseUrl}/${prefix}/${slug}`;
 

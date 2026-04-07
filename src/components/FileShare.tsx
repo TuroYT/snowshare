@@ -777,6 +777,10 @@ const FileShare: React.FC = () => {
           neverExpires={neverExpires}
           setNeverExpires={setNeverExpires}
           translationPrefix="fileshare"
+          loginForMoreParams={{
+            maxSize: convertFromMB(maxFileSizeAuth / (1024 * 1024), useGiBForAuth),
+            unit: useGiBForAuth ? "GiB" : "MiB",
+          }}
         />
 
         <ViewLimitSettings
