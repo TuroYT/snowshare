@@ -2,14 +2,19 @@
  * @jest-environment node
  */
 
+const mockPrisma = {
+  settings: { findFirst: jest.fn() },
+  user: { findUnique: jest.fn(), update: jest.fn() },
+  account: { create: jest.fn() },
+  verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
+  oAuthProvider: { findMany: jest.fn() },
+  $transaction: jest.fn((fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
+    fn(mockPrisma)
+  ),
+};
+
 jest.mock("@/lib/prisma", () => ({
-  prisma: {
-    settings: { findFirst: jest.fn() },
-    user: { findUnique: jest.fn(), update: jest.fn() },
-    account: { create: jest.fn() },
-    verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
-    oAuthProvider: { findMany: jest.fn() },
-  },
+  prisma: mockPrisma,
 }));
 
 jest.mock("@/lib/providers", () => ({
@@ -36,12 +41,17 @@ const mockAccount = {
 describe("signIn callback - SSO auto-link", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: true });
+    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({
+      allowSignin: true,
+    });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.account.create as jest.Mock).mockResolvedValue({});
     (prisma.user.update as jest.Mock).mockResolvedValue({});
     (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.oAuthProvider.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.$transaction as jest.Mock).mockImplementation(
+      (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)
+    );
   });
 
   it("auto-links account and resets flag when ssoAutoLink is true", async () => {
@@ -63,6 +73,7 @@ describe("signIn callback - SSO auto-link", () => {
     });
 
     expect(result).toBe(true);
+    expect(prisma.$transaction).toHaveBeenCalled();
     expect(prisma.account.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ userId: "u1", provider: "azure-ad" }),
@@ -75,7 +86,9 @@ describe("signIn callback - SSO auto-link", () => {
   });
 
   it("blocks ssoAutoLink user when allowSignin is false", async () => {
-    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: false });
+    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({
+      allowSignin: false,
+    });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue({
       id: "u1",
       email: "user@example.com",
@@ -139,5 +152,78 @@ describe("signIn callback - SSO auto-link", () => {
 
     expect(result).toBe(true);
     expect(prisma.account.create).not.toHaveBeenCalled();
+  });
+
+  it("handles race condition: P2002 unique constraint, account already linked — allows sign-in and resets flag", async () => {
+    (prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce({
+        id: "u1",
+        email: "user@example.com",
+        ssoAutoLink: true,
+        accounts: [],
+      })
+      .mockResolvedValueOnce({
+        id: "u1",
+        email: "user@example.com",
+        ssoAutoLink: true,
+        accounts: [
+          { provider: "azure-ad", providerAccountId: "aad-123" },
+        ],
+      });
+
+    const p2002Error = Object.assign(new Error("Unique constraint failed"), {
+      code: "P2002",
+    });
+    (prisma.$transaction as jest.Mock).mockRejectedValue(p2002Error);
+
+    const options = await getAuthOptions();
+    const signIn = options.callbacks!.signIn!;
+    const result = await signIn({
+      user: mockUser,
+      account: mockAccount,
+      profile: undefined,
+      email: undefined,
+      credentials: undefined,
+    });
+
+    expect(result).toBe(true);
+    // Flag should be reset since concurrent request left it true
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: "u1" },
+      data: { ssoAutoLink: false },
+    });
+  });
+
+  it("handles race condition: P2002 unique constraint, account not linked — returns false", async () => {
+    (prisma.user.findUnique as jest.Mock)
+      .mockResolvedValueOnce({
+        id: "u1",
+        email: "user@example.com",
+        ssoAutoLink: true,
+        accounts: [],
+      })
+      .mockResolvedValueOnce({
+        id: "u1",
+        email: "user@example.com",
+        ssoAutoLink: true,
+        accounts: [], // account still not linked (different provider)
+      });
+
+    const p2002Error = Object.assign(new Error("Unique constraint failed"), {
+      code: "P2002",
+    });
+    (prisma.$transaction as jest.Mock).mockRejectedValue(p2002Error);
+
+    const options = await getAuthOptions();
+    const signIn = options.callbacks!.signIn!;
+    const result = await signIn({
+      user: mockUser,
+      account: mockAccount,
+      profile: undefined,
+      email: undefined,
+      credentials: undefined,
+    });
+
+    expect(result).toBe(false);
   });
 });

@@ -157,28 +157,57 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           // Admin flagged this user for SSO auto-link
           if (existingUser.ssoAutoLink) {
             try {
-              await prisma.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  refresh_token: account.refresh_token,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state as string | null,
-                },
-              });
-              await prisma.user.update({
-                where: { id: existingUser.id },
-                data: { ssoAutoLink: false },
+              await prisma.$transaction(async (tx) => {
+                await tx.account.create({
+                  data: {
+                    userId: existingUser.id,
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    refresh_token: account.refresh_token,
+                    access_token: account.access_token,
+                    expires_at: account.expires_at,
+                    token_type: account.token_type,
+                    scope: account.scope,
+                    id_token: account.id_token,
+                    session_state: account.session_state as string | null,
+                  },
+                });
+                await tx.user.update({
+                  where: { id: existingUser.id },
+                  data: { ssoAutoLink: false },
+                });
               });
               console.log(`SSO auto-link: account linked for user ${existingUser.id}`);
               return true;
             } catch (error) {
+              // Handle unique constraint violation — account may already be linked by a concurrent request
+              if (
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error &&
+                (error as { code: string }).code === "P2002"
+              ) {
+                const refreshedUser = await prisma.user.findUnique({
+                  where: { id: existingUser.id },
+                  include: { accounts: true },
+                });
+                const alreadyLinked = refreshedUser?.accounts.some(
+                  (acc) =>
+                    acc.provider === account.provider &&
+                    acc.providerAccountId === account.providerAccountId
+                );
+                if (alreadyLinked) {
+                  // Reset flag if it wasn't reset yet by the concurrent request
+                  if (refreshedUser?.ssoAutoLink) {
+                    await prisma.user.update({
+                      where: { id: existingUser.id },
+                      data: { ssoAutoLink: false },
+                    });
+                  }
+                  return true;
+                }
+              }
               console.error("SSO auto-link error:", error);
               return false;
             }

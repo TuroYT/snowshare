@@ -133,12 +133,19 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
     }
 
+    // Strict boolean validation — reject non-boolean truthy values (e.g. "true" as a string)
+    const ssoAutoLinkBool = ssoAutoLink === true;
+
     // Password is required unless this is an SSO-only user
-    if (!ssoAutoLink) {
+    if (!ssoAutoLinkBool) {
       if (!password || typeof password !== "string") {
         return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
       }
-      if (!isValidPassword(password)) {
+    }
+
+    // Validate password length whenever a password is provided, even for SSO users
+    if (password !== undefined && password !== null && password !== "") {
+      if (typeof password !== "string" || !isValidPassword(password)) {
         return apiError(request, ErrorCode.PASSWORD_LENGTH, {
           min: PASSWORD_MIN_LENGTH,
           max: PASSWORD_MAX_LENGTH,
@@ -159,7 +166,7 @@ export async function POST(request: NextRequest) {
         name: name || undefined,
         password: hashedPassword,
         isAdmin: makeAdmin || false,
-        ssoAutoLink: ssoAutoLink || false,
+        ssoAutoLink: ssoAutoLinkBool,
       },
       select: {
         id: true,
