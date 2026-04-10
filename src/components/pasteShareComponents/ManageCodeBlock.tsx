@@ -44,6 +44,7 @@ const ManageCodeBlock: React.FC<{
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
+  const [successSlug, setSuccessSlug] = React.useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +78,10 @@ const ManageCodeBlock: React.FC<{
         );
       } else {
         const pasteShare = data?.share?.pasteShare;
-        if (pasteShare?.slug) setSuccess(`${window.location.origin}/p/${pasteShare.slug}`);
-        else if (pasteShare?.id) setSuccess(`${window.location.origin}/p/${pasteShare.id}`);
+        if (pasteShare?.slug) {
+          setSuccess(`${window.location.origin}/p/${pasteShare.slug}`);
+          setSuccessSlug(pasteShare.slug);
+        } else if (pasteShare?.id) setSuccess(`${window.location.origin}/p/${pasteShare.id}`);
         else setSuccess(t("pasteshare_ui.created", "Partage créé"));
       }
     } catch {
@@ -92,7 +95,9 @@ const ManageCodeBlock: React.FC<{
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <ShareError error={error} translationPrefix="pasteshare_ui" />}
 
-      {success && <ShareSuccess url={success} translationPrefix="pasteshare_ui" />}
+      {success && (
+        <ShareSuccess url={success} slug={successSlug} translationPrefix="pasteshare_ui" />
+      )}
 
       {/* Language selection */}
       <div className="space-y-2">

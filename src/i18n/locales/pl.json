@@ -245,7 +245,16 @@
     "signup_disabled_title": "Rejestracja wyłączona",
     "signup_disabled_message": "Nowe rejestracje są obecnie niedozwolone.",
     "return_to_main_page": "Powrót na stronę główną",
-    "or_continue_with": "Lub kontynuuj za pomocą"
+    "or_continue_with": "Lub kontynuuj za pomocą",
+    "error_captcha_required": "Proszę wypełnić wyzwanie CAPTCHA",
+    "error_email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem",
+    "verify_email_verifying": "Weryfikacja e-maila...",
+    "verify_email_check_inbox_title": "Sprawdź swoją skrzynkę odbiorczą",
+    "verify_email_check_inbox_message": "Na Twój adres został wysłany e-mail weryfikacyjny. Kliknij link w e-mailu, aby aktywować konto.",
+    "verify_email_success_title": "E-mail zweryfikowany!",
+    "verify_email_success_message": "Twój e-mail został zweryfikowany. Możesz się teraz zalogować.",
+    "verify_email_error_title": "Weryfikacja nie powiodła się",
+    "verify_email_error_generic": "Wystąpił błąd podczas weryfikacji"
   },
   "profile": {
     "title": "Mój profil",
@@ -440,7 +449,31 @@
       "section_general": "Ogólne",
       "section_storage": "Pamięć",
       "saving": "Zapisywanie...",
-      "save": "Zapisz zmiany"
+      "save": "Zapisz zmiany",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "Włącz CAPTCHA",
+      "captcha_enabled_desc": "Wymagaj od użytkowników rozwiązania CAPTCHA podczas rejestracji",
+      "captcha_provider": "Dostawca CAPTCHA",
+      "captcha_provider_select": "Wybierz dostawcę...",
+      "captcha_site_key": "Klucz witryny",
+      "captcha_site_key_placeholder": "Twój klucz witryny",
+      "captcha_secret_key": "Klucz tajny",
+      "captcha_secret_key_placeholder": "Twój klucz tajny",
+      "captcha_secret_key_hint": "Klucz tajny jest bezpiecznie przechowywany. Pozostaw puste, aby zachować istniejącą wartość.",
+      "section_smtp": "E-mail i SMTP",
+      "smtp_enabled": "Włącz SMTP",
+      "smtp_enabled_desc": "Wysyłaj e-maile przez SMTP (wymagane do weryfikacji e-mail)",
+      "smtp_host": "Host SMTP",
+      "smtp_port": "Port SMTP",
+      "smtp_user": "Nazwa użytkownika",
+      "smtp_password": "Hasło",
+      "smtp_password_placeholder": "Pozostaw puste, aby zachować istniejące",
+      "smtp_from": "Adres nadawcy",
+      "smtp_from_hint": "Adres nadawcy widoczny w wysyłanych e-mailach",
+      "smtp_secure": "Używaj SSL/TLS",
+      "smtp_secure_hint": "Włącz dla portu 465, wyłącz dla portu 587 (STARTTLS)",
+      "email_verification_required": "Wymagaj weryfikacji e-mail",
+      "email_verification_required_desc": "Nowi użytkownicy muszą zweryfikować swój adres e-mail przed zalogowaniem"
     },
     "quotas": {
       "title": "Limity przesyłania",
@@ -675,8 +708,24 @@
       "token_expired": "Token wygasł",
       "token_invalid_or_expired": "Nieprawidłowy lub wygasły token",
       "invalid_date_format": "Nieprawidłowy format daty",
-      "invalid_expiration_date": "Nieprawidłowa data wygaśnięcia"
+      "invalid_expiration_date": "Nieprawidłowa data wygaśnięcia",
+      "captcha_required": "Proszę wypełnić wyzwanie CAPTCHA",
+      "captcha_invalid": "Weryfikacja CAPTCHA nie powiodła się. Spróbuj ponownie.",
+      "email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem",
+      "recipients_required": "Wymagany jest co najmniej jeden odbiorca",
+      "email_not_configured": "Wysyłanie e-maili nie jest skonfigurowane",
+      "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później."
     },
     "file_protected": "Chroniony plik"
+  },
+  "share_email": {
+    "section_title": "Wyślij e-mailem",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Odbiorcy (oddzieleni przecinkami)",
+    "send_button": "Wyślij",
+    "sending": "Wysyłanie...",
+    "success": "E-mail wysłany pomyślnie!",
+    "error_invalid": "Wprowadź co najmniej jeden prawidłowy adres e-mail.",
+    "error_send": "Wysyłanie nie powiodło się. Spróbuj ponownie."
   }
 }

@@ -16,6 +16,8 @@ interface ExpirationSettingsProps {
   translationPrefix: string;
   /** Extra info to append to the login hint (e.g. file size info) */
   extraLoginInfo?: string;
+  /** Extra interpolation params for the login_for_more translation key */
+  loginForMoreParams?: Record<string, unknown>;
   /** Override i18n keys for labels (defaults to translationPrefix-based keys) */
   labelOverrides?: {
     validityLabel?: string;
@@ -31,6 +33,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
   setNeverExpires,
   translationPrefix,
   extraLoginInfo,
+  loginForMoreParams,
   labelOverrides,
 }) => {
   const { t } = useTranslation();
@@ -145,7 +148,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
           {t(
             `${translationPrefix}.login_for_more`,
             "Connectez-vous pour des durées plus longues (jusqu'à {{max}} jours) ou sans expiration",
-            { max: MAX_DAYS_AUTH }
+            { max: MAX_DAYS_AUTH, ...loginForMoreParams }
           )}
           {extraLoginInfo && ` ${extraLoginInfo}`}
         </p>

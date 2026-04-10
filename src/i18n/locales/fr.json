@@ -241,7 +241,16 @@
     "signup_disabled_title": "Inscription désactivée",
     "signup_disabled_message": "Les nouvelles inscriptions ne sont actuellement pas autorisées.",
     "return_to_main_page": "Retour à la page principale",
-    "or_continue_with": "Ou continuez avec"
+    "or_continue_with": "Ou continuez avec",
+    "error_captcha_required": "Veuillez compléter le défi CAPTCHA",
+    "error_email_not_verified": "Veuillez vérifier votre adresse email avant de vous connecter",
+    "verify_email_verifying": "Vérification de votre email...",
+    "verify_email_check_inbox_title": "Vérifiez votre boîte de réception",
+    "verify_email_check_inbox_message": "Un email de vérification a été envoyé à votre adresse. Cliquez sur le lien dans l'email pour activer votre compte.",
+    "verify_email_success_title": "Email vérifié !",
+    "verify_email_success_message": "Votre email a été vérifié. Vous pouvez maintenant vous connecter.",
+    "verify_email_error_title": "Échec de la vérification",
+    "verify_email_error_generic": "Une erreur s'est produite lors de la vérification"
   },
   "profile": {
     "title": "Mon Profil",
@@ -439,7 +448,31 @@
       "section_general": "Général",
       "section_storage": "Stockage",
       "saving": "Enregistrement...",
-      "save": "Enregistrer les modifications"
+      "save": "Enregistrer les modifications",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "Activer le CAPTCHA",
+      "captcha_enabled_desc": "Obliger les utilisateurs à compléter un CAPTCHA lors de l'inscription",
+      "captcha_provider": "Fournisseur CAPTCHA",
+      "captcha_provider_select": "Sélectionner un fournisseur...",
+      "captcha_site_key": "Clé de site",
+      "captcha_site_key_placeholder": "Votre clé de site",
+      "captcha_secret_key": "Clé secrète",
+      "captcha_secret_key_placeholder": "Votre clé secrète",
+      "captcha_secret_key_hint": "La clé secrète est stockée en toute sécurité. Laissez vide pour conserver la valeur existante.",
+      "section_smtp": "Email & SMTP",
+      "smtp_enabled": "Activer le SMTP",
+      "smtp_enabled_desc": "Envoyer des emails via SMTP (requis pour la vérification d'email)",
+      "smtp_host": "Hôte SMTP",
+      "smtp_port": "Port SMTP",
+      "smtp_user": "Nom d'utilisateur",
+      "smtp_password": "Mot de passe",
+      "smtp_password_placeholder": "Laisser vide pour conserver l'existant",
+      "smtp_from": "Adresse d'expédition",
+      "smtp_from_hint": "Adresse affichée dans les emails envoyés",
+      "smtp_secure": "Utiliser SSL/TLS",
+      "smtp_secure_hint": "Activer pour le port 465, désactiver pour le port 587 (STARTTLS)",
+      "email_verification_required": "Exiger la vérification de l'email",
+      "email_verification_required_desc": "Les nouveaux utilisateurs doivent vérifier leur adresse email avant de se connecter"
     },
     "quotas": {
       "title": "Quotas d'upload",
@@ -675,8 +708,24 @@
       "token_expired": "Jeton expiré",
       "token_invalid_or_expired": "Jeton invalide ou expiré",
       "invalid_date_format": "Format de date invalide",
-      "invalid_expiration_date": "Date d'expiration invalide"
+      "invalid_expiration_date": "Date d'expiration invalide",
+      "captcha_required": "Veuillez compléter le défi CAPTCHA",
+      "captcha_invalid": "La vérification CAPTCHA a échoué. Veuillez réessayer.",
+      "email_not_verified": "Veuillez vérifier votre adresse email avant de vous connecter",
+      "recipients_required": "Au moins un destinataire est requis",
+      "email_not_configured": "L'envoi d'e-mails n'est pas configuré",
+      "email_send_failed": "Échec de l'envoi de l'e-mail. Veuillez réessayer plus tard."
     },
     "file_protected": "Fichier protégé"
+  },
+  "share_email": {
+    "section_title": "Envoyer par email",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Destinataires (séparés par des virgules)",
+    "send_button": "Envoyer",
+    "sending": "Envoi en cours...",
+    "success": "Email envoyé avec succès !",
+    "error_invalid": "Veuillez saisir au moins une adresse email valide.",
+    "error_send": "Échec de l'envoi. Veuillez réessayer."
   }
 }

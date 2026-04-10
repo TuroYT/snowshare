@@ -241,7 +241,16 @@
     "signup_disabled_title": "Sign up disabled",
     "signup_disabled_message": "New registrations are currently not allowed.",
     "return_to_main_page": "Return to main page",
-    "or_continue_with": "Or continue with"
+    "or_continue_with": "Or continue with",
+    "error_captcha_required": "Please complete the CAPTCHA challenge",
+    "error_email_not_verified": "Please verify your email address before signing in",
+    "verify_email_verifying": "Verifying your email...",
+    "verify_email_check_inbox_title": "Check your inbox",
+    "verify_email_check_inbox_message": "A verification email has been sent to your address. Please click the link in the email to activate your account.",
+    "verify_email_success_title": "Email verified!",
+    "verify_email_success_message": "Your email has been verified. You can now sign in.",
+    "verify_email_error_title": "Verification failed",
+    "verify_email_error_generic": "An error occurred during verification"
   },
   "profile": {
     "title": "My Profile",
@@ -439,7 +448,31 @@
       "section_general": "General",
       "section_storage": "Storage",
       "saving": "Saving...",
-      "save": "Save Changes"
+      "save": "Save Changes",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "Enable CAPTCHA",
+      "captcha_enabled_desc": "Require users to complete a CAPTCHA challenge when registering",
+      "captcha_provider": "CAPTCHA Provider",
+      "captcha_provider_select": "Select a provider...",
+      "captcha_site_key": "Site Key",
+      "captcha_site_key_placeholder": "Your site key",
+      "captcha_secret_key": "Secret Key",
+      "captcha_secret_key_placeholder": "Your secret key",
+      "captcha_secret_key_hint": "The secret key is stored securely. Leave blank to keep the existing value.",
+      "section_smtp": "Email & SMTP",
+      "smtp_enabled": "Enable SMTP",
+      "smtp_enabled_desc": "Send emails via SMTP (required for email verification)",
+      "smtp_host": "SMTP Host",
+      "smtp_port": "SMTP Port",
+      "smtp_user": "Username",
+      "smtp_password": "Password",
+      "smtp_password_placeholder": "Leave blank to keep existing",
+      "smtp_from": "From Address",
+      "smtp_from_hint": "Sender address shown in outgoing emails",
+      "smtp_secure": "Use SSL/TLS",
+      "smtp_secure_hint": "Enable for port 465, disable for port 587 (STARTTLS)",
+      "email_verification_required": "Require Email Verification",
+      "email_verification_required_desc": "New users must verify their email address before signing in"
     },
     "quotas": {
       "title": "Upload Quotas",
@@ -675,8 +708,24 @@
       "token_expired": "Token expired",
       "token_invalid_or_expired": "Invalid or expired token",
       "invalid_date_format": "Invalid date format",
-      "invalid_expiration_date": "Invalid expiration date"
+      "invalid_expiration_date": "Invalid expiration date",
+      "captcha_required": "Please complete the CAPTCHA challenge",
+      "captcha_invalid": "CAPTCHA verification failed. Please try again.",
+      "email_not_verified": "Please verify your email address before signing in",
+      "recipients_required": "At least one recipient is required",
+      "email_not_configured": "Email sending is not configured",
+      "email_send_failed": "Failed to send email. Please try again later."
     },
     "file_protected": "Protected file"
+  },
+  "share_email": {
+    "section_title": "Send by email",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Recipients (comma-separated)",
+    "send_button": "Send",
+    "sending": "Sending...",
+    "success": "Email sent successfully!",
+    "error_invalid": "Please enter at least one valid email address.",
+    "error_send": "Failed to send email. Please try again."
   }
 }

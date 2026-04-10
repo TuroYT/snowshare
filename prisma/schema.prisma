@@ -145,6 +145,22 @@ model Settings {
 
   // Legal
   termsOfUses  String?
+
+  // Security - CAPTCHA
+  captchaEnabled    Boolean @default(false)
+  captchaProvider   String? // "recaptcha" | "turnstile"
+  captchaSiteKey    String?
+  captchaSecretKey  String?
+
+  // Security - Email Verification (SMTP)
+  smtpEnabled               Boolean @default(false)
+  smtpHost                  String?
+  smtpPort                  Int?    @default(587)
+  smtpUser                  String?
+  smtpPassword              String?
+  smtpFrom                  String?
+  smtpSecure                Boolean @default(false)
+  emailVerificationRequired Boolean @default(false)
 }
 
 model CustomLink {
