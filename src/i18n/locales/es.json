@@ -424,7 +424,10 @@
       "password_hint": "Mínimo 6 caracteres",
       "make_admin": "Hacer Administrador",
       "create": "Crear Usuario",
-      "creating": "Creando..."
+      "creating": "Creando...",
+      "sso_auto_link": "Vinculación SSO automática",
+      "sso_auto_link_hint": "Si está activado, la cuenta se vinculará automáticamente la primera vez que el usuario inicie sesión con cualquier proveedor SSO. No se necesita contraseña.",
+      "sso_only": "Solo SSO"
     },
     "settings": {
       "title": "Configuración",
