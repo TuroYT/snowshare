@@ -133,7 +133,10 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
     }
 
-    // Strict boolean validation — reject non-boolean truthy values (e.g. "true" as a string)
+    // Explicit boolean validation — reject non-boolean values (e.g. "true" as a string) with a 400
+    if (ssoAutoLink !== undefined && typeof ssoAutoLink !== "boolean") {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
     const ssoAutoLinkBool = ssoAutoLink === true;
 
     // Password is required unless this is an SSO-only user

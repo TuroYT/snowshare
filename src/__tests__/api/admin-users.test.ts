@@ -90,9 +90,14 @@ describe("POST /api/admin/users", () => {
     expect(res.status).toBe(400);
   });
 
-  it("rejects string 'true' for ssoAutoLink — requires password", async () => {
-    // Non-boolean truthy values must not bypass the password requirement
+  it("rejects string 'true' for ssoAutoLink with 400", async () => {
+    // Non-boolean values must be explicitly rejected
     const res = await POST(makeRequest({ email: "user@test.com", ssoAutoLink: "true" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects numeric 1 for ssoAutoLink with 400", async () => {
+    const res = await POST(makeRequest({ email: "user@test.com", ssoAutoLink: 1 }));
     expect(res.status).toBe(400);
   });
 
