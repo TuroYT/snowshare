@@ -188,18 +188,20 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
                 "code" in error &&
                 (error as { code: string }).code === "P2002"
               ) {
-                const refreshedUser = await prisma.user.findUnique({
-                  where: { id: existingUser.id },
-                  include: { accounts: true },
+                const alreadyLinked = await prisma.account.findFirst({
+                  where: {
+                    userId: existingUser.id,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                  },
                 });
-                const alreadyLinked = refreshedUser?.accounts.some(
-                  (acc) =>
-                    acc.provider === account.provider &&
-                    acc.providerAccountId === account.providerAccountId
-                );
                 if (alreadyLinked) {
                   // Reset flag if it wasn't reset yet by the concurrent request
-                  if (refreshedUser?.ssoAutoLink) {
+                  const stillFlagged = await prisma.user.findUnique({
+                    where: { id: existingUser.id },
+                    select: { ssoAutoLink: true },
+                  });
+                  if (stillFlagged?.ssoAutoLink) {
                     await prisma.user.update({
                       where: { id: existingUser.id },
                       data: { ssoAutoLink: false },

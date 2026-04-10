@@ -5,7 +5,7 @@
 const mockPrisma = {
   settings: { findFirst: jest.fn() },
   user: { findUnique: jest.fn(), update: jest.fn() },
-  account: { create: jest.fn() },
+  account: { create: jest.fn(), findFirst: jest.fn() },
   verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
   oAuthProvider: { findMany: jest.fn() },
   $transaction: jest.fn((fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
@@ -46,12 +46,10 @@ describe("signIn callback - SSO auto-link", () => {
     });
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.account.create as jest.Mock).mockResolvedValue({});
+    (prisma.account.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.user.update as jest.Mock).mockResolvedValue({});
     (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.oAuthProvider.findMany as jest.Mock).mockResolvedValue([]);
-    (prisma.$transaction as jest.Mock).mockImplementation(
-      (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)
-    );
   });
 
   it("auto-links account and resets flag when ssoAutoLink is true", async () => {
@@ -157,19 +155,21 @@ describe("signIn callback - SSO auto-link", () => {
   it("handles race condition: P2002 unique constraint, account already linked — allows sign-in and resets flag", async () => {
     (prisma.user.findUnique as jest.Mock)
       .mockResolvedValueOnce({
+        // Initial lookup: user has ssoAutoLink=true, no linked account yet
         id: "u1",
         email: "user@example.com",
         ssoAutoLink: true,
         accounts: [],
       })
       .mockResolvedValueOnce({
-        id: "u1",
-        email: "user@example.com",
+        // Re-check after P2002: flag still set (concurrent request hasn't reset it)
         ssoAutoLink: true,
-        accounts: [
-          { provider: "azure-ad", providerAccountId: "aad-123" },
-        ],
       });
+    // Concurrent request already created the account link
+    (prisma.account.findFirst as jest.Mock).mockResolvedValue({
+      provider: "azure-ad",
+      providerAccountId: "aad-123",
+    });
 
     const p2002Error = Object.assign(new Error("Unique constraint failed"), {
       code: "P2002",
@@ -195,19 +195,14 @@ describe("signIn callback - SSO auto-link", () => {
   });
 
   it("handles race condition: P2002 unique constraint, account not linked — returns false", async () => {
-    (prisma.user.findUnique as jest.Mock)
-      .mockResolvedValueOnce({
-        id: "u1",
-        email: "user@example.com",
-        ssoAutoLink: true,
-        accounts: [],
-      })
-      .mockResolvedValueOnce({
-        id: "u1",
-        email: "user@example.com",
-        ssoAutoLink: true,
-        accounts: [], // account still not linked (different provider)
-      });
+    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({
+      id: "u1",
+      email: "user@example.com",
+      ssoAutoLink: true,
+      accounts: [],
+    });
+    // No matching linked account found after P2002
+    (prisma.account.findFirst as jest.Mock).mockResolvedValue(null);
 
     const p2002Error = Object.assign(new Error("Unique constraint failed"), {
       code: "P2002",
