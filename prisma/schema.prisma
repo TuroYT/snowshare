@@ -54,6 +54,21 @@ model User {
   accounts      Account[]
   sessions      Session[]
   shares        Share[]
+  apiKeys       ApiKey[]
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model VerificationToken {

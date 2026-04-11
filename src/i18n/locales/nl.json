@@ -323,7 +323,31 @@
       "error_link": "Fout bij het verbinden van account",
       "error_unlink": "Fout bij het verwijderen van account",
       "unlink_success": "Account succesvol ontkoppeld"
-    }
+    },
+    "tab_apikeys": "API-sleutels"
+  },
+  "apikeys": {
+    "title": "API-sleutels",
+    "description": "Gebruik API-sleutels om scripts en CLI-tools te authenticeren. Sleutels erven al je machtigingen.",
+    "label_name": "Sleutelnaam",
+    "placeholder_name": "bijv. Mijn back-upscript",
+    "label_expiry": "Vervaldatum (optioneel)",
+    "create_button": "Sleutel aanmaken",
+    "creating": "Aanmaken...",
+    "token_warning": "Bewaar deze sleutel — hij wordt niet meer getoond.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd!",
+    "dismiss": "Sluiten",
+    "no_keys": "Nog geen API-sleutels.",
+    "created": "Aangemaakt",
+    "last_used": "Laatst gebruikt",
+    "expires": "Verloopt",
+    "revoke": "Intrekken",
+    "confirm_revoke": "Weet je zeker dat je deze API-sleutel wilt intrekken?",
+    "error_create": "Fout bij het aanmaken van de API-sleutel",
+    "docs_title": "API-documentatie",
+    "docs_description": "Verken de interactieve API-documentatie.",
+    "docs_link": "Docs openen"
   },
   "setup": {
     "title": "Eerste installatie",

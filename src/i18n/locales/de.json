@@ -315,7 +315,31 @@
       "error_link": "Fehler beim Verknüpfen des Kontos",
       "error_unlink": "Fehler beim Trennen des Kontos",
       "unlink_success": "Konto erfolgreich getrennt"
-    }
+    },
+    "tab_apikeys": "API-Schlüssel"
+  },
+  "apikeys": {
+    "title": "API-Schlüssel",
+    "description": "Verwende API-Schlüssel zur Authentifizierung von Skripten und CLI-Tools. Schlüssel erben alle deine Berechtigungen.",
+    "label_name": "Schlüsselname",
+    "placeholder_name": "z. B. Mein Backup-Skript",
+    "label_expiry": "Ablaufdatum (optional)",
+    "create_button": "Schlüssel erstellen",
+    "creating": "Wird erstellt...",
+    "token_warning": "Speichere diesen Schlüssel – er wird nicht erneut angezeigt.",
+    "copy": "Kopieren",
+    "copied": "Kopiert!",
+    "dismiss": "Schließen",
+    "no_keys": "Noch keine API-Schlüssel.",
+    "created": "Erstellt",
+    "last_used": "Zuletzt verwendet",
+    "expires": "Läuft ab",
+    "revoke": "Widerrufen",
+    "confirm_revoke": "Möchtest du diesen API-Schlüssel wirklich widerrufen?",
+    "error_create": "Fehler beim Erstellen des API-Schlüssels",
+    "docs_title": "API-Dokumentation",
+    "docs_description": "Durchsuche die interaktive API-Dokumentation.",
+    "docs_link": "Docs öffnen"
   },
   "setup": {
     "title": "Ersteinrichtung",

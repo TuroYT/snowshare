@@ -319,7 +319,31 @@
       "error_link": "Erreur lors de la liaison du compte",
       "error_unlink": "Erreur lors de la suppression du compte",
       "unlink_success": "Compte délié avec succès"
-    }
+    },
+    "tab_apikeys": "Clés API"
+  },
+  "apikeys": {
+    "title": "Clés API",
+    "description": "Utilisez des clés API pour authentifier vos scripts et outils CLI. Les clés héritent de toutes vos permissions.",
+    "label_name": "Nom de la clé",
+    "placeholder_name": "ex : Mon script de sauvegarde",
+    "label_expiry": "Expiration (optionnel)",
+    "create_button": "Créer une clé",
+    "creating": "Création...",
+    "token_warning": "Sauvegardez cette clé — elle ne sera plus affichée.",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "dismiss": "Fermer",
+    "no_keys": "Aucune clé API pour l'instant.",
+    "created": "Créée",
+    "last_used": "Dernière utilisation",
+    "expires": "Expire",
+    "revoke": "Révoquer",
+    "confirm_revoke": "Êtes-vous sûr de vouloir révoquer cette clé API ?",
+    "error_create": "Erreur lors de la création de la clé API",
+    "docs_title": "Documentation API",
+    "docs_description": "Parcourez la documentation interactive pour explorer tous les endpoints.",
+    "docs_link": "Ouvrir les docs"
   },
   "setup": {
     "title": "Configuration initiale",

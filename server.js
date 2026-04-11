@@ -95,8 +95,37 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-// Authenticate user from HTTP request
+// Hash a string with SHA-256 (for API key lookup)
+function sha256(str) {
+  return crypto.createHash("sha256").update(str).digest("hex");
+}
+
+// Authenticate user from HTTP request (supports NextAuth JWT + API key Bearer token)
 async function authenticateFromRequest(req) {
+  // 1. Try API key Bearer token
+  const authHeader = req.headers?.authorization || "";
+  if (authHeader.startsWith("Bearer ")) {
+    const rawKey = authHeader.slice(7).trim();
+    if (rawKey.startsWith("sk_")) {
+      try {
+        const { prisma } = await import("./src/lib/prisma.js");
+        const keyHash = sha256(rawKey);
+        const apiKey = await prisma.apiKey.findUnique({
+          where: { keyHash },
+          select: { id: true, userId: true, expiresAt: true },
+        });
+        if (apiKey && (!apiKey.expiresAt || apiKey.expiresAt > new Date())) {
+          // Fire-and-forget lastUsedAt update
+          prisma.apiKey.update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+          return { userId: apiKey.userId, isAuthenticated: true };
+        }
+      } catch (error) {
+        console.error("[Auth] API key lookup error:", error.message);
+      }
+    }
+  }
+
+  // 2. NextAuth JWT session
   try {
     const cookies = parseCookies(req.headers?.cookie || "");
     const token = await getToken({
@@ -123,8 +152,8 @@ async function authenticateFromRequest(req) {
   };
 }
 
-// Generate safe filename
-function generateSafeFilename(originalName, shareId) {
+// Generate safe filename — delegates to src/lib/files.ts at runtime
+async function generateSafeFilename(originalName, shareId) {
   const ext = path.extname(originalName);
   const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9._-]/g, "_");
   return `${shareId}_${baseName}${ext}`;
@@ -476,7 +505,7 @@ const tusServer = new TusServer({
       }
 
       const tusFilePath = path.join(tusTempDir, upload.id);
-      const finalFileName = generateSafeFilename(filename, share.id);
+      const finalFileName = await generateSafeFilename(filename, share.id);
       const finalFilePath = path.join(uploadsDir, finalFileName);
 
       await rename(tusFilePath, finalFilePath);

@@ -319,7 +319,31 @@
       "error_link": "Error linking account",
       "error_unlink": "Error unlinking account",
       "unlink_success": "Account unlinked successfully"
-    }
+    },
+    "tab_apikeys": "API Keys"
+  },
+  "apikeys": {
+    "title": "API Keys",
+    "description": "Use API keys to authenticate scripting and CLI access. Keys inherit all your account permissions.",
+    "label_name": "Key name",
+    "placeholder_name": "e.g. My backup script",
+    "label_expiry": "Expiration (optional)",
+    "create_button": "Create key",
+    "creating": "Creating...",
+    "token_warning": "Save this key — it will not be shown again.",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "dismiss": "Dismiss",
+    "no_keys": "No API keys yet.",
+    "created": "Created",
+    "last_used": "Last used",
+    "expires": "Expires",
+    "revoke": "Revoke",
+    "confirm_revoke": "Are you sure you want to revoke this API key?",
+    "error_create": "Error creating API key",
+    "docs_title": "API Documentation",
+    "docs_description": "Browse the interactive API docs to explore all endpoints.",
+    "docs_link": "Open docs"
   },
   "setup": {
     "title": "Initial Setup",
