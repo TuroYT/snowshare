@@ -237,7 +237,16 @@
     "signup_disabled_title": "Registrierung deaktiviert",
     "signup_disabled_message": "Neue Registrierungen sind derzeit nicht erlaubt.",
     "return_to_main_page": "Zurück zur Hauptseite",
-    "or_continue_with": "Oder fahren Sie fort mit"
+    "or_continue_with": "Oder fahren Sie fort mit",
+    "error_captcha_required": "Bitte lösen Sie die CAPTCHA-Herausforderung",
+    "error_email_not_verified": "Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden",
+    "verify_email_verifying": "E-Mail wird verifiziert...",
+    "verify_email_check_inbox_title": "Überprüfen Sie Ihren Posteingang",
+    "verify_email_check_inbox_message": "Eine Verifizierungs-E-Mail wurde an Ihre Adresse gesendet. Klicken Sie auf den Link in der E-Mail, um Ihr Konto zu aktivieren.",
+    "verify_email_success_title": "E-Mail verifiziert!",
+    "verify_email_success_message": "Ihre E-Mail wurde verifiziert. Sie können sich jetzt anmelden.",
+    "verify_email_error_title": "Verifizierung fehlgeschlagen",
+    "verify_email_error_generic": "Bei der Verifizierung ist ein Fehler aufgetreten"
   },
   "profile": {
     "title": "Mein Profil",
@@ -415,7 +424,10 @@
       "password_hint": "Mindestens 6 Zeichen",
       "make_admin": "Zum Administrator Ernennen",
       "create": "Benutzer Erstellen",
-      "creating": "Wird erstellt..."
+      "creating": "Wird erstellt...",
+      "sso_auto_link": "Automatische SSO-Verknüpfung",
+      "sso_auto_link_hint": "Wenn aktiviert, wird das Konto beim ersten Login über einen SSO-Anbieter automatisch verknüpft. Kein Passwort erforderlich.",
+      "sso_only": "Nur SSO"
     },
     "settings": {
       "title": "Einstellungen",
@@ -435,7 +447,31 @@
       "section_general": "Allgemein",
       "section_storage": "Speicher",
       "saving": "Wird gespeichert...",
-      "save": "Änderungen Speichern"
+      "save": "Änderungen Speichern",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "CAPTCHA aktivieren",
+      "captcha_enabled_desc": "Benutzer müssen bei der Registrierung eine CAPTCHA-Herausforderung lösen",
+      "captcha_provider": "CAPTCHA-Anbieter",
+      "captcha_provider_select": "Anbieter auswählen...",
+      "captcha_site_key": "Website-Schlüssel",
+      "captcha_site_key_placeholder": "Ihr Website-Schlüssel",
+      "captcha_secret_key": "Geheimer Schlüssel",
+      "captcha_secret_key_placeholder": "Ihr geheimer Schlüssel",
+      "captcha_secret_key_hint": "Der geheime Schlüssel wird sicher gespeichert. Leer lassen, um den bestehenden Wert zu behalten.",
+      "section_smtp": "E-Mail & SMTP",
+      "smtp_enabled": "SMTP aktivieren",
+      "smtp_enabled_desc": "E-Mails über SMTP senden (erforderlich für E-Mail-Verifizierung)",
+      "smtp_host": "SMTP-Host",
+      "smtp_port": "SMTP-Port",
+      "smtp_user": "Benutzername",
+      "smtp_password": "Passwort",
+      "smtp_password_placeholder": "Leer lassen, um das bestehende zu behalten",
+      "smtp_from": "Absenderadresse",
+      "smtp_from_hint": "Absenderadresse in ausgehenden E-Mails",
+      "smtp_secure": "SSL/TLS verwenden",
+      "smtp_secure_hint": "Für Port 465 aktivieren, für Port 587 (STARTTLS) deaktivieren",
+      "email_verification_required": "E-Mail-Verifizierung erforderlich",
+      "email_verification_required_desc": "Neue Benutzer müssen ihre E-Mail-Adresse verifizieren, bevor sie sich anmelden können"
     },
     "quotas": {
       "title": "Upload-Quoten",
@@ -671,8 +707,24 @@
       "token_expired": "Token abgelaufen",
       "token_invalid_or_expired": "Ungültiger oder abgelaufener Token",
       "invalid_date_format": "Ungültiges Datumsformat",
-      "invalid_expiration_date": "Ungültiges Ablaufdatum"
+      "invalid_expiration_date": "Ungültiges Ablaufdatum",
+      "captcha_required": "Bitte lösen Sie die CAPTCHA-Herausforderung",
+      "captcha_invalid": "CAPTCHA-Verifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "email_not_verified": "Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden",
+      "recipients_required": "Mindestens ein Empfänger ist erforderlich",
+      "email_not_configured": "E-Mail-Versand ist nicht konfiguriert",
+      "email_send_failed": "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
     },
     "file_protected": "Geschützte Datei"
+  },
+  "share_email": {
+    "section_title": "Per E-Mail senden",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Empfänger (kommagetrennt)",
+    "send_button": "Senden",
+    "sending": "Wird gesendet...",
+    "success": "E-Mail erfolgreich gesendet!",
+    "error_invalid": "Bitte geben Sie mindestens eine gültige E-Mail-Adresse ein.",
+    "error_send": "Senden fehlgeschlagen. Bitte versuchen Sie es erneut."
   }
 }

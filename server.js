@@ -199,8 +199,8 @@ const tusServer = new TusServer({
   // Expose custom headers to client
   respectForwardedHeaders: true,
   generateUrl(req, { proto, host, path, id }) {
-    // Return the URL without query strings to fix potential parsing issues
-    return `${proto}://${host}${path}/${id}`;
+    // Use relative URL to avoid protocol mismatch behind reverse proxies (CSP 'self')
+    return `${path}/${id}`;
   },
 
   // Called when a new upload is created
