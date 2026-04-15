@@ -22,7 +22,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         maxViews: true,
         viewCount: true,
         isBulk: true,
-        ownerId: true,
       },
     });
 

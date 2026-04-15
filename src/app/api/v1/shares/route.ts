@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
         isBulk: true,
         urlOriginal: true,
         pastelanguage: true,
-        filePath: true,
       },
     });
 

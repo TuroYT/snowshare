@@ -52,6 +52,9 @@ export async function POST(request: NextRequest) {
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return apiError(request, ErrorCode.MISSING_DATA);
     }
+    if (name.trim().length > 64) {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
 
     const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
     if (expiresAt && Number.isNaN(expiresAt.getTime())) {
@@ -59,6 +62,11 @@ export async function POST(request: NextRequest) {
     }
     if (expiresAt && expiresAt <= new Date()) {
       return apiError(request, ErrorCode.EXPIRATION_IN_PAST);
+    }
+
+    const keyCount = await prisma.apiKey.count({ where: { userId: session.user.id } });
+    if (keyCount >= 20) {
+      return apiError(request, ErrorCode.QUOTA_EXCEEDED);
     }
 
     const { raw, hash, prefix } = generateApiKey();
