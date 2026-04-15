@@ -6,6 +6,7 @@
  */
 import EmbeddedPostgres from "embedded-postgres";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -15,6 +16,11 @@ const DB_NAME = "e2e_db";
 const DB_USER = "e2e_user";
 const DB_PASS = "e2e_password";
 const DATA_DIR = path.join(__dirname, ".pg-data");
+
+// Remove stale data directory from previous runs
+if (fs.existsSync(DATA_DIR)) {
+  fs.rmSync(DATA_DIR, { recursive: true, force: true });
+}
 
 const pg = new EmbeddedPostgres({
   databaseDir: DATA_DIR,

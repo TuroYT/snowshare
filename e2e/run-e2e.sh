@@ -41,6 +41,13 @@ while IFS= read -r line; do
     esac
 done < "$FIFO"
 rm -f "$FIFO"
+
+if [ -z "$DATABASE_URL" ]; then
+  echo "ERROR: embedded PostgreSQL failed to start, DATABASE_URL is empty"
+  kill $DB_PID 2>/dev/null || true
+  exit 1
+fi
+
 echo "Embedded PostgreSQL ready (DATABASE_URL=${DATABASE_URL})"
 
 # 3. Setup Prisma
