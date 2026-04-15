@@ -87,18 +87,105 @@
 
 ## Docker
 
-You can run the app and a PostgreSQL database locally using Docker Compose.
+### Quick start (Docker Hub)
 
-1. Copy `.env.example` to `.env` and adjust values as needed.
-2. Build and start the stack:
+The easiest way to run SnowShare — no build needed, PostgreSQL included.
+
+#### Option A — docker-compose (recommended)
+
+1. Create a `docker-compose.yml`:
+
+```yaml
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: snowshare
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: turodev/snowshare:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/snowshare
+      NEXTAUTH_URL: http://localhost:3000        # Change to your public URL
+      NEXTAUTH_SECRET: changeme-replace-with-random-secret  # Change this!
+      ALLOW_SIGNUP: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  db-data:
+  uploads:
+```
+
+2. Start the stack:
+
+```bash
+docker compose up -d
+```
+
+#### Option B — docker run
+
+Start PostgreSQL first:
+
+```bash
+docker run -d \
+  --name snowshare-db \
+  --network snowshare-net \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=snowshare \
+  -v snowshare-db:/var/lib/postgresql/data \
+  postgres:16-alpine
+```
+
+Then start SnowShare:
+
+```bash
+docker network create snowshare-net
+
+docker run -d \
+  --name snowshare \
+  --network snowshare-net \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgres://postgres:postgres@snowshare-db:5432/snowshare" \
+  -e NEXTAUTH_URL="http://localhost:3000" \
+  -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
+  -e ALLOW_SIGNUP="true" \
+  -v snowshare-uploads:/app/uploads \
+  turodev/snowshare:latest
+```
+
+---
+
+The app will be available at http://localhost:3000.
+
+> **Note:** Change `NEXTAUTH_URL` to your public domain and use a strong `NEXTAUTH_SECRET` (generate one with `openssl rand -base64 32`).
+
+Available tags: `latest`, `1.3.9`, `1.3`
+
+### Build from source
 
 ```bash
 docker compose up -d --build
 ```
-
-The app will be available at http://localhost:3000 and PostgreSQL at port 5432. Data persists in the `db-data` volume and uploaded files in the local `uploads/` folder.
-
-On startup, the app runs `prisma migrate deploy` to ensure the database schema is up to date.
 
 4. Initialize the database
 
