@@ -456,7 +456,10 @@
       "password_hint": "Minimaal 6 tekens",
       "make_admin": "Beheerder Maken",
       "create": "Gebruiker Aanmaken",
-      "creating": "Wordt aangemaakt..."
+      "creating": "Wordt aangemaakt...",
+      "sso_auto_link": "Automatisch SSO-koppelen",
+      "sso_auto_link_hint": "Indien ingeschakeld, wordt het account automatisch gekoppeld bij de eerste SSO-aanmelding. Geen wachtwoord vereist.",
+      "sso_only": "Alleen SSO"
     },
     "settings": {
       "title": "Instellingen",

@@ -452,7 +452,10 @@
       "password_hint": "Minimum 6 characters",
       "make_admin": "Make Administrator",
       "create": "Create User",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "sso_auto_link": "Allow SSO auto-link",
+      "sso_auto_link_hint": "When enabled, the user's account will be automatically linked the first time they sign in via any SSO provider. No password needed.",
+      "sso_only": "SSO only"
     },
     "settings": {
       "title": "Settings",
