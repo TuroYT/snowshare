@@ -55,7 +55,7 @@ jobs:
 
   build:
     name: Docker Build
-    needs: [lint, test]
+    needs: [lint, test, e2e]
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
