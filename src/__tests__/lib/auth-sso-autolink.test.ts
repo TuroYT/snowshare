@@ -8,9 +8,7 @@ const mockPrisma = {
   account: { create: jest.fn(), findFirst: jest.fn() },
   verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
   oAuthProvider: { findMany: jest.fn() },
-  $transaction: jest.fn((fn: (tx: typeof mockPrisma) => Promise<unknown>) =>
-    fn(mockPrisma)
-  ),
+  $transaction: jest.fn((fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
 };
 
 jest.mock("@/lib/prisma", () => ({
