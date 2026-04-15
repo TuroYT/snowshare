@@ -16,7 +16,8 @@
     "cleanup:expired": "tsx scripts/cleanup-expired-shares.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:e2e": "./e2e/run-e2e.sh"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",

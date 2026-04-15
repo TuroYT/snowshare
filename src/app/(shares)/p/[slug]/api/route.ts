@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -16,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { slug } = await params;
 
     if (!slug) {
-      return jsonResponse({ error: "Slug manquant" }, 400);
+      return apiError(request, ErrorCode.MISSING_DATA);
     }
 
     const share = await prisma.share.findUnique({
@@ -37,28 +39,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!share) {
-      return jsonResponse({ error: "Paste introuvable" }, 404);
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    // Vérifier si le partage a expiré
     if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-      return jsonResponse({ error: "Ce paste a expiré" }, 410);
+      return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
     if (share.maxViews !== null && share.viewCount >= share.maxViews) {
-      return jsonResponse({ error: "Ce paste a expiré" }, 410);
+      return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
-    // Vérifier si c'est bien un paste
     if (share.type !== "PASTE") {
-      return jsonResponse({ error: "Ce lien ne correspond pas à un paste" }, 400);
+      return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    // Si le paste est protégé par mot de passe
     if (share.password) {
+      const locale = detectLocale(request);
+      const errorMsg = translate(locale, "api.errors.password_required");
       return jsonResponse(
         {
-          error: "Ce paste est protégé par mot de passe",
+          error: errorMsg,
           requiresPassword: true,
           slug: share.slug,
           createdAt: share.createdAt,
@@ -74,7 +75,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       data: { viewCount: { increment: 1 } },
     });
 
-    // Retourner le paste public
     return jsonResponse({
       success: true,
       data: {
@@ -87,8 +87,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
   } catch (error) {
-    console.error("Erreur lors de la récupération du paste:", error);
-    return jsonResponse({ error: "Erreur serveur interne" }, 500);
+    console.error("Error fetching paste:", error);
+    return internalError(request);
   }
 }
 
@@ -100,20 +100,20 @@ export async function POST(
     const { slug } = await params;
 
     if (!slug) {
-      return jsonResponse({ error: "Slug manquant" }, 400);
+      return apiError(request, ErrorCode.MISSING_DATA);
     }
 
     let body;
     try {
       body = await request.json();
     } catch {
-      return jsonResponse({ error: "Corps JSON invalide" }, 400);
+      return apiError(request, ErrorCode.INVALID_JSON);
     }
 
     const { password } = body;
 
     if (!password || typeof password !== "string") {
-      return jsonResponse({ error: "Mot de passe manquant ou invalide" }, 400);
+      return apiError(request, ErrorCode.MISSING_DATA);
     }
 
     const share = await prisma.share.findUnique({
@@ -134,33 +134,29 @@ export async function POST(
     });
 
     if (!share) {
-      return jsonResponse({ error: "Paste introuvable" }, 404);
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    // Vérifier si le partage a expiré
     if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-      return jsonResponse({ error: "Ce paste a expiré" }, 410);
+      return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
     if (share.maxViews !== null && share.viewCount >= share.maxViews) {
-      return jsonResponse({ error: "Ce paste a expiré" }, 410);
+      return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
-    // Vérifier si c'est bien un paste
     if (share.type !== "PASTE") {
-      return jsonResponse({ error: "Ce lien ne correspond pas à un paste" }, 400);
+      return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    // Vérifier si le paste nécessite un mot de passe
     if (!share.password) {
-      return jsonResponse({ error: "Ce paste ne nécessite pas de mot de passe" }, 400);
+      return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    // Vérifier le mot de passe
     const isPasswordValid = await bcrypt.compare(password, share.password);
 
     if (!isPasswordValid) {
-      return jsonResponse({ error: "Mot de passe incorrect" }, 401);
+      return apiError(request, ErrorCode.PASSWORD_INCORRECT);
     }
 
     // Increment view count
@@ -169,7 +165,6 @@ export async function POST(
       data: { viewCount: { increment: 1 } },
     });
 
-    // Retourner le paste déprotégé
     return jsonResponse({
       success: true,
       data: {
@@ -182,7 +177,7 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Erreur lors de la vérification du mot de passe:", error);
-    return jsonResponse({ error: "Erreur serveur interne" }, 500);
+    console.error("Error verifying paste password:", error);
+    return internalError(request);
   }
 }

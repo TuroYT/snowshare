@@ -48,3 +48,7 @@ uploads/
 .vscode
 .claude
 docs/superpowers
+
+# e2e testing
+e2e/.venv
+e2e/results
