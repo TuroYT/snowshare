@@ -44,9 +44,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
       - run: npm ci
       - run: bash e2e/run-e2e.sh
       - name: Upload Robot Framework results
