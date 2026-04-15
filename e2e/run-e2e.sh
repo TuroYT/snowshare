@@ -35,6 +35,9 @@ until docker exec snowshare-e2e-db pg_isready -U e2e_user -d e2e_db >/dev/null 2
 done
 
 # 3. Setup Prisma
+echo "Generating Prisma client..."
+npx prisma generate
+
 echo "Pushing Prisma schema to temporary database..."
 export DATABASE_URL="postgresql://e2e_user:e2e_password@localhost:5433/e2e_db?schema=public"
 export NEXTAUTH_URL="http://localhost:3001"
