@@ -7,7 +7,7 @@ export default function ApiDocsPage() {
   return (
     <ApiReferenceReact
       configuration={{
-        url: "/api/v1/openapi.json",
+        spec: { url: "/api/v1/openapi.json" },
         theme: "deepSpace",
         hideModels: false,
         authentication: {
