@@ -114,7 +114,6 @@ export async function POST(request: NextRequest) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
-  // Check if user is admin
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
@@ -124,9 +123,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { email, name, password, isAdmin: makeAdmin } = await request.json();
+    const { email, name, password, isAdmin: makeAdmin, ssoAutoLink } = await request.json();
 
-    // Validate input
     if (!email || typeof email !== "string") {
       return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
     }
@@ -135,36 +133,43 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
     }
 
-    if (!password || typeof password !== "string") {
-      return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
+    // Explicit boolean validation — reject non-boolean values (e.g. "true" as a string) with a 400
+    if (ssoAutoLink !== undefined && typeof ssoAutoLink !== "boolean") {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
+    const ssoAutoLinkBool = ssoAutoLink === true;
+
+    // Password is required unless this is an SSO-only user
+    if (!ssoAutoLinkBool) {
+      if (!password || typeof password !== "string") {
+        return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
+      }
     }
 
-    if (!isValidPassword(password)) {
-      return apiError(request, ErrorCode.PASSWORD_LENGTH, {
-        min: PASSWORD_MIN_LENGTH,
-        max: PASSWORD_MAX_LENGTH,
-      });
+    // Validate password length whenever a password is provided, even for SSO users
+    if (password !== undefined && password !== null && password !== "") {
+      if (typeof password !== "string" || !isValidPassword(password)) {
+        return apiError(request, ErrorCode.PASSWORD_LENGTH, {
+          min: PASSWORD_MIN_LENGTH,
+          max: PASSWORD_MAX_LENGTH,
+        });
+      }
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = password ? await hashPassword(password) : undefined;
 
-    // Create user
     const newUser = await prisma.user.create({
       data: {
         email,
         name: name || undefined,
         password: hashedPassword,
         isAdmin: makeAdmin || false,
+        ssoAutoLink: ssoAutoLinkBool,
       },
       select: {
         id: true,
@@ -172,9 +177,7 @@ export async function POST(request: NextRequest) {
         name: true,
         isAdmin: true,
         createdAt: true,
-        _count: {
-          select: { shares: true },
-        },
+        _count: { select: { shares: true } },
       },
     });
 

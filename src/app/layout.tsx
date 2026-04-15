@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import { ThemeInitializer } from "@/components/ThemeInitializer";
@@ -8,18 +9,12 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense } from "react";
 import "@/i18n/client";
 import { getPublicSettings } from "@/lib/settings";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 
 export const revalidate = 0; // Disable caching for metadata
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistSans = GeistSans;
+const geistMono = GeistMono;
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getPublicSettings();
@@ -70,11 +65,13 @@ export default function RootLayout({
           minHeight: "100vh",
         }}
       >
-        <NextAuthProvider>
-          <Suspense fallback={<LoadingScreen />}>
-            <ThemeInitializer>{children}</ThemeInitializer>
-          </Suspense>
-        </NextAuthProvider>
+        <AppRouterCacheProvider>
+          <NextAuthProvider>
+            <Suspense fallback={<LoadingScreen />}>
+              <ThemeInitializer>{children}</ThemeInitializer>
+            </Suspense>
+          </NextAuthProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

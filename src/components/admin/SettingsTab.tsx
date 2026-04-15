@@ -21,6 +21,20 @@ interface Settings {
   useGiBForAnon: boolean;
   useGiBForAuth: boolean;
   termsOfUses: string;
+  // CAPTCHA
+  captchaEnabled: boolean;
+  captchaProvider: string | null;
+  captchaSiteKey: string | null;
+  captchaSecretKey: string | null;
+  // SMTP / Email Verification
+  smtpEnabled: boolean;
+  smtpHost: string | null;
+  smtpPort: number | null;
+  smtpUser: string | null;
+  smtpPassword: string | null;
+  smtpFrom: string | null;
+  smtpSecure: boolean;
+  emailVerificationRequired: boolean;
 }
 
 export default function SettingsTab() {
@@ -49,6 +63,18 @@ export default function SettingsTab() {
         allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
         allowAnonLinkShare: data.settings.allowAnonLinkShare ?? true,
         allowAnonPasteShare: data.settings.allowAnonPasteShare ?? true,
+        captchaEnabled: data.settings.captchaEnabled ?? false,
+        captchaProvider: data.settings.captchaProvider ?? null,
+        captchaSiteKey: data.settings.captchaSiteKey ?? null,
+        captchaSecretKey: data.settings.captchaSecretKey ?? null,
+        smtpEnabled: data.settings.smtpEnabled ?? false,
+        smtpHost: data.settings.smtpHost ?? null,
+        smtpPort: data.settings.smtpPort ?? 587,
+        smtpUser: data.settings.smtpUser ?? null,
+        smtpPassword: data.settings.smtpPassword ?? null,
+        smtpFrom: data.settings.smtpFrom ?? null,
+        smtpSecure: data.settings.smtpSecure ?? false,
+        emailVerificationRequired: data.settings.emailVerificationRequired ?? false,
       });
     } catch (err) {
       setToastMessage(t("admin.error_load_data"));
@@ -127,6 +153,18 @@ export default function SettingsTab() {
         ...settings,
         [key]: !settings[key],
       });
+    }
+  };
+
+  const handleTextChange = (key: keyof Settings, value: string | null) => {
+    if (settings) {
+      setSettings({ ...settings, [key]: value });
+    }
+  };
+
+  const handleNumberChange = (key: keyof Settings, value: number) => {
+    if (settings) {
+      setSettings({ ...settings, [key]: value });
     }
   };
 
@@ -588,6 +626,232 @@ export default function SettingsTab() {
           onChange={handleMarkdownChange}
           height={300}
         />
+      </div>
+
+      {/* CAPTCHA Settings */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--foreground)]">
+          {t("admin.settings.section_captcha")}
+        </h3>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">
+              {t("admin.settings.captcha_enabled")}
+            </label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">
+              {t("admin.settings.captcha_enabled_desc")}
+            </p>
+          </div>
+          <button
+            onClick={() => handleToggle("captchaEnabled")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.captchaEnabled ? "bg-[var(--primary)]" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.captchaEnabled ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        {settings.captchaEnabled && (
+          <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <div>
+              <label className="text-sm font-medium text-[var(--foreground)]">
+                {t("admin.settings.captcha_provider")}
+              </label>
+              <select
+                value={settings.captchaProvider ?? ""}
+                onChange={(e) => handleTextChange("captchaProvider", e.target.value || null)}
+                className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              >
+                <option value="">{t("admin.settings.captcha_provider_select")}</option>
+                <option value="recaptcha">Google reCAPTCHA v2</option>
+                <option value="turnstile">Cloudflare Turnstile</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--foreground)]">
+                {t("admin.settings.captcha_site_key")}
+              </label>
+              <input
+                type="text"
+                value={settings.captchaSiteKey ?? ""}
+                onChange={(e) => handleTextChange("captchaSiteKey", e.target.value || null)}
+                placeholder={t("admin.settings.captcha_site_key_placeholder") as string}
+                className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[var(--foreground)]">
+                {t("admin.settings.captcha_secret_key")}
+              </label>
+              <input
+                type="password"
+                value={settings.captchaSecretKey ?? ""}
+                onChange={(e) => handleTextChange("captchaSecretKey", e.target.value || null)}
+                placeholder={t("admin.settings.captcha_secret_key_placeholder") as string}
+                className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.settings.captcha_secret_key_hint")}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SMTP / Email Verification Settings */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--foreground)]">
+          {t("admin.settings.section_smtp")}
+        </h3>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">
+              {t("admin.settings.smtp_enabled")}
+            </label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">
+              {t("admin.settings.smtp_enabled_desc")}
+            </p>
+          </div>
+          <button
+            onClick={() => handleToggle("smtpEnabled")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.smtpEnabled ? "bg-[var(--primary)]" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.smtpEnabled ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        {settings.smtpEnabled && (
+          <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  {t("admin.settings.smtp_host")}
+                </label>
+                <input
+                  type="text"
+                  value={settings.smtpHost ?? ""}
+                  onChange={(e) => handleTextChange("smtpHost", e.target.value || null)}
+                  placeholder="smtp.example.com"
+                  className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  {t("admin.settings.smtp_port")}
+                </label>
+                <input
+                  type="number"
+                  value={settings.smtpPort ?? 587}
+                  onChange={(e) => handleNumberChange("smtpPort", parseInt(e.target.value) || 587)}
+                  className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  {t("admin.settings.smtp_user")}
+                </label>
+                <input
+                  type="text"
+                  value={settings.smtpUser ?? ""}
+                  onChange={(e) => handleTextChange("smtpUser", e.target.value || null)}
+                  placeholder="user@example.com"
+                  className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  {t("admin.settings.smtp_password")}
+                </label>
+                <input
+                  type="password"
+                  value={settings.smtpPassword ?? ""}
+                  onChange={(e) => handleTextChange("smtpPassword", e.target.value || null)}
+                  placeholder={t("admin.settings.smtp_password_placeholder") as string}
+                  className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-[var(--foreground)]">
+                  {t("admin.settings.smtp_from")}
+                </label>
+                <input
+                  type="text"
+                  value={settings.smtpFrom ?? ""}
+                  onChange={(e) => handleTextChange("smtpFrom", e.target.value || null)}
+                  placeholder="noreply@example.com"
+                  className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
+                <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                  {t("admin.settings.smtp_from_hint")}
+                </p>
+              </div>
+              <div className="flex items-center justify-between mt-6">
+                <div>
+                  <label className="text-sm font-medium text-[var(--foreground)]">
+                    {t("admin.settings.smtp_secure")}
+                  </label>
+                  <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                    {t("admin.settings.smtp_secure_hint")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleToggle("smtpSecure")}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                    settings.smtpSecure ? "bg-[var(--primary)]" : "bg-gray-600"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                      settings.smtpSecure ? "translate-x-7" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-[var(--border)]/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-[var(--foreground)] font-medium">
+                    {t("admin.settings.email_verification_required")}
+                  </label>
+                  <p className="text-sm text-[var(--foreground-muted)] mt-1">
+                    {t("admin.settings.email_verification_required_desc")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleToggle("emailVerificationRequired")}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                    settings.emailVerificationRequired ? "bg-[var(--primary)]" : "bg-gray-600"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                      settings.emailVerificationRequired ? "translate-x-7" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Save Button */}

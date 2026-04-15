@@ -1,40 +1,38 @@
 # Multi-stage Dockerfile for Next.js + Prisma (PostgreSQL)
 
-
-
 FROM node:24-alpine
 
-ARG DATABASE_URL
+# Use a dummy DATABASE_URL at build time so prisma generate/build work
+# without requiring a real DB connection. The real URL is provided at runtime.
+ARG DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 ENV DATABASE_URL=${DATABASE_URL}
 
 WORKDIR /app
 
-
 # Install cron and other required packages
 RUN apk add --no-cache openssl dcron
 
-
-# Copy the rest of the source
+# Copy source and install dependencies as root (needed for npm ci)
 COPY . .
-RUN npm ci
+RUN npm install
 
 RUN npx prisma generate
-
 
 # Build Next.js application
 ENV NODE_ENV=production
 ENV PORT=3000
 RUN npm run build
 
+# Make scripts executable
+RUN chmod +x scripts/cleanup.sh scripts/entrypoint.sh
 
-# Make cleanup script executable
-RUN chmod +x scripts/cleanup.sh
-
-
-# Setup cron job
+# Setup cron job for root's crontab (crond requires root)
 RUN crontab scripts/crontab
 
+# Create a non-root user and give ownership of writable directories only
+RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
+    && mkdir -p uploads .tus-temp \
+    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next
 
-
-# Default command - use custom server for streaming uploads
-CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && crond && npx tsx server.js"]
+# Default command via entrypoint (starts crond as root, then drops to snowshare)
+ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
