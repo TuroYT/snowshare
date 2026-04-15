@@ -17,33 +17,43 @@ if [ ! -d ".venv" ]; then
 
     echo "Initializing robotframework-browser (Playwright)..."
     rfbrowser init
+
+    echo "Installing Playwright system dependencies..."
+    .venv/bin/python -m playwright install-deps chromium || true
 else
     source .venv/bin/activate
 fi
 cd ..
 
 # 2. Start embedded PostgreSQL
+# Use a temp file (not a FIFO) so the node process stdout is never blocked
+# and the process stays alive after we read the ready signal.
 echo "Starting embedded PostgreSQL..."
-FIFO=$(mktemp -u)
-mkfifo "$FIFO"
-node e2e/start-db.mjs > "$FIFO" &
+DB_OUTPUT=$(mktemp)
+node e2e/start-db.mjs > "$DB_OUTPUT" 2>&1 &
 DB_PID=$!
 
-# Read DATABASE_URL from the script output, wait for ready signal
-while IFS= read -r line; do
-    case "$line" in
-        DATABASE_URL=*)
-            export "${line}"
-            ;;
-        EMBEDDED_PG_READY)
-            break
-            ;;
-    esac
-done < "$FIFO"
-rm -f "$FIFO"
+echo "Waiting for embedded PostgreSQL to be ready..."
+TIMEOUT=30
+ELAPSED=0
+until grep -q "EMBEDDED_PG_READY" "$DB_OUTPUT" 2>/dev/null; do
+  if [ $ELAPSED -ge $TIMEOUT ]; then
+    echo "ERROR: embedded PostgreSQL did not become ready within ${TIMEOUT}s"
+    cat "$DB_OUTPUT"
+    kill $DB_PID 2>/dev/null || true
+    rm -f "$DB_OUTPUT"
+    exit 1
+  fi
+  sleep 1
+  ELAPSED=$((ELAPSED + 1))
+done
+
+export DATABASE_URL
+DATABASE_URL=$(grep "^DATABASE_URL=" "$DB_OUTPUT" | tail -1 | cut -d= -f2-)
+rm -f "$DB_OUTPUT"
 
 if [ -z "$DATABASE_URL" ]; then
-  echo "ERROR: embedded PostgreSQL failed to start, DATABASE_URL is empty"
+  echo "ERROR: embedded PostgreSQL started but DATABASE_URL is empty"
   kill $DB_PID 2>/dev/null || true
   exit 1
 fi
@@ -62,6 +72,9 @@ npx prisma generate
 
 echo "Pushing Prisma schema to temporary database..."
 npx prisma db push
+
+echo "Running Prisma migrations..."
+npx prisma migrate deploy
 
 # 4. Start Next.js App
 echo "Starting Next.js application on port 3001..."
