@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user, authMethod } = await authenticateApiRequest(request);
+    const { user } = await authenticateApiRequest(request);
     const ip = getClientIp(request);
 
     const context = {
@@ -60,22 +60,26 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.INVALID_JSON);
     }
 
-    const { type, urlOriginal, paste, pastelanguage, slug, password, expiresAt, maxViews } = body as {
-      type?: string;
-      urlOriginal?: string;
-      paste?: string;
-      pastelanguage?: string;
-      slug?: string;
-      password?: string;
-      expiresAt?: string;
-      maxViews?: number;
-    };
+    const { type, urlOriginal, paste, pastelanguage, slug, password, expiresAt, maxViews } =
+      body as {
+        type?: string;
+        urlOriginal?: string;
+        paste?: string;
+        pastelanguage?: string;
+        slug?: string;
+        password?: string;
+        expiresAt?: string;
+        maxViews?: number;
+      };
 
     if (!type || (type !== "URL" && type !== "PASTE")) {
       return apiError(request, ErrorCode.SHARE_TYPE_INVALID);
     }
 
     const parsedExpiresAt = expiresAt ? new Date(expiresAt) : undefined;
+    if (parsedExpiresAt && Number.isNaN(parsedExpiresAt.getTime())) {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
 
     if (type === "URL") {
       if (!urlOriginal) return apiError(request, ErrorCode.MISSING_DATA);

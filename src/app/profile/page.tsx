@@ -41,7 +41,9 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts" | "apikeys">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts" | "apikeys">(
+    "profile"
+  );
 
   useEffect(() => {
     if (status === "unauthenticated") {

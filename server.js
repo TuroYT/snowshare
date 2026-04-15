@@ -116,7 +116,9 @@ async function authenticateFromRequest(req) {
         });
         if (apiKey && (!apiKey.expiresAt || apiKey.expiresAt > new Date())) {
           // Fire-and-forget lastUsedAt update
-          prisma.apiKey.update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+          prisma.apiKey
+            .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
+            .catch(() => {});
           return { userId: apiKey.userId, isAuthenticated: true };
         }
       } catch (error) {

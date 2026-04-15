@@ -113,7 +113,10 @@ export default function ApiKeysSection() {
           {t("apikeys.title", "API Keys")}
         </h2>
         <p className="text-sm text-[var(--muted)] mb-6">
-          {t("apikeys.description", "Use API keys to authenticate scripting and CLI access. Keys inherit all your account permissions.")}
+          {t(
+            "apikeys.description",
+            "Use API keys to authenticate scripting and CLI access. Keys inherit all your account permissions."
+          )}
         </p>
 
         {/* Create form */}
@@ -148,13 +151,13 @@ export default function ApiKeysSection() {
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             style={{ background: "var(--primary)", color: "#fff" }}
           >
-            {creating ? t("apikeys.creating", "Creating...") : t("apikeys.create_button", "Create key")}
+            {creating
+              ? t("apikeys.creating", "Creating...")
+              : t("apikeys.create_button", "Create key")}
           </button>
         </form>
 
-        {error && (
-          <p className="text-sm text-red-400 mb-4">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
 
         {/* Revealed token modal */}
         {revealedToken && (
@@ -195,12 +198,16 @@ export default function ApiKeysSection() {
                 className="flex items-center justify-between gap-4 p-3 rounded-lg bg-[var(--background)] border border-[var(--border)]"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-[var(--foreground)] truncate">{key.name}</p>
+                  <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                    {key.name}
+                  </p>
                   <p className="text-xs text-[var(--muted)] font-mono mt-0.5">{key.keyPrefix}...</p>
                   <p className="text-xs text-[var(--muted)] mt-0.5">
                     {t("apikeys.created", "Created")} {formatDate(key.createdAt)}
-                    {key.lastUsedAt && ` · ${t("apikeys.last_used", "Last used")} ${formatDate(key.lastUsedAt)}`}
-                    {key.expiresAt && ` · ${t("apikeys.expires", "Expires")} ${formatDate(key.expiresAt)}`}
+                    {key.lastUsedAt &&
+                      ` · ${t("apikeys.last_used", "Last used")} ${formatDate(key.lastUsedAt)}`}
+                    {key.expiresAt &&
+                      ` · ${t("apikeys.expires", "Expires")} ${formatDate(key.expiresAt)}`}
                   </p>
                 </div>
                 <button
@@ -222,7 +229,10 @@ export default function ApiKeysSection() {
             {t("apikeys.docs_title", "API Documentation")}
           </p>
           <p className="text-xs text-[var(--muted)]">
-            {t("apikeys.docs_description", "Browse the interactive API docs to explore all endpoints.")}
+            {t(
+              "apikeys.docs_description",
+              "Browse the interactive API docs to explore all endpoints."
+            )}
           </p>
         </div>
         <a

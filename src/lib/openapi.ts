@@ -113,25 +113,51 @@ export function buildOpenApiSpec(baseUrl: string) {
                     pastelanguage: {
                       type: "string",
                       enum: [
-                        "PLAINTEXT", "JAVASCRIPT", "TYPESCRIPT", "PYTHON", "JAVA",
-                        "PHP", "GO", "POWERSHELL", "HTML", "CSS", "SQL", "JSON", "MARKDOWN",
+                        "PLAINTEXT",
+                        "JAVASCRIPT",
+                        "TYPESCRIPT",
+                        "PYTHON",
+                        "JAVA",
+                        "PHP",
+                        "GO",
+                        "POWERSHELL",
+                        "HTML",
+                        "CSS",
+                        "SQL",
+                        "JSON",
+                        "MARKDOWN",
                       ],
                       default: "PLAINTEXT",
                     },
-                    slug: { type: "string", description: "Custom slug (3-30 alphanumeric chars, dashes, underscores)" },
+                    slug: {
+                      type: "string",
+                      description: "Custom slug (3-30 alphanumeric chars, dashes, underscores)",
+                    },
                     password: { type: "string", description: "Password protection" },
-                    expiresAt: { type: "string", format: "date-time", description: "Expiration date" },
+                    expiresAt: {
+                      type: "string",
+                      format: "date-time",
+                      description: "Expiration date",
+                    },
                     maxViews: { type: "integer", description: "Max view count before expiry" },
                   },
                 },
                 examples: {
                   urlShare: {
                     summary: "Create a URL share",
-                    value: { type: "URL", urlOriginal: "https://example.com", expiresAt: "2026-12-31T23:59:59Z" },
+                    value: {
+                      type: "URL",
+                      urlOriginal: "https://example.com",
+                      expiresAt: "2026-12-31T23:59:59Z",
+                    },
                   },
                   pasteShare: {
                     summary: "Create a paste share",
-                    value: { type: "PASTE", paste: "print('hello world')", pastelanguage: "PYTHON" },
+                    value: {
+                      type: "PASTE",
+                      paste: "print('hello world')",
+                      pastelanguage: "PYTHON",
+                    },
                   },
                 },
               },
@@ -149,7 +175,10 @@ export function buildOpenApiSpec(baseUrl: string) {
                 },
               },
             },
-            "400": { description: "Invalid request", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+            "400": {
+              description: "Invalid request",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            },
             "401": { description: "Unauthorized" },
           },
         },
@@ -160,9 +189,7 @@ export function buildOpenApiSpec(baseUrl: string) {
           summary: "Get share metadata",
           tags: ["Shares"],
           security: [],
-          parameters: [
-            { name: "slug", in: "path", required: true, schema: { type: "string" } },
-          ],
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
           responses: {
             "200": {
               description: "Share metadata",
@@ -185,9 +212,7 @@ export function buildOpenApiSpec(baseUrl: string) {
           description: "Deletes a share. Only the owner or an admin can delete a share.",
           tags: ["Shares"],
           security: [{ bearerAuth: [] }],
-          parameters: [
-            { name: "slug", in: "path", required: true, schema: { type: "string" } },
-          ],
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
           responses: {
             "204": { description: "Deleted" },
             "401": { description: "Unauthorized" },

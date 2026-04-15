@@ -54,6 +54,9 @@ export async function POST(request: NextRequest) {
     }
 
     const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
     if (expiresAt && expiresAt <= new Date()) {
       return apiError(request, ErrorCode.EXPIRATION_IN_PAST);
     }

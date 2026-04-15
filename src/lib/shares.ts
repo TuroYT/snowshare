@@ -14,7 +14,13 @@ import {
 } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
-import { hashPassword, isValidSlug, resolveAnonExpiry, generateRandomSlug, MAX_ANON_EXPIRY_DAYS } from "@/lib/security";
+import {
+  hashPassword,
+  isValidSlug,
+  resolveAnonExpiry,
+  generateRandomSlug,
+  MAX_ANON_EXPIRY_DAYS,
+} from "@/lib/security";
 import { ErrorCode } from "@/lib/api-errors";
 import { NextRequest } from "next/server";
 import type { pasteType } from "@/generated/prisma/client";
@@ -71,13 +77,24 @@ export async function createLinkShare(params: CreateLinkShareParams) {
   }
 
   // Validate expiration
-  if (expiresAt && new Date(expiresAt) <= new Date()) {
-    return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+  if (expiresAt) {
+    if (Number.isNaN(expiresAt.getTime())) {
+      return { errorCode: ErrorCode.INVALID_REQUEST };
+    }
+    if (expiresAt <= new Date()) {
+      return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+    }
   }
 
   // Password length
-  if (password && (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)) {
-    return { errorCode: ErrorCode.PASSWORD_INVALID_LENGTH, params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH } };
+  if (
+    password &&
+    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
+  ) {
+    return {
+      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
+      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
+    };
   }
 
   // Anonymous restrictions
@@ -105,7 +122,9 @@ export async function createLinkShare(params: CreateLinkShareParams) {
 
   // Generate slug if not provided
   if (!slug) {
-    slug = await generateRandomSlug(async (s) => !!(await prisma.share.findUnique({ where: { slug: s } })));
+    slug = await generateRandomSlug(
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+    );
   }
 
   const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
@@ -143,14 +162,18 @@ export interface CreatePasteShareParams {
 
 export async function createPasteShare(params: CreatePasteShareParams) {
   const { context, expiresAt, maxViews } = params;
-  let { paste, pastelanguage, slug, password } = params;
+  const { paste, pastelanguage } = params;
+  let { slug, password } = params;
 
   // Validate paste content
   if (!paste || paste.length < 1) {
     return { errorCode: ErrorCode.PASTE_CONTENT_EMPTY };
   }
   if (paste.length > MAX_PASTE_SIZE) {
-    return { errorCode: ErrorCode.FILE_TOO_LARGE, params: { maxSizeMB: Math.round(MAX_PASTE_SIZE / (1024 * 1024)) } };
+    return {
+      errorCode: ErrorCode.FILE_TOO_LARGE,
+      params: { maxSizeMB: Math.round(MAX_PASTE_SIZE / (1024 * 1024)) },
+    };
   }
 
   // Validate language
@@ -168,13 +191,24 @@ export async function createPasteShare(params: CreatePasteShareParams) {
   }
 
   // Validate expiration
-  if (expiresAt && new Date(expiresAt) <= new Date()) {
-    return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+  if (expiresAt) {
+    if (Number.isNaN(expiresAt.getTime())) {
+      return { errorCode: ErrorCode.INVALID_REQUEST };
+    }
+    if (expiresAt <= new Date()) {
+      return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+    }
   }
 
   // Password length
-  if (password && (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)) {
-    return { errorCode: ErrorCode.PASSWORD_INVALID_LENGTH, params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH } };
+  if (
+    password &&
+    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
+  ) {
+    return {
+      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
+      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
+    };
   }
 
   // Anonymous restrictions
@@ -200,7 +234,9 @@ export async function createPasteShare(params: CreatePasteShareParams) {
 
   // Generate slug
   if (!slug) {
-    slug = await generateRandomSlug(async (s) => !!(await prisma.share.findUnique({ where: { slug: s } })));
+    slug = await generateRandomSlug(
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+    );
   }
 
   const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
@@ -238,7 +274,7 @@ export interface CreateFileShareParams {
 }
 
 export async function createFileShare(params: CreateFileShareParams) {
-  const { context, expiresAt, maxViews, filePath, filename } = params;
+  const { context, expiresAt, maxViews, filePath, filename: _filename } = params;
   let { slug, password } = params;
 
   // Validate slug
@@ -251,13 +287,24 @@ export async function createFileShare(params: CreateFileShareParams) {
   }
 
   // Validate expiration
-  if (expiresAt && new Date(expiresAt) <= new Date()) {
-    return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+  if (expiresAt) {
+    if (Number.isNaN(expiresAt.getTime())) {
+      return { errorCode: ErrorCode.INVALID_REQUEST };
+    }
+    if (expiresAt <= new Date()) {
+      return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+    }
   }
 
   // Password length
-  if (password && (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)) {
-    return { errorCode: ErrorCode.PASSWORD_INVALID_LENGTH, params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH } };
+  if (
+    password &&
+    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
+  ) {
+    return {
+      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
+      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
+    };
   }
 
   // Anonymous restrictions
@@ -285,7 +332,9 @@ export async function createFileShare(params: CreateFileShareParams) {
 
   // Generate slug
   if (!slug) {
-    slug = await generateRandomSlug(async (s) => !!(await prisma.share.findUnique({ where: { slug: s } })));
+    slug = await generateRandomSlug(
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+    );
   }
 
   const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;

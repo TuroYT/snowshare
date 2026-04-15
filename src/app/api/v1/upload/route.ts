@@ -10,9 +10,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
+import { mkdir, rename, unlink } from "fs/promises";
+import { existsSync, createWriteStream } from "fs";
+import { Readable } from "stream";
 import path from "path";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 import { authenticateApiRequest } from "@/lib/api-auth";
 import { createFileShare } from "@/lib/shares";
 import { generateSafeFilename } from "@/lib/files";
@@ -49,6 +53,9 @@ export async function POST(request: NextRequest) {
     const maxViewsRaw = formData.get("maxViews") as string | null;
 
     const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : undefined;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
     const maxViews = maxViewsRaw ? parseInt(maxViewsRaw, 10) : undefined;
 
     // Check quota / size limits
@@ -68,11 +75,17 @@ export async function POST(request: NextRequest) {
       await mkdir(uploadsDir, { recursive: true });
     }
 
-    // Write file to disk with a temporary name (share ID not yet known)
+    // Write file to disk via streaming (avoids loading entire file into memory)
     const tmpName = `tmp_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
     const tmpPath = path.join(uploadsDir, tmpName);
-    const bytes = await file.arrayBuffer();
-    await writeFile(tmpPath, Buffer.from(bytes));
+    await new Promise<void>((resolve, reject) => {
+      const ws = createWriteStream(tmpPath);
+      const nodeStream = Readable.fromWeb(file.stream() as import("stream/web").ReadableStream);
+      nodeStream.pipe(ws);
+      ws.on("finish", resolve);
+      ws.on("error", reject);
+      nodeStream.on("error", reject);
+    });
 
     // Create share record with the temporary path first
     const result = await createFileShare({
@@ -86,8 +99,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (result.errorCode) {
-      // Clean up temp file on error
-      import("fs/promises").then(({ unlink }) => unlink(tmpPath).catch(() => {}));
+      unlink(tmpPath).catch(() => {});
       return apiError(request, result.errorCode as ErrorCode);
     }
 
@@ -96,14 +108,22 @@ export async function POST(request: NextRequest) {
     // Rename to canonical name: {shareId}_{originalName}
     const safeFilename = generateSafeFilename(file.name, share.id);
     const finalPath = path.join(uploadsDir, safeFilename);
-    await import("fs/promises").then(({ rename }) => rename(tmpPath, finalPath));
 
-    // Update share with final file path
+    // Rename + DB update: clean up on failure to keep FS and DB consistent
     const { prisma } = await import("@/lib/prisma");
-    await prisma.share.update({
-      where: { id: share.id },
-      data: { filePath: safeFilename },
-    });
+    try {
+      await rename(tmpPath, finalPath);
+      await prisma.share.update({
+        where: { id: share.id },
+        data: { filePath: safeFilename },
+      });
+    } catch (fsErr) {
+      // Roll back: delete share record and temp file
+      await prisma.share.delete({ where: { id: share.id } }).catch(() => {});
+      unlink(tmpPath).catch(() => {});
+      unlink(finalPath).catch(() => {});
+      throw fsErr;
+    }
 
     return NextResponse.json(
       {
