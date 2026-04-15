@@ -29,17 +29,24 @@ const pg = new EmbeddedPostgres({
   user: DB_USER,
   password: DB_PASS,
   persistent: false,
+  // embedded-postgres hardcodes --lc-messages=en_US.UTF-8 which fails on
+  // systems that don't have that locale. Override by appending C locale flags.
+  initdbFlags: ["--lc-messages=C", "--no-locale", "--encoding=UTF8"],
 });
 
 async function main() {
+  process.stderr.write(`[start-db] initialising in ${DATA_DIR}\n`);
   await pg.initialise();
+  process.stderr.write("[start-db] starting...\n");
   await pg.start();
+  process.stderr.write("[start-db] creating database...\n");
   await pg.createDatabase(DB_NAME);
 
   const url = `postgresql://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}?schema=public`;
   // Write the URL on a dedicated line so the shell can parse it
   process.stdout.write(`DATABASE_URL=${url}\n`);
   process.stdout.write("EMBEDDED_PG_READY\n");
+  process.stderr.write("[start-db] ready\n");
 
   const stop = async () => {
     await pg.stop();

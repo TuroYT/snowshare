@@ -19,7 +19,13 @@ if [ ! -d ".venv" ]; then
     rfbrowser init
 
     echo "Installing Playwright system dependencies..."
-    .venv/bin/python -m playwright install-deps chromium || true
+    # Use the playwright binary bundled with rfbrowser's node_modules
+    PLAYWRIGHT_BIN=$(find .venv -path "*/node_modules/.bin/playwright" -type f | head -1)
+    if [ -n "$PLAYWRIGHT_BIN" ]; then
+      sudo "$PLAYWRIGHT_BIN" install-deps chromium || true
+    else
+      echo "Warning: playwright binary not found, skipping install-deps"
+    fi
 else
     source .venv/bin/activate
 fi
@@ -29,8 +35,9 @@ cd ..
 # Use a temp file (not a FIFO) so the node process stdout is never blocked
 # and the process stays alive after we read the ready signal.
 echo "Starting embedded PostgreSQL..."
+rm -rf e2e/.pg-data
 DB_OUTPUT=$(mktemp)
-node e2e/start-db.mjs > "$DB_OUTPUT" 2>&1 &
+LC_ALL=C LANG=C node e2e/start-db.mjs > "$DB_OUTPUT" 2>&1 &
 DB_PID=$!
 
 echo "Waiting for embedded PostgreSQL to be ready..."
@@ -39,7 +46,9 @@ ELAPSED=0
 until grep -q "EMBEDDED_PG_READY" "$DB_OUTPUT" 2>/dev/null; do
   if [ $ELAPSED -ge $TIMEOUT ]; then
     echo "ERROR: embedded PostgreSQL did not become ready within ${TIMEOUT}s"
+    echo "--- start-db.mjs output ---"
     cat "$DB_OUTPUT"
+    echo "---------------------------"
     kill $DB_PID 2>/dev/null || true
     rm -f "$DB_OUTPUT"
     exit 1
@@ -69,9 +78,6 @@ export ALLOW_SIGNUP="true"
 
 echo "Generating Prisma client..."
 npx prisma generate
-
-echo "Pushing Prisma schema to temporary database..."
-npx prisma db push
 
 echo "Running Prisma migrations..."
 npx prisma migrate deploy
