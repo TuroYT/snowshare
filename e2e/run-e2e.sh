@@ -22,33 +22,39 @@ else
 fi
 cd ..
 
-# 2. Start PostgreSQL via Docker Compose
-echo "Starting temporary PostgreSQL database..."
-docker compose -f e2e/docker-compose.yml up -d
+# 2. Start embedded PostgreSQL
+echo "Starting embedded PostgreSQL..."
+FIFO=$(mktemp -u)
+mkfifo "$FIFO"
+node e2e/start-db.mjs > "$FIFO" &
+DB_PID=$!
 
-# Wait for DB to be healthy
-echo "Waiting for database to be ready..."
-sleep 3
-until docker exec snowshare-e2e-db pg_isready -U e2e_user -d e2e_db >/dev/null 2>&1; do
-  echo "Waiting..."
-  sleep 1
-done
+# Read DATABASE_URL from the script output, wait for ready signal
+while IFS= read -r line; do
+    case "$line" in
+        DATABASE_URL=*)
+            export "${line}"
+            ;;
+        EMBEDDED_PG_READY)
+            break
+            ;;
+    esac
+done < "$FIFO"
+rm -f "$FIFO"
+echo "Embedded PostgreSQL ready (DATABASE_URL=${DATABASE_URL})"
 
 # 3. Setup Prisma
-echo "Generating Prisma client..."
-npx prisma generate
-
-echo "Pushing Prisma schema to temporary database..."
-export DATABASE_URL="postgresql://e2e_user:e2e_password@localhost:5433/e2e_db?schema=public"
 export NEXTAUTH_URL="http://localhost:3001"
 export NEXTAUTH_SECRET="e2e-test-secret-123456"
 export PORT=3001
 export NODE_ENV="development"
 export ALLOW_SIGNUP="true"
 
-npx prisma db push
+echo "Generating Prisma client..."
+npx prisma generate
 
-# Create admin user if needed ? We can let Robot Framework register it
+echo "Pushing Prisma schema to temporary database..."
+npx prisma db push
 
 # 4. Start Next.js App
 echo "Starting Next.js application on port 3001..."
@@ -63,7 +69,7 @@ echo "Next.js is ready!"
 
 # 5. Run Robot Framework Tests
 echo "Running Robot Framework E2E tests..."
-set +e # Don't exit script immediately if tests fail
+set +e
 cd e2e
 source .venv/bin/activate
 robot -d results tests/
@@ -73,7 +79,8 @@ cd ..
 # 6. Teardown
 echo "Tearing down E2E environment..."
 kill $NEXT_PID || true
-docker compose -f e2e/docker-compose.yml down -v
+kill $DB_PID || true
+wait $DB_PID 2>/dev/null || true
 
 echo "=== Done ==="
 exit $TEST_EXIT_CODE
