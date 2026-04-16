@@ -46,6 +46,8 @@ export default function SignIn() {
           "An error occurred while signing in with this provider. Please try again."
         )
       );
+    } else if (errorParam === "EmailNotVerified") {
+      setError(t("auth.error_email_not_verified"));
     } else if (errorParam && providers && providers[errorParam]) {
       // Auto-click if error param matches a provider ID (e.g. error=github)
       signIn(errorParam, { callbackUrl: "/" });
@@ -64,7 +66,9 @@ export default function SignIn() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (result?.error === "EmailNotVerified") {
+        setError(t("auth.error_email_not_verified"));
+      } else if (result?.error) {
         setError(t("auth.error_invalid_credentials"));
       } else {
         // Vérifier si la session est créée

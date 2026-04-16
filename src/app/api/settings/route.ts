@@ -66,6 +66,7 @@ export async function GET() {
         textMuted: settings.textMuted,
         borderColor: settings.borderColor,
         fontFamily: settings.fontFamily,
+        emailEnabled: !!(settings.smtpEnabled && settings.smtpHost),
       },
     });
   } catch (error) {
