@@ -45,6 +45,8 @@ next-env.d.ts
 dev.db
 uploads/*
 uploads/
-.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .claude
 docs/superpowers
