@@ -17,17 +17,17 @@ if [ ! -d ".venv" ]; then
 
     echo "Initializing robotframework-browser (Playwright)..."
     rfbrowser init
-
-    echo "Installing Playwright system dependencies..."
-    # Use the playwright binary bundled with rfbrowser's node_modules
-    PLAYWRIGHT_BIN=$(find .venv -path "*/node_modules/.bin/playwright" -type f | head -1)
-    if [ -n "$PLAYWRIGHT_BIN" ]; then
-      sudo "$PLAYWRIGHT_BIN" install-deps chromium || true
-    else
-      echo "Warning: playwright binary not found, skipping install-deps"
-    fi
 else
     source .venv/bin/activate
+fi
+
+echo "Installing Playwright system dependencies..."
+# Use the playwright binary bundled with rfbrowser's node_modules
+PLAYWRIGHT_BIN=$(find .venv -path "*/node_modules/.bin/playwright" -type f | head -1)
+if [ -n "$PLAYWRIGHT_BIN" ]; then
+  sudo "$PLAYWRIGHT_BIN" install-deps chromium || true
+else
+  echo "Warning: playwright binary not found, skipping install-deps"
 fi
 cd ..
 
