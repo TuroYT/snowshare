@@ -18,7 +18,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "./e2e/run-e2e.sh",
-    "type-check": "tsc --noEmit",
+    "type-check": "npx prisma generate && tsc --noEmit",
     "prepare": "husky"
   },
   "dependencies": {

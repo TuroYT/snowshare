@@ -184,7 +184,9 @@ describe("getFileShare", () => {
       expect(result.errorCode).toBeUndefined();
       expect(result.isBulk).toBe(true);
       expect(result.share).toBeDefined();
-      // @ts-expect-error - share has files in bulk mode
+      if (!result.share || !("files" in result.share)) {
+        throw new Error("Expected bulk share files to be present");
+      }
       expect(result.share.files).toHaveLength(2);
     });
 
