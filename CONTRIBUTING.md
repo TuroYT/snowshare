@@ -45,45 +45,64 @@ Before you begin, ensure you have the following installed:
 
 ## Development Setup
 
-### 1. Install Dependencies
+### Quick Start (recommended)
+
+```bash
+cp .env.example .env   # Fill in DATABASE_URL, NEXTAUTH_SECRET, etc.
+make setup             # Install deps + run DB migrations
+make dev               # Start dev server at http://localhost:3000
+```
+
+Run `make help` to see all available commands.
+
+### Manual Setup
+
+#### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Environment Configuration
-
-Create a `.env` file in the root directory:
-
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/snowshare"
-
-# NextAuth
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
-
-# Auth Configuration
-ALLOW_SIGNUP=true
-```
-
-### 3. Database Setup
+#### 2. Environment Configuration
 
 ```bash
-# Run database migrations
-npx prisma migrate dev
-
-# Generate Prisma client
-npx prisma generate
+cp .env.example .env
 ```
 
-### 4. Start Development Server
+Required values in `.env`:
+
+| Variable          | Description                                   | Example                                           |
+| ----------------- | --------------------------------------------- | ------------------------------------------------- |
+| `DATABASE_URL`    | PostgreSQL connection string                  | `postgresql://user:pass@localhost:5432/snowshare` |
+| `NEXTAUTH_URL`    | Base URL of the app                           | `http://localhost:3000`                           |
+| `NEXTAUTH_SECRET` | Random secret (run `openssl rand -base64 32`) | —                                                 |
+| `ALLOW_SIGNUP`    | Allow new user registrations                  | `true`                                            |
+
+#### 3. Database Setup
 
 ```bash
-npm run dev
+npx prisma migrate dev   # Run migrations
+npx prisma generate      # Generate Prisma client
+```
+
+#### 4. Start Development Server
+
+```bash
+make dev
 ```
 
 The application will be available at `http://localhost:3000`.
+
+### Which dev command should I use?
+
+| Command                              | When to use                                                                                                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `make dev` / `npm run dev`           | **Default.** Custom server with tus protocol (resumable file uploads), IP quotas, and NextAuth JWT auth. Use this for any work involving file uploads. |
+| `make dev-next` / `npm run dev:next` | Next.js only with Turbopack. Faster hot reload, but no file upload support. Use for UI-only work.                                                      |
+
+### Git Hooks
+
+Husky runs `lint-staged` on every commit, which automatically fixes ESLint errors and formats staged files with Prettier. If a commit is blocked, fix the reported errors and try again. You can bypass hooks with `git commit --no-verify` for exceptional cases.
 
 ## Making Changes
 
