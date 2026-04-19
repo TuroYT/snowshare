@@ -23,7 +23,7 @@ import {
 } from "@/lib/security";
 import { ErrorCode } from "@/lib/api-errors";
 import { NextRequest } from "next/server";
-import type { pasteType } from "@/generated/prisma/client";
+import type { pasteType } from "@/generated/prisma";
 
 export interface ShareContext {
   /** The authenticated user's ID, or null for anonymous. */

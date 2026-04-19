@@ -1,4 +1,5 @@
 import { NextAuthOptions } from "next-auth";
+import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -147,7 +148,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         if (existingUser) {
           // Account already linked — allow sign in
           const accountExists = existingUser.accounts.find(
-            (acc) => acc.provider === account.provider
+            (acc: { provider: string }) => acc.provider === account.provider
           );
           if (accountExists) return true;
 
@@ -157,7 +158,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           // Admin flagged this user for SSO auto-link
           if (existingUser.ssoAutoLink) {
             try {
-              await prisma.$transaction(async (tx) => {
+              await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
                 await tx.account.create({
                   data: {
                     userId: existingUser.id,
