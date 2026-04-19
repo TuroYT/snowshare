@@ -28,28 +28,14 @@ else
 fi
 cd ..
 
-# 2. Start PostgreSQL via Docker Compose
-echo "Starting PostgreSQL via Docker Compose..."
-docker compose -f e2e/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
-docker compose -f e2e/docker-compose.yml up -d
-
-echo "Waiting for PostgreSQL to be healthy..."
-TIMEOUT=60
-ELAPSED=0
-until docker compose -f e2e/docker-compose.yml exec -T db-e2e pg_isready -U e2e_user -d e2e_db > /dev/null 2>&1; do
-    if [ $ELAPSED -ge $TIMEOUT ]; then
-        echo "ERROR: PostgreSQL did not become ready within ${TIMEOUT}s"
-        docker compose -f e2e/docker-compose.yml logs db-e2e
-        docker compose -f e2e/docker-compose.yml down -v
-        exit 1
-    fi
-    sleep 1
-    ELAPSED=$((ELAPSED + 1))
-done
-echo "PostgreSQL is ready!"
+# 2. Verify DATABASE_URL is set (provided by the caller / CI environment)
+if [ -z "$DATABASE_URL" ]; then
+    echo "ERROR: DATABASE_URL is not set. Start PostgreSQL and export DATABASE_URL before running this script."
+    exit 1
+fi
+echo "Using DATABASE_URL: ${DATABASE_URL}"
 
 # 3. Setup environment and Prisma
-export DATABASE_URL="postgresql://e2e_user:e2e_password@localhost:5433/e2e_db?schema=public"
 export NEXTAUTH_URL="http://localhost:3001"
 export NEXTAUTH_SECRET="e2e-test-secret-123456"
 export PORT=3001
@@ -84,7 +70,6 @@ cd ..
 echo "Tearing down E2E environment..."
 kill $NEXT_PID 2>/dev/null || true
 wait $NEXT_PID 2>/dev/null || true
-docker compose -f e2e/docker-compose.yml down -v
 
 echo "=== Done ==="
 exit $TEST_EXIT_CODE

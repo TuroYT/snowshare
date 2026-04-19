@@ -40,11 +40,18 @@ jobs:
     needs: [lint, test]
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
+    env:
+      DATABASE_URL: postgresql://e2e_user:e2e_password@localhost:5432/e2e_db?schema=public
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - name: Setup e2e database
+        run: |
+          sudo -u postgres psql -c "DROP DATABASE IF EXISTS e2e_db;"
+          sudo -u postgres psql -c "CREATE DATABASE e2e_db OWNER e2e_user;"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE e2e_db TO e2e_user;"
       - run: npm ci
       - run: bash e2e/run-e2e.sh
       - name: Upload Robot Framework results
