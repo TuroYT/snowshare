@@ -19,13 +19,6 @@ else
     source .venv/bin/activate
 fi
 
-echo "Installing Playwright system dependencies..."
-PLAYWRIGHT_BIN=$(find .venv -path "*/node_modules/.bin/playwright" | head -1)
-if [ -n "$PLAYWRIGHT_BIN" ]; then
-    sudo "$PLAYWRIGHT_BIN" install-deps chromium || true
-else
-    echo "Warning: playwright binary not found, skipping install-deps"
-fi
 cd ..
 
 # 2. Verify DATABASE_URL is set (provided by the caller / CI environment)
