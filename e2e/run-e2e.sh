@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-# Change directory to the root of the project
 cd "$(dirname "$0")/.."
 
 echo "=== SnowShare E2E Test Runner ==="
@@ -14,7 +13,6 @@ if [ ! -d ".venv" ]; then
     source .venv/bin/activate
     echo "Installing dependencies (first time only)..."
     pip install -q -r requirements.txt
-
     echo "Initializing robotframework-browser (Playwright)..."
     rfbrowser init
 else
@@ -22,54 +20,36 @@ else
 fi
 
 echo "Installing Playwright system dependencies..."
-# Use the playwright binary bundled with rfbrowser's node_modules
 PLAYWRIGHT_BIN=$(find .venv -path "*/node_modules/.bin/playwright" | head -1)
 if [ -n "$PLAYWRIGHT_BIN" ]; then
-  sudo "$PLAYWRIGHT_BIN" install-deps chromium || true
+    sudo "$PLAYWRIGHT_BIN" install-deps chromium || true
 else
-  echo "Warning: playwright binary not found, skipping install-deps"
+    echo "Warning: playwright binary not found, skipping install-deps"
 fi
 cd ..
 
-# 2. Start embedded PostgreSQL
-# Use a temp file (not a FIFO) so the node process stdout is never blocked
-# and the process stays alive after we read the ready signal.
-echo "Starting embedded PostgreSQL..."
-rm -rf e2e/.pg-data
-DB_OUTPUT=$(mktemp)
-LC_ALL=C LANG=C node e2e/start-db.mjs > "$DB_OUTPUT" 2>&1 &
-DB_PID=$!
+# 2. Start PostgreSQL via Docker Compose
+echo "Starting PostgreSQL via Docker Compose..."
+docker compose -f e2e/docker-compose.yml down -v --remove-orphans 2>/dev/null || true
+docker compose -f e2e/docker-compose.yml up -d
 
-echo "Waiting for embedded PostgreSQL to be ready..."
-TIMEOUT=30
+echo "Waiting for PostgreSQL to be healthy..."
+TIMEOUT=60
 ELAPSED=0
-until grep -q "EMBEDDED_PG_READY" "$DB_OUTPUT" 2>/dev/null; do
-  if [ $ELAPSED -ge $TIMEOUT ]; then
-    echo "ERROR: embedded PostgreSQL did not become ready within ${TIMEOUT}s"
-    echo "--- start-db.mjs output ---"
-    cat "$DB_OUTPUT"
-    echo "---------------------------"
-    kill $DB_PID 2>/dev/null || true
-    rm -f "$DB_OUTPUT"
-    exit 1
-  fi
-  sleep 1
-  ELAPSED=$((ELAPSED + 1))
+until docker compose -f e2e/docker-compose.yml exec -T db-e2e pg_isready -U e2e_user -d e2e_db > /dev/null 2>&1; do
+    if [ $ELAPSED -ge $TIMEOUT ]; then
+        echo "ERROR: PostgreSQL did not become ready within ${TIMEOUT}s"
+        docker compose -f e2e/docker-compose.yml logs db-e2e
+        docker compose -f e2e/docker-compose.yml down -v
+        exit 1
+    fi
+    sleep 1
+    ELAPSED=$((ELAPSED + 1))
 done
+echo "PostgreSQL is ready!"
 
-export DATABASE_URL
-DATABASE_URL=$(grep "^DATABASE_URL=" "$DB_OUTPUT" | tail -1 | cut -d= -f2-)
-rm -f "$DB_OUTPUT"
-
-if [ -z "$DATABASE_URL" ]; then
-  echo "ERROR: embedded PostgreSQL started but DATABASE_URL is empty"
-  kill $DB_PID 2>/dev/null || true
-  exit 1
-fi
-
-echo "Embedded PostgreSQL ready (DATABASE_URL=${DATABASE_URL})"
-
-# 3. Setup Prisma
+# 3. Setup environment and Prisma
+export DATABASE_URL="postgresql://e2e_user:e2e_password@localhost:5433/e2e_db?schema=public"
 export NEXTAUTH_URL="http://localhost:3001"
 export NEXTAUTH_SECRET="e2e-test-secret-123456"
 export PORT=3001
@@ -88,9 +68,7 @@ npm run dev &
 NEXT_PID=$!
 
 echo "Waiting for Next.js to be ready on port 3001..."
-until npx wait-on http://localhost:3001; do
-  sleep 1
-done
+npx wait-on http://localhost:3001 --timeout 120000
 echo "Next.js is ready!"
 
 # 5. Run Robot Framework Tests
@@ -104,9 +82,9 @@ cd ..
 
 # 6. Teardown
 echo "Tearing down E2E environment..."
-kill $NEXT_PID || true
-kill $DB_PID || true
-wait $DB_PID 2>/dev/null || true
+kill $NEXT_PID 2>/dev/null || true
+wait $NEXT_PID 2>/dev/null || true
+docker compose -f e2e/docker-compose.yml down -v
 
 echo "=== Done ==="
 exit $TEST_EXIT_CODE
