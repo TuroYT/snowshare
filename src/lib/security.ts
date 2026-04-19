@@ -78,10 +78,10 @@ export async function generateRandomSlug(
 }
 
 /**
- * Hash an API key using SHA-256.
+ * Hash an API key using bcrypt.
  */
 export function hashApiKey(rawKey: string): string {
-  return crypto.createHash("sha256").update(rawKey).digest("hex");
+  return bcrypt.hashSync(rawKey, BCRYPT_COST);
 }
 
 /**
