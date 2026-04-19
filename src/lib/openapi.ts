@@ -221,6 +221,232 @@ export function buildOpenApiSpec(baseUrl: string) {
           },
         },
       },
+      "/api/tus": {
+        post: {
+          operationId: "tusCreateUpload",
+          summary: "Create a resumable upload (tus)",
+          description:
+            "Create a new resumable file upload using the [tus protocol](https://tus.io/).\n\n" +
+            "## How tus works\n\n" +
+            "1. **POST** `/api/tus` with `Upload-Length` and `Upload-Metadata` headers to create an upload\n" +
+            "2. Server returns `Location` header with the upload URL (e.g., `/api/tus/abc123`)\n" +
+            "3. **PATCH** the upload URL with file chunks (`Content-Type: application/offset+octet-stream`)\n" +
+            "4. **HEAD** the upload URL to check progress (`Upload-Offset` header)\n" +
+            "5. On completion, server returns `X-Share-Slug` header with the share slug\n\n" +
+            "## Metadata\n\n" +
+            "Pass metadata in the `Upload-Metadata` header as base64-encoded key-value pairs:\n\n" +
+            "```\nUpload-Metadata: filename <base64>,slug <base64>,password <base64>\n```\n\n" +
+            "| Key | Description |\n" +
+            "|-----|-------------|\n" +
+            "| `filename` | Original filename (required) |\n" +
+            "| `slug` | Custom slug (3-30 chars, alphanumeric + `-_`) |\n" +
+            "| `password` | Password protection (plain text, will be hashed) |\n" +
+            "| `expiresAt` | ISO 8601 expiration date |\n" +
+            "| `maxViews` | Max view count |\n" +
+            "| `filetype` | MIME type |\n\n" +
+            "## Bulk uploads\n\n" +
+            "For uploading multiple files as a single share:\n\n" +
+            "| Key | Description |\n" +
+            "|-----|-------------|\n" +
+            "| `isBulk` | Set to `true` for bulk uploads |\n" +
+            "| `fileIndex` | 0-based index of the file |\n" +
+            "| `totalFiles` | Total number of files |\n" +
+            "| `bulkShareId` | Share ID returned from first file (for subsequent files) |\n" +
+            "| `relativePath` | Relative path within the archive |\n\n" +
+            "## Example (curl)\n\n" +
+            "```bash\n" +
+            "# 1. Create upload\n" +
+            "LOCATION=$(curl -s -D - -X POST /api/tus \\\n" +
+            "  -H 'Authorization: Bearer sk_YOUR_API_KEY' \\\n" +
+            "  -H 'Tus-Resumable: 1.0.0' \\\n" +
+            "  -H 'Upload-Length: 12345' \\\n" +
+            "  -H 'Upload-Metadata: filename $(echo -n \"file.txt\" | base64)' \\\n" +
+            "  | grep -i location | cut -d' ' -f2 | tr -d '\\r')\n\n" +
+            "# 2. Upload content\n" +
+            'curl -X PATCH "$LOCATION" \\\n' +
+            "  -H 'Tus-Resumable: 1.0.0' \\\n" +
+            "  -H 'Upload-Offset: 0' \\\n" +
+            "  -H 'Content-Type: application/offset+octet-stream' \\\n" +
+            "  --data-binary @file.txt\n" +
+            "```",
+          tags: ["Files"],
+          security: [],
+          parameters: [
+            {
+              name: "Tus-Resumable",
+              in: "header",
+              required: true,
+              schema: { type: "string", enum: ["1.0.0"] },
+              description: "tus protocol version",
+            },
+            {
+              name: "Upload-Length",
+              in: "header",
+              required: true,
+              schema: { type: "integer" },
+              description: "Total file size in bytes",
+            },
+            {
+              name: "Upload-Metadata",
+              in: "header",
+              required: false,
+              schema: { type: "string" },
+              description:
+                "Base64-encoded metadata pairs (e.g., `filename <base64>,slug <base64>`)",
+            },
+          ],
+          responses: {
+            "201": {
+              description: "Upload created",
+              headers: {
+                Location: {
+                  description: "URL for PATCH/HEAD requests",
+                  schema: { type: "string" },
+                },
+                "Tus-Resumable": {
+                  description: "tus protocol version",
+                  schema: { type: "string" },
+                },
+              },
+            },
+            "400": { description: "Invalid slug format" },
+            "409": { description: "Slug already taken" },
+            "413": { description: "File too large" },
+            "429": { description: "IP quota exceeded" },
+          },
+        },
+        options: {
+          operationId: "tusOptions",
+          summary: "Get tus server capabilities",
+          description: "Returns supported tus extensions and version.",
+          tags: ["Files"],
+          security: [],
+          responses: {
+            "204": {
+              description: "Server capabilities",
+              headers: {
+                "Tus-Resumable": { schema: { type: "string" } },
+                "Tus-Version": { schema: { type: "string" } },
+                "Tus-Extension": { schema: { type: "string" } },
+                "Tus-Max-Size": { schema: { type: "integer" } },
+              },
+            },
+          },
+        },
+      },
+      "/api/tus/{uploadId}": {
+        head: {
+          operationId: "tusGetUploadStatus",
+          summary: "Get upload progress",
+          description: "Returns the current upload offset. Use to resume interrupted uploads.",
+          tags: ["Files"],
+          security: [],
+          parameters: [
+            { name: "uploadId", in: "path", required: true, schema: { type: "string" } },
+            {
+              name: "Tus-Resumable",
+              in: "header",
+              required: true,
+              schema: { type: "string", enum: ["1.0.0"] },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Upload status",
+              headers: {
+                "Upload-Offset": {
+                  description: "Current byte offset",
+                  schema: { type: "integer" },
+                },
+                "Upload-Length": {
+                  description: "Total file size",
+                  schema: { type: "integer" },
+                },
+              },
+            },
+            "404": { description: "Upload not found" },
+          },
+        },
+        patch: {
+          operationId: "tusPatchUpload",
+          summary: "Upload file chunk",
+          description:
+            "Send file data starting at the specified offset. On completion, response includes `X-Share-Slug` header.",
+          tags: ["Files"],
+          security: [],
+          parameters: [
+            { name: "uploadId", in: "path", required: true, schema: { type: "string" } },
+            {
+              name: "Tus-Resumable",
+              in: "header",
+              required: true,
+              schema: { type: "string", enum: ["1.0.0"] },
+            },
+            {
+              name: "Upload-Offset",
+              in: "header",
+              required: true,
+              schema: { type: "integer" },
+              description: "Byte offset to resume from (0 for new uploads)",
+            },
+            {
+              name: "Content-Type",
+              in: "header",
+              required: true,
+              schema: { type: "string", enum: ["application/offset+octet-stream"] },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/offset+octet-stream": {
+                schema: { type: "string", format: "binary" },
+              },
+            },
+          },
+          responses: {
+            "204": {
+              description: "Chunk uploaded (or upload complete)",
+              headers: {
+                "Upload-Offset": {
+                  description: "New byte offset after this chunk",
+                  schema: { type: "integer" },
+                },
+                "X-Share-Slug": {
+                  description: "Share slug (only on completion)",
+                  schema: { type: "string" },
+                },
+                "X-Share-Id": {
+                  description: "Share ID (only on completion)",
+                  schema: { type: "string" },
+                },
+              },
+            },
+            "404": { description: "Upload not found" },
+            "409": { description: "Offset mismatch" },
+          },
+        },
+        delete: {
+          operationId: "tusDeleteUpload",
+          summary: "Cancel an upload",
+          description: "Terminates an in-progress upload and cleans up temporary files.",
+          tags: ["Files"],
+          security: [],
+          parameters: [
+            { name: "uploadId", in: "path", required: true, schema: { type: "string" } },
+            {
+              name: "Tus-Resumable",
+              in: "header",
+              required: true,
+              schema: { type: "string", enum: ["1.0.0"] },
+            },
+          ],
+          responses: {
+            "204": { description: "Upload cancelled" },
+            "404": { description: "Upload not found" },
+          },
+        },
+      },
       "/api/v1/upload": {
         post: {
           operationId: "uploadFile",
@@ -278,7 +504,11 @@ export function buildOpenApiSpec(baseUrl: string) {
     },
     tags: [
       { name: "Shares", description: "Link and paste share management" },
-      { name: "Files", description: "File upload and management" },
+      {
+        name: "Files",
+        description:
+          "File upload and management. Supports both multipart form uploads (`/api/v1/upload`) and resumable tus protocol uploads (`/api/tus`) for large files.",
+      },
     ],
   };
 }
