@@ -21,6 +21,7 @@ jobs:
           node-version: "20"
       - run: npm ci
       - run: npm run lint
+      - run: npm run type-check
 
   test:
     name: Test
@@ -36,6 +37,7 @@ jobs:
 
   build:
     name: Docker Build
+    needs: [lint, test]
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:

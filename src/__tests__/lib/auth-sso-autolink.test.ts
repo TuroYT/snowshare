@@ -2,13 +2,22 @@
  * @jest-environment node
  */
 
-const mockPrisma = {
+type MockPrisma = {
+  settings: { findFirst: jest.Mock };
+  user: { findUnique: jest.Mock; update: jest.Mock };
+  account: { create: jest.Mock; findFirst: jest.Mock };
+  verificationToken: { findFirst: jest.Mock; delete: jest.Mock };
+  oAuthProvider: { findMany: jest.Mock };
+  $transaction: jest.Mock;
+};
+
+const mockPrisma: MockPrisma = {
   settings: { findFirst: jest.fn() },
   user: { findUnique: jest.fn(), update: jest.fn() },
   account: { create: jest.fn(), findFirst: jest.fn() },
   verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
   oAuthProvider: { findMany: jest.fn() },
-  $transaction: jest.fn((fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma)),
+  $transaction: jest.fn((fn: (tx: MockPrisma) => Promise<unknown>) => fn(mockPrisma)),
 };
 
 jest.mock("@/lib/prisma", () => ({
@@ -25,15 +34,15 @@ import { getAuthOptions } from "@/lib/auth";
 const mockUser = { email: "user@example.com", id: "u1", name: "Test" };
 const mockAccount = {
   provider: "azure-ad",
-  type: "oauth",
+  type: "oauth" as const,
   providerAccountId: "aad-123",
-  refresh_token: null,
+  refresh_token: undefined,
   access_token: "tok",
-  expires_at: null,
+  expires_at: undefined,
   token_type: "Bearer",
   scope: "openid",
-  id_token: null,
-  session_state: null,
+  id_token: undefined,
+  session_state: undefined,
 };
 
 describe("signIn callback - SSO auto-link", () => {
