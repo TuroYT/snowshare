@@ -323,7 +323,31 @@
       "error_link": "Błąd połączenia konta",
       "error_unlink": "Błąd usuwania konta",
       "unlink_success": "Konto rozłączone pomyślnie"
-    }
+    },
+    "tab_apikeys": "Klucze API"
+  },
+  "apikeys": {
+    "title": "Klucze API",
+    "description": "Używaj kluczy API do uwierzytelniania skryptów i narzędzi CLI. Klucze dziedziczą wszystkie Twoje uprawnienia.",
+    "label_name": "Nazwa klucza",
+    "placeholder_name": "np. Mój skrypt kopii zapasowej",
+    "label_expiry": "Data wygaśnięcia (opcjonalnie)",
+    "create_button": "Utwórz klucz",
+    "creating": "Tworzenie...",
+    "token_warning": "Zapisz ten klucz — nie zostanie ponownie wyświetlony.",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano!",
+    "dismiss": "Zamknij",
+    "no_keys": "Brak kluczy API.",
+    "created": "Utworzono",
+    "last_used": "Ostatnio użyty",
+    "expires": "Wygasa",
+    "revoke": "Unieważnij",
+    "confirm_revoke": "Czy na pewno chcesz unieważnić ten klucz API?",
+    "error_create": "Błąd podczas tworzenia klucza API",
+    "docs_title": "Dokumentacja API",
+    "docs_description": "Przeglądaj interaktywną dokumentację API.",
+    "docs_link": "Otwórz dokumentację"
   },
   "setup": {
     "title": "Konfiguracja początkowa",

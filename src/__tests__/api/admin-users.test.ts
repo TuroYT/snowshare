@@ -102,7 +102,9 @@ describe("POST /api/admin/users", () => {
   });
 
   it("rejects weak password even when ssoAutoLink is true", async () => {
-    const res = await POST(makeRequest({ email: "sso@test.com", ssoAutoLink: true, password: "abc" }));
+    const res = await POST(
+      makeRequest({ email: "sso@test.com", ssoAutoLink: true, password: "abc" })
+    );
     expect(res.status).toBe(400);
   });
 });

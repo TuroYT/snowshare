@@ -8,6 +8,7 @@ import ProfileInfo from "@/components/profile/ProfileInfo";
 import SharesList from "@/components/profile/SharesList";
 import ProfileStats from "@/components/profile/ProfileStats";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
+import ApiKeysSection from "@/components/ApiKeysSection";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 
@@ -40,7 +41,9 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts" | "apikeys">(
+    "profile"
+  );
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -239,6 +242,27 @@ const ProfilePage = () => {
             </svg>
             {t("profile.tab_accounts")}
           </button>
+          <button
+            onClick={() => setActiveTab("apikeys")}
+            className={`modern-tab ${
+              activeTab === "apikeys" ? "modern-tab-active" : "modern-tab-inactive"
+            }`}
+          >
+            <svg
+              className="w-4 h-4 inline-block mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+              />
+            </svg>
+            {t("profile.tab_apikeys", "API Keys")}
+          </button>
         </div>
 
         {/* Content */}
@@ -257,6 +281,8 @@ const ProfilePage = () => {
           )}
 
           {activeTab === "accounts" && <ConnectedAccounts />}
+
+          {activeTab === "apikeys" && <ApiKeysSection />}
         </div>
       </main>
 

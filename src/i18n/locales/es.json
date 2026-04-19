@@ -315,7 +315,31 @@
       "error_link": "Error al vincular la cuenta",
       "error_unlink": "Error al desvincular la cuenta",
       "unlink_success": "Cuenta desvinculada con éxito"
-    }
+    },
+    "tab_apikeys": "Claves API"
+  },
+  "apikeys": {
+    "title": "Claves API",
+    "description": "Usa claves API para autenticar scripts y herramientas CLI. Las claves heredan todos tus permisos.",
+    "label_name": "Nombre de la clave",
+    "placeholder_name": "ej. Mi script de copia de seguridad",
+    "label_expiry": "Vencimiento (opcional)",
+    "create_button": "Crear clave",
+    "creating": "Creando...",
+    "token_warning": "Guarda esta clave — no se mostrará de nuevo.",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "dismiss": "Cerrar",
+    "no_keys": "Aún no hay claves API.",
+    "created": "Creada",
+    "last_used": "Último uso",
+    "expires": "Vence",
+    "revoke": "Revocar",
+    "confirm_revoke": "¿Estás seguro de que quieres revocar esta clave API?",
+    "error_create": "Error al crear la clave API",
+    "docs_title": "Documentación API",
+    "docs_description": "Explora la documentación interactiva de la API.",
+    "docs_link": "Abrir docs"
   },
   "setup": {
     "title": "Configuración Inicial",

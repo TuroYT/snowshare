@@ -18,6 +18,8 @@ import {
   MAX_ANON_EXPIRY_DAYS,
   getMaxAnonExpiry,
   resolveAnonExpiry,
+  hashApiKey,
+  generateApiKey,
 } from "@/lib/security";
 import bcrypt from "bcryptjs";
 
@@ -211,5 +213,45 @@ describe("resolveAnonExpiry", () => {
       expect(result.error).toBeDefined();
       expect(result.date).toBeUndefined();
     });
+  });
+});
+
+describe("hashApiKey", () => {
+  it("returns a 64-character hex string (SHA-256)", () => {
+    const hash = hashApiKey("sk_abc123");
+    expect(hash).toHaveLength(64);
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("is deterministic — same input produces same hash", () => {
+    expect(hashApiKey("sk_abc123")).toBe(hashApiKey("sk_abc123"));
+  });
+
+  it("produces different hashes for different keys", () => {
+    expect(hashApiKey("sk_aaa")).not.toBe(hashApiKey("sk_bbb"));
+  });
+});
+
+describe("generateApiKey", () => {
+  it("returns a raw key starting with sk_", () => {
+    const { raw } = generateApiKey();
+    expect(raw).toMatch(/^sk_[0-9a-f]{32}$/);
+  });
+
+  it("returns a hash that is the SHA-256 of the raw key", () => {
+    const { raw, hash } = generateApiKey();
+    expect(hash).toBe(hashApiKey(raw));
+  });
+
+  it("returns a prefix that is the first 11 characters of the raw key", () => {
+    const { raw, prefix } = generateApiKey();
+    expect(prefix).toBe(raw.substring(0, 11));
+  });
+
+  it("generates unique keys on each call", () => {
+    const key1 = generateApiKey();
+    const key2 = generateApiKey();
+    expect(key1.raw).not.toBe(key2.raw);
+    expect(key1.hash).not.toBe(key2.hash);
   });
 });

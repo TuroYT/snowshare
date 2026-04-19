@@ -3,3 +3,4 @@ node_modules
 src/generated
 uploads
 .tus-temp
+e2e/.venv

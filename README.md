@@ -122,8 +122,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/snowshare
-      NEXTAUTH_URL: http://localhost:3000        # Change to your public URL
-      NEXTAUTH_SECRET: changeme-replace-with-random-secret  # Change this!
+      NEXTAUTH_URL: http://localhost:3000 # Change to your public URL
+      NEXTAUTH_SECRET: changeme-replace-with-random-secret # Change this!
       ALLOW_SIGNUP: "true"
     ports:
       - "3000:3000"
