@@ -184,10 +184,8 @@ describe("getFileShare", () => {
       expect(result.errorCode).toBeUndefined();
       expect(result.isBulk).toBe(true);
       expect(result.share).toBeDefined();
-      if (!result.share || !("files" in result.share)) {
-        throw new Error("Expected bulk share files to be present");
-      }
-      expect(result.share.files).toHaveLength(2);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result.share as any).files).toHaveLength(2);
     });
 
     it("should not check filePath for bulk shares", async () => {

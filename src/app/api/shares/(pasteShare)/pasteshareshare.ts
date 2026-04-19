@@ -113,7 +113,7 @@ export const createPasteShare = async (
   const pasteShare = await prisma.share.create({
     data: {
       paste,
-      pastelanguage: pastelanguage as import("@/generated/prisma/client").pasteType,
+      pastelanguage: pastelanguage as import("@/generated/prisma").pasteType,
       expiresAt,
       slug,
       password: password || null,
