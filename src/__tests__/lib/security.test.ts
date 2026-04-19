@@ -4,6 +4,7 @@
 
 jest.mock("bcryptjs", () => ({
   hash: jest.fn((password: string, cost: number) => Promise.resolve(`hashed:${password}:${cost}`)),
+  hashSync: jest.fn((password: string, cost: number) => `hashed:${password}:${cost}`),
   compare: jest.fn((password: string, hash: string) =>
     Promise.resolve(hash === `hashed:${password}:12`)
   ),
