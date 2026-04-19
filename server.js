@@ -95,11 +95,6 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-// Hash a string with SHA-256 (for API key lookup)
-function sha256(str) {
-  return crypto.createHash("sha256").update(str).digest("hex");
-}
-
 // Authenticate user from HTTP request (supports NextAuth JWT + API key Bearer token)
 async function authenticateFromRequest(req) {
   // 1. Try API key Bearer token
@@ -109,7 +104,8 @@ async function authenticateFromRequest(req) {
     if (rawKey.startsWith("sk_")) {
       try {
         const { prisma } = await import("./src/lib/prisma.js");
-        const keyHash = sha256(rawKey);
+        const { hashApiKey } = await import("./src/lib/security.js");
+        const keyHash = hashApiKey(rawKey);
         const apiKey = await prisma.apiKey.findUnique({
           where: { keyHash },
           select: { id: true, userId: true, expiresAt: true },
@@ -118,7 +114,7 @@ async function authenticateFromRequest(req) {
           // Fire-and-forget lastUsedAt update
           prisma.apiKey
             .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
-            .catch(() => {});
+            .catch((err) => console.warn("[Auth] Failed to update lastUsedAt:", err.message));
           return { userId: apiKey.userId, isAuthenticated: true };
         }
       } catch (error) {

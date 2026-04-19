@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
 
     const file = formData.get("file") as File | null;
     if (!file) return apiError(request, ErrorCode.FILE_REQUIRED);
+    if (file.name.length > 255) return apiError(request, ErrorCode.INVALID_REQUEST);
 
     const slug = (formData.get("slug") as string) || undefined;
     const password = (formData.get("password") as string) || undefined;

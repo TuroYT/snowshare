@@ -50,7 +50,7 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
         // Update lastUsedAt asynchronously (fire and forget)
         prisma.apiKey
           .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
-          .catch(() => {});
+          .catch((err) => console.warn("[api-auth] Failed to update lastUsedAt:", err.message));
 
         return { user: apiKey.user, authMethod: "apikey" };
       }
