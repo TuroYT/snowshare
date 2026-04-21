@@ -4,6 +4,7 @@
 
 jest.mock("bcryptjs", () => ({
   hash: jest.fn((password: string, cost: number) => Promise.resolve(`hashed:${password}:${cost}`)),
+  hashSync: jest.fn((password: string, cost: number) => `hashed:${password}:${cost}`),
   compare: jest.fn((password: string, hash: string) =>
     Promise.resolve(hash === `hashed:${password}:12`)
   ),
@@ -18,6 +19,8 @@ import {
   MAX_ANON_EXPIRY_DAYS,
   getMaxAnonExpiry,
   resolveAnonExpiry,
+  hashApiKey,
+  generateApiKey,
 } from "@/lib/security";
 import bcrypt from "bcryptjs";
 
@@ -211,5 +214,46 @@ describe("resolveAnonExpiry", () => {
       expect(result.error).toBeDefined();
       expect(result.date).toBeUndefined();
     });
+  });
+});
+
+describe("hashApiKey", () => {
+  it("returns a bcrypt hash string", () => {
+    const hash = hashApiKey("sk_abc123");
+    expect(hash.startsWith("hashed:sk_abc123:12")).toBe(true);
+  });
+
+  it("can be verified with bcrypt.compare", async () => {
+    const raw = "sk_abc123";
+    const hash = hashApiKey(raw);
+    await expect(bcrypt.compare(raw, hash)).resolves.toBe(true);
+  });
+
+  it("produces different hashes for different keys", () => {
+    expect(hashApiKey("sk_aaa")).not.toBe(hashApiKey("sk_bbb"));
+  });
+});
+
+describe("generateApiKey", () => {
+  it("returns a raw key starting with sk_", () => {
+    const { raw } = generateApiKey();
+    expect(raw).toMatch(/^sk_[0-9a-f]{32}$/);
+  });
+
+  it("returns a hash that verifies against the raw key", async () => {
+    const { raw, hash } = generateApiKey();
+    await expect(bcrypt.compare(raw, hash)).resolves.toBe(true);
+  });
+
+  it("returns a prefix that is the first 11 characters of the raw key", () => {
+    const { raw, prefix } = generateApiKey();
+    expect(prefix).toBe(raw.substring(0, 11));
+  });
+
+  it("generates unique keys on each call", () => {
+    const key1 = generateApiKey();
+    const key2 = generateApiKey();
+    expect(key1.raw).not.toBe(key2.raw);
+    expect(key1.hash).not.toBe(key2.hash);
   });
 });

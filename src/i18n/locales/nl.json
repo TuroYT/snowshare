@@ -245,7 +245,16 @@
     "signup_disabled_title": "Registreren uitgeschakeld",
     "signup_disabled_message": "Nieuwe registraties zijn momenteel niet toegestaan.",
     "return_to_main_page": "Terug naar hoofdpagina",
-    "or_continue_with": "Of ga verder met"
+    "or_continue_with": "Of ga verder met",
+    "error_captcha_required": "Voltooi de CAPTCHA-uitdaging",
+    "error_email_not_verified": "Verifieer uw e-mailadres voordat u inlogt",
+    "verify_email_verifying": "E-mail wordt geverifieerd...",
+    "verify_email_check_inbox_title": "Controleer uw inbox",
+    "verify_email_check_inbox_message": "Er is een verificatie-e-mail naar uw adres gestuurd. Klik op de link in de e-mail om uw account te activeren.",
+    "verify_email_success_title": "E-mail geverifieerd!",
+    "verify_email_success_message": "Uw e-mail is geverifieerd. U kunt nu inloggen.",
+    "verify_email_error_title": "Verificatie mislukt",
+    "verify_email_error_generic": "Er is een fout opgetreden tijdens de verificatie"
   },
   "profile": {
     "title": "Mijn profiel",
@@ -314,7 +323,31 @@
       "error_link": "Fout bij het verbinden van account",
       "error_unlink": "Fout bij het verwijderen van account",
       "unlink_success": "Account succesvol ontkoppeld"
-    }
+    },
+    "tab_apikeys": "API-sleutels"
+  },
+  "apikeys": {
+    "title": "API-sleutels",
+    "description": "Gebruik API-sleutels om scripts en CLI-tools te authenticeren. Sleutels erven al je machtigingen.",
+    "label_name": "Sleutelnaam",
+    "placeholder_name": "bijv. Mijn back-upscript",
+    "label_expiry": "Vervaldatum (optioneel)",
+    "create_button": "Sleutel aanmaken",
+    "creating": "Aanmaken...",
+    "token_warning": "Bewaar deze sleutel — hij wordt niet meer getoond.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd!",
+    "dismiss": "Sluiten",
+    "no_keys": "Nog geen API-sleutels.",
+    "created": "Aangemaakt",
+    "last_used": "Laatst gebruikt",
+    "expires": "Verloopt",
+    "revoke": "Intrekken",
+    "confirm_revoke": "Weet je zeker dat je deze API-sleutel wilt intrekken?",
+    "error_create": "Fout bij het aanmaken van de API-sleutel",
+    "docs_title": "API-documentatie",
+    "docs_description": "Verken de interactieve API-documentatie.",
+    "docs_link": "Docs openen"
   },
   "setup": {
     "title": "Eerste installatie",
@@ -423,7 +456,10 @@
       "password_hint": "Minimaal 6 tekens",
       "make_admin": "Beheerder Maken",
       "create": "Gebruiker Aanmaken",
-      "creating": "Wordt aangemaakt..."
+      "creating": "Wordt aangemaakt...",
+      "sso_auto_link": "Automatisch SSO-koppelen",
+      "sso_auto_link_hint": "Indien ingeschakeld, wordt het account automatisch gekoppeld bij de eerste SSO-aanmelding. Geen wachtwoord vereist.",
+      "sso_only": "Alleen SSO"
     },
     "settings": {
       "title": "Instellingen",
@@ -443,7 +479,31 @@
       "section_general": "Algemeen",
       "section_storage": "Opslag",
       "saving": "Opslaan...",
-      "save": "Wijzigingen opslaan"
+      "save": "Wijzigingen opslaan",
+      "section_captcha": "CAPTCHA",
+      "captcha_enabled": "CAPTCHA inschakelen",
+      "captcha_enabled_desc": "Gebruikers moeten bij registratie een CAPTCHA-uitdaging voltooien",
+      "captcha_provider": "CAPTCHA-aanbieder",
+      "captcha_provider_select": "Selecteer een aanbieder...",
+      "captcha_site_key": "Sitesleutel",
+      "captcha_site_key_placeholder": "Uw sitesleutel",
+      "captcha_secret_key": "Geheime sleutel",
+      "captcha_secret_key_placeholder": "Uw geheime sleutel",
+      "captcha_secret_key_hint": "De geheime sleutel wordt veilig opgeslagen. Laat leeg om de bestaande waarde te bewaren.",
+      "section_smtp": "E-mail & SMTP",
+      "smtp_enabled": "SMTP inschakelen",
+      "smtp_enabled_desc": "E-mails versturen via SMTP (vereist voor e-mailverificatie)",
+      "smtp_host": "SMTP-host",
+      "smtp_port": "SMTP-poort",
+      "smtp_user": "Gebruikersnaam",
+      "smtp_password": "Wachtwoord",
+      "smtp_password_placeholder": "Leeg laten om bestaande te bewaren",
+      "smtp_from": "Afzenderadres",
+      "smtp_from_hint": "Afzenderadres in uitgaande e-mails",
+      "smtp_secure": "SSL/TLS gebruiken",
+      "smtp_secure_hint": "Inschakelen voor poort 465, uitschakelen voor poort 587 (STARTTLS)",
+      "email_verification_required": "E-mailverificatie vereisen",
+      "email_verification_required_desc": "Nieuwe gebruikers moeten hun e-mailadres verifiëren voordat ze kunnen inloggen"
     },
     "quotas": {
       "title": "Uploadquota",
@@ -678,8 +738,24 @@
       "token_expired": "Token verlopen",
       "token_invalid_or_expired": "Ongeldige of verlopen token",
       "invalid_date_format": "Ongeldig datumformaat",
-      "invalid_expiration_date": "Ongeldige vervaldatum"
+      "invalid_expiration_date": "Ongeldige vervaldatum",
+      "captcha_required": "Voltooi de CAPTCHA-uitdaging",
+      "captcha_invalid": "CAPTCHA-verificatie mislukt. Probeer het opnieuw.",
+      "email_not_verified": "Verifieer uw e-mailadres voordat u inlogt",
+      "recipients_required": "Minstens één ontvanger is vereist",
+      "email_not_configured": "E-mailverzending is niet geconfigureerd",
+      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw."
     },
     "file_protected": "Beveiligd bestand"
+  },
+  "share_email": {
+    "section_title": "Verstuur per e-mail",
+    "recipients_placeholder": "alice@example.com, bob@example.com",
+    "recipients_label": "Ontvangers (kommagescheiden)",
+    "send_button": "Versturen",
+    "sending": "Verzenden...",
+    "success": "E-mail succesvol verzonden!",
+    "error_invalid": "Voer ten minste één geldig e-mailadres in.",
+    "error_send": "Verzenden mislukt. Probeer het opnieuw."
   }
 }

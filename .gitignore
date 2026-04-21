@@ -45,5 +45,12 @@ next-env.d.ts
 dev.db
 uploads/*
 uploads/
-.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .claude
+docs/superpowers
+
+# e2e testing
+e2e/.venv
+e2e/results

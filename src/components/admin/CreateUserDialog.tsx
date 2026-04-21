@@ -19,6 +19,7 @@ export default function CreateUserDialog({
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [ssoAutoLink, setSsoAutoLink] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,8 +35,9 @@ export default function CreateUserDialog({
         body: JSON.stringify({
           email,
           name: name || undefined,
-          password,
+          password: ssoAutoLink ? undefined : password,
           isAdmin,
+          ssoAutoLink,
         }),
       });
 
@@ -49,6 +51,7 @@ export default function CreateUserDialog({
       setName("");
       setPassword("");
       setIsAdmin(false);
+      setSsoAutoLink(false);
       onUserCreated();
       onClose();
     } catch (err) {
@@ -105,24 +108,49 @@ export default function CreateUserDialog({
             />
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("admin.users.password")} *
-            </label>
+          {/* SSO Auto-link checkbox */}
+          <div className="flex items-start gap-3 p-3 bg-[var(--surface)]/30 border border-[var(--border)]/30 rounded-lg">
             <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t("admin.users.password_placeholder")}
-              className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              required
+              type="checkbox"
+              id="ssoAutoLink"
+              checked={ssoAutoLink}
+              onChange={(e) => setSsoAutoLink(e.target.checked)}
+              className="w-4 h-4 mt-0.5 rounded border-[var(--border)] bg-[var(--surface)]/50 cursor-pointer"
               disabled={loading}
             />
-            <p className="text-xs text-[var(--foreground-muted)] mt-1">
-              {t("admin.users.password_hint")}
-            </p>
+            <div>
+              <label
+                htmlFor="ssoAutoLink"
+                className="text-sm font-medium text-[var(--foreground)] cursor-pointer"
+              >
+                {t("admin.users.sso_auto_link")}
+              </label>
+              <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
+                {t("admin.users.sso_auto_link_hint")}
+              </p>
+            </div>
           </div>
+
+          {/* Password */}
+          {!ssoAutoLink && (
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("admin.users.password")} *
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("admin.users.password_placeholder")}
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                required
+                disabled={loading}
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.users.password_hint")}
+              </p>
+            </div>
+          )}
 
           {/* Admin checkbox */}
           <div className="flex items-center gap-3">

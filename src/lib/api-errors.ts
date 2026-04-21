@@ -116,6 +116,18 @@ export enum ErrorCode {
   // Date validation (400)
   INVALID_DATE_FORMAT = "INVALID_DATE_FORMAT",
   INVALID_EXPIRATION_DATE = "INVALID_EXPIRATION_DATE",
+
+  // CAPTCHA (400)
+  CAPTCHA_REQUIRED = "CAPTCHA_REQUIRED",
+  CAPTCHA_INVALID = "CAPTCHA_INVALID",
+
+  // Email verification (403)
+  EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED",
+
+  // Email sending (400, 502, 503)
+  RECIPIENTS_REQUIRED = "RECIPIENTS_REQUIRED",
+  EMAIL_NOT_CONFIGURED = "EMAIL_NOT_CONFIGURED",
+  EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
 }
 
 /**
@@ -166,6 +178,8 @@ const ERROR_STATUS_MAP: Record<ErrorCode, number> = {
   [ErrorCode.LINK_URL_INVALID]: 400,
   [ErrorCode.INVALID_DATE_FORMAT]: 400,
   [ErrorCode.INVALID_EXPIRATION_DATE]: 400,
+  [ErrorCode.CAPTCHA_REQUIRED]: 400,
+  [ErrorCode.CAPTCHA_INVALID]: 400,
   [ErrorCode.CURRENT_PASSWORD_REQUIRED]: 400,
   [ErrorCode.INCORRECT_CURRENT_PASSWORD]: 400,
   [ErrorCode.CANNOT_UNLINK_LAST_ACCOUNT]: 400,
@@ -194,6 +208,7 @@ const ERROR_STATUS_MAP: Record<ErrorCode, number> = {
   [ErrorCode.USER_QUOTA_EXCEEDED]: 403,
   [ErrorCode.NO_SSO_PROVIDERS]: 403,
   [ErrorCode.PASSWORD_REQUIRED]: 403,
+  [ErrorCode.EMAIL_NOT_VERIFIED]: 403,
 
   // 404 errors (Not Found)
   [ErrorCode.USER_NOT_FOUND]: 404,
@@ -209,6 +224,11 @@ const ERROR_STATUS_MAP: Record<ErrorCode, number> = {
   // 413 errors (Payload Too Large)
   [ErrorCode.FILE_TOO_LARGE]: 413,
   [ErrorCode.FILE_TYPE_NOT_ALLOWED]: 415,
+
+  // Email sending errors
+  [ErrorCode.RECIPIENTS_REQUIRED]: 400,
+  [ErrorCode.EMAIL_NOT_CONFIGURED]: 503,
+  [ErrorCode.EMAIL_SEND_FAILED]: 502,
 };
 
 /**

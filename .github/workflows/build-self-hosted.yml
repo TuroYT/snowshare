@@ -2,43 +2,71 @@ name: "CI"
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
 
 jobs:
-  lint-and-test:
-    name: Lint & Test
+  lint:
+    name: Lint
     runs-on: [self-hosted]
+    if: github.event.pull_request.draft == false
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm run type-check
 
-      - name: Install dependencies
-        run: npm ci
+  test:
+    name: Test
+    runs-on: [self-hosted]
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm test -- --ci --coverage --coverageReporters=text-summary
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test -- --ci --coverage --coverageReporters=text-summary
+  e2e:
+    name: E2E Tests
+    needs: [lint, test]
+    runs-on: [self-hosted]
+    if: false # if: github.event.pull_request.draft == false
+    env:
+      DATABASE_URL: postgresql://e2e_user:e2e_password@localhost:5432/e2e_db?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Setup e2e database
+        run: |
+          sudo -u postgres psql -c "DROP DATABASE IF EXISTS e2e_db;"
+          sudo -u postgres psql -c "CREATE DATABASE e2e_db OWNER e2e_user;"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE e2e_db TO e2e_user;"
+      - run: npm ci
+      - run: bash e2e/run-e2e.sh
+      - name: Upload Robot Framework results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: e2e/results/
 
   build:
     name: Docker Build
+    needs: [lint, test] # e2e temporarily disabled
     runs-on: [self-hosted]
-    needs: lint-and-test
+    if: github.event.pull_request.draft == false
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Docker build
-        run: docker compose build
+      - uses: actions/checkout@v4
+      - run: docker compose build
