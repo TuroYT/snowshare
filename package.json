@@ -61,7 +61,7 @@
     "next": "16.2.3",
     "next-auth": "^4.24.12",
     "next-plausible": "^3.12.5",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^8.0.5",
     "pdfjs-dist": "^5.4.624",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0",
