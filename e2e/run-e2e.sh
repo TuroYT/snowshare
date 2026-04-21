@@ -22,6 +22,13 @@ fi
 cd ..
 
 # 2. Verify DATABASE_URL is set (provided by the caller / CI environment)
+# Fallback: load from .env if present and variable not already exported
+if [ -z "$DATABASE_URL" ] && [ -f ".env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    source .env
+    set +a
+fi
 if [ -z "$DATABASE_URL" ]; then
     echo "ERROR: DATABASE_URL is not set. Start PostgreSQL and export DATABASE_URL before running this script."
     exit 1

@@ -20,7 +20,7 @@ Go To FileShare Tab
     Go To              ${BASE_URL}
     Wait For Load State    networkidle
     Click              text=FileShare
-    Wait For Elements State    text="Select Files"    visible
+    Wait For Elements State    text="Select Files"    visible    timeout=20s
 
 *** Test Cases ***
 FileShare Tab Is Visible

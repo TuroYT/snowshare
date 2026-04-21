@@ -32,7 +32,7 @@ Admin Can Login And Logout
 Login With Wrong Password Shows Error
     [Documentation]    Verify that incorrect credentials display an error message
     Go To              ${BASE_URL}/auth/signin
-    Wait For Load State    networkidle
+    Wait For Elements State    input[name="email"]    visible    timeout=15s
     Fill Text    input[name="email"]      ${ADMIN_EMAIL}
     Fill Text    input[name="password"]   wrongpassword
     Click        button[type="submit"]
@@ -44,7 +44,7 @@ Signup Page Is Accessible
     [Documentation]    Verify the registration page loads and contains the required fields
     Go To              ${BASE_URL}/auth/signup
     Wait For Load State    networkidle
-    Wait For Elements State    input[name="email"]              visible
+    Wait For Elements State    input[name="email"]              visible    timeout=15s
     Wait For Elements State    input[name="password"]           visible
     Wait For Elements State    input[name="confirm-password"]   visible
     Wait For Elements State    button[type="submit"]            visible

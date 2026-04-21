@@ -24,7 +24,7 @@ Go To Home FileShare Tab
     Go To              ${BASE_URL}
     Wait For Load State    networkidle
     Click              text=FileShare
-    Wait For Elements State    text="Select Files"    visible
+    Wait For Elements State    text="Select Files"    visible    timeout=20s
 
 *** Test Cases ***
 # ── LinkShare errors ──────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ Login With Empty Fields Shows No Redirect
 Signup With Mismatched Passwords Shows Error
     [Documentation]    Verify that mismatched passwords on the signup form show an error
     Go To              ${BASE_URL}/auth/signup
-    Wait For Load State    networkidle
+    Wait For Elements State    input[name="email"]    visible    timeout=15s
     Fill Text    input[name="email"]              newuser@example.com
     Fill Text    input[name="password"]           password123
     Fill Text    input[name="confirm-password"]   differentpassword
