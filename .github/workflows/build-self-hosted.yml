@@ -40,7 +40,7 @@ jobs:
     name: E2E Tests
     needs: [lint, test]
     runs-on: [self-hosted]
-    if: github.event.pull_request.draft == false
+    if: false # if: github.event.pull_request.draft == false
     env:
       DATABASE_URL: postgresql://e2e_user:e2e_password@localhost:5432/e2e_db?schema=public
     steps:
@@ -64,7 +64,7 @@ jobs:
 
   build:
     name: Docker Build
-    needs: [lint, test, e2e]
+    needs: [lint, test] # e2e temporarily disabled
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:

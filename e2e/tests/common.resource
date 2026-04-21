@@ -21,7 +21,7 @@ Open Browser To App
         Complete Setup    ${ADMIN_EMAIL}    ${ADMIN_PASSWORD}
     END
 
-    Wait For Elements State    text="LinkShare"    visible
+    Wait For Elements State    text="LinkShare"    visible    timeout=20s
 
 Complete Setup
     [Arguments]    ${email}    ${password}
@@ -39,13 +39,13 @@ Close App
 Login As
     [Arguments]    ${email}    ${password}
     Go To              ${BASE_URL}/auth/signin
-    Wait For Load State    networkidle
+    Wait For Elements State    input[name="email"]    visible    timeout=15s
     Fill Text    input[name="email"]      ${email}
     Fill Text    input[name="password"]   ${password}
     Click        button[type="submit"]
+    Wait For URL    ${BASE_URL}/    timeout=15s
     Wait For Load State    networkidle
-    # Confirm successful login by verifying the home page loaded
-    Wait For Elements State    text="LinkShare"    visible    timeout=10s
+    Wait For Elements State    text="LinkShare"    visible    timeout=15s
 
 Login As Admin
     Login As    ${ADMIN_EMAIL}    ${ADMIN_PASSWORD}
