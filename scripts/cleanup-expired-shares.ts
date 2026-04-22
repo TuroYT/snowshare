@@ -97,20 +97,20 @@ async function cleanupExpiredShares() {
   } catch (error) {
     console.error("❌ Error during cleanup of expired shares:", error);
     process.exit(1);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // Execute the script if it is called directly
 if (require.main === module) {
   cleanupExpiredShares()
-    .then(() => {
+    .then(async () => {
       console.log("🎉 Cleanup completed successfully");
+      await prisma.$disconnect();
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(async (error) => {
       console.error("💥 Cleanup failed:", error);
+      await prisma.$disconnect();
       process.exit(1);
     });
 }
