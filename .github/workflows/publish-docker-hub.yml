@@ -1,15 +1,13 @@
 name: Publish Docker Image to Docker Hub
 
 on:
-  workflow_run:
-    workflows: ["Update Version on Release"]
-    types: [completed]
+  release:
+    types: [published]
 
 jobs:
   build-and-push:
     name: Build & Push to Docker Hub
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
 
@@ -17,16 +15,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.release.target_commitish }}
 
-      - name: Get version from package.json
+      - name: Compute version from release tag
         id: version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "major_minor=$MAJOR.$MINOR" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Bump package.json locally so /api/version reports the release
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
 
       - name: Set up QEMU (multi-platform)
         uses: docker/setup-qemu-action@v3
