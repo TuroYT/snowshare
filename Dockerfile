@@ -30,9 +30,11 @@ RUN chmod +x scripts/cleanup.sh scripts/entrypoint.sh
 RUN crontab scripts/crontab
 
 # Create a non-root user and give ownership of writable directories only
+# chmod 777 on writable dirs so custom UIDs (e.g. user: 1011:1011) can write too
 RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
     && mkdir -p uploads .tus-temp \
-    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next
+    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next \
+    && chmod -R 777 uploads .tus-temp src/generated
 
 # Default command via entrypoint (starts crond as root, then drops to snowshare)
 ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
