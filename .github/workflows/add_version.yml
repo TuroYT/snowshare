@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Update version on main and dev
+      - name: Update version on canary branches
         run: |
           # Extract version from tag (removes 'v' prefix if present)
           VERSION="${{ github.event.release.tag_name }}"
@@ -33,7 +33,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          for BRANCH in main dev; do
+          for BRANCH in canary; do
             echo "--- Processing branch: ${BRANCH} ---"
             git fetch origin ${BRANCH}
             git checkout ${BRANCH}
