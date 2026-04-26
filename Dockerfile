@@ -9,8 +9,8 @@ ENV DATABASE_URL=${DATABASE_URL}
 
 WORKDIR /app
 
-# Install cron and other required packages
-RUN apk add --no-cache openssl dcron
+# Install required packages
+RUN apk add --no-cache openssl
 
 # Copy source and install dependencies as root (needed for npm ci)
 COPY . .
@@ -26,13 +26,12 @@ RUN npm run build
 # Make scripts executable
 RUN chmod +x scripts/cleanup.sh scripts/entrypoint.sh
 
-# Setup cron job for root's crontab (crond requires root)
-RUN crontab scripts/crontab
-
 # Create a non-root user and give ownership of writable directories only
+# chmod 777 on writable dirs so custom UIDs (e.g. user: 1011:1011) can write too
 RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
     && mkdir -p uploads .tus-temp \
-    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next
+    && chown -R snowshare:snowshare uploads .tus-temp src/generated .next \
+    && chmod -R 777 uploads .tus-temp src/generated
 
-# Default command via entrypoint (starts crond as root, then drops to snowshare)
+# Default command via entrypoint (drops to snowshare user; cleanup runs via node-cron)
 ENTRYPOINT ["sh", "scripts/entrypoint.sh"]

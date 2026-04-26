@@ -14,6 +14,7 @@ import { stat, rename, unlink } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { getToken } from "next-auth/jwt";
+import cron from "node-cron";
 
 // Security constants (mirrored from src/lib/security.ts for use in plain JS server)
 const BCRYPT_COST = 12;
@@ -595,7 +596,16 @@ async function handleTus(req, res) {
   });
 }
 
-app.prepare().then(() => {
+app.prepare().then(async () => {
+  // Schedule hourly cleanup of expired shares (replaces crond)
+  const { default: cleanupExpiredShares } = await import("./scripts/cleanup-expired-shares.ts");
+  cron.schedule("0 * * * *", () => {
+    cleanupExpiredShares().catch((err) =>
+      console.error("[Cleanup] Error during scheduled cleanup:", err)
+    );
+  });
+  console.log("> Scheduled hourly cleanup of expired shares");
+
   createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true);
