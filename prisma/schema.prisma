@@ -168,6 +168,9 @@ model Settings {
   captchaSiteKey    String?
   captchaSecretKey  String?
 
+  // Embedding
+  allowIframeEmbedding Boolean @default(false)
+
   // Security - Email Verification (SMTP)
   smtpEnabled               Boolean @default(false)
   smtpHost                  String?

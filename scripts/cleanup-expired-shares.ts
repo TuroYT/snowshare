@@ -101,7 +101,11 @@ async function cleanupExpiredShares() {
 }
 
 // Execute the script if it is called directly
-if (require.main === module) {
+const isMain =
+  process.argv[1] &&
+  (process.argv[1].endsWith("cleanup-expired-shares.ts") ||
+    process.argv[1].endsWith("cleanup-expired-shares.js"));
+if (isMain) {
   cleanupExpiredShares()
     .then(async () => {
       console.log("🎉 Cleanup completed successfully");

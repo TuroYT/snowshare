@@ -9,10 +9,13 @@ const SCALAR_DOMAINS =
 function addSecurityHeaders(
   response: NextResponse,
   isApiDocs = false,
-  isScalarHtml = false
+  isScalarHtml = false,
+  allowIframeEmbedding = false
 ): NextResponse {
-  // Prevent clickjacking
-  response.headers.set("X-Frame-Options", isScalarHtml ? "SAMEORIGIN" : "DENY");
+  // Prevent clickjacking — omit when iframe embedding is allowed by admin
+  if (!allowIframeEmbedding) {
+    response.headers.set("X-Frame-Options", isScalarHtml ? "SAMEORIGIN" : "DENY");
+  }
   // Prevent MIME type sniffing
   response.headers.set("X-Content-Type-Options", "nosniff");
   // Enable browser XSS protection
@@ -26,6 +29,16 @@ function addSecurityHeaders(
   );
   // HSTS
   response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+
+  let frameAncestors: string;
+  if (allowIframeEmbedding) {
+    frameAncestors = "frame-ancestors *";
+  } else if (isScalarHtml) {
+    frameAncestors = "frame-ancestors 'self'";
+  } else {
+    frameAncestors = "frame-ancestors 'none'";
+  }
+
   // Content Security Policy
   response.headers.set(
     "Content-Security-Policy",
@@ -37,7 +50,7 @@ function addSecurityHeaders(
       `font-src 'self' data:${isScalarHtml ? ` ${SCALAR_DOMAINS}` : ""}`,
       "frame-src 'self' https://challenges.cloudflare.com https://www.google.com",
       `connect-src 'self' https://challenges.cloudflare.com https://stats.sheephost.fr${isScalarHtml ? ` ${SCALAR_DOMAINS}` : ""}`,
-      isScalarHtml ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
+      frameAncestors,
     ].join("; ")
   );
 
@@ -61,6 +74,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // Check if setup is needed
+  let allowIframeEmbedding = false;
   try {
     const port = process.env.PORT || "3000";
     const baseUrl = `http://localhost:${port}`;
@@ -75,6 +89,7 @@ export default async function proxy(request: NextRequest) {
     }
 
     const data = await response.json();
+    allowIframeEmbedding = data.allowIframeEmbedding ?? false;
 
     if (data.needsSetup) {
       // Redirect to setup page if not already there
@@ -99,12 +114,12 @@ export default async function proxy(request: NextRequest) {
       const signInUrl = new URL("/auth/signin", request.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
       const redirectResponse = NextResponse.redirect(signInUrl);
-      return addSecurityHeaders(redirectResponse, isApiDocs, isScalarHtml);
+      return addSecurityHeaders(redirectResponse, isApiDocs, isScalarHtml, allowIframeEmbedding);
     }
   }
 
   const response = NextResponse.next();
-  return addSecurityHeaders(response, isApiDocs, isScalarHtml);
+  return addSecurityHeaders(response, isApiDocs, isScalarHtml, allowIframeEmbedding);
 }
 
 export const config = {

@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
         captchaSiteKey: true,
         emailVerificationRequired: true,
         smtpEnabled: true,
+        allowIframeEmbedding: true,
       },
     });
 
@@ -116,6 +117,7 @@ export async function GET(request: NextRequest) {
       captchaSiteKey: settings?.captchaSiteKey ?? null,
       emailVerificationRequired:
         (settings?.emailVerificationRequired ?? false) && (settings?.smtpEnabled ?? false),
+      allowIframeEmbedding: settings?.allowIframeEmbedding ?? false,
     });
   } catch (error) {
     console.error("Error checking setup status:", error);
