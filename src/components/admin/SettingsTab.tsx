@@ -21,6 +21,7 @@ interface Settings {
   useGiBForAnon: boolean;
   useGiBForAuth: boolean;
   termsOfUses: string;
+  allowIframeEmbedding: boolean;
   // CAPTCHA
   captchaEnabled: boolean;
   captchaProvider: string | null;
@@ -63,6 +64,7 @@ export default function SettingsTab() {
         allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
         allowAnonLinkShare: data.settings.allowAnonLinkShare ?? true,
         allowAnonPasteShare: data.settings.allowAnonPasteShare ?? true,
+        allowIframeEmbedding: data.settings.allowIframeEmbedding ?? false,
         captchaEnabled: data.settings.captchaEnabled ?? false,
         captchaProvider: data.settings.captchaProvider ?? null,
         captchaSiteKey: data.settings.captchaSiteKey ?? null,
@@ -359,6 +361,34 @@ export default function SettingsTab() {
             <span
               className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
                 settings.allowAnonPasteShare ? "translate-x-7" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div>
+            <label className="text-[var(--foreground)] font-medium">
+              {t("admin.settings.allow_iframe_embedding")}
+            </label>
+            <p className="text-sm text-[var(--foreground-muted)] mt-1">
+              {t("admin.settings.allow_iframe_embedding_desc")}
+            </p>
+            {settings.allowIframeEmbedding && (
+              <p className="text-xs text-yellow-400 mt-1">
+                {t("admin.settings.allow_iframe_embedding_warning")}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={() => handleToggle("allowIframeEmbedding")}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              settings.allowIframeEmbedding ? "bg-yellow-500" : "bg-gray-600"
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                settings.allowIframeEmbedding ? "translate-x-7" : "translate-x-1"
               }`}
             />
           </button>

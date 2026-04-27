@@ -83,6 +83,7 @@ Thank you for using SnowShare!`,
       ...settings,
       captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
       smtpPassword: settings.smtpPassword ? "••••••••" : null,
+      allowIframeEmbedding: settings.allowIframeEmbedding,
     };
 
     return NextResponse.json({ settings: safeSettings, hasActiveSSO: activeProvidersCount > 0 });
@@ -157,6 +158,8 @@ export async function PATCH(request: NextRequest) {
           textMuted: data.textMuted || "#D1D5DB",
           borderColor: data.borderColor || "#374151",
           fontFamily: data.fontFamily || "Geist",
+          allowIframeEmbedding:
+            data.allowIframeEmbedding !== undefined ? data.allowIframeEmbedding : false,
           termsOfUses:
             data.termsOfUses ||
             `# Terms of Use
@@ -275,6 +278,10 @@ Thank you for using SnowShare!`,
             data.emailVerificationRequired !== undefined
               ? data.emailVerificationRequired
               : settings.emailVerificationRequired,
+          allowIframeEmbedding:
+            data.allowIframeEmbedding !== undefined
+              ? data.allowIframeEmbedding
+              : settings.allowIframeEmbedding,
         },
       });
     }
