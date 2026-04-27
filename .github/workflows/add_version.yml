@@ -22,31 +22,60 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Update version on canary branches
+      - name: Bump package.json on release branch and move tag to match
         run: |
           # Extract version from tag (removes 'v' prefix if present)
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          TARGET_BRANCH="${{ github.event.release.target_commitish }}"
 
-          echo "Updating version to: ${VERSION}"
+          echo "Updating version to: ${VERSION} (tag ${TAG}) on branch ${TARGET_BRANCH}"
 
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-          for BRANCH in canary; do
-            echo "--- Processing branch: ${BRANCH} ---"
-            git fetch origin ${BRANCH}
-            git checkout ${BRANCH}
-            git pull origin ${BRANCH}
+          # Bump package.json on the release's target branch so the GitHub
+          # source tarball generated from the tag ships the matching version.
+          # Without this, the tag points at a commit whose package.json still
+          # holds the previous version, and consumers (e.g. the Proxmox
+          # community-script that fetches the source tarball) report a stale
+          # version after install/update.
+          npm version "${VERSION}" --no-git-tag-version --allow-same-version
 
-            # Update package.json for this branch
-            npm version "${VERSION}" --no-git-tag-version --allow-same-version
-
+          if git diff --quiet package.json; then
+            echo "package.json already at ${VERSION} on ${TARGET_BRANCH}; tag move not needed"
+          else
             git add package.json
-            if git diff --staged --quiet; then
-              echo "No version changes to commit on ${BRANCH}"
-            else
-              git commit -m "chore: bump version to ${VERSION} [skip ci]"
-              git push origin ${BRANCH}
-            fi
-          done
+            git commit -m "chore: bump version to ${VERSION} [skip ci]"
+            git push origin "HEAD:${TARGET_BRANCH}"
+
+            # Fast-forward the release tag to the bump commit so the
+            # auto-generated source tarball reflects the new package.json.
+            NEW_SHA="$(git rev-parse HEAD)"
+            git tag -f "${TAG}" "${NEW_SHA}"
+            git push --force origin "refs/tags/${TAG}"
+          fi
+
+      - name: Mirror version bump on canary
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+
+          if ! git ls-remote --exit-code --heads origin canary >/dev/null 2>&1; then
+            echo "canary branch does not exist on origin; skipping"
+            exit 0
+          fi
+
+          git fetch origin canary
+          git checkout canary
+          git pull origin canary
+
+          npm version "${VERSION}" --no-git-tag-version --allow-same-version
+
+          git add package.json
+          if git diff --staged --quiet; then
+            echo "No version changes to commit on canary"
+          else
+            git commit -m "chore: bump version to ${VERSION} [skip ci]"
+            git push origin canary
+          fi
