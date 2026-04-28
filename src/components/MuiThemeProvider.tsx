@@ -156,6 +156,17 @@ export default function MuiThemeProvider({ children }: MuiThemeProviderProps) {
             },
           },
         },
+        MuiSkeleton: {
+          styleOverrides: {
+            root: {
+              backgroundColor: "var(--border-hover)",
+              "&::after": {
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+              },
+            },
+          },
+        },
       },
     });
   }, [colors]);
