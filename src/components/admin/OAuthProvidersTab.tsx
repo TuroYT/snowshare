@@ -120,9 +120,27 @@ export default function OAuthProvidersTab() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress />
-      </Box>
+      <div className="animate-pulse space-y-4">
+        <div className="space-y-2 mb-4">
+          <div className="h-6 w-48 bg-[var(--border-hover)] rounded" />
+          <div className="h-4 w-96 bg-[var(--border-hover)] rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-lg border border-[var(--border)]/50 p-4 space-y-4 bg-[var(--surface)]/20">
+              <div className="flex justify-between items-start">
+                <div className="h-5 w-24 bg-[var(--border-hover)] rounded" />
+                <div className="h-5 w-16 bg-[var(--border-hover)] rounded-full" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-8 bg-[var(--border-hover)] rounded" />
+                <div className="h-8 bg-[var(--border-hover)] rounded" />
+              </div>
+              <div className="h-9 bg-[var(--border-hover)] rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 

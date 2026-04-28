@@ -210,11 +210,24 @@ export default function SettingsTab() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
-        </div>
+      <div className="space-y-6 w-full animate-pulse">
+        {[0, 1, 2].map((s) => (
+          <div key={s} className="space-y-3">
+            <div className="h-5 w-40 bg-[var(--border-hover)] rounded" />
+            {[0, 1, 2].map((r) => (
+              <div
+                key={r}
+                className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50"
+              >
+                <div className="space-y-2 flex-1 mr-8">
+                  <div className="h-4 w-48 bg-[var(--border-hover)] rounded" />
+                  <div className="h-3 w-72 bg-[var(--border-hover)] rounded" />
+                </div>
+                <div className="h-8 w-14 bg-[var(--border-hover)] rounded-full flex-shrink-0" />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     );
   }

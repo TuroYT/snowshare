@@ -90,11 +90,31 @@ export default function UsersTab() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
+      <div className="space-y-6 animate-pulse">
+        {/* Stat cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[0, 1].map((i) => (
+            <div key={i} className="rounded-xl p-4 border border-[var(--border)]/50 bg-[var(--surface)]/20">
+              <div className="h-3 w-24 bg-[var(--border-hover)] rounded mb-3" />
+              <div className="h-8 w-16 bg-[var(--border-hover)] rounded" />
+            </div>
+          ))}
         </div>
+        {/* Search bar */}
+        <div className="h-10 bg-[var(--border-hover)] rounded-lg" />
+        {/* User rows */}
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)]/50 bg-[var(--surface)]/20">
+            <div className="space-y-2">
+              <div className="h-4 w-40 bg-[var(--border-hover)] rounded" />
+              <div className="h-3 w-56 bg-[var(--border-hover)] rounded" />
+            </div>
+            <div className="flex gap-2">
+              <div className="h-8 w-20 bg-[var(--border-hover)] rounded" />
+              <div className="h-8 w-20 bg-[var(--border-hover)] rounded" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

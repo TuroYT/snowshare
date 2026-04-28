@@ -307,14 +307,18 @@ export default function LogsTab() {
           </thead>
           <tbody className="divide-y divide-gray-700/30">
             {loading ? (
-              <tr>
-                <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                    <span suppressHydrationWarning>{t("loading")}</span>
-                  </div>
-                </td>
-              </tr>
+              Array.from({ length: 8 }).map((_, i) => (
+                <tr key={i} className="animate-pulse border-b border-[var(--border)]/20">
+                  <td className="py-3 px-4"><div className="h-6 w-16 bg-[var(--border-hover)] rounded-full" /></td>
+                  <td className="py-3 px-4"><div className="h-6 w-20 bg-[var(--border-hover)] rounded" /></td>
+                  <td className="py-3 px-4"><div className="h-4 w-28 bg-[var(--border-hover)] rounded" /></td>
+                  <td className="py-3 px-4"><div className="h-4 w-24 bg-[var(--border-hover)] rounded" /></td>
+                  <td className="py-3 px-4"><div className="h-4 w-28 bg-[var(--border-hover)] rounded" /></td>
+                  <td className="py-3 px-4"><div className="h-4 w-28 bg-[var(--border-hover)] rounded" /></td>
+                  <td className="py-3 px-4"><div className="h-5 w-16 bg-[var(--border-hover)] rounded-full" /></td>
+                  <td className="py-3 px-4 text-right"><div className="h-7 w-16 bg-[var(--border-hover)] rounded ml-auto" /></td>
+                </tr>
+              ))
             ) : logs.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
