@@ -16,9 +16,10 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
   if (isLoading) {
     return (
       <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
-        <div className="animate-pulse">
-          <div className="h-6 bg-[var(--surface)] rounded w-1/2 mx-auto mb-4"></div>
-          <div className="h-4 bg-[var(--surface)] rounded w-3/4 mx-auto"></div>
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-xl bg-[var(--border-hover)]" />
+          <div className="h-5 w-48 bg-[var(--border-hover)] rounded" />
+          <div className="h-4 w-64 bg-[var(--border-hover)] rounded" />
         </div>
       </div>
     );
