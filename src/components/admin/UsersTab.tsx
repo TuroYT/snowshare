@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import Skeleton from "@mui/material/Skeleton";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import CreateUserDialog from "./CreateUserDialog";
 
 interface User {
@@ -92,27 +92,24 @@ export default function UsersTab() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {/* Stat cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[0, 1].map((i) => (
             <div key={i} className="rounded-xl p-4 border border-[var(--border)]/50 bg-[var(--surface)]/20">
-              <Skeleton animation="wave" variant="text" width={96} height={18} sx={{ mb: 1 }} />
-              <Skeleton animation="wave" variant="text" width={64} height={40} />
+              <WaveSkeleton variant="text" width={96} height={18} sx={{ mb: 1 }} />
+              <WaveSkeleton variant="text" width={64} height={40} />
             </div>
           ))}
         </div>
-        {/* Search bar */}
-        <Skeleton animation="wave" variant="rounded" height={42} />
-        {/* User rows */}
+        <WaveSkeleton variant="rounded" height={42} />
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)]/50 bg-[var(--surface)]/20">
             <div>
-              <Skeleton animation="wave" variant="text" width={160} height={22} />
-              <Skeleton animation="wave" variant="text" width={224} height={18} />
+              <WaveSkeleton variant="text" width={160} height={22} />
+              <WaveSkeleton variant="text" width={224} height={18} />
             </div>
             <div className="flex gap-2">
-              <Skeleton animation="wave" variant="rounded" width={80} height={34} />
-              <Skeleton animation="wave" variant="rounded" width={80} height={34} />
+              <WaveSkeleton variant="rounded" width={80} height={34} />
+              <WaveSkeleton variant="rounded" width={80} height={34} />
             </div>
           </div>
         ))}

@@ -19,8 +19,8 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Skeleton,
 } from "@mui/material";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { availableProviders } from "@/lib/providers";
 import Link from "next/link";
@@ -121,20 +121,20 @@ export default function OAuthProvidersTab() {
 
   if (loading) {
     return (
-      <Box sx={{ space: 2 }}>
-        <Skeleton animation="wave" variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
-        <Skeleton animation="wave" variant="text" width={384} height={22} sx={{ mb: 3 }} />
+      <Box>
+        <WaveSkeleton variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
+        <WaveSkeleton variant="text" width={384} height={22} sx={{ mb: 3 }} />
         <Grid container spacing={3}>
           {[0, 1, 2].map((i) => (
             <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
               <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, p: 2 }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Skeleton animation="wave" variant="text" width={96} height={26} />
-                  <Skeleton animation="wave" variant="rounded" width={64} height={24} sx={{ borderRadius: "9999px" }} />
+                  <WaveSkeleton variant="text" width={96} height={26} />
+                  <WaveSkeleton variant="rounded" width={64} height={24} sx={{ borderRadius: "9999px" }} />
                 </Box>
-                <Skeleton animation="wave" variant="rounded" height={40} sx={{ mb: 1.5 }} />
-                <Skeleton animation="wave" variant="rounded" height={40} sx={{ mb: 2 }} />
-                <Skeleton animation="wave" variant="rounded" height={38} />
+                <WaveSkeleton variant="rounded" height={40} sx={{ mb: 1.5 }} />
+                <WaveSkeleton variant="rounded" height={40} sx={{ mb: 2 }} />
+                <WaveSkeleton variant="rounded" height={38} />
               </Box>
             </Grid>
           ))}

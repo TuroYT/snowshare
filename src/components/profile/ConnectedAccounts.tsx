@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Skeleton from "@mui/material/Skeleton";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { providerIcons } from "@/lib/providers-icons";
 
 type Account = {
@@ -166,22 +166,20 @@ export default function ConnectedAccounts() {
   if (loading) {
     return (
       <div className="modern-card p-6">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Skeleton animation="wave" variant="rounded" width={48} height={48} sx={{ flexShrink: 0 }} />
+          <WaveSkeleton variant="rounded" width={48} height={48} sx={{ flexShrink: 0 }} />
           <div>
-            <Skeleton animation="wave" variant="text" width={176} height={28} />
-            <Skeleton animation="wave" variant="text" width={240} height={20} />
+            <WaveSkeleton variant="text" width={176} height={28} />
+            <WaveSkeleton variant="text" width={240} height={20} />
           </div>
         </div>
-        {/* Provider rows */}
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)]/50 bg-[var(--surface)]/20 mb-3">
             <div className="flex items-center gap-3">
-              <Skeleton animation="wave" variant="circular" width={32} height={32} />
-              <Skeleton animation="wave" variant="text" width={112} height={22} />
+              <WaveSkeleton variant="circular" width={32} height={32} />
+              <WaveSkeleton variant="text" width={112} height={22} />
             </div>
-            <Skeleton animation="wave" variant="rounded" width={80} height={34} />
+            <WaveSkeleton variant="rounded" width={80} height={34} />
           </div>
         ))}
       </div>

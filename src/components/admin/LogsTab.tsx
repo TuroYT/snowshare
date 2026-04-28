@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import Skeleton from "@mui/material/Skeleton";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import IpGeoModal from "@/components/admin/IpGeoModal";
 
 interface IpGeoData {
@@ -308,16 +308,16 @@ export default function LogsTab() {
           </thead>
           <tbody className="divide-y divide-gray-700/30">
             {loading ? (
-              Array.from({ length: 8 }).map((_, i) => (
+              Array.from({ length: pagination.limit }).map((_, i) => (
                 <tr key={i}>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="rounded" width={64} height={26} sx={{ borderRadius: "9999px" }} /></td>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="rounded" width={80} height={26} /></td>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="text" width={112} height={20} /></td>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="text" width={96} height={20} /></td>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="text" width={112} height={20} /></td>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="text" width={112} height={20} /></td>
-                  <td className="py-3 px-4"><Skeleton animation="wave" variant="rounded" width={64} height={22} sx={{ borderRadius: "9999px" }} /></td>
-                  <td className="py-3 px-4 text-right"><Skeleton animation="wave" variant="rounded" width={64} height={30} sx={{ ml: "auto" }} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={64} height={26} sx={{ borderRadius: "9999px" }} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={80} height={26} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={96} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={64} height={22} sx={{ borderRadius: "9999px" }} /></td>
+                  <td className="py-3 px-4 text-right"><WaveSkeleton variant="rounded" width={64} height={30} sx={{ ml: "auto" }} /></td>
                 </tr>
               ))
             ) : logs.length === 0 ? (
