@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import Skeleton from "@mui/material/Skeleton";
 import { providerIcons } from "@/lib/providers-icons";
 
 type Account = {
@@ -164,23 +165,23 @@ export default function ConnectedAccounts() {
 
   if (loading) {
     return (
-      <div className="modern-card p-6 animate-pulse">
+      <div className="modern-card p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="h-12 w-12 rounded-xl bg-[var(--border-hover)] flex-shrink-0" />
-          <div className="space-y-2">
-            <div className="h-5 w-44 bg-[var(--border-hover)] rounded" />
-            <div className="h-3 w-60 bg-[var(--border-hover)] rounded" />
+          <Skeleton animation="wave" variant="rounded" width={48} height={48} sx={{ flexShrink: 0 }} />
+          <div>
+            <Skeleton animation="wave" variant="text" width={176} height={28} />
+            <Skeleton animation="wave" variant="text" width={240} height={20} />
           </div>
         </div>
         {/* Provider rows */}
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)]/50 bg-[var(--surface)]/20 mb-3">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-[var(--border-hover)]" />
-              <div className="h-4 w-28 bg-[var(--border-hover)] rounded" />
+              <Skeleton animation="wave" variant="circular" width={32} height={32} />
+              <Skeleton animation="wave" variant="text" width={112} height={22} />
             </div>
-            <div className="h-8 w-20 bg-[var(--border-hover)] rounded" />
+            <Skeleton animation="wave" variant="rounded" width={80} height={34} />
           </div>
         ))}
       </div>

@@ -19,6 +19,7 @@ import {
   Alert,
   CircularProgress,
   IconButton,
+  Skeleton,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { availableProviders } from "@/lib/providers";
@@ -120,27 +121,25 @@ export default function OAuthProvidersTab() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="space-y-2 mb-4">
-          <div className="h-6 w-48 bg-[var(--border-hover)] rounded" />
-          <div className="h-4 w-96 bg-[var(--border-hover)] rounded" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Box sx={{ space: 2 }}>
+        <Skeleton animation="wave" variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
+        <Skeleton animation="wave" variant="text" width={384} height={22} sx={{ mb: 3 }} />
+        <Grid container spacing={3}>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-lg border border-[var(--border)]/50 p-4 space-y-4 bg-[var(--surface)]/20">
-              <div className="flex justify-between items-start">
-                <div className="h-5 w-24 bg-[var(--border-hover)] rounded" />
-                <div className="h-5 w-16 bg-[var(--border-hover)] rounded-full" />
-              </div>
-              <div className="space-y-2">
-                <div className="h-8 bg-[var(--border-hover)] rounded" />
-                <div className="h-8 bg-[var(--border-hover)] rounded" />
-              </div>
-              <div className="h-9 bg-[var(--border-hover)] rounded" />
-            </div>
+            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
+              <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, p: 2 }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Skeleton animation="wave" variant="text" width={96} height={26} />
+                  <Skeleton animation="wave" variant="rounded" width={64} height={24} sx={{ borderRadius: "9999px" }} />
+                </Box>
+                <Skeleton animation="wave" variant="rounded" height={40} sx={{ mb: 1.5 }} />
+                <Skeleton animation="wave" variant="rounded" height={40} sx={{ mb: 2 }} />
+                <Skeleton animation="wave" variant="rounded" height={38} />
+              </Box>
+            </Grid>
           ))}
-        </div>
-      </div>
+        </Grid>
+      </Box>
     );
   }
 

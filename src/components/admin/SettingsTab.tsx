@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import Skeleton from "@mui/material/Skeleton";
 import MDEditor from "@uiw/react-md-editor";
 import { Snackbar, Alert } from "@mui/material";
 import { convertFromMB, convertToMB } from "@/lib/formatSize";
@@ -210,20 +211,20 @@ export default function SettingsTab() {
 
   if (loading) {
     return (
-      <div className="space-y-6 w-full animate-pulse">
+      <div className="space-y-6 w-full">
         {[0, 1, 2].map((s) => (
           <div key={s} className="space-y-3">
-            <div className="h-5 w-40 bg-[var(--border-hover)] rounded" />
+            <Skeleton animation="wave" variant="text" width={160} height={28} />
             {[0, 1, 2].map((r) => (
               <div
                 key={r}
                 className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50"
               >
-                <div className="space-y-2 flex-1 mr-8">
-                  <div className="h-4 w-48 bg-[var(--border-hover)] rounded" />
-                  <div className="h-3 w-72 bg-[var(--border-hover)] rounded" />
+                <div className="flex-1 mr-8">
+                  <Skeleton animation="wave" variant="text" width={192} height={22} />
+                  <Skeleton animation="wave" variant="text" width={288} height={18} />
                 </div>
-                <div className="h-8 w-14 bg-[var(--border-hover)] rounded-full flex-shrink-0" />
+                <Skeleton animation="wave" variant="rounded" width={56} height={32} sx={{ borderRadius: "9999px", flexShrink: 0 }} />
               </div>
             ))}
           </div>

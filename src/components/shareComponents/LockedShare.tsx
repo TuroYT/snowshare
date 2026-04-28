@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import Skeleton from "@mui/material/Skeleton";
 
 interface LockedShareProps {
   /** Share type: 'link', 'file', or 'paste' */
@@ -15,12 +16,10 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
 
   if (isLoading) {
     return (
-      <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-[var(--border-hover)]" />
-          <div className="h-5 w-48 bg-[var(--border-hover)] rounded" />
-          <div className="h-4 w-64 bg-[var(--border-hover)] rounded" />
-        </div>
+      <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-center flex flex-col items-center gap-4">
+        <Skeleton animation="wave" variant="rounded" width={48} height={48} />
+        <Skeleton animation="wave" variant="text" width={192} height={28} />
+        <Skeleton animation="wave" variant="text" width={256} height={20} />
       </div>
     );
   }
