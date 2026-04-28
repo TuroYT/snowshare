@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Snackbar, Alert as MuiAlert } from "@mui/material";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import Image from "next/image";
@@ -331,11 +332,55 @@ export default function BrandingTab() {
   };
 
   if (loading) {
+    const Section = ({ fields }: { fields: number }) => (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <WaveSkeleton variant="rounded" width={32} height={32} />
+          <WaveSkeleton variant="text" width={160} height={26} />
+        </div>
+        <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          {Array.from({ length: fields }).map((_, i) => (
+            <div key={i}>
+              <WaveSkeleton variant="text" width={120} height={18} sx={{ mb: 1 }} />
+              <WaveSkeleton variant="rounded" height={40} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
-          <p className="mt-2 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
+      <div className="space-y-6 w-full">
+        <Section fields={2} />
+        <Section fields={2} />
+        <Section fields={1} />
+        {/* Colors — section avec presets + 4 groupes de color pickers */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <WaveSkeleton variant="rounded" width={32} height={32} />
+            <WaveSkeleton variant="text" width={160} height={26} />
+          </div>
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              {[0, 1, 2, 3].map((i) => (
+                <WaveSkeleton key={i} variant="rounded" width={80} height={32} />
+              ))}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i}>
+                  <WaveSkeleton variant="text" width={80} height={16} sx={{ mb: 0.5 }} />
+                  <WaveSkeleton variant="rounded" height={40} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <Section fields={2} />
+        {/* Action buttons */}
+        <div className="flex gap-3 justify-end">
+          <WaveSkeleton variant="rounded" width={120} height={42} />
+          <WaveSkeleton variant="rounded" width={120} height={42} />
         </div>
       </div>
     );

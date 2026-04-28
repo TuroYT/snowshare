@@ -173,15 +173,33 @@ export default function ConnectedAccounts() {
             <WaveSkeleton variant="text" width={240} height={20} />
           </div>
         </div>
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)]/50 bg-[var(--surface)]/20 mb-3">
-            <div className="flex items-center gap-3">
-              <WaveSkeleton variant="circular" width={32} height={32} />
-              <WaveSkeleton variant="text" width={112} height={22} />
+
+        {/* Comptes connectés */}
+        <WaveSkeleton variant="text" width={160} height={26} sx={{ mb: 1.5 }} />
+        <div className="space-y-2 mb-6">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex items-center justify-between p-4 border border-[var(--border)] rounded-xl bg-[var(--surface)]/50">
+              <div className="flex items-center gap-3">
+                <WaveSkeleton variant="circular" width={24} height={24} />
+                <div>
+                  <WaveSkeleton variant="text" width={120} height={20} />
+                  <WaveSkeleton variant="text" width={160} height={16} />
+                </div>
+              </div>
+              <WaveSkeleton variant="rounded" width={36} height={36} />
             </div>
-            <WaveSkeleton variant="rounded" width={80} height={34} />
+          ))}
+        </div>
+
+        {/* Fournisseurs disponibles */}
+        <div className="border-t border-[var(--border)] pt-6">
+          <WaveSkeleton variant="text" width={192} height={26} sx={{ mb: 1.5 }} />
+          <div className="flex flex-wrap gap-2">
+            {[0, 1, 2].map((i) => (
+              <WaveSkeleton key={i} variant="rounded" width={110} height={38} />
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     );
   }
