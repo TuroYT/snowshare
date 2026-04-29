@@ -25,6 +25,7 @@ export default function ConnectedAccounts() {
     loading,
     error: accountsError,
     refetch: refetchAccounts,
+    clearError: clearAccountsError,
   } = useFetch<{ accounts: Account[] }>("/api/user/accounts", {
     errorMessage: t("profile.accounts.error_fetch"),
   });
@@ -223,7 +224,7 @@ export default function ConnectedAccounts() {
                 </svg>
                 <p className="text-sm">{displayError}</p>
               </div>
-              <button onClick={() => setError(null)} className="text-sm hover:opacity-70">
+              <button onClick={() => { setError(null); clearAccountsError(); }} className="text-sm hover:opacity-70">
                 ✕
               </button>
             </div>
