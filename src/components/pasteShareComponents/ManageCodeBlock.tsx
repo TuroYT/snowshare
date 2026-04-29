@@ -74,7 +74,7 @@ const ManageCodeBlock: React.FC<{
       const data = await res.json();
       if (!res.ok || data?.error) {
         setError(
-          data?.error || t("pasteshare_ui.creation_error", "Erreur lors de la création du partage")
+          data?.error || t("pasteshare_ui.creation_error", "Failed to create share")
         );
       } else {
         const pasteShare = data?.share?.pasteShare;
@@ -82,10 +82,10 @@ const ManageCodeBlock: React.FC<{
           setSuccess(`${window.location.origin}/p/${pasteShare.slug}`);
           setSuccessSlug(pasteShare.slug);
         } else if (pasteShare?.id) setSuccess(`${window.location.origin}/p/${pasteShare.id}`);
-        else setSuccess(t("pasteshare_ui.created", "Partage créé"));
+        else setSuccess(t("pasteshare_ui.created", "Share created"));
       }
     } catch {
-      setError(t("pasteshare_ui.network_error", "Erreur réseau — impossible de créer le partage"));
+      setError(t("pasteshare_ui.network_error", "Network error — could not create share"));
     } finally {
       setLoading(false);
     }
@@ -152,8 +152,8 @@ const ManageCodeBlock: React.FC<{
       <SubmitButton
         loading={loading}
         disabled={loading || !code.trim()}
-        loadingText={t("pasteshare_ui.creating", "Création en cours...")}
-        submitText={t("pasteshare_ui.submit", "Créer le paste")}
+        loadingText={t("pasteshare_ui.creating", "Creating...")}
+        submitText={t("pasteshare_ui.submit", "Create paste")}
         iconPath="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
       />
     </form>

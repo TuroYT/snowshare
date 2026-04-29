@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useFetch } from "@/hooks/useFetch";
 
 interface ApiKey {
   id: string;
@@ -14,8 +15,8 @@ interface ApiKey {
 
 export default function ApiKeysSection() {
   const { t } = useTranslation();
+  const { data: keysData, loading } = useFetch<{ data: ApiKey[] }>("/api/keys");
   const [keys, setKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyExpiry, setNewKeyExpiry] = useState("");
@@ -23,23 +24,9 @@ export default function ApiKeysSection() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchKeys();
-  }, []);
-
-  const fetchKeys = async () => {
-    try {
-      const res = await fetch("/api/keys");
-      if (res.ok) {
-        const data = await res.json();
-        setKeys(data.data);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  };
+  React.useEffect(() => {
+    if (keysData?.data) setKeys(keysData.data);
+  }, [keysData]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

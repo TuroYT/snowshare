@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { providerIcons } from "@/lib/providers-icons";
+import { useFetch } from "@/hooks/useFetch";
 
 type Account = {
   id: string;
@@ -19,18 +20,30 @@ type AvailableProvider = {
 
 export default function ConnectedAccounts() {
   const { t } = useTranslation();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [availableProviders, setAvailableProviders] = useState<AvailableProvider[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: accountsData,
+    loading,
+    error: accountsError,
+    refetch: refetchAccounts,
+  } = useFetch<{ accounts: Account[] }>("/api/user/accounts", {
+    errorMessage: t("profile.accounts.error_fetch"),
+  });
+  const { data: providersData } = useFetch<{ providers: AvailableProvider[] }>(
+    "/api/oauth-providers"
+  );
+
+  const accounts = accountsData?.accounts ?? [];
+  const availableProviders = providersData?.providers ?? [];
+
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [accountToDelete, setAccountToDelete] = useState<Account | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const displayError = error ?? accountsError;
+
   useEffect(() => {
-    fetchAccounts();
-    fetchAvailableProviders();
     const params = new URLSearchParams(window.location.search);
     const linkToken = params.get("linkToken");
     const linked = params.get("linked");
@@ -54,7 +67,7 @@ export default function ConnectedAccounts() {
 
       if (res.ok) {
         setSuccess(t("profile.accounts.unlink_success"));
-        fetchAccounts();
+        refetchAccounts();
       } else {
         const data = await res.json();
         setError(data.error || t("profile.accounts.error_link"));
@@ -62,36 +75,7 @@ export default function ConnectedAccounts() {
     } catch (_err) {
       setError(t("profile.accounts.error_link"));
     } finally {
-      // clear the URL params
       window.history.replaceState({}, "", window.location.pathname + "?tab=accounts");
-    }
-  };
-
-  const fetchAccounts = async () => {
-    try {
-      const res = await fetch("/api/user/accounts");
-      if (res.ok) {
-        const data = await res.json();
-        setAccounts(data.accounts);
-      } else {
-        setError(t("profile.accounts.error_fetch"));
-      }
-    } catch (_err) {
-      setError(t("profile.accounts.error_fetch"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAvailableProviders = async () => {
-    try {
-      const res = await fetch("/api/oauth-providers");
-      if (res.ok) {
-        const data = await res.json();
-        setAvailableProviders(data.providers);
-      }
-    } catch (err) {
-      console.error("Error fetching providers:", err);
     }
   };
 
@@ -138,7 +122,7 @@ export default function ConnectedAccounts() {
       });
 
       if (res.ok) {
-        setAccounts(accounts.filter((a) => a.id !== accountToDelete.id));
+        refetchAccounts();
         setSuccess(t("profile.accounts.unlink_success"));
         setDeleteDialogOpen(false);
       } else {
@@ -220,7 +204,7 @@ export default function ConnectedAccounts() {
           </div>
         </div>
 
-        {error && (
+        {displayError && (
           <div className="modern-alert modern-alert-error mb-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
@@ -237,7 +221,7 @@ export default function ConnectedAccounts() {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-sm">{error}</p>
+                <p className="text-sm">{displayError}</p>
               </div>
               <button onClick={() => setError(null)} className="text-sm hover:opacity-70">
                 ✕

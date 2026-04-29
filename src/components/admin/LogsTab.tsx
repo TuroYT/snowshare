@@ -50,6 +50,7 @@ export default function LogsTab() {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
@@ -65,6 +66,7 @@ export default function LogsTab() {
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const params = new URLSearchParams({
         page: pagination.page.toString(),
@@ -81,10 +83,11 @@ export default function LogsTab() {
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching logs:", error);
+      setFetchError(t("admin.error_load_data"));
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, typeFilter, search]);
+  }, [pagination.page, pagination.limit, typeFilter, search, t]);
 
   useEffect(() => {
     fetchLogs();
@@ -273,6 +276,12 @@ export default function LogsTab() {
           ))}
         </div>
       </div>
+
+      {fetchError && (
+        <div className="bg-red-600/10 border border-red-700/30 rounded-xl p-4 text-red-400">
+          {fetchError}
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
