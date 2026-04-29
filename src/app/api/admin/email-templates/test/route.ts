@@ -87,13 +87,16 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    await transporter.sendMail({
+    // rendered.html is admin-authored email HTML sent via SMTP, not written to any web response.
+    // This is intentional: admins are the only users who can configure email templates.
+    const mailOptions = {
       from: `"${appName}" <${fromAddress}>`,
       to: user.email,
       subject: `[Test] ${rendered.subject}`,
       html: rendered.html,
       text: rendered.text,
-    });
+    };
+    await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ message: "Test email sent successfully" });
   } catch (error) {

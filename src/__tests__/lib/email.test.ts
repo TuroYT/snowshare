@@ -142,9 +142,11 @@ describe("email utility", () => {
       await sendVerificationEmail("user@example.com", "abc123");
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      // HTML body HTML-escapes & to &amp; (correct HTML)
+      // HTML body HTML-escapes & to &amp; (correct HTML in attributes/text)
       expect(callArgs.html).toContain("/auth/verify-email?token=abc123");
       expect(callArgs.html).toContain("user%40example.com");
+      expect(callArgs.html).toContain("&amp;email="); // & is escaped in HTML
+      expect(callArgs.html).not.toMatch(/[^;]&email=/); // raw & must not appear (except as &amp;)
       // Plain text body keeps raw URL
       expect(callArgs.text).toContain("/auth/verify-email?token=abc123&email=user%40example.com");
     });
