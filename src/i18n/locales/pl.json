@@ -372,7 +372,8 @@
       "settings": "Ustawienia",
       "branding": "Branding",
       "logs": "Logi udostępnień",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "email": "Szablony e-mail"
     },
     "oauth": {
       "title": "Dostawcy OAuth",
@@ -620,6 +621,29 @@
       "section_typography": "Typografia",
       "font_family": "Czcionka",
       "font_family_hint": "Czcionka używana globalnie w całej aplikacji"
+    },
+    "email_templates": {
+      "title": "Szablony e-mail",
+      "description": "Dostosuj treść HTML/tekstową i temat wychodzących e-maili. Użyj {{appName}}, {{shareTitle}}, {{shareUrl}} lub {{verifyUrl}} jako zmiennych.",
+      "default_locale": "Domyślny język",
+      "type_share": "E-mail udostępniania",
+      "type_verify": "E-mail weryfikacyjny",
+      "subject": "Temat",
+      "subject_placeholder": "Temat e-maila…",
+      "html_body": "Treść HTML",
+      "text_body": "Treść w formacie tekstowym",
+      "text_placeholder": "Tekstowa wersja zastępcza…",
+      "saving": "Zapisywanie…",
+      "reset_defaults": "Przywróć domyślne",
+      "send_test": "Wyślij testowy e-mail",
+      "sending_test": "Wysyłanie…",
+      "preview_title": "Podgląd na żywo",
+      "preview_subject": "Temat",
+      "preview_html": "HTML",
+      "preview_text": "Tekst zwykły",
+      "test_sent": "Testowy e-mail wysłany na Twój adres.",
+      "test_error": "Nie udało się wysłać testowego e-maila.",
+      "error_load": "Nie udało się załadować szablonów e-mail."
     },
     "update": {
       "title": "Dostępna aktualizacja",

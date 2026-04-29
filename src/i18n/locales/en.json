@@ -371,7 +371,8 @@
       "settings": "Settings",
       "branding": "Branding",
       "logs": "Share Logs",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "email": "Email Templates"
     },
     "oauth": {
       "title": "OAuth Providers",
@@ -620,6 +621,29 @@
       "section_typography": "Typography",
       "font_family": "Font Family",
       "font_family_hint": "The font used globally across the entire application"
+    },
+    "email_templates": {
+      "title": "Email Templates",
+      "description": "Customize the HTML/text content and subject line of outgoing emails. Use {{appName}}, {{shareTitle}}, {{shareUrl}}, or {{verifyUrl}} as placeholders.",
+      "default_locale": "Default locale",
+      "type_share": "Share Email",
+      "type_verify": "Verification Email",
+      "subject": "Subject",
+      "subject_placeholder": "Email subject…",
+      "html_body": "HTML Body",
+      "text_body": "Plain Text Body",
+      "text_placeholder": "Plain text fallback…",
+      "saving": "Saving…",
+      "reset_defaults": "Reset to defaults",
+      "send_test": "Send test email",
+      "sending_test": "Sending…",
+      "preview_title": "Live Preview",
+      "preview_subject": "Subject",
+      "preview_html": "HTML",
+      "preview_text": "Plain Text",
+      "test_sent": "Test email sent to your address.",
+      "test_error": "Failed to send test email.",
+      "error_load": "Failed to load email templates."
     },
     "update": {
       "title": "Update Available",

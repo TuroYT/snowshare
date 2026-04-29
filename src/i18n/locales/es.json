@@ -367,7 +367,8 @@
       "settings": "Configuración",
       "branding": "Personalización",
       "logs": "Registros de Compartidos",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "email": "Plantillas de correo"
     },
     "oauth": {
       "title": "Proveedores OAuth",
@@ -616,6 +617,29 @@
       "section_typography": "Tipografía",
       "font_family": "Fuente",
       "font_family_hint": "La fuente utilizada globalmente en toda la aplicación"
+    },
+    "email_templates": {
+      "title": "Plantillas de correo",
+      "description": "Personalice el contenido HTML/texto y el asunto de los correos salientes. Use {{appName}}, {{shareTitle}}, {{shareUrl}} o {{verifyUrl}} como variables.",
+      "default_locale": "Idioma por defecto",
+      "type_share": "Correo de compartir",
+      "type_verify": "Correo de verificación",
+      "subject": "Asunto",
+      "subject_placeholder": "Asunto del correo…",
+      "html_body": "Cuerpo HTML",
+      "text_body": "Cuerpo de texto plano",
+      "text_placeholder": "Texto alternativo…",
+      "saving": "Guardando…",
+      "reset_defaults": "Restaurar valores predeterminados",
+      "send_test": "Enviar correo de prueba",
+      "sending_test": "Enviando…",
+      "preview_title": "Vista previa en vivo",
+      "preview_subject": "Asunto",
+      "preview_html": "HTML",
+      "preview_text": "Texto plano",
+      "test_sent": "Correo de prueba enviado a su dirección.",
+      "test_error": "Error al enviar el correo de prueba.",
+      "error_load": "Error al cargar las plantillas de correo."
     },
     "update": {
       "title": "Actualización disponible",

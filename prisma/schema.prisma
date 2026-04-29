@@ -180,6 +180,15 @@ model Settings {
   smtpFrom                  String?
   smtpSecure                Boolean @default(false)
   emailVerificationRequired Boolean @default(false)
+
+  // Email Templates
+  emailDefaultLocale        String  @default("en")
+  shareEmailSubject         String?
+  shareEmailHtml            String?
+  shareEmailText            String?
+  verifyEmailSubject        String?
+  verifyEmailHtml           String?
+  verifyEmailText           String?
 }
 
 model CustomLink {

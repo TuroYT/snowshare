@@ -35,6 +35,12 @@ const smtpSettings = {
   smtpFrom: "noreply@example.com",
   smtpSecure: false,
   appName: "TestApp",
+  shareEmailSubject: null,
+  shareEmailHtml: null,
+  shareEmailText: null,
+  verifyEmailSubject: null,
+  verifyEmailHtml: null,
+  verifyEmailText: null,
 };
 
 describe("email utility", () => {
@@ -136,7 +142,10 @@ describe("email utility", () => {
       await sendVerificationEmail("user@example.com", "abc123");
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain("/auth/verify-email?token=abc123&email=user%40example.com");
+      // HTML body HTML-escapes & to &amp; (correct HTML)
+      expect(callArgs.html).toContain("/auth/verify-email?token=abc123");
+      expect(callArgs.html).toContain("user%40example.com");
+      // Plain text body keeps raw URL
       expect(callArgs.text).toContain("/auth/verify-email?token=abc123&email=user%40example.com");
     });
 
@@ -336,6 +345,77 @@ describe("email utility", () => {
       await expect(
         sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"])
       ).rejects.toThrow("SMTP connection refused");
+    });
+  });
+
+  // ─── Custom templates ──────────────────────────────────────────────────────────
+
+  describe("custom templates", () => {
+    it("should use custom share email subject when configured", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...smtpSettings,
+        shareEmailSubject: "Custom: {{shareTitle}} via {{appName}}",
+      });
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ subject: "Custom: photo.jpg via TestApp" })
+      );
+    });
+
+    it("should use custom share email HTML when configured", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...smtpSettings,
+        shareEmailHtml: "<p>Download: {{shareUrl}}</p>",
+      });
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      const callArgs = mockSendMail.mock.calls[0][0];
+      expect(callArgs.html).toBe("<p>Download: https://app.example.com/f/abc</p>");
+    });
+
+    it("should use custom verify email subject when configured", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...smtpSettings,
+        verifyEmailSubject: "Confirm your {{appName}} account",
+      });
+
+      await sendVerificationEmail("user@example.com", "tok123");
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ subject: "Confirm your TestApp account" })
+      );
+    });
+
+    it("should HTML-escape variables in HTML templates", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...smtpSettings,
+        shareEmailHtml: "<p>{{shareTitle}}</p>",
+        shareEmailSubject: null,
+        shareEmailText: null,
+      });
+
+      await sendShareEmail("https://app.example.com/f/abc", "<script>alert(1)</script>", [
+        "alice@example.com",
+      ]);
+
+      const callArgs = mockSendMail.mock.calls[0][0];
+      expect(callArgs.html).toContain("&lt;script&gt;");
+      expect(callArgs.html).not.toContain("<script>");
+    });
+
+    it("should NOT HTML-escape variables in text templates", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...smtpSettings,
+        shareEmailText: "Get it here: {{shareUrl}}",
+      });
+
+      await sendShareEmail("https://app.example.com/f/abc", "photo.jpg", ["alice@example.com"]);
+
+      const callArgs = mockSendMail.mock.calls[0][0];
+      expect(callArgs.text).toBe("Get it here: https://app.example.com/f/abc");
     });
   });
 });
