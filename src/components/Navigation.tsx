@@ -72,6 +72,7 @@ export default function Navigation() {
 
   // Fetch user's profile to determine admin status (endpoint returns { isAdmin })
   useEffect(() => {
+    if (status !== "authenticated") return;
     fetch("/api/user/profile")
       .then((res) => {
         if (!res.ok) return null;

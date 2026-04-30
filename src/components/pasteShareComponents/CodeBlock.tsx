@@ -56,10 +56,25 @@ function getExtension(language: string) {
   }
 }
 
+const theme = atomoneInit({ settings: { caret: "#c6c6c6", fontFamily: "monospace" } });
+
+const basicSetup = {
+  lineNumbers: true,
+  foldGutter: false,
+  dropCursor: false,
+  allowMultipleSelections: false,
+  searchKeymap: false,
+};
+
 const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false }) => {
   const [value, setValue] = React.useState(code);
 
   React.useEffect(() => setValue(code), [code]);
+
+  const extensions = React.useMemo(() => {
+    const ext = getExtension(language);
+    return Array.isArray(ext) ? ext : [ext];
+  }, [language]);
 
   return (
     <div className="codemirror-scroll-fix codemirror-container text-left text-sm rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-2 h-full w-full">
@@ -69,20 +84,9 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
           height="100%"
           width="100%"
           readOnly={readOnly}
-          basicSetup={{
-            lineNumbers: true,
-            foldGutter: false,
-            dropCursor: false,
-            allowMultipleSelections: false,
-            searchKeymap: false,
-          }}
-          theme={atomoneInit({
-            settings: {
-              caret: "#c6c6c6",
-              fontFamily: "monospace",
-            },
-          })}
-          extensions={[getExtension(language)]}
+          basicSetup={basicSetup}
+          theme={theme}
+          extensions={extensions}
           onChange={(v) => {
             setValue(v);
             if (onChange) onChange(v);

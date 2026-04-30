@@ -72,11 +72,7 @@ const FileShare: React.FC = () => {
     return null;
   };
 
-  const getTotalSize = () => {
-    if (files.length === 0) return 0;
-
-    return files.reduce((sum, f) => sum + f.file.size, 0);
-  };
+  const totalSize = React.useMemo(() => files.reduce((sum, f) => sum + f.file.size, 0), [files]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -245,7 +241,6 @@ const FileShare: React.FC = () => {
       return;
     }
 
-    const totalSize = getTotalSize();
     const maxTotalMB = isAuthenticated
       ? maxFileSizeAuth / (1024 * 1024)
       : maxFileSizeAnon / (1024 * 1024);
@@ -390,8 +385,6 @@ const FileShare: React.FC = () => {
       } else {
         let shareSlug: string | null = null;
         let shareId: string | null = null;
-        const totalSize = getTotalSize();
-
         const uploadNextFile = async (index: number) => {
           if (index >= files.length) {
             if (shareSlug) {
@@ -657,7 +650,7 @@ const FileShare: React.FC = () => {
                   {t("fileshare.selected_files", "Selected Files")} ({files.length})
                 </h3>
                 <p className="text-sm text-[var(--foreground-muted)]">
-                  {t("fileshare.total_size", "Total")}: {formatFileSize(getTotalSize())}
+                  {t("fileshare.total_size", "Total")}: {formatFileSize(totalSize)}
                 </p>
               </div>
               <div className="max-h-48 overflow-y-auto space-y-2">

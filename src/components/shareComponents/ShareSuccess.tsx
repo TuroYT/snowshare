@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { QRCodeSVG } from "qrcode.react";
+import { useFetch } from "@/hooks/useFetch";
+import { useSession } from "next-auth/react";
 
 interface ShareSuccessProps {
   url: string;
@@ -32,12 +34,14 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
-
-  const [emailEnabled, setEmailEnabled] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [recipientsRaw, setRecipientsRaw] = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [emailError, setEmailError] = useState("");
+
+  const { data: settingsData } = useFetch<{ settings: { emailEnabled: boolean } }>("/api/settings");
+  const { data: session } = useSession();
+  const emailEnabled = !!settingsData?.settings?.emailEnabled;
+  const isAuthenticated = !!session?.user?.id;
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -64,28 +68,6 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
-
-  useEffect(() => {
-    async function checkFeatures() {
-      try {
-        const [settingsRes, sessionRes] = await Promise.all([
-          fetch("/api/settings"),
-          fetch("/api/auth/session"),
-        ]);
-        if (settingsRes.ok) {
-          const data = await settingsRes.json();
-          setEmailEnabled(!!data.settings?.emailEnabled);
-        }
-        if (sessionRes.ok) {
-          const session = await sessionRes.json();
-          setIsAuthenticated(!!session?.user?.id);
-        }
-      } catch {
-        // silently ignore — email section simply won't show
-      }
-    }
-    checkFeatures();
   }, []);
 
   const handleSendEmail = async () => {

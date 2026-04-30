@@ -1,7 +1,7 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import LinkShare from "@/components/LinkShare";
 import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
@@ -9,16 +9,23 @@ import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 
+const LINK_SHARE = <LinkShare />;
+const PASTE_SHARE = <PasteShare />;
+const FILE_SHARE = <FileShare />;
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
   const { t } = useTranslation();
   const { colors, branding } = useTheme();
 
-  const tabs = [
-    { id: "linkshare", label: t("tabs.linkshare", "LinkShare"), component: <LinkShare /> },
-    { id: "pasteshare", label: t("tabs.pasteshare", "PasteShare"), component: <PasteShare /> },
-    { id: "fileshare", label: t("tabs.fileshare", "FileShare"), component: <FileShare /> },
-  ];
+  const tabs = useMemo(
+    () => [
+      { id: "linkshare", label: t("tabs.linkshare", "LinkShare"), component: LINK_SHARE },
+      { id: "pasteshare", label: t("tabs.pasteshare", "PasteShare"), component: PASTE_SHARE },
+      { id: "fileshare", label: t("tabs.fileshare", "FileShare"), component: FILE_SHARE },
+    ],
+    [t]
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
