@@ -70,7 +70,7 @@ html {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.25s ease-in-out;
+  animation: fade-in 0.2s ease-in-out;
 }
 
 body {
@@ -347,10 +347,6 @@ body {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out both;
 }
 
 .animate-scale-in {
