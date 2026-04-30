@@ -10,6 +10,7 @@ import ViewLimitSettings from "./shareComponents/ViewLimitSettings";
 import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
+import ShareFormSkeleton from "./ShareFormSkeleton";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -147,11 +148,7 @@ const LinkShare: React.FC = () => {
   }
 
   if (settingsLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
-      </div>
-    );
+    return <ShareFormSkeleton />;
   }
 
   if (!isAuthenticated && allowAnonLinkShare === false) {

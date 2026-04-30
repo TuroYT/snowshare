@@ -20,6 +20,7 @@ import {
   CircularProgress,
   IconButton,
 } from "@mui/material";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { availableProviders } from "@/lib/providers";
 import Link from "next/link";
@@ -120,8 +121,28 @@ export default function OAuthProvidersTab() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress />
+      <Box>
+        <Paper sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}>
+          <WaveSkeleton variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
+          <WaveSkeleton variant="text" width={384} height={22} sx={{ mb: 3 }} />
+          <Grid container spacing={3}>
+            {[0, 1, 2].map((i) => (
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
+                <Paper
+                  variant="outlined"
+                  sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <WaveSkeleton variant="text" width={96} height={26} />
+                    <WaveSkeleton variant="rounded" width={64} height={24} sx={{ borderRadius: "9999px" }} />
+                  </Box>
+                  <WaveSkeleton variant="text" width="80%" height={20} sx={{ mb: 2, flexGrow: 1 }} />
+                  <WaveSkeleton variant="rounded" height={38} />
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
       </Box>
     );
   }

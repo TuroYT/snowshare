@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import CodeBlock from "./pasteShareComponents/CodeBlock";
 import ManageCodeBlock from "./pasteShareComponents/ManageCodeBlock";
 import LockedShare from "./shareComponents/LockedShare";
+import PasteShareSkeleton from "./PasteShareSkeleton";
 
 const PasteShare: React.FC = () => {
   const { t } = useTranslation();
@@ -37,11 +38,7 @@ const PasteShare: React.FC = () => {
   }, []);
 
   if (settingsLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
-      </div>
-    );
+    return <PasteShareSkeleton />;
   }
 
   if (!isAuthenticated && allowAnonPasteShare === false) {
