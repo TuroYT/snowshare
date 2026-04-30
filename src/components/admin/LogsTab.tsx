@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import IpGeoModal from "@/components/admin/IpGeoModal";
 
 interface IpGeoData {
@@ -316,14 +317,18 @@ export default function LogsTab() {
           </thead>
           <tbody className="divide-y divide-gray-700/30">
             {loading ? (
-              <tr>
-                <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-                    <span suppressHydrationWarning>{t("loading")}</span>
-                  </div>
-                </td>
-              </tr>
+              Array.from({ length: pagination.limit }).map((_, i) => (
+                <tr key={i}>
+                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={64} height={26} sx={{ borderRadius: "9999px" }} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={80} height={26} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={96} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
+                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={64} height={22} sx={{ borderRadius: "9999px" }} /></td>
+                  <td className="py-3 px-4 text-right"><WaveSkeleton variant="rounded" width={64} height={30} sx={{ ml: "auto" }} /></td>
+                </tr>
+              ))
             ) : logs.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
