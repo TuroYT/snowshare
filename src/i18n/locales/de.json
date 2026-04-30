@@ -367,7 +367,8 @@
       "settings": "Einstellungen",
       "branding": "Branding",
       "logs": "Freigabe-Logs",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "email": "E-Mail-Vorlagen"
     },
     "oauth": {
       "title": "OAuth-Anbieter",
@@ -616,6 +617,29 @@
       "section_typography": "Typografie",
       "font_family": "Schriftart",
       "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird"
+    },
+    "email_templates": {
+      "title": "E-Mail-Vorlagen",
+      "description": "Passen Sie den HTML-/Text-Inhalt und die Betreffzeile ausgehender E-Mails an. Verwenden Sie {{appName}}, {{shareTitle}}, {{shareUrl}} oder {{verifyUrl}} als Variablen.",
+      "default_locale": "Standardsprache",
+      "type_share": "Freigabe-E-Mail",
+      "type_verify": "Verifizierungs-E-Mail",
+      "subject": "Betreff",
+      "subject_placeholder": "E-Mail-Betreff…",
+      "html_body": "HTML-Körper",
+      "text_body": "Klartext-Körper",
+      "text_placeholder": "Klartext-Fallback…",
+      "saving": "Speichern…",
+      "reset_defaults": "Standardwerte wiederherstellen",
+      "send_test": "Test-E-Mail senden",
+      "sending_test": "Senden…",
+      "preview_title": "Live-Vorschau",
+      "preview_subject": "Betreff",
+      "preview_html": "HTML",
+      "preview_text": "Klartext",
+      "test_sent": "Test-E-Mail wurde an Ihre Adresse gesendet.",
+      "test_error": "Test-E-Mail konnte nicht gesendet werden.",
+      "error_load": "E-Mail-Vorlagen konnten nicht geladen werden."
     },
     "update": {
       "title": "Update verfügbar",

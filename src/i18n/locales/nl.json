@@ -375,7 +375,8 @@
       "settings": "Instellingen",
       "branding": "Huisstijl",
       "logs": "Share-logs",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "email": "E-mailsjablonen"
     },
     "oauth": {
       "title": "OAuth Providers",
@@ -623,6 +624,29 @@
       "section_typography": "Typografie",
       "font_family": "Lettertype",
       "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt"
+    },
+    "email_templates": {
+      "title": "E-mailsjablonen",
+      "description": "Pas de HTML-/tekstinhoud en de onderwerpregel van uitgaande e-mails aan. Gebruik {{appName}}, {{shareTitle}}, {{shareUrl}} of {{verifyUrl}} als variabelen.",
+      "default_locale": "Standaardtaal",
+      "type_share": "Deel-e-mail",
+      "type_verify": "Verificatie-e-mail",
+      "subject": "Onderwerp",
+      "subject_placeholder": "E-mailonderwerp…",
+      "html_body": "HTML-tekst",
+      "text_body": "Tekst zonder opmaak",
+      "text_placeholder": "Tekst zonder opmaak als alternatief…",
+      "saving": "Opslaan…",
+      "reset_defaults": "Standaardwaarden herstellen",
+      "send_test": "Test-e-mail verzenden",
+      "sending_test": "Verzenden…",
+      "preview_title": "Live voorbeeld",
+      "preview_subject": "Onderwerp",
+      "preview_html": "HTML",
+      "preview_text": "Tekst zonder opmaak",
+      "test_sent": "Test-e-mail verzonden naar uw adres.",
+      "test_error": "Test-e-mail verzenden mislukt.",
+      "error_load": "E-mailsjablonen laden mislukt."
     },
     "update": {
       "title": "Update beschikbaar",

@@ -371,7 +371,8 @@
       "settings": "Paramètres",
       "branding": "Personnalisation",
       "logs": "Logs des partages",
-      "oauth": "OAuth / SSO"
+      "oauth": "OAuth / SSO",
+      "email": "Modèles d'e-mail"
     },
     "oauth": {
       "title": "Fournisseurs OAuth",
@@ -620,6 +621,29 @@
       "section_typography": "Typographie",
       "font_family": "Police d'écriture",
       "font_family_hint": "La police utilisée globalement dans toute l'application"
+    },
+    "email_templates": {
+      "title": "Modèles d'e-mail",
+      "description": "Personnalisez le contenu HTML/texte et l'objet des e-mails sortants. Utilisez {{appName}}, {{shareTitle}}, {{shareUrl}} ou {{verifyUrl}} comme variables.",
+      "default_locale": "Langue par défaut",
+      "type_share": "E-mail de partage",
+      "type_verify": "E-mail de vérification",
+      "subject": "Objet",
+      "subject_placeholder": "Objet de l'e-mail…",
+      "html_body": "Corps HTML",
+      "text_body": "Corps texte brut",
+      "text_placeholder": "Texte de secours…",
+      "saving": "Enregistrement…",
+      "reset_defaults": "Réinitialiser les valeurs par défaut",
+      "send_test": "Envoyer un e-mail de test",
+      "sending_test": "Envoi…",
+      "preview_title": "Aperçu en direct",
+      "preview_subject": "Objet",
+      "preview_html": "HTML",
+      "preview_text": "Texte brut",
+      "test_sent": "E-mail de test envoyé à votre adresse.",
+      "test_error": "Échec de l'envoi de l'e-mail de test.",
+      "error_load": "Impossible de charger les modèles d'e-mail."
     },
     "update": {
       "title": "Mise à jour disponible",
