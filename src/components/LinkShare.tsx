@@ -12,6 +12,7 @@ import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
 import ShareFormSkeleton from "./ShareFormSkeleton";
+import SkeletonTransition from "@/components/ui/SkeletonTransition";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
@@ -101,9 +102,7 @@ const LinkShare: React.FC = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(
-          data?.error || t("linkshare.creation_error", "Failed to create share")
-        );
+        setError(data?.error || t("linkshare.creation_error", "Failed to create share"));
       } else {
         const linkShare = data?.share?.linkShare;
         if (linkShare?.slug) {
@@ -127,140 +126,142 @@ const LinkShare: React.FC = () => {
     }
   }
 
-  if (settingsLoading) {
-    return <ShareFormSkeleton />;
-  }
-
-  if (!isAuthenticated && allowAnonLinkShare === false) {
-    return <LockedShare type="link" isLoading={settingsLoading} isLocked={!allowAnonLinkShare} />;
+  if (!isAuthenticated && !settingsLoading && allowAnonLinkShare === false) {
+    return <LockedShare type="link" isLoading={false} isLocked={true} />;
   }
 
   return (
-    <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-left">
-      <div className="flex items-center gap-4 mb-6 justify-center">
-        <div
-          className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-          }}
-        >
-          <svg
-            className="w-6 h-6 text-[var(--primary)]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <SkeletonTransition
+      loading={settingsLoading}
+      skeleton={<ShareFormSkeleton />}
+      className="w-full"
+    >
+      <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-left">
+        <div className="flex items-center gap-4 mb-6 justify-center">
+          <div
+            className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
+            style={{
+              background:
+                "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
+            }}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">
-            {t("linkshare.title", "Share a link")}
-          </h2>
-          <p className="text-sm text-[var(--foreground-muted)]">
-            {t("linkshare.subtitle", "Create a shareable link for any URL")}
-          </p>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* URL input */}
-        <div className="space-y-2">
-          <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">
-            {t("linkshare.label_url", "URL to share")}&nbsp;
-            <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <input
-              id="url"
-              type="url"
-              placeholder={t("linkshare.placeholder_url", "https://example.com/my-page")}
-              value={url}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              required
-              className={`input-paste w-full pr-10 ${
-                urlError ? "border-red-500 focus:ring-red-500" : ""
-              }`}
-            />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-              {url && isValidUrl(url) && (
-                <svg
-                  className="w-5 h-5 text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
-            </div>
+            <svg
+              className="w-6 h-6 text-[var(--primary)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
+            </svg>
           </div>
-          {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
+          <div>
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
+              {t("linkshare.title", "Share a link")}
+            </h2>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {t("linkshare.subtitle", "Create a shareable link for any URL")}
+            </p>
+          </div>
         </div>
 
-        <ExpirationSettings
-          expiresDays={expiresDays}
-          setExpiresDays={setExpiresDays}
-          neverExpires={neverExpires}
-          setNeverExpires={setNeverExpires}
-          translationPrefix="linkshare"
-        />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* URL input */}
+          <div className="space-y-2">
+            <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">
+              {t("linkshare.label_url", "URL to share")}&nbsp;
+              <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="url"
+                type="url"
+                placeholder={t("linkshare.placeholder_url", "https://example.com/my-page")}
+                value={url}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                required
+                className={`input-paste w-full pr-10 ${
+                  urlError ? "border-red-500 focus:ring-red-500" : ""
+                }`}
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                {url && isValidUrl(url) && (
+                  <svg
+                    className="w-5 h-5 text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+              </div>
+            </div>
+            {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
+          </div>
 
-        <ViewLimitSettings
-          hasViewLimit={hasViewLimit}
-          setHasViewLimit={setHasViewLimit}
-          maxViews={maxViews}
-          setMaxViews={setMaxViews}
-          translationPrefix="linkshare"
-        />
+          <ExpirationSettings
+            expiresDays={expiresDays}
+            setExpiresDays={setExpiresDays}
+            neverExpires={neverExpires}
+            setNeverExpires={setNeverExpires}
+            translationPrefix="linkshare"
+          />
 
-        <AdvancedSettings
-          slug={slug}
-          setSlug={setSlug}
-          password={password}
-          setPassword={setPassword}
-          slugPrefix="/l/"
-          translationPrefix="linkshare"
-        />
+          <ViewLimitSettings
+            hasViewLimit={hasViewLimit}
+            setHasViewLimit={setHasViewLimit}
+            maxViews={maxViews}
+            setMaxViews={setMaxViews}
+            translationPrefix="linkshare"
+          />
 
-        <SubmitButton
-          loading={loading}
-          disabled={loading || !url.trim() || !!urlError}
-          loadingText={t("linkshare.creating", "Creating...")}
-          submitText={t("linkshare.submit", "Create shared link")}
-          iconPath="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-        />
+          <AdvancedSettings
+            slug={slug}
+            setSlug={setSlug}
+            password={password}
+            setPassword={setPassword}
+            slugPrefix="/l/"
+            translationPrefix="linkshare"
+          />
 
-        {!loading && url.trim() && !urlError && (
-          <p className="text-xs text-[var(--foreground-muted)] text-center mt-2">
-            💡 {t("linkshare.shortcut", "Tip:")}{" "}
-            <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
-              Ctrl
-            </kbd>{" "}
-            +{" "}
-            <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
-              Enter
-            </kbd>{" "}
-            {t("linkshare.shortcut_tail", "to create quickly")}
-          </p>
-        )}
-      </form>
+          <SubmitButton
+            loading={loading}
+            disabled={loading || !url.trim() || !!urlError}
+            loadingText={t("linkshare.creating", "Creating...")}
+            submitText={t("linkshare.submit", "Create shared link")}
+            iconPath="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+          />
 
-      {error && <ShareError error={error} translationPrefix="linkshare" />}
+          {!loading && url.trim() && !urlError && (
+            <p className="text-xs text-[var(--foreground-muted)] text-center mt-2">
+              💡 {t("linkshare.shortcut", "Tip:")}{" "}
+              <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
+                Ctrl
+              </kbd>{" "}
+              +{" "}
+              <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
+                Enter
+              </kbd>{" "}
+              {t("linkshare.shortcut_tail", "to create quickly")}
+            </p>
+          )}
+        </form>
 
-      {success && <ShareSuccess url={success} slug={successSlug} translationPrefix="linkshare" />}
-    </div>
+        {error && <ShareError error={error} translationPrefix="linkshare" />}
+
+        {success && <ShareSuccess url={success} slug={successSlug} translationPrefix="linkshare" />}
+      </div>
+    </SkeletonTransition>
   );
 };
 

@@ -203,6 +203,7 @@ export default function Navigation() {
                   anchorEl={profileMenuAnchor}
                   open={Boolean(profileMenuAnchor)}
                   onClose={() => setProfileMenuAnchor(null)}
+                  disableScrollLock
                   PaperProps={{
                     sx: {
                       bgcolor: "var(--surface)",
@@ -307,6 +308,7 @@ export default function Navigation() {
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
+        disableScrollLock
         PaperProps={{
           sx: {
             bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 98%, transparent)`,

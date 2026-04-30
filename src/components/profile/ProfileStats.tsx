@@ -40,8 +40,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color:
-        "from-blue-600/20 to-blue-800/20 border-[var(--primary-dark)]/50 text-[var(--primary)]",
+      color: "modern-icon-blue text-[var(--primary)]",
     },
     {
       label: t("profile.stats_files"),
@@ -56,8 +55,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color:
-        "from-purple-600/20 to-purple-800/20 border-[var(--secondary-dark)]/50 text-[var(--secondary)]",
+      color: "modern-icon-purple text-[var(--secondary)]",
     },
     {
       label: t("profile.stats_pastes"),
@@ -72,7 +70,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-indigo-600/20 to-indigo-800/20 border-indigo-700/50 text-indigo-400",
+      color: "modern-icon-blue text-[var(--primary)]",
     },
     {
       label: t("profile.stats_links"),
@@ -87,7 +85,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-green-600/20 to-green-800/20 border-green-700/50 text-green-400",
+      color: "modern-icon-green text-emerald-400",
     },
     {
       label: t("profile.stats_active"),
@@ -97,7 +95,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       ),
-      color: "from-emerald-600/20 to-emerald-800/20 border-emerald-700/50 text-emerald-400",
+      color: "modern-icon-green text-emerald-400",
     },
     {
       label: t("profile.stats_expired"),
@@ -112,17 +110,20 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "from-orange-600/20 to-orange-800/20 border-orange-700/50 text-orange-400",
+      color: "modern-icon-red text-red-400",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
       {stats.map((stat, index) => (
-        <div key={index} className="modern-card p-4">
+        <div
+          key={index}
+          className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4"
+        >
           <div className="flex flex-col items-center text-center gap-3">
             <div
-              className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center ${stat.color}`}
+              className={`h-12 w-12 rounded-xl border flex items-center justify-center ${stat.color}`}
             >
               {stat.icon}
             </div>

@@ -30,7 +30,7 @@ export default function SharesList({ shares, onDelete, onUpdate }: SharesListPro
 
   if (shares.length === 0) {
     return (
-      <div className="modern-card p-12 text-center">
+      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-12 text-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-gray-700/20 to-gray-800/20 border border-[var(--border)]/50 flex items-center justify-center">
             <svg
