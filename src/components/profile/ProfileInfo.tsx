@@ -81,7 +81,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
   };
 
   return (
-    <div className="modern-card p-6">
+    <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
       <div className="flex items-center gap-4 mb-6">
         <div
           className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
@@ -120,7 +120,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="modern-input w-full"
+              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
               placeholder={t("profile.placeholder_name")}
             />
           </div>
@@ -133,7 +133,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="modern-input w-full"
+              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
               required
             />
           </div>
@@ -166,7 +166,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="modern-input w-full"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
                 placeholder={t("profile.placeholder_password")}
               />
             </div>
@@ -179,7 +179,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="modern-input w-full"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
                 placeholder={t("profile.placeholder_password")}
               />
             </div>
@@ -192,7 +192,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="modern-input w-full"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
                 placeholder={t("profile.placeholder_password")}
               />
             </div>
@@ -200,7 +200,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         </div>
 
         {message && (
-          <div className="modern-alert modern-alert-success">
+          <div className="p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
             <div className="flex items-start gap-3">
               <svg
                 className="w-5 h-5 flex-shrink-0 mt-0.5"
@@ -221,7 +221,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         )}
 
         {error && (
-          <div className="modern-alert modern-alert-error">
+          <div className="p-4 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400">
             <div className="flex items-start gap-3">
               <svg
                 className="w-5 h-5 flex-shrink-0 mt-0.5"
@@ -244,7 +244,8 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         <button
           type="submit"
           disabled={saving}
-          className="modern-button modern-button-primary w-full"
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 w-full"
+          style={{ background: "var(--primary)", color: "#fff" }}
         >
           {saving ? (
             <>

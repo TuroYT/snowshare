@@ -1,12 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
-// ...existing code...
+import { useShareSettings } from "@/hooks/useShareSettings";
 
 import CodeBlock from "./pasteShareComponents/CodeBlock";
 import ManageCodeBlock from "./pasteShareComponents/ManageCodeBlock";
 import LockedShare from "./shareComponents/LockedShare";
 import PasteShareSkeleton from "./PasteShareSkeleton";
+import SkeletonTransition from "@/components/ui/SkeletonTransition";
 
 const PasteShare: React.FC = () => {
   const { t } = useTranslation();
@@ -15,125 +16,111 @@ const PasteShare: React.FC = () => {
     console.log("Hello, world!");
   }`);
   const [language, setLanguage] = React.useState("javascript");
-  const [allowAnonPasteShare, setAllowAnonPasteShare] = React.useState<boolean | null>(null);
-  const [settingsLoading, setSettingsLoading] = React.useState(true);
+  const { allowAnonPasteShare, loading: settingsLoading } = useShareSettings();
 
-  React.useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch("/api/settings");
-        if (response.ok) {
-          const data = await response.json();
-          setAllowAnonPasteShare(data.settings?.allowAnonPasteShare ?? true);
-        } else {
-          setAllowAnonPasteShare(true);
-        }
-      } catch {
-        setAllowAnonPasteShare(true);
-      } finally {
-        setSettingsLoading(false);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const content =
+    !isAuthenticated && allowAnonPasteShare === false ? (
+      <LockedShare type="paste" isLoading={false} isLocked={true} />
+    ) : (
+      <div className="w-full max-w-full overflow-hidden text-left">
+        {/* Header avec icône */}
+        <div className="flex items-center gap-4 mb-6 lg:hidden justify-center">
+          <div
+            className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
+            style={{
+              background:
+                "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
+            }}
+          >
+            <svg
+              className="w-6 h-6 text-[var(--primary)]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
+              {t("pasteshare.share_code_title")}
+            </h2>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {t("pasteshare.share_code_description")}
+            </p>
+          </div>
+        </div>
 
-  if (settingsLoading) {
-    return <PasteShareSkeleton />;
-  }
+        <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
+          {/* Grand éditeur de code */}
+          <div className="flex-1 min-w-0 max-w-full flex-container-safe">
+            <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[80vh]">
+              <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
+                <div
+                  className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
+                  }}
+                >
+                  <svg
+                    className="w-6 h-6 text-[var(--primary)]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-[var(--foreground)]">
+                    {t("pasteshare.share_code_title")}
+                  </h2>
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    {t("pasteshare.share_code_description")}
+                  </p>
+                </div>
+              </div>
+              <div className="w-full overflow-hidden">
+                <CodeBlock code={code} language={language} onChange={setCode} />
+              </div>
+            </div>
+          </div>
 
-  if (!isAuthenticated && allowAnonPasteShare === false) {
-    return <LockedShare type="paste" isLoading={settingsLoading} isLocked={!allowAnonPasteShare} />;
-  }
+          {/* Formulaire à droite sur desktop, en bas sur mobile */}
+          <div className="w-full lg:w-[32rem] lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
+            <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50">
+              <ManageCodeBlock
+                code={code}
+                onCodeChange={setCode}
+                language={language}
+                onLanguageChange={setLanguage}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="w-full max-w-full overflow-hidden text-left">
-      {/* Header avec icône */}
-      <div className="flex items-center gap-4 mb-6 lg:hidden justify-center">
-        <div
-          className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-          }}
-        >
-          <svg
-            className="w-6 h-6 text-[var(--primary)]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">
-            {t("pasteshare.share_code_title")}
-          </h2>
-          <p className="text-sm text-[var(--foreground-muted)]">
-            {t("pasteshare.share_code_description")}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
-        {/* Grand éditeur de code */}
-        <div className="flex-1 min-w-0 max-w-full flex-container-safe">
-          <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[80vh]">
-            <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
-              <div
-                className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
-                style={{
-                  background:
-                    "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-                }}
-              >
-                <svg
-                  className="w-6 h-6 text-[var(--primary)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-[var(--foreground)]">
-                  {t("pasteshare.share_code_title")}
-                </h2>
-                <p className="text-sm text-[var(--foreground-muted)]">
-                  {t("pasteshare.share_code_description")}
-                </p>
-              </div>
-            </div>
-            <div className="w-full overflow-hidden">
-              <CodeBlock code={code} language={language} onChange={setCode} />
-            </div>
-          </div>
-        </div>
-
-        {/* Formulaire à droite sur desktop, en bas sur mobile */}
-        <div className="w-full lg:w-[32rem] lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
-          <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50">
-            <ManageCodeBlock
-              code={code}
-              onCodeChange={setCode}
-              language={language}
-              onLanguageChange={setLanguage}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <SkeletonTransition
+      loading={settingsLoading}
+      skeleton={<PasteShareSkeleton />}
+      className="w-full"
+      lazy
+    >
+      {content}
+    </SkeletonTransition>
   );
 };
 

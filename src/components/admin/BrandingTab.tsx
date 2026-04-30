@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Snackbar, Alert as MuiAlert } from "@mui/material";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
+import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import Image from "next/image";
@@ -331,645 +332,648 @@ export default function BrandingTab() {
     });
   };
 
-  if (loading) {
-    const Section = ({ fields }: { fields: number }) => (
+  const SkeletonSection = ({ fields }: { fields: number }) => (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <WaveSkeleton variant="rounded" width={32} height={32} />
+        <WaveSkeleton variant="text" width={160} height={26} />
+      </div>
+      <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+        {Array.from({ length: fields }).map((_, i) => (
+          <div key={i}>
+            <WaveSkeleton variant="text" width={120} height={18} sx={{ mb: 1 }} />
+            <WaveSkeleton variant="rounded" height={40} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const skeleton = (
+    <div className="space-y-6 w-full">
+      <SkeletonSection fields={2} />
+      <SkeletonSection fields={2} />
+      <SkeletonSection fields={1} />
       <div className="space-y-4">
         <div className="flex items-center gap-2 mb-4">
           <WaveSkeleton variant="rounded" width={32} height={32} />
           <WaveSkeleton variant="text" width={160} height={26} />
         </div>
-        <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          {Array.from({ length: fields }).map((_, i) => (
-            <div key={i}>
-              <WaveSkeleton variant="text" width={120} height={18} sx={{ mb: 1 }} />
-              <WaveSkeleton variant="rounded" height={40} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-
-    return (
-      <div className="space-y-6 w-full">
-        <Section fields={2} />
-        <Section fields={2} />
-        <Section fields={1} />
-        {/* Colors — section avec presets + 4 groupes de color pickers */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <WaveSkeleton variant="rounded" width={32} height={32} />
-            <WaveSkeleton variant="text" width={160} height={26} />
+        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 space-y-4">
+          <div className="flex gap-2 flex-wrap">
+            {[0, 1, 2, 3].map((i) => (
+              <WaveSkeleton key={i} variant="rounded" width={80} height={32} />
+            ))}
           </div>
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 space-y-4">
-            <div className="flex gap-2 flex-wrap">
-              {[0, 1, 2, 3].map((i) => (
-                <WaveSkeleton key={i} variant="rounded" width={80} height={32} />
-              ))}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i}>
-                  <WaveSkeleton variant="text" width={80} height={16} sx={{ mb: 0.5 }} />
-                  <WaveSkeleton variant="rounded" height={40} />
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i}>
+                <WaveSkeleton variant="text" width={80} height={16} sx={{ mb: 0.5 }} />
+                <WaveSkeleton variant="rounded" height={40} />
+              </div>
+            ))}
           </div>
         </div>
-        <Section fields={2} />
-        {/* Action buttons */}
-        <div className="flex gap-3 justify-end">
-          <WaveSkeleton variant="rounded" width={120} height={42} />
-          <WaveSkeleton variant="rounded" width={120} height={42} />
-        </div>
       </div>
-    );
-  }
+      <SkeletonSection fields={2} />
+      <div className="flex gap-3 justify-end">
+        <WaveSkeleton variant="rounded" width={120} height={42} />
+        <WaveSkeleton variant="rounded" width={120} height={42} />
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6 w-full">
-      <Snackbar
-        open={toastOpen}
-        autoHideDuration={1200}
-        onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert elevation={6} variant="filled" severity="success" sx={{ width: "100%" }}>
-          {t("admin.save_success")}
-        </MuiAlert>
-      </Snackbar>
+    <SkeletonTransition loading={loading} skeleton={skeleton} className="w-full">
+      <div className="space-y-6 w-full">
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={1200}
+          onClose={() => setToastOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <MuiAlert elevation={6} variant="filled" severity="success" sx={{ width: "100%" }}>
+            {t("admin.save_success")}
+          </MuiAlert>
+        </Snackbar>
 
-      <Snackbar
-        open={toastErrorOpen}
-        autoHideDuration={3000}
-        onClose={() => setToastErrorOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert elevation={6} variant="filled" severity="error" sx={{ width: "100%" }}>
-          {error || t("admin.save_error")}
-        </MuiAlert>
-      </Snackbar>
+        <Snackbar
+          open={toastErrorOpen}
+          autoHideDuration={3000}
+          onClose={() => setToastErrorOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <MuiAlert elevation={6} variant="filled" severity="error" sx={{ width: "100%" }}>
+            {error || t("admin.save_error")}
+          </MuiAlert>
+        </Snackbar>
 
-      {/* App Identity */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-[var(--primary)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">
-            {t("admin.branding.section_identity")}
-          </h3>
-        </div>
-
-        <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          {/* App Name */}
-          <div>
-            <label className="text-sm text-[var(--foreground)] block mb-2">
-              {t("admin.branding.app_name")}
-            </label>
-            <input
-              type="text"
-              value={settings.appName}
-              onChange={(e) => handleChange("appName", e.target.value)}
-              className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              placeholder="SnowShare"
-            />
-            <p className="text-xs text-[var(--foreground-muted)] mt-1">
-              {t("admin.branding.app_name_hint")}
-            </p>
-          </div>
-
-          {/* App Description */}
-          <div>
-            <label className="text-sm text-[var(--foreground)] block mb-2">
-              {t("admin.branding.app_description")}
-            </label>
-            <textarea
-              value={settings.appDescription}
-              onChange={(e) => handleChange("appDescription", e.target.value)}
-              className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
-              rows={2}
-              placeholder="Partagez vos fichiers, pastes et URLs en toute sécurité"
-            />
-            <p className="text-xs text-[var(--foreground-muted)] mt-1">
-              {t("admin.branding.app_description_hint")}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Logo & Favicon */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]/50 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-[var(--secondary)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">
-            {t("admin.branding.section_images")}
-          </h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Logo URL */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <label className="text-sm text-[var(--foreground)] block mb-2">
-              {t("admin.branding.logo_url")}
-            </label>
-            <input
-              type="url"
-              value={settings.logoUrl || ""}
-              onChange={(e) => handleChange("logoUrl", e.target.value || null)}
-              className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              placeholder="https://example.com/logo.png"
-            />
-            <p className="text-xs text-[var(--foreground-muted)] mt-1">
-              {t("admin.branding.logo_url_hint")}
-            </p>
-            {settings.logoUrl && (
-              <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
-                <p className="text-xs text-[var(--foreground-muted)] mb-2">
-                  {t("admin.branding.preview")}
-                </p>
-                <Image
-                  src={settings.logoUrl}
-                  alt="Logo preview"
-                  width={120}
-                  height={40}
-                  className="h-10 w-auto object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                  }}
+        {/* App Identity */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-[var(--primary)]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
                 />
-              </div>
-            )}
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+              {t("admin.branding.section_identity")}
+            </h3>
           </div>
 
-          {/* Favicon URL */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <label className="text-sm text-[var(--foreground)] block mb-2">
-              {t("admin.branding.favicon_url")}
-            </label>
-            <input
-              type="url"
-              value={settings.faviconUrl || ""}
-              onChange={(e) => handleChange("faviconUrl", e.target.value || null)}
-              className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              placeholder="https://example.com/favicon.ico"
-            />
-            <p className="text-xs text-[var(--foreground-muted)] mt-1">
-              {t("admin.branding.favicon_url_hint")}
-            </p>
-            {settings.faviconUrl && (
-              <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
-                <p className="text-xs text-[var(--foreground-muted)] mb-2">
-                  {t("admin.branding.preview")}
-                </p>
-                <Image
-                  src={settings.faviconUrl}
-                  alt="Favicon preview"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                  }}
+          <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            {/* App Name */}
+            <div>
+              <label className="text-sm text-[var(--foreground)] block mb-2">
+                {t("admin.branding.app_name")}
+              </label>
+              <input
+                type="text"
+                value={settings.appName}
+                onChange={(e) => handleChange("appName", e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                placeholder="SnowShare"
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.branding.app_name_hint")}
+              </p>
+            </div>
+
+            {/* App Description */}
+            <div>
+              <label className="text-sm text-[var(--foreground)] block mb-2">
+                {t("admin.branding.app_description")}
+              </label>
+              <textarea
+                value={settings.appDescription}
+                onChange={(e) => handleChange("appDescription", e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
+                rows={2}
+                placeholder="Partagez vos fichiers, pastes et URLs en toute sécurité"
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.branding.app_description_hint")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Logo & Favicon */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-8 w-8 rounded-lg bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]/50 flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-[var(--secondary)]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
-              </div>
-            )}
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+              {t("admin.branding.section_images")}
+            </h3>
           </div>
-        </div>
-      </div>
 
-      {/* Typography */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-amber-600/20 border border-amber-700/50 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-amber-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h8m-8 6h16"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">
-            {t("admin.branding.section_typography")}
-          </h3>
-        </div>
-
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <label className="text-sm text-[var(--foreground)] block mb-2">
-            {t("admin.branding.font_family")}
-          </label>
-          <select
-            value={settings.fontFamily}
-            onChange={(e) => handleChange("fontFamily", e.target.value)}
-            className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-          >
-            {AVAILABLE_FONTS.map((font) => (
-              <option key={font.id} value={font.id}>
-                {font.name}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-[var(--foreground-muted)] mt-1">
-            {t("admin.branding.font_family_hint")}
-          </p>
-
-          {/* Font Preview */}
-          <div className="mt-4 p-4 bg-[var(--surface)]/50 rounded-lg border border-[var(--border)]/50">
-            <p className="text-xs text-[var(--foreground-muted)] mb-2">
-              {t("admin.branding.preview")}
-            </p>
-            <FontPreview fontFamily={settings.fontFamily} />
-          </div>
-        </div>
-      </div>
-
-      {/* Colors */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded-lg bg-green-600/20 border border-green-700/50 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-green-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">
-            {t("admin.branding.section_colors")}
-          </h3>
-        </div>
-
-        {/* Theme Presets */}
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <ThemePresetSelector
-            onSelectPreset={(colors) => {
-              setSettings({
-                ...settings,
-                ...colors,
-              });
-              // Apply preset immediately for live preview
-              updateTheme(colors);
-            }}
-          />
-        </div>
-
-        {/* Primary Colors Group */}
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-            {t("admin.branding.primary_colors")}
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ColorInput
-              label={t("admin.branding.primary_label")}
-              value={settings.primaryColor}
-              onChange={(v) => handleChange("primaryColor", v)}
-              hint={t("admin.branding.primary_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.primary_hover_label")}
-              value={settings.primaryHover}
-              onChange={(v) => handleChange("primaryHover", v)}
-              hint={t("admin.branding.primary_hover_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.primary_dark_label")}
-              value={settings.primaryDark}
-              onChange={(v) => handleChange("primaryDark", v)}
-              hint={t("admin.branding.primary_dark_hint")}
-            />
-          </div>
-        </div>
-
-        {/* Secondary Colors Group */}
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-            {t("admin.branding.secondary_colors")}
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ColorInput
-              label={t("admin.branding.secondary_label")}
-              value={settings.secondaryColor}
-              onChange={(v) => handleChange("secondaryColor", v)}
-              hint={t("admin.branding.secondary_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.secondary_hover_label")}
-              value={settings.secondaryHover}
-              onChange={(v) => handleChange("secondaryHover", v)}
-              hint={t("admin.branding.secondary_hover_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.secondary_dark_label")}
-              value={settings.secondaryDark}
-              onChange={(v) => handleChange("secondaryDark", v)}
-              hint={t("admin.branding.secondary_dark_hint")}
-            />
-          </div>
-        </div>
-
-        {/* Background & Surface Colors */}
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-            {t("admin.branding.background_surfaces")}
-          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ColorInput
-              label={t("admin.branding.background_label")}
-              value={settings.backgroundColor}
-              onChange={(v) => handleChange("backgroundColor", v)}
-              hint={t("admin.branding.background_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.surface_label")}
-              value={settings.surfaceColor}
-              onChange={(v) => handleChange("surfaceColor", v)}
-              hint={t("admin.branding.surface_hint")}
-            />
+            {/* Logo URL */}
+            <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+              <label className="text-sm text-[var(--foreground)] block mb-2">
+                {t("admin.branding.logo_url")}
+              </label>
+              <input
+                type="url"
+                value={settings.logoUrl || ""}
+                onChange={(e) => handleChange("logoUrl", e.target.value || null)}
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                placeholder="https://example.com/logo.png"
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.branding.logo_url_hint")}
+              </p>
+              {settings.logoUrl && (
+                <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
+                  <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                    {t("admin.branding.preview")}
+                  </p>
+                  <Image
+                    src={settings.logoUrl}
+                    alt="Logo preview"
+                    width={120}
+                    height={40}
+                    className="h-10 w-auto object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Favicon URL */}
+            <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+              <label className="text-sm text-[var(--foreground)] block mb-2">
+                {t("admin.branding.favicon_url")}
+              </label>
+              <input
+                type="url"
+                value={settings.faviconUrl || ""}
+                onChange={(e) => handleChange("faviconUrl", e.target.value || null)}
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                placeholder="https://example.com/favicon.ico"
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.branding.favicon_url_hint")}
+              </p>
+              {settings.faviconUrl && (
+                <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
+                  <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                    {t("admin.branding.preview")}
+                  </p>
+                  <Image
+                    src={settings.faviconUrl}
+                    alt="Favicon preview"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Typography */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-8 w-8 rounded-lg bg-amber-600/20 border border-amber-700/50 flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-amber-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h8m-8 6h16"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+              {t("admin.branding.section_typography")}
+            </h3>
           </div>
 
-          {/* Background Image URL */}
-          <div className="mt-4">
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
             <label className="text-sm text-[var(--foreground)] block mb-2">
-              {t("admin.branding.background_image_url")}
+              {t("admin.branding.font_family")}
             </label>
-            <input
-              type="url"
-              value={settings.backgroundImageUrl || ""}
-              onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
+            <select
+              value={settings.fontFamily}
+              onChange={(e) => handleChange("fontFamily", e.target.value)}
               className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              placeholder="https://example.com/background.jpg"
-            />
-            <p className="text-xs text-[var(--foreground-muted)] mt-1">
-              {t("admin.branding.background_image_url_hint")}
-            </p>
-            {settings.backgroundImageUrl && (
-              <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
-                <p className="text-xs text-[var(--foreground-muted)] mb-2">
-                  {t("admin.branding.background_image_preview")}
-                </p>
-                <BackgroundImagePreview url={settings.backgroundImageUrl} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Text & Border Colors */}
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-            {t("admin.branding.text_borders")}
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <ColorInput
-              label={t("admin.branding.main_text_label")}
-              value={settings.textColor}
-              onChange={(v) => handleChange("textColor", v)}
-              hint={t("admin.branding.main_text_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.muted_text_label")}
-              value={settings.textMuted}
-              onChange={(v) => handleChange("textMuted", v)}
-              hint={t("admin.branding.muted_text_hint")}
-            />
-            <ColorInput
-              label={t("admin.branding.borders_label")}
-              value={settings.borderColor}
-              onChange={(v) => handleChange("borderColor", v)}
-              hint={t("admin.branding.borders_hint")}
-            />
-          </div>
-        </div>
-
-        {/* Color Preview */}
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <p className="text-sm text-[var(--foreground)] mb-3">
-            {t("admin.branding.theme_preview")}
-          </p>
-          <div
-            className="p-6 rounded-lg space-y-4"
-            style={{ backgroundColor: settings.backgroundColor }}
-          >
-            <div
-              className="p-4 rounded-lg"
-              style={{
-                backgroundColor: settings.surfaceColor,
-                borderColor: settings.borderColor,
-                borderWidth: "1px",
-              }}
             >
-              <p style={{ color: settings.textColor }} className="font-medium">
-                {t("admin.branding.preview_button_primary")}
+              {AVAILABLE_FONTS.map((font) => (
+                <option key={font.id} value={font.id}>
+                  {font.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[var(--foreground-muted)] mt-1">
+              {t("admin.branding.font_family_hint")}
+            </p>
+
+            {/* Font Preview */}
+            <div className="mt-4 p-4 bg-[var(--surface)]/50 rounded-lg border border-[var(--border)]/50">
+              <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                {t("admin.branding.preview")}
               </p>
-              <p style={{ color: settings.textMuted }} className="text-sm mt-1">
-                {t("admin.branding.preview_button_accent")}
+              <FontPreview fontFamily={settings.fontFamily} />
+            </div>
+          </div>
+        </div>
+
+        {/* Colors */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-8 w-8 rounded-lg bg-green-600/20 border border-green-700/50 flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-[var(--foreground)]">
+              {t("admin.branding.section_colors")}
+            </h3>
+          </div>
+
+          {/* Theme Presets */}
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <ThemePresetSelector
+              onSelectPreset={(colors) => {
+                setSettings({
+                  ...settings,
+                  ...colors,
+                });
+                // Apply preset immediately for live preview
+                updateTheme(colors);
+              }}
+            />
+          </div>
+
+          {/* Primary Colors Group */}
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
+              {t("admin.branding.primary_colors")}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ColorInput
+                label={t("admin.branding.primary_label")}
+                value={settings.primaryColor}
+                onChange={(v) => handleChange("primaryColor", v)}
+                hint={t("admin.branding.primary_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.primary_hover_label")}
+                value={settings.primaryHover}
+                onChange={(v) => handleChange("primaryHover", v)}
+                hint={t("admin.branding.primary_hover_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.primary_dark_label")}
+                value={settings.primaryDark}
+                onChange={(v) => handleChange("primaryDark", v)}
+                hint={t("admin.branding.primary_dark_hint")}
+              />
+            </div>
+          </div>
+
+          {/* Secondary Colors Group */}
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
+              {t("admin.branding.secondary_colors")}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ColorInput
+                label={t("admin.branding.secondary_label")}
+                value={settings.secondaryColor}
+                onChange={(v) => handleChange("secondaryColor", v)}
+                hint={t("admin.branding.secondary_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.secondary_hover_label")}
+                value={settings.secondaryHover}
+                onChange={(v) => handleChange("secondaryHover", v)}
+                hint={t("admin.branding.secondary_hover_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.secondary_dark_label")}
+                value={settings.secondaryDark}
+                onChange={(v) => handleChange("secondaryDark", v)}
+                hint={t("admin.branding.secondary_dark_hint")}
+              />
+            </div>
+          </div>
+
+          {/* Background & Surface Colors */}
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
+              {t("admin.branding.background_surfaces")}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ColorInput
+                label={t("admin.branding.background_label")}
+                value={settings.backgroundColor}
+                onChange={(v) => handleChange("backgroundColor", v)}
+                hint={t("admin.branding.background_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.surface_label")}
+                value={settings.surfaceColor}
+                onChange={(v) => handleChange("surfaceColor", v)}
+                hint={t("admin.branding.surface_hint")}
+              />
+            </div>
+
+            {/* Background Image URL */}
+            <div className="mt-4">
+              <label className="text-sm text-[var(--foreground)] block mb-2">
+                {t("admin.branding.background_image_url")}
+              </label>
+              <input
+                type="url"
+                value={settings.backgroundImageUrl || ""}
+                onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
+                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                placeholder="https://example.com/background.jpg"
+              />
+              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                {t("admin.branding.background_image_url_hint")}
               </p>
-              <div className="flex gap-3 mt-4">
-                <button
-                  className="px-4 py-2 rounded-lg text-white font-medium"
-                  style={{ backgroundColor: settings.primaryColor }}
-                >
+              {settings.backgroundImageUrl && (
+                <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
+                  <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                    {t("admin.branding.background_image_preview")}
+                  </p>
+                  <BackgroundImagePreview url={settings.backgroundImageUrl} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Text & Border Colors */}
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
+              {t("admin.branding.text_borders")}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ColorInput
+                label={t("admin.branding.main_text_label")}
+                value={settings.textColor}
+                onChange={(v) => handleChange("textColor", v)}
+                hint={t("admin.branding.main_text_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.muted_text_label")}
+                value={settings.textMuted}
+                onChange={(v) => handleChange("textMuted", v)}
+                hint={t("admin.branding.muted_text_hint")}
+              />
+              <ColorInput
+                label={t("admin.branding.borders_label")}
+                value={settings.borderColor}
+                onChange={(v) => handleChange("borderColor", v)}
+                hint={t("admin.branding.borders_hint")}
+              />
+            </div>
+          </div>
+
+          {/* Color Preview */}
+          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+            <p className="text-sm text-[var(--foreground)] mb-3">
+              {t("admin.branding.theme_preview")}
+            </p>
+            <div
+              className="p-6 rounded-lg space-y-4"
+              style={{ backgroundColor: settings.backgroundColor }}
+            >
+              <div
+                className="p-4 rounded-lg"
+                style={{
+                  backgroundColor: settings.surfaceColor,
+                  borderColor: settings.borderColor,
+                  borderWidth: "1px",
+                }}
+              >
+                <p style={{ color: settings.textColor }} className="font-medium">
                   {t("admin.branding.preview_button_primary")}
-                </button>
-                <button
-                  className="px-4 py-2 rounded-lg text-white font-medium"
-                  style={{ backgroundColor: settings.secondaryColor }}
-                >
+                </p>
+                <p style={{ color: settings.textMuted }} className="text-sm mt-1">
                   {t("admin.branding.preview_button_accent")}
-                </button>
-                <button
-                  className="px-4 py-2 rounded-lg text-white font-medium"
-                  style={{
-                    background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
-                  }}
-                >
-                  {t("admin.branding.preview_button_gradient")}
-                </button>
+                </p>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    className="px-4 py-2 rounded-lg text-white font-medium"
+                    style={{ backgroundColor: settings.primaryColor }}
+                  >
+                    {t("admin.branding.preview_button_primary")}
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg text-white font-medium"
+                    style={{ backgroundColor: settings.secondaryColor }}
+                  >
+                    {t("admin.branding.preview_button_accent")}
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded-lg text-white font-medium"
+                    style={{
+                      background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
+                    }}
+                  >
+                    {t("admin.branding.preview_button_gradient")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Custom Links Section */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-[var(--foreground)]">
-          {t("admin.links.title_add")}
-        </h3>
+        {/* Custom Links Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--foreground)]">
+            {t("admin.links.title_add")}
+          </h3>
 
-        <form
-          onSubmit={handleAddLink}
-          className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50"
-        >
+          <form
+            onSubmit={handleAddLink}
+            className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50"
+          >
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("admin.links.label_name")}
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder={t("admin.links.placeholder_name")}
+                className={`w-full px-3 py-2 bg-[var(--surface)]/50 border rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 ${
+                  errors.name
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-[var(--border)]/50 focus:ring-[var(--primary)]"
+                }`}
+              />
+              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                {t("admin.links.label_url")}
+              </label>
+              <input
+                type="text"
+                value={formData.url}
+                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                placeholder={t("admin.links.placeholder_url")}
+                className={`w-full px-3 py-2 bg-[var(--surface)]/50 border rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 ${
+                  errors.url
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-[var(--border)]/50 focus:ring-[var(--primary)]"
+                }`}
+              />
+              {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
+            </div>
+
+            <button
+              type="submit"
+              className="px-4 py-2 text-white rounded-lg font-medium transition-all"
+              style={{
+                background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
+              }}
+            >
+              {t("admin.links.button_add")}
+            </button>
+          </form>
+
+          {/* Links List */}
           <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("admin.links.label_name")}
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder={t("admin.links.placeholder_name")}
-              className={`w-full px-3 py-2 bg-[var(--surface)]/50 border rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 ${
-                errors.name
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-[var(--border)]/50 focus:ring-[var(--primary)]"
-              }`}
-            />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-          </div>
+            <h4 className="text-base font-semibold text-[var(--foreground)] mb-3">
+              {t("admin.links.title_list")}
+            </h4>
 
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("admin.links.label_url")}
-            </label>
-            <input
-              type="text"
-              value={formData.url}
-              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-              placeholder={t("admin.links.placeholder_url")}
-              className={`w-full px-3 py-2 bg-[var(--surface)]/50 border rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 ${
-                errors.url
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-[var(--border)]/50 focus:ring-[var(--primary)]"
-              }`}
-            />
-            {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
+            {customLinks.length === 0 ? (
+              <div className="p-4 text-center bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+                <p className="text-[var(--foreground-muted)]">{t("admin.links.no_links")}</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {customLinks.map((link) => (
+                  <div
+                    key={link.id}
+                    className="p-3 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 flex items-center justify-between hover:border-[var(--border)] transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[var(--foreground)] font-medium text-sm truncate">
+                        {link.name}
+                      </p>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-[var(--primary)] hover:text-[var(--primary-hover)] truncate block"
+                      >
+                        {link.url}
+                      </a>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteLink(link.id)}
+                      className="ml-3 px-2 py-1 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
+                      title={t("admin.links.button_delete")}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
 
+        {/* Info Box */}
+        <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg text-[var(--primary-hover)] text-sm">
+          <p className="font-medium mb-2">💡 {t("admin.branding.info_title")}</p>
+          <ul className="space-y-1 text-xs">
+            <li>• {t("admin.branding.info_1")}</li>
+            <li>• {t("admin.branding.info_2")}</li>
+            <li>• {t("admin.branding.info_3")}</li>
+          </ul>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-between">
           <button
-            type="submit"
-            className="px-4 py-2 text-white rounded-lg font-medium transition-all"
+            onClick={handleResetDefaults}
+            className="px-4 py-2 bg-[var(--surface)]/50 hover:bg-[var(--surface)] text-[var(--foreground)] rounded-lg font-medium transition-all"
+          >
+            {t("admin.branding.reset_defaults")}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-6 py-2 text-white rounded-lg font-medium transition-all disabled:opacity-50"
             style={{
               background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
             }}
           >
-            {t("admin.links.button_add")}
+            {saving ? t("admin.settings.saving") : t("admin.settings.save")}
           </button>
-        </form>
-
-        {/* Links List */}
-        <div>
-          <h4 className="text-base font-semibold text-[var(--foreground)] mb-3">
-            {t("admin.links.title_list")}
-          </h4>
-
-          {customLinks.length === 0 ? (
-            <div className="p-4 text-center bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-              <p className="text-[var(--foreground-muted)]">{t("admin.links.no_links")}</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {customLinks.map((link) => (
-                <div
-                  key={link.id}
-                  className="p-3 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 flex items-center justify-between hover:border-[var(--border)] transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[var(--foreground)] font-medium text-sm truncate">
-                      {link.name}
-                    </p>
-                    <a
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-[var(--primary)] hover:text-[var(--primary-hover)] truncate block"
-                    >
-                      {link.url}
-                    </a>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteLink(link.id)}
-                    className="ml-3 px-2 py-1 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
-                    title={t("admin.links.button_delete")}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
-
-      {/* Info Box */}
-      <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg text-[var(--primary-hover)] text-sm">
-        <p className="font-medium mb-2">💡 {t("admin.branding.info_title")}</p>
-        <ul className="space-y-1 text-xs">
-          <li>• {t("admin.branding.info_1")}</li>
-          <li>• {t("admin.branding.info_2")}</li>
-          <li>• {t("admin.branding.info_3")}</li>
-        </ul>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-between">
-        <button
-          onClick={handleResetDefaults}
-          className="px-4 py-2 bg-[var(--surface)]/50 hover:bg-[var(--surface)] text-[var(--foreground)] rounded-lg font-medium transition-all"
-        >
-          {t("admin.branding.reset_defaults")}
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-6 py-2 text-white rounded-lg font-medium transition-all disabled:opacity-50"
-          style={{
-            background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
-          }}
-        >
-          {saving ? t("admin.settings.saving") : t("admin.settings.save")}
-        </button>
-      </div>
-    </div>
+    </SkeletonTransition>
   );
 }
 

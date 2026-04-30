@@ -51,6 +51,7 @@ export default function LogsTab() {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
@@ -66,6 +67,7 @@ export default function LogsTab() {
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const params = new URLSearchParams({
         page: pagination.page.toString(),
@@ -82,10 +84,11 @@ export default function LogsTab() {
       setPagination(data.pagination);
     } catch (error) {
       console.error("Error fetching logs:", error);
+      setFetchError(t("admin.error_load_data"));
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, typeFilter, search]);
+  }, [pagination.page, pagination.limit, typeFilter, search, t]);
 
   useEffect(() => {
     fetchLogs();
@@ -275,6 +278,12 @@ export default function LogsTab() {
         </div>
       </div>
 
+      {fetchError && (
+        <div className="bg-red-600/10 border border-red-700/30 rounded-xl p-4 text-red-400">
+          {fetchError}
+        </div>
+      )}
+
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -306,18 +315,47 @@ export default function LogsTab() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700/30">
+          <tbody
+            key={loading ? "loading" : "loaded"}
+            className="animate-fade-in divide-y divide-gray-700/30"
+          >
             {loading ? (
               Array.from({ length: pagination.limit }).map((_, i) => (
                 <tr key={i}>
-                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={64} height={26} sx={{ borderRadius: "9999px" }} /></td>
-                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={80} height={26} /></td>
-                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
-                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={96} height={20} /></td>
-                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
-                  <td className="py-3 px-4"><WaveSkeleton variant="text" width={112} height={20} /></td>
-                  <td className="py-3 px-4"><WaveSkeleton variant="rounded" width={64} height={22} sx={{ borderRadius: "9999px" }} /></td>
-                  <td className="py-3 px-4 text-right"><WaveSkeleton variant="rounded" width={64} height={30} sx={{ ml: "auto" }} /></td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton
+                      variant="rounded"
+                      width={64}
+                      height={26}
+                      sx={{ borderRadius: "9999px" }}
+                    />
+                  </td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton variant="rounded" width={80} height={26} />
+                  </td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton variant="text" width={112} height={20} />
+                  </td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton variant="text" width={96} height={20} />
+                  </td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton variant="text" width={112} height={20} />
+                  </td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton variant="text" width={112} height={20} />
+                  </td>
+                  <td className="py-3 px-4">
+                    <WaveSkeleton
+                      variant="rounded"
+                      width={64}
+                      height={22}
+                      sx={{ borderRadius: "9999px" }}
+                    />
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <WaveSkeleton variant="rounded" width={64} height={30} sx={{ ml: "auto" }} />
+                  </td>
                 </tr>
               ))
             ) : logs.length === 0 ? (

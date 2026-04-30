@@ -30,6 +30,7 @@ export default function WarningModal({
       onClose={onCancel}
       maxWidth="sm"
       fullWidth
+      disableScrollLock
       slotProps={{
         backdrop: {
           style: {

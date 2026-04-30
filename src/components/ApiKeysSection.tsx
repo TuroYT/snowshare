@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useFetch } from "@/hooks/useFetch";
 
 interface ApiKey {
   id: string;
@@ -14,32 +15,14 @@ interface ApiKey {
 
 export default function ApiKeysSection() {
   const { t } = useTranslation();
-  const [keys, setKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: keysData, loading, refetch: refetchKeys } = useFetch<{ data: ApiKey[] }>("/api/keys");
+  const keys = keysData?.data ?? [];
   const [creating, setCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyExpiry, setNewKeyExpiry] = useState("");
   const [revealedToken, setRevealedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchKeys();
-  }, []);
-
-  const fetchKeys = async () => {
-    try {
-      const res = await fetch("/api/keys");
-      if (res.ok) {
-        const data = await res.json();
-        setKeys(data.data);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +49,7 @@ export default function ApiKeysSection() {
       setRevealedToken(data.token);
       setNewKeyName("");
       setNewKeyExpiry("");
-      setKeys((prev) => [data.apiKey, ...prev]);
+      refetchKeys();
     } catch {
       setError(t("apikeys.error_create"));
     } finally {
@@ -79,7 +62,7 @@ export default function ApiKeysSection() {
     try {
       const res = await fetch(`/api/keys/${id}`, { method: "DELETE" });
       if (res.ok || res.status === 204) {
-        setKeys((prev) => prev.filter((k) => k.id !== id));
+        refetchKeys();
       }
     } catch {
       // ignore

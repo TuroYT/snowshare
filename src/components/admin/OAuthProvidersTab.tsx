@@ -21,6 +21,7 @@ import {
   IconButton,
 } from "@mui/material";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
+import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { availableProviders } from "@/lib/providers";
 import Link from "next/link";
@@ -119,249 +120,261 @@ export default function OAuthProvidersTab() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box>
-        <Paper sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}>
-          <WaveSkeleton variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
-          <WaveSkeleton variant="text" width={384} height={22} sx={{ mb: 3 }} />
-          <Grid container spacing={3}>
-            {[0, 1, 2].map((i) => (
-              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
-                <Paper
-                  variant="outlined"
-                  sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}
-                >
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                    <WaveSkeleton variant="text" width={96} height={26} />
-                    <WaveSkeleton variant="rounded" width={64} height={24} sx={{ borderRadius: "9999px" }} />
-                  </Box>
-                  <WaveSkeleton variant="text" width="80%" height={20} sx={{ mb: 2, flexGrow: 1 }} />
-                  <WaveSkeleton variant="rounded" height={38} />
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Paper>
-      </Box>
-    );
-  }
-
-  return (
+  const skeleton = (
     <Box>
       <Paper sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}>
-        <Typography variant="h6" gutterBottom color="text.primary">
-          {t("admin.oauth.title", "Fournisseurs OAuth")}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
-          {t(
-            "admin.oauth.description",
-            "Configurez les fournisseurs d'authentification externes. Vous devrez créer une application OAuth sur la console développeur du fournisseur."
-          )}
-        </Typography>
-
+        <WaveSkeleton variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
+        <WaveSkeleton variant="text" width={384} height={22} sx={{ mb: 3 }} />
         <Grid container spacing={3}>
-          {availableProviders.map((p) => {
-            const configured = providers.find((cp) => cp.name === p.id);
-            const isEnabled = configured?.enabled;
-
-            return (
-              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={p.id}>
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    p: 2,
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    borderColor: isEnabled ? "success.main" : "divider",
-                    bgcolor: isEnabled ? "rgba(76, 175, 80, 0.04)" : "background.default",
-                  }}
-                >
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {p.name}
-                    </Typography>
-                    <Chip
-                      label={
-                        isEnabled
-                          ? t("admin.oauth.enabled", "Activé")
-                          : t("admin.oauth.disabled", "Désactivé")
-                      }
-                      color={isEnabled ? "success" : "default"}
-                      size="small"
-                      variant={isEnabled ? "filled" : "outlined"}
-                    />
-                  </Box>
-
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flexGrow: 1 }}>
-                    {configured
-                      ? `${t("admin.oauth.client_id", "Client ID")}: ${configured.clientId?.substring(0, 8)}...`
-                      : t("admin.oauth.not_configured", "Non configuré")}
-                  </Typography>
-
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={() => handleEdit(p.id)}
-                  >
-                    {configured
-                      ? t("admin.oauth.edit", "Configurer")
-                      : t("admin.oauth.setup", "Installer")}
-                  </Button>
-                </Paper>
-              </Grid>
-            );
-          })}
+          {[0, 1, 2].map((i) => (
+            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
+              <Paper
+                variant="outlined"
+                sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}
+              >
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                  <WaveSkeleton variant="text" width={96} height={26} />
+                  <WaveSkeleton
+                    variant="rounded"
+                    width={64}
+                    height={24}
+                    sx={{ borderRadius: "9999px" }}
+                  />
+                </Box>
+                <WaveSkeleton variant="text" width="80%" height={20} sx={{ mb: 2, flexGrow: 1 }} />
+                <WaveSkeleton variant="rounded" height={38} />
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
       </Paper>
-
-      <Dialog
-        open={!!editingProvider}
-        onClose={() => setEditingProvider(null)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            {t("admin.oauth.configure_provider", "Configurer {{provider}}", {
-              provider: availableProviders.find((p) => p.id === editingProvider)?.name,
-            })}
-            <IconButton onClick={() => setEditingProvider(null)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <form onSubmit={handleSave}>
-          <DialogContent dividers>
-            <Alert severity="info" sx={{ mb: 1 }}>
-              <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
-                {t("admin.oauth.callback_url", "URL de Callback (Redirect URI)")}
-              </Typography>
-
-              <Box
-                component="code"
-                sx={{
-                  display: "block",
-                  p: 1,
-                  bgcolor: "rgba(0, 0, 0, 0.1)",
-                  borderRadius: 1,
-                  fontFamily: "monospace",
-                  wordBreak: "break-all",
-                  userSelect: "all",
-                }}
-              >
-                {origin}
-                {CALLBACK_PATH}
-                {editingProvider}
-              </Box>
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                {t(
-                  "admin.oauth.callback_help",
-                  "Copiez cette URL dans les paramètres de votre fournisseur OAuth."
-                )}
-              </Typography>
-            </Alert>
-
-            <Alert severity="info" sx={{ mb: 3, mt: 0 }}>
-              <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
-                {t("admin.oauth.documentation", "Documentation du fournisseur")}
-              </Typography>
-              <Link
-                href={
-                  availableProviders.find((p) => p.id === editingProvider)?.documentationUrl || "#"
-                }
-                target="_BLANK"
-                rel="noopener noreferrer"
-                style={{ wordBreak: "break-all" }}
-              >
-                {availableProviders.find((p) => p.id === editingProvider)?.documentationUrl}
-              </Link>
-            </Alert>
-
-            <Box display="flex" flexDirection="column" gap={2}>
-              {editingProvider === "oidc" && (
-                <TextField
-                  label={t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
-                  value={formData.issuer}
-                  onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  helperText={t(
-                    "admin.oauth.issuer_help",
-                    "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)"
-                  )}
-                />
-              )}
-
-              {editingProvider === "azure-ad" && (
-                <TextField
-                  label={t("admin.oauth.tenant_id", "Tenant ID")}
-                  value={formData.tenantId}
-                  onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                  fullWidth
-                  required
-                  variant="outlined"
-                  helperText={t(
-                    "admin.oauth.tenant_id_help",
-                    "L'identifiant de votre locataire Azure AD (Tenant ID)"
-                  )}
-                />
-              )}
-
-              <TextField
-                label={t("admin.oauth.client_id_field", "Client ID")}
-                value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                fullWidth
-                required
-                variant="outlined"
-              />
-
-              <TextField
-                label={t("admin.oauth.client_secret", "Client Secret")}
-                type="password"
-                value={formData.clientSecret}
-                onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
-                fullWidth
-                variant="outlined"
-                placeholder={
-                  providers.find((p) => p.name === editingProvider)?.clientId
-                    ? t("admin.oauth.secret_placeholder", "(Laisser vide pour ne pas changer)")
-                    : ""
-                }
-                helperText={t(
-                  "admin.oauth.secret_help",
-                  "Le secret est chiffré avant d'être stocké."
-                )}
-              />
-
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.enabled}
-                    onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
-                    color="primary"
-                  />
-                }
-                label={t("admin.oauth.enable_provider", "Activer ce fournisseur")}
-              />
-            </Box>
-          </DialogContent>
-
-          <DialogActions>
-            <Button onClick={() => setEditingProvider(null)} color="inherit">
-              {t("common.cancel", "Annuler")}
-            </Button>
-            <Button type="submit" variant="contained" color="primary">
-              {t("common.save", "Enregistrer")}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
     </Box>
+  );
+
+  return (
+    <SkeletonTransition loading={loading} skeleton={skeleton}>
+      <Box>
+        <Paper sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}>
+          <Typography variant="h6" gutterBottom color="text.primary">
+            {t("admin.oauth.title", "Fournisseurs OAuth")}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            {t(
+              "admin.oauth.description",
+              "Configurez les fournisseurs d'authentification externes. Vous devrez créer une application OAuth sur la console développeur du fournisseur."
+            )}
+          </Typography>
+
+          <Grid container spacing={3}>
+            {availableProviders.map((p) => {
+              const configured = providers.find((cp) => cp.name === p.id);
+              const isEnabled = configured?.enabled;
+
+              return (
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={p.id}>
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      borderColor: isEnabled ? "success.main" : "divider",
+                      bgcolor: isEnabled ? "rgba(76, 175, 80, 0.04)" : "background.default",
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="flex-start"
+                      mb={2}
+                    >
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {p.name}
+                      </Typography>
+                      <Chip
+                        label={
+                          isEnabled
+                            ? t("admin.oauth.enabled", "Activé")
+                            : t("admin.oauth.disabled", "Désactivé")
+                        }
+                        color={isEnabled ? "success" : "default"}
+                        size="small"
+                        variant={isEnabled ? "filled" : "outlined"}
+                      />
+                    </Box>
+
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flexGrow: 1 }}>
+                      {configured
+                        ? `${t("admin.oauth.client_id", "Client ID")}: ${configured.clientId?.substring(0, 8)}...`
+                        : t("admin.oauth.not_configured", "Non configuré")}
+                    </Typography>
+
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={() => handleEdit(p.id)}
+                    >
+                      {configured
+                        ? t("admin.oauth.edit", "Configurer")
+                        : t("admin.oauth.setup", "Installer")}
+                    </Button>
+                  </Paper>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Paper>
+
+        <Dialog
+          open={!!editingProvider}
+          onClose={() => setEditingProvider(null)}
+          maxWidth="sm"
+          fullWidth
+          disableScrollLock
+        >
+          <DialogTitle>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              {t("admin.oauth.configure_provider", "Configurer {{provider}}", {
+                provider: availableProviders.find((p) => p.id === editingProvider)?.name,
+              })}
+              <IconButton onClick={() => setEditingProvider(null)} size="small">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+
+          <form onSubmit={handleSave}>
+            <DialogContent dividers>
+              <Alert severity="info" sx={{ mb: 1 }}>
+                <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
+                  {t("admin.oauth.callback_url", "URL de Callback (Redirect URI)")}
+                </Typography>
+
+                <Box
+                  component="code"
+                  sx={{
+                    display: "block",
+                    p: 1,
+                    bgcolor: "rgba(0, 0, 0, 0.1)",
+                    borderRadius: 1,
+                    fontFamily: "monospace",
+                    wordBreak: "break-all",
+                    userSelect: "all",
+                  }}
+                >
+                  {origin}
+                  {CALLBACK_PATH}
+                  {editingProvider}
+                </Box>
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                  {t(
+                    "admin.oauth.callback_help",
+                    "Copiez cette URL dans les paramètres de votre fournisseur OAuth."
+                  )}
+                </Typography>
+              </Alert>
+
+              <Alert severity="info" sx={{ mb: 3, mt: 0 }}>
+                <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
+                  {t("admin.oauth.documentation", "Documentation du fournisseur")}
+                </Typography>
+                <Link
+                  href={
+                    availableProviders.find((p) => p.id === editingProvider)?.documentationUrl ||
+                    "#"
+                  }
+                  target="_BLANK"
+                  rel="noopener noreferrer"
+                  style={{ wordBreak: "break-all" }}
+                >
+                  {availableProviders.find((p) => p.id === editingProvider)?.documentationUrl}
+                </Link>
+              </Alert>
+
+              <Box display="flex" flexDirection="column" gap={2}>
+                {editingProvider === "oidc" && (
+                  <TextField
+                    label={t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
+                    value={formData.issuer}
+                    onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
+                    fullWidth
+                    required
+                    variant="outlined"
+                    helperText={t(
+                      "admin.oauth.issuer_help",
+                      "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)"
+                    )}
+                  />
+                )}
+
+                {editingProvider === "azure-ad" && (
+                  <TextField
+                    label={t("admin.oauth.tenant_id", "Tenant ID")}
+                    value={formData.tenantId}
+                    onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                    fullWidth
+                    required
+                    variant="outlined"
+                    helperText={t(
+                      "admin.oauth.tenant_id_help",
+                      "L'identifiant de votre locataire Azure AD (Tenant ID)"
+                    )}
+                  />
+                )}
+
+                <TextField
+                  label={t("admin.oauth.client_id_field", "Client ID")}
+                  value={formData.clientId}
+                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                  fullWidth
+                  required
+                  variant="outlined"
+                />
+
+                <TextField
+                  label={t("admin.oauth.client_secret", "Client Secret")}
+                  type="password"
+                  value={formData.clientSecret}
+                  onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
+                  fullWidth
+                  variant="outlined"
+                  placeholder={
+                    providers.find((p) => p.name === editingProvider)?.clientId
+                      ? t("admin.oauth.secret_placeholder", "(Laisser vide pour ne pas changer)")
+                      : ""
+                  }
+                  helperText={t(
+                    "admin.oauth.secret_help",
+                    "Le secret est chiffré avant d'être stocké."
+                  )}
+                />
+
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.enabled}
+                      onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
+                      color="primary"
+                    />
+                  }
+                  label={t("admin.oauth.enable_provider", "Activer ce fournisseur")}
+                />
+              </Box>
+            </DialogContent>
+
+            <DialogActions>
+              <Button onClick={() => setEditingProvider(null)} color="inherit">
+                {t("common.cancel", "Annuler")}
+              </Button>
+              <Button type="submit" variant="contained" color="primary">
+                {t("common.save", "Enregistrer")}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+      </Box>
+    </SkeletonTransition>
   );
 }

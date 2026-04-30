@@ -3,7 +3,7 @@
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { Box, Typography, Link, Divider, Container, Stack } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useFetch } from "@/hooks/useFetch";
 
 interface CustomLink {
   id: string;
@@ -15,23 +15,8 @@ export default function Footer() {
   const { t } = useTranslation();
   const { branding } = useTheme();
   const year = new Date().getFullYear();
-  const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
-
-  useEffect(() => {
-    const fetchLinks = async () => {
-      try {
-        const response = await fetch("/api/custom-links");
-        if (response.ok) {
-          const data = await response.json();
-          setCustomLinks(data.links || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch custom links:", error);
-      }
-    };
-
-    fetchLinks();
-  }, []);
+  const { data } = useFetch<{ links: CustomLink[] }>("/api/custom-links");
+  const customLinks = data?.links ?? [];
 
   const hasCustomLinks = customLinks.length > 0;
 

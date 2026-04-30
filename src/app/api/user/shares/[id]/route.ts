@@ -13,6 +13,7 @@ import {
 } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { hashPassword } from "@/lib/security";
+import { Prisma } from "@/generated/prisma";
 
 // DELETE - Supprimer un partage
 export async function DELETE(
@@ -83,8 +84,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const data = await request.json();
     const { expiresAt, password, paste, pastelanguage, urlOriginal } = data;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {};
+    const updateData: Prisma.ShareUpdateInput = {};
 
     if (expiresAt !== undefined) {
       updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;

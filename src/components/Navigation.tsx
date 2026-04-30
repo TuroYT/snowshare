@@ -72,6 +72,7 @@ export default function Navigation() {
 
   // Fetch user's profile to determine admin status (endpoint returns { isAdmin })
   useEffect(() => {
+    if (status !== "authenticated") return;
     fetch("/api/user/profile")
       .then((res) => {
         if (!res.ok) return null;
@@ -203,6 +204,7 @@ export default function Navigation() {
                   anchorEl={profileMenuAnchor}
                   open={Boolean(profileMenuAnchor)}
                   onClose={() => setProfileMenuAnchor(null)}
+                  disableScrollLock
                   PaperProps={{
                     sx: {
                       bgcolor: "var(--surface)",
@@ -307,6 +309,7 @@ export default function Navigation() {
         anchor="right"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
+        disableScrollLock
         PaperProps={{
           sx: {
             bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 98%, transparent)`,

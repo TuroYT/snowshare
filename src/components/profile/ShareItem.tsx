@@ -103,14 +103,25 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
     }
   };
 
-  const getTypeColor = () => {
+  const getTypeIconClass = () => {
     switch (share.type) {
       case "FILE":
-        return "from-purple-600/20 to-purple-800/20 border-[var(--secondary-dark)]/50 text-[var(--secondary)]";
+        return "modern-icon-purple text-[var(--secondary)]";
       case "PASTE":
-        return "from-blue-600/20 to-blue-800/20 border-[var(--primary-dark)]/50 text-[var(--primary)]";
+        return "modern-icon-blue text-[var(--primary)]";
       case "URL":
-        return "from-green-600/20 to-green-800/20 border-green-700/50 text-green-400";
+        return "modern-icon-green text-emerald-400";
+    }
+  };
+
+  const getTypeBadgeClass = () => {
+    switch (share.type) {
+      case "FILE":
+        return "bg-[var(--secondary)]/10 border border-[var(--secondary-dark)]/50 text-[var(--secondary)]";
+      case "PASTE":
+        return "bg-[var(--primary)]/10 border border-[var(--primary-dark)]/50 text-[var(--primary)]";
+      case "URL":
+        return "bg-emerald-500/10 border border-emerald-700/50 text-emerald-400";
     }
   };
 
@@ -119,11 +130,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
     share.maxViews !== null && share.maxViews !== undefined && share.viewCount >= share.maxViews;
 
   return (
-    <div className={`modern-card p-6 ${isExpired ? "opacity-60 border-red-900/30" : ""}`}>
+    <div
+      className={`bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6 ${isExpired ? "opacity-60 border-red-900/30" : ""}`}
+    >
       <div className="flex flex-col md:flex-row gap-4">
         {/* Icon and Type */}
         <div
-          className={`h-12 w-12 rounded-xl bg-gradient-to-br border flex items-center justify-center flex-shrink-0 ${isExpired ? "from-red-600/20 to-red-800/20 border-red-700/50 text-red-400" : getTypeColor()}`}
+          className={`h-12 w-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${isExpired ? "modern-icon-red text-red-400" : getTypeIconClass()}`}
         >
           {getTypeIcon()}
         </div>
@@ -132,7 +145,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${isExpired || isViewLimitReached ? "from-red-600/20 to-red-800/20 border-red-700/50 text-red-400" : getTypeColor()}`}
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${isExpired || isViewLimitReached ? "bg-red-500/10 border border-red-700/50 text-red-400" : getTypeBadgeClass()}`}
             >
               {share.type}
             </span>
@@ -208,7 +221,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                     <textarea
                       value={editForm.paste || ""}
                       onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
-                      className="modern-input w-full font-mono text-sm"
+                      className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] font-mono"
                       rows={4}
                     />
                   </div>
@@ -219,7 +232,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                     <select
                       value={editForm.pastelanguage || "PLAINTEXT"}
                       onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
-                      className="modern-input w-full"
+                      className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] appearance-none"
                     >
                       <option value="PLAINTEXT">Plain Text</option>
                       <option value="JAVASCRIPT">JavaScript</option>
@@ -248,7 +261,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                     type="url"
                     value={editForm.urlOriginal || ""}
                     onChange={(e) => setEditForm({ ...editForm, urlOriginal: e.target.value })}
-                    className="modern-input w-full"
+                    className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
                   />
                 </div>
               )}
@@ -261,7 +274,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                   type="text"
                   value={editForm.password || ""}
                   onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                  className="modern-input w-full"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
                   placeholder={t("profile.placeholder_password_optional")}
                 />
               </div>
@@ -278,20 +291,21 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                       : ""
                   }
                   onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
-                  className="modern-input w-full"
+                  className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
                 />
               </div>
 
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={handleUpdate}
-                  className="modern-button modern-button-primary flex-1"
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex-1"
+                  style={{ background: "var(--primary)", color: "#fff" }}
                 >
                   {t("profile.save")}
                 </button>
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="modern-button modern-button-secondary flex-1"
+                  className="px-3 py-2 rounded-lg text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors flex-1"
                 >
                   {t("profile.cancel")}
                 </button>
@@ -305,7 +319,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                 </p>
               )}
               {share.type === "PASTE" && (
-                <div className="modern-section p-3">
+                <div className="bg-[var(--background)] rounded-lg border border-[var(--border)] p-3">
                   <p className="text-[var(--foreground)] font-mono text-xs truncate">
                     {share.paste?.substring(0, 100)}...
                   </p>
@@ -320,8 +334,8 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                   <span
                     className={`px-2 py-1 rounded ${
                       isExpired
-                        ? "bg-red-900/30 border border-red-800 text-red-400"
-                        : "bg-yellow-900/20 border border-yellow-800 text-yellow-400"
+                        ? "bg-red-500/10 border border-red-700/50 text-red-400"
+                        : "bg-amber-500/10 border border-amber-600/40 text-amber-400"
                     }`}
                   >
                     {isExpired ? "⛔" : "⏰"}{" "}
@@ -333,15 +347,15 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                   <span
                     className={`px-2 py-1 rounded ${
                       isViewLimitReached
-                        ? "bg-red-900/30 border border-red-800 text-red-400"
-                        : "bg-blue-900/20 border border-blue-800 text-blue-400"
+                        ? "bg-red-500/10 border border-red-700/50 text-red-400"
+                        : "bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 text-[var(--primary-hover)]"
                     }`}
                   >
                     👁️ {share.viewCount}/{share.maxViews} {t("profile.views")}
                   </span>
                 )}
                 {share.password && (
-                  <span className="px-2 py-1 bg-orange-900/20 border border-orange-800 text-orange-400 rounded">
+                  <span className="px-2 py-1 bg-amber-500/10 border border-amber-600/40 text-amber-400 rounded">
                     🔒 {t("profile.protected")}
                   </span>
                 )}
@@ -356,7 +370,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
             {share.type !== "FILE" && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="modern-button modern-button-secondary px-4 py-2 text-sm"
+                className="px-3 py-2 rounded-lg text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
                 title={t("profile.edit")}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,7 +385,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
             )}
             <button
               onClick={handleDelete}
-              className="modern-button modern-button-secondary px-4 py-2 text-sm hover:bg-red-900/30 hover:border-red-700 hover:text-red-400"
+              className="px-3 py-2 rounded-lg text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
               title={t("profile.delete")}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

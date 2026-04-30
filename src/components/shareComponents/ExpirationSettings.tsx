@@ -39,25 +39,19 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
-  const getDurationText = () => {
+  const durationText = React.useMemo(() => {
     const days = expiresDays;
     if (isAuthenticated && neverExpires) return t(`${translationPrefix}.duration_never`);
     if (days === 1) return t(`${translationPrefix}.duration_in_1_day`);
     if (days < 7) return t(`${translationPrefix}.duration_in_x_days`, { count: days });
     if (days === 7) return t(`${translationPrefix}.duration_in_1_week`);
     if (days < 30)
-      return t(`${translationPrefix}.duration_in_x_weeks`, {
-        count: Math.round(days / 7),
-      });
+      return t(`${translationPrefix}.duration_in_x_weeks`, { count: Math.round(days / 7) });
     if (days === 30) return t(`${translationPrefix}.duration_in_1_month`);
     if (days < 365)
-      return t(`${translationPrefix}.duration_in_x_months`, {
-        count: Math.round(days / 30),
-      });
-    return t(`${translationPrefix}.duration_in_x_years`, {
-      count: Math.round(days / 365),
-    });
-  };
+      return t(`${translationPrefix}.duration_in_x_months`, { count: Math.round(days / 30) });
+    return t(`${translationPrefix}.duration_in_x_years`, { count: Math.round(days / 365) });
+  }, [expiresDays, neverExpires, isAuthenticated, translationPrefix, t]);
 
   return (
     <div className="space-y-3">
@@ -138,7 +132,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span>{getDurationText()}</span>
+          <span>{durationText}</span>
         </div>
       </div>
 

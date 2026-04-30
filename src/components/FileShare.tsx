@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
+import { useShareSettings } from "@/hooks/useShareSettings";
 import * as tus from "tus-js-client";
 import { formatBytes, convertFromMB } from "@/lib/formatSize";
 import LockedShare from "./shareComponents/LockedShare";
@@ -43,43 +44,17 @@ const FileShare: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [successSlug, setSuccessSlug] = useState<string>("");
-  const [allowAnonFileShare, setAllowAnonFileShare] = useState<boolean | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState(true);
-  const [maxFileSizeAnon, setMaxFileSizeAnon] = useState<number>(MAX_FILE_SIZE_ANON);
-  const [maxFileSizeAuth, setMaxFileSizeAuth] = useState<number>(MAX_FILE_SIZE_AUTH);
-  const [useGiBForAnon, setUseGiBForAnon] = useState(false);
-  const [useGiBForAuth, setUseGiBForAuth] = useState(false);
+  const {
+    allowAnonFileShare,
+    anoMaxUploadBytes: maxFileSizeAnon,
+    authMaxUploadBytes: maxFileSizeAuth,
+    useGiBForAnon,
+    useGiBForAuth,
+    loading: settingsLoading,
+  } = useShareSettings();
 
   const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
   const useGiB = isAuthenticated ? useGiBForAuth : useGiBForAnon;
-
-  // Fetch settings to check if anonymous file sharing is allowed
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch("/api/settings");
-        if (response.ok) {
-          const data = await response.json();
-          setAllowAnonFileShare(data.settings?.allowAnonFileShare ?? true);
-          if (data.settings?.anoMaxUpload) {
-            setMaxFileSizeAnon(data.settings.anoMaxUpload * 1024 * 1024);
-          }
-          if (data.settings?.authMaxUpload) {
-            setMaxFileSizeAuth(data.settings.authMaxUpload * 1024 * 1024);
-          }
-          setUseGiBForAnon(data.settings?.useGiBForAnon ?? false);
-          setUseGiBForAuth(data.settings?.useGiBForAuth ?? false);
-        } else {
-          setAllowAnonFileShare(true);
-        }
-      } catch {
-        setAllowAnonFileShare(true);
-      } finally {
-        setSettingsLoading(false);
-      }
-    };
-    fetchSettings();
-  }, [isAuthenticated]);
 
   const formatFileSize = (bytes: number): string => {
     return formatBytes(bytes, useGiB);
@@ -97,11 +72,7 @@ const FileShare: React.FC = () => {
     return null;
   };
 
-  const getTotalSize = () => {
-    if (files.length === 0) return 0;
-
-    return files.reduce((sum, f) => sum + f.file.size, 0);
-  };
+  const totalSize = React.useMemo(() => files.reduce((sum, f) => sum + f.file.size, 0), [files]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
@@ -270,7 +241,6 @@ const FileShare: React.FC = () => {
       return;
     }
 
-    const totalSize = getTotalSize();
     const maxTotalMB = isAuthenticated
       ? maxFileSizeAuth / (1024 * 1024)
       : maxFileSizeAnon / (1024 * 1024);
@@ -415,8 +385,6 @@ const FileShare: React.FC = () => {
       } else {
         let shareSlug: string | null = null;
         let shareId: string | null = null;
-        const totalSize = getTotalSize();
-
         const uploadNextFile = async (index: number) => {
           if (index >= files.length) {
             if (shareSlug) {
@@ -579,10 +547,10 @@ const FileShare: React.FC = () => {
         </div>
         <div>
           <h2 className="text-xl font-bold text-[var(--foreground)]">
-            {t("fileshare.title", "Partager un fichier")}
+            {t("fileshare.title", "Share a file")}
           </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
-            {t("fileshare.subtitle", "Uploadez et partagez vos fichiers en toute sécurité")}
+            {t("fileshare.subtitle", "Upload and share your files securely")}
           </p>
         </div>
       </div>
@@ -682,7 +650,7 @@ const FileShare: React.FC = () => {
                   {t("fileshare.selected_files", "Selected Files")} ({files.length})
                 </h3>
                 <p className="text-sm text-[var(--foreground-muted)]">
-                  {t("fileshare.total_size", "Total")}: {formatFileSize(getTotalSize())}
+                  {t("fileshare.total_size", "Total")}: {formatFileSize(totalSize)}
                 </p>
               </div>
               <div className="max-h-48 overflow-y-auto space-y-2">
@@ -803,8 +771,8 @@ const FileShare: React.FC = () => {
         <SubmitButton
           loading={loading}
           disabled={loading || files.length === 0}
-          loadingText={t("fileshare.creating", "Création en cours...")}
-          submitText={t("fileshare.submit", "Partager le fichier")}
+          loadingText={t("fileshare.creating", "Creating...")}
+          submitText={t("fileshare.submit", "Share file")}
           iconPath="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
         />
       </form>
