@@ -87,8 +87,9 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    // rendered.html is admin-authored email HTML sent via SMTP, not written to any web response.
-    // This is intentional: admins are the only users who can configure email templates.
+    // rendered.html has been sanitised by sanitizeEmailHtml() inside the renderers
+    // (script tags and javascript: URIs are stripped). It is sent as SMTP email
+    // content to the admin's own address, never written to a web response.
     const mailOptions = {
       from: `"${appName}" <${fromAddress}>`,
       to: user.email,

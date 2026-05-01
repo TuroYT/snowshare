@@ -10,6 +10,7 @@ import {
   renderTemplate,
   renderShareEmail,
   renderVerifyEmail,
+  sanitizeEmailHtml,
   DEFAULT_SHARE_SUBJECT,
   DEFAULT_SHARE_HTML,
   DEFAULT_SHARE_TEXT,
@@ -203,6 +204,64 @@ describe("email-templates", () => {
     it("DEFAULT_VERIFY_TEXT contains expected placeholders", () => {
       expect(DEFAULT_VERIFY_TEXT).toContain("{{verifyUrl}}");
       expect(DEFAULT_VERIFY_TEXT).toContain("{{appName}}");
+    });
+  });
+
+  // ─── sanitizeEmailHtml ────────────────────────────────────────────────────────
+
+  describe("sanitizeEmailHtml", () => {
+    it("removes <script> blocks", () => {
+      const result = sanitizeEmailHtml("<p>Hi</p><script>alert(1)</script>");
+      expect(result).not.toContain("<script>");
+      expect(result).not.toContain("alert(1)");
+      expect(result).toContain("<p>Hi</p>");
+    });
+
+    it("removes <script> blocks with attributes", () => {
+      const result = sanitizeEmailHtml('<script type="text/javascript">evil()</script>');
+      expect(result).not.toContain("evil");
+    });
+
+    it("removes inline event handlers", () => {
+      const result = sanitizeEmailHtml('<a href="x" onclick="evil()">click</a>');
+      expect(result).not.toContain("onclick");
+      expect(result).not.toContain("evil()");
+      expect(result).toContain("<a");
+      expect(result).toContain("click</a>");
+    });
+
+    it("removes javascript: protocol in href", () => {
+      const result = sanitizeEmailHtml('<a href="javascript:alert(1)">link</a>');
+      expect(result).not.toContain("javascript:");
+    });
+
+    it("removes javascript: in mixed case", () => {
+      const result = sanitizeEmailHtml('<a href="JavaScript:void(0)">x</a>');
+      expect(result).not.toContain("JavaScript:");
+    });
+
+    it("preserves safe HTML untouched", () => {
+      const safe = '<div style="color:red"><p>Hello <strong>World</strong></p></div>';
+      expect(sanitizeEmailHtml(safe)).toBe(safe);
+    });
+
+    it("share email with malicious HTML template has script stripped", () => {
+      const { html } = renderShareEmail(
+        { appName: "App", shareTitle: "file", shareUrl: "https://example.com/f/x" },
+        { html: "<p>{{shareTitle}}</p><script>steal()</script>" }
+      );
+      expect(html).not.toContain("<script>");
+      expect(html).not.toContain("steal()");
+      expect(html).toContain("<p>file</p>");
+    });
+
+    it("verify email with event-handler template has handler stripped", () => {
+      const { html } = renderVerifyEmail(
+        { appName: "App", verifyUrl: "https://example.com/verify" },
+        { html: '<a href="{{verifyUrl}}" onmouseover="evil()">Verify</a>' }
+      );
+      expect(html).not.toContain("onmouseover");
+      expect(html).not.toContain("evil()");
     });
   });
 });

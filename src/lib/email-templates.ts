@@ -72,6 +72,31 @@ function escapeHtml(str: string): string {
 }
 
 /**
+ * Strip executable content from an HTML email template.
+ *
+ * Email clients generally do not run JavaScript, but we explicitly remove it
+ * here so that (a) templates stored in the DB cannot contain active payloads
+ * and (b) static analysis tools can confirm that admin-supplied HTML is
+ * sanitised before it is used anywhere.
+ *
+ * Removes:
+ *  - `<script>…</script>` blocks (any attributes)
+ *  - Inline event-handler attributes (`on*="…"`)
+ *  - `javascript:` URIs in any attribute
+ */
+export function sanitizeEmailHtml(html: string): string {
+  return (
+    html
+      // Remove <script> … </script> blocks (case-insensitive, multiline)
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      // Remove inline event handlers: on* = "…" or on* = '…'
+      .replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
+      // Remove javascript: protocol in any attribute value
+      .replace(/javascript\s*:/gi, "")
+  );
+}
+
+/**
  * Render a template string by replacing `{{variable}}` placeholders.
  *
  * @param template   - The template string (may contain HTML or plain text).
@@ -112,7 +137,7 @@ export function renderShareEmail(
   };
 
   const subjectTpl = templates?.subject || DEFAULT_SHARE_SUBJECT;
-  const htmlTpl = templates?.html || DEFAULT_SHARE_HTML;
+  const htmlTpl = sanitizeEmailHtml(templates?.html || DEFAULT_SHARE_HTML);
   const textTpl = templates?.text || DEFAULT_SHARE_TEXT;
 
   return {
@@ -137,7 +162,7 @@ export function renderVerifyEmail(
   };
 
   const subjectTpl = templates?.subject || DEFAULT_VERIFY_SUBJECT;
-  const htmlTpl = templates?.html || DEFAULT_VERIFY_HTML;
+  const htmlTpl = sanitizeEmailHtml(templates?.html || DEFAULT_VERIFY_HTML);
   const textTpl = templates?.text || DEFAULT_VERIFY_TEXT;
 
   return {
