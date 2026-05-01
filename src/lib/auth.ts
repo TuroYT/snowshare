@@ -123,9 +123,34 @@ export async function getDynamicProviders() {
 export async function getAuthOptions(): Promise<NextAuthOptions> {
   const providers = await getDynamicProviders();
 
+  const settings = await prisma.settings.findFirst({
+    select: { allowIframeEmbedding: true },
+  });
+  const allowIframeEmbedding = settings?.allowIframeEmbedding ?? false;
+
+  // When embedded in a cross-origin iframe, cookies must be SameSite=None; Secure
+  // otherwise the browser blocks them and authentication fails.
+  const cookiesConfig: NextAuthOptions["cookies"] = allowIframeEmbedding
+    ? {
+        sessionToken: {
+          name: "next-auth.session-token",
+          options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
+        },
+        callbackUrl: {
+          name: "next-auth.callback-url",
+          options: { sameSite: "none", path: "/", secure: true },
+        },
+        csrfToken: {
+          name: "next-auth.csrf-token",
+          options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
+        },
+      }
+    : undefined;
+
   return {
     adapter: PrismaAdapter(prisma),
     providers,
+    ...(allowIframeEmbedding && { useSecureCookies: true, cookies: cookiesConfig }),
     session: {
       strategy: "jwt",
     },
