@@ -1,8 +1,0 @@
-config:
-  - p/typescript
-  - p/react
-  - p/nextjs
-  - p/owasp-top-ten
-  - p/jwt
-  - p/nodejs
-  - p/secrets
