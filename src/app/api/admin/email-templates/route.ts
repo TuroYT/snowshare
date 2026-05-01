@@ -66,66 +66,67 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const TEMPLATE_FIELDS = [
+  "emailDefaultLocale",
+  "shareEmailSubject",
+  "shareEmailHtml",
+  "shareEmailText",
+  "verifyEmailSubject",
+  "verifyEmailHtml",
+  "verifyEmailText",
+] as const;
+
+type TemplateField = (typeof TEMPLATE_FIELDS)[number];
+type TemplateData = Partial<Record<TemplateField, string | null>>;
+
+function pickProvided(data: TemplateData) {
+  const out: Record<string, string | null> = {};
+  for (const key of TEMPLATE_FIELDS) {
+    if (data[key] !== undefined) out[key] = data[key]!;
+  }
+  return out;
+}
+
+function buildCreateData(data: TemplateData) {
+  return {
+    emailDefaultLocale: data.emailDefaultLocale ?? "en",
+    shareEmailSubject: data.shareEmailSubject ?? null,
+    shareEmailHtml: data.shareEmailHtml ?? null,
+    shareEmailText: data.shareEmailText ?? null,
+    verifyEmailSubject: data.verifyEmailSubject ?? null,
+    verifyEmailHtml: data.verifyEmailHtml ?? null,
+    verifyEmailText: data.verifyEmailText ?? null,
+  };
+}
+
+function pickTemplates<T extends TemplateData>(settings: T) {
+  return {
+    emailDefaultLocale: settings.emailDefaultLocale,
+    shareEmailSubject: settings.shareEmailSubject,
+    shareEmailHtml: settings.shareEmailHtml,
+    shareEmailText: settings.shareEmailText,
+    verifyEmailSubject: settings.verifyEmailSubject,
+    verifyEmailHtml: settings.verifyEmailHtml,
+    verifyEmailText: settings.verifyEmailText,
+  };
+}
+
 export async function PATCH(request: NextRequest) {
   const { error } = await requireAdminUser(request);
   if (error) return error;
 
   try {
-    const data = await request.json();
+    const data = (await request.json()) as TemplateData;
+    const existing = await prisma.settings.findFirst();
 
-    let settings = await prisma.settings.findFirst();
+    const settings = existing
+      ? await prisma.settings.update({
+          where: { id: existing.id },
+          data: pickProvided(data),
+        })
+      : await prisma.settings.create({ data: buildCreateData(data) });
 
-    if (!settings) {
-      settings = await prisma.settings.create({
-        data: {
-          emailDefaultLocale: data.emailDefaultLocale ?? "en",
-          shareEmailSubject: data.shareEmailSubject ?? null,
-          shareEmailHtml: data.shareEmailHtml ?? null,
-          shareEmailText: data.shareEmailText ?? null,
-          verifyEmailSubject: data.verifyEmailSubject ?? null,
-          verifyEmailHtml: data.verifyEmailHtml ?? null,
-          verifyEmailText: data.verifyEmailText ?? null,
-        },
-      });
-    } else {
-      settings = await prisma.settings.update({
-        where: { id: settings.id },
-        data: {
-          emailDefaultLocale:
-            data.emailDefaultLocale !== undefined
-              ? data.emailDefaultLocale
-              : settings.emailDefaultLocale,
-          shareEmailSubject:
-            data.shareEmailSubject !== undefined
-              ? data.shareEmailSubject
-              : settings.shareEmailSubject,
-          shareEmailHtml:
-            data.shareEmailHtml !== undefined ? data.shareEmailHtml : settings.shareEmailHtml,
-          shareEmailText:
-            data.shareEmailText !== undefined ? data.shareEmailText : settings.shareEmailText,
-          verifyEmailSubject:
-            data.verifyEmailSubject !== undefined
-              ? data.verifyEmailSubject
-              : settings.verifyEmailSubject,
-          verifyEmailHtml:
-            data.verifyEmailHtml !== undefined ? data.verifyEmailHtml : settings.verifyEmailHtml,
-          verifyEmailText:
-            data.verifyEmailText !== undefined ? data.verifyEmailText : settings.verifyEmailText,
-        },
-      });
-    }
-
-    return NextResponse.json({
-      templates: {
-        emailDefaultLocale: settings.emailDefaultLocale,
-        shareEmailSubject: settings.shareEmailSubject,
-        shareEmailHtml: settings.shareEmailHtml,
-        shareEmailText: settings.shareEmailText,
-        verifyEmailSubject: settings.verifyEmailSubject,
-        verifyEmailHtml: settings.verifyEmailHtml,
-        verifyEmailText: settings.verifyEmailText,
-      },
-    });
+    return NextResponse.json({ templates: pickTemplates(settings) });
   } catch (error) {
     console.error("Error updating email templates:", error);
     return internalError(request);

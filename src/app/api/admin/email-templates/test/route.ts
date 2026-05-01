@@ -7,35 +7,88 @@ import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
 import { isEmailEnabled } from "@/lib/email";
 import nodemailer from "nodemailer";
 
-export async function POST(request: NextRequest) {
+type TestPayload = {
+  type: "share" | "verify";
+  subject?: string | null;
+  html?: string | null;
+  text?: string | null;
+};
+
+type SmtpSettings = {
+  appName: string | null;
+  smtpHost: string | null;
+  smtpPort: number | null;
+  smtpUser: string | null;
+  smtpPassword: string | null;
+  smtpFrom: string | null;
+  smtpSecure: boolean;
+};
+
+async function authenticateAdmin(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return apiError(request, ErrorCode.UNAUTHORIZED);
+    return { error: apiError(request, ErrorCode.UNAUTHORIZED) };
   }
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (!user?.isAdmin) {
-    return apiError(request, ErrorCode.ADMIN_ONLY);
+    return { error: apiError(request, ErrorCode.ADMIN_ONLY) };
   }
-
   if (!user.email) {
-    return apiError(request, ErrorCode.INVALID_REQUEST);
+    return { error: apiError(request, ErrorCode.INVALID_REQUEST) };
   }
+  return { user };
+}
 
-  const emailEnabled = await isEmailEnabled();
-  if (!emailEnabled) {
+function buildTransporter(settings: SmtpSettings) {
+  return nodemailer.createTransport({
+    host: settings.smtpHost!,
+    port: settings.smtpPort ?? 587,
+    secure: settings.smtpSecure,
+    auth:
+      settings.smtpUser && settings.smtpPassword
+        ? { user: settings.smtpUser, pass: settings.smtpPassword }
+        : undefined,
+  });
+}
+
+function renderTestEmail(
+  payload: TestPayload,
+  appName: string,
+  userEmail: string
+): { subject: string; html: string; text: string } | null {
+  const baseUrl = process.env.NEXTAUTH_URL || "https://example.com";
+  const overrides = { subject: payload.subject, html: payload.html, text: payload.text };
+
+  if (payload.type === "share") {
+    return renderShareEmail(
+      { appName, shareTitle: "example-file.pdf", shareUrl: `${baseUrl}/f/abc123` },
+      overrides
+    );
+  }
+  if (payload.type === "verify") {
+    return renderVerifyEmail(
+      {
+        appName,
+        verifyUrl: `${baseUrl}/auth/verify-email?token=test-token&email=${encodeURIComponent(userEmail)}`,
+      },
+      overrides
+    );
+  }
+  return null;
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await authenticateAdmin(request);
+  if (auth.error) return auth.error;
+
+  if (!(await isEmailEnabled())) {
     return apiError(request, ErrorCode.EMAIL_NOT_CONFIGURED);
   }
 
   try {
-    const data = await request.json();
-    const { type, subject, html, text } = data as {
-      type: "share" | "verify";
-      subject?: string | null;
-      html?: string | null;
-      text?: string | null;
-    };
+    const payload = (await request.json()) as TestPayload;
 
-    const settings = await prisma.settings.findFirst({
+    const settings = (await prisma.settings.findFirst({
       select: {
         appName: true,
         smtpHost: true,
@@ -45,7 +98,7 @@ export async function POST(request: NextRequest) {
         smtpFrom: true,
         smtpSecure: true,
       },
-    });
+    })) as SmtpSettings | null;
 
     if (!settings?.smtpHost) {
       return apiError(request, ErrorCode.EMAIL_NOT_CONFIGURED);
@@ -53,51 +106,22 @@ export async function POST(request: NextRequest) {
 
     const appName = settings.appName || "SnowShare";
     const fromAddress = settings.smtpFrom || settings.smtpUser || `noreply@snowshare`;
+    const rendered = renderTestEmail(payload, appName, auth.user.email!);
 
-    const transporter = nodemailer.createTransport({
-      host: settings.smtpHost,
-      port: settings.smtpPort ?? 587,
-      secure: settings.smtpSecure,
-      auth:
-        settings.smtpUser && settings.smtpPassword
-          ? { user: settings.smtpUser, pass: settings.smtpPassword }
-          : undefined,
-    });
-
-    let rendered: { subject: string; html: string; text: string };
-
-    if (type === "share") {
-      rendered = renderShareEmail(
-        {
-          appName,
-          shareTitle: "example-file.pdf",
-          shareUrl: `${process.env.NEXTAUTH_URL || "https://example.com"}/f/abc123`,
-        },
-        { subject, html, text }
-      );
-    } else if (type === "verify") {
-      rendered = renderVerifyEmail(
-        {
-          appName,
-          verifyUrl: `${process.env.NEXTAUTH_URL || "https://example.com"}/auth/verify-email?token=test-token&email=${encodeURIComponent(user.email)}`,
-        },
-        { subject, html, text }
-      );
-    } else {
+    if (!rendered) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
     // rendered.html has been sanitised by sanitizeEmailHtml() inside the renderers
     // (script tags and javascript: URIs are stripped). It is sent as SMTP email
     // content to the admin's own address, never written to a web response.
-    const mailOptions = {
+    await buildTransporter(settings).sendMail({
       from: `"${appName}" <${fromAddress}>`,
-      to: user.email,
+      to: auth.user.email!,
       subject: `[Test] ${rendered.subject}`,
       html: rendered.html,
       text: rendered.text,
-    };
-    await transporter.sendMail(mailOptions);
+    });
 
     return NextResponse.json({ message: "Test email sent successfully" });
   } catch (error) {
