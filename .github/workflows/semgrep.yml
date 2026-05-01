@@ -1,0 +1,21 @@
+name: Semgrep
+
+on:
+  push:
+    branches: [canary]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Semgrep Scan
+    runs-on: [self-hosted]
+    if: github.event.pull_request.draft == false
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep ci --config=.semgrep.yml

@@ -63,10 +63,14 @@ jobs:
           path: e2e/results/
 
   build:
-    name: Docker Build
-    needs: [lint, test] # e2e temporarily disabled
+    name: Build
+    needs: [lint, test]
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run build
