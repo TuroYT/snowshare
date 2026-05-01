@@ -19,3 +19,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: semgrep ci --config=p/typescript --config=p/react --config=p/nextjs --config=p/owasp-top-ten --config=p/jwt --config=p/nodejs --config=p/secrets
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
