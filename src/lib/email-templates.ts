@@ -9,6 +9,8 @@
  * that URLs remain copy-pasteable.
  */
 
+import sanitizeHtml from "sanitize-html";
+
 export type EmailType = "share" | "verify";
 
 /** Variables available inside share-email templates. */
@@ -85,15 +87,33 @@ function escapeHtml(str: string): string {
  *  - `javascript:` URIs in any attribute
  */
 export function sanitizeEmailHtml(html: string): string {
-  return (
-    html
-      // Remove <script> … </script> blocks (case-insensitive, multiline)
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-      // Remove inline event handlers: on* = "…" or on* = '…'
-      .replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
-      // Remove javascript: protocol in any attribute value
-      .replace(/javascript\s*:/gi, "")
-  );
+  return sanitizeHtml(html, {
+    // Keep common email-safe markup while removing executable content.
+    allowedTags: sanitizeHtml.defaults.allowedTags.filter(
+      (tag) => tag !== "script" && tag !== "style"
+    ),
+    // Explicitly allow non-event attributes used by our templates.
+    allowedAttributes: {
+      a: ["href", "name", "target", "rel", "style"],
+      div: ["style"],
+      p: ["style"],
+      h1: ["style"],
+      h2: ["style"],
+      h3: ["style"],
+      h4: ["style"],
+      h5: ["style"],
+      h6: ["style"],
+      span: ["style"],
+      strong: ["style"],
+      em: ["style"],
+      hr: ["style"],
+      "*": ["style"]
+    },
+    // Disallow javascript: and other non-http/mailto schemes in URLs.
+    allowedSchemes: ["http", "https", "mailto"],
+    allowedSchemesAppliedToAttributes: ["href", "src", "cite"],
+    allowProtocolRelative: false
+  });
 }
 
 /**
