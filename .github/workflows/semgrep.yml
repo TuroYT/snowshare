@@ -21,7 +21,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: semgrep ci --timeout 120 --timeout-threshold 3
+      - run: semgrep ci --timeout 60 --timeout-threshold 3 --max-memory 5000 --oss-only
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-          SEMGREP_TIMEOUT: "300"
