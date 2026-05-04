@@ -625,7 +625,6 @@
     "email_templates": {
       "title": "Szablony e-mail",
       "description": "Dostosuj treść HTML/tekstową i temat wychodzących e-maili. Użyj {{appName}}, {{shareTitle}}, {{shareUrl}} lub {{verifyUrl}} jako zmiennych.",
-      "default_locale": "Domyślny język",
       "type_share": "E-mail udostępniania",
       "type_verify": "E-mail weryfikacyjny",
       "subject": "Temat",

@@ -628,7 +628,6 @@
     "email_templates": {
       "title": "E-mailsjablonen",
       "description": "Pas de HTML-/tekstinhoud en de onderwerpregel van uitgaande e-mails aan. Gebruik {{appName}}, {{shareTitle}}, {{shareUrl}} of {{verifyUrl}} als variabelen.",
-      "default_locale": "Standaardtaal",
       "type_share": "Deel-e-mail",
       "type_verify": "Verificatie-e-mail",
       "subject": "Onderwerp",

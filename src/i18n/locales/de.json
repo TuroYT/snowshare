@@ -621,7 +621,6 @@
     "email_templates": {
       "title": "E-Mail-Vorlagen",
       "description": "Passen Sie den HTML-/Text-Inhalt und die Betreffzeile ausgehender E-Mails an. Verwenden Sie {{appName}}, {{shareTitle}}, {{shareUrl}} oder {{verifyUrl}} als Variablen.",
-      "default_locale": "Standardsprache",
       "type_share": "Freigabe-E-Mail",
       "type_verify": "Verifizierungs-E-Mail",
       "subject": "Betreff",

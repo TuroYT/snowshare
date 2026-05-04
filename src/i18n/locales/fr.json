@@ -625,7 +625,6 @@
     "email_templates": {
       "title": "Modèles d'e-mail",
       "description": "Personnalisez le contenu HTML/texte et l'objet des e-mails sortants. Utilisez {{appName}}, {{shareTitle}}, {{shareUrl}} ou {{verifyUrl}} comme variables.",
-      "default_locale": "Langue par défaut",
       "type_share": "E-mail de partage",
       "type_verify": "E-mail de vérification",
       "subject": "Objet",

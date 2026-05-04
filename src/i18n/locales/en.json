@@ -625,7 +625,6 @@
     "email_templates": {
       "title": "Email Templates",
       "description": "Customize the HTML/text content and subject line of outgoing emails. Use {{appName}}, {{shareTitle}}, {{shareUrl}}, or {{verifyUrl}} as placeholders.",
-      "default_locale": "Default locale",
       "type_share": "Share Email",
       "type_verify": "Verification Email",
       "subject": "Subject",
