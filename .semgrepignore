@@ -1,0 +1,7 @@
+src/generated/
+node_modules/
+.next/
+uploads/
+.tus-temp/
+e2e/
+prisma/migrations/
