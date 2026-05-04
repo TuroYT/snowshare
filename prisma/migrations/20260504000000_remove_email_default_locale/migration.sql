@@ -1,2 +1,1 @@
--- AlterTable
-ALTER TABLE "Settings" DROP COLUMN "emailDefaultLocale";
+-- No-op: emailDefaultLocale was never added (squashed into 20260429000000_add_email_templates)

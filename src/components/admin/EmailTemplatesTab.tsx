@@ -134,15 +134,10 @@ export default function EmailTemplatesTab() {
     };
   }, [refreshPreview]);
 
-  // Write preview HTML into iframe
+  // Write preview HTML into iframe via srcdoc
   useEffect(() => {
     if (iframeRef.current && preview?.html) {
-      const doc = iframeRef.current.contentDocument;
-      if (doc) {
-        doc.open();
-        doc.write(preview.html);
-        doc.close();
-      }
+      iframeRef.current.srcdoc = preview.html;
     }
   }, [preview?.html]);
 

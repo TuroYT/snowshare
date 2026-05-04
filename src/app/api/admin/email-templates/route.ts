@@ -79,7 +79,7 @@ type TemplateData = Partial<Record<TemplateField, string | null>>;
 function pickProvided(data: TemplateData) {
   const out: Record<string, string | null> = {};
   for (const key of TEMPLATE_FIELDS) {
-    if (data[key] !== undefined) out[key] = data[key]!;
+    if (data[key] !== undefined) out[key] = data[key] as string | null;
   }
   return out;
 }
@@ -110,8 +110,18 @@ export async function PATCH(request: NextRequest) {
   const { error } = await requireAdminUser(request);
   if (error) return error;
 
+  const MAX_TEMPLATE_SIZE = 50_000; // 50 KB per field
+
   try {
     const data = (await request.json()) as TemplateData;
+
+    for (const key of TEMPLATE_FIELDS) {
+      const val = data[key];
+      if (typeof val === "string" && val.length > MAX_TEMPLATE_SIZE) {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
+    }
+
     const existing = await prisma.settings.findFirst();
 
     const settings = existing
