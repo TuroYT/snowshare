@@ -33,5 +33,8 @@ RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
     && chown -R snowshare:snowshare uploads .tus-temp src/generated .next \
     && chmod -R 777 uploads .tus-temp src/generated
 
-# Default command via entrypoint (drops to snowshare user; cleanup runs via node-cron)
+# Switch to non-root user for runtime
+USER snowshare
+
+# Default command via entrypoint (cleanup runs via node-cron)
 ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
