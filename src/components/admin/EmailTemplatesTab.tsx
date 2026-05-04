@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 type EmailType = "share" | "verify";
 
 interface EmailTemplates {
-  emailDefaultLocale: string;
   shareEmailSubject: string | null;
   shareEmailHtml: string | null;
   shareEmailText: string | null;
@@ -31,13 +30,10 @@ interface PreviewResult {
   text: string;
 }
 
-const LOCALES = ["en", "fr", "es", "de", "nl", "pl"] as const;
-
 export default function EmailTemplatesTab() {
   const { t } = useTranslation();
   const [activeType, setActiveType] = useState<EmailType>("share");
   const [templates, setTemplates] = useState<EmailTemplates>({
-    emailDefaultLocale: "en",
     shareEmailSubject: null,
     shareEmailHtml: null,
     shareEmailText: null,
@@ -155,9 +151,7 @@ export default function EmailTemplatesTab() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const patchData: Partial<EmailTemplates> = {
-        emailDefaultLocale: templates.emailDefaultLocale,
-      };
+      const patchData: Partial<EmailTemplates> = {};
 
       if (activeType === "share") {
         patchData.shareEmailSubject = subject || null;
@@ -276,26 +270,6 @@ export default function EmailTemplatesTab() {
             "Customize the HTML/text content and subject line of outgoing emails. Use {{appName}}, {{shareTitle}}, {{shareUrl}}, or {{verifyUrl}} as placeholders."
           )}
         </p>
-      </div>
-
-      {/* Default locale selector */}
-      <div className="mb-6 flex items-center gap-3">
-        <label className="text-sm font-medium text-[var(--foreground)]">
-          {t("admin.email_templates.default_locale", "Default locale")}
-        </label>
-        <select
-          value={templates.emailDefaultLocale}
-          onChange={(e) =>
-            setTemplates((prev) => ({ ...prev, emailDefaultLocale: e.target.value }))
-          }
-          className="bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {LOCALES.map((loc) => (
-            <option key={loc} value={loc}>
-              {loc.toUpperCase()}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Email type tabs */}

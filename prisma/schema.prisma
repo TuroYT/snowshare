@@ -182,7 +182,6 @@ model Settings {
   emailVerificationRequired Boolean @default(false)
 
   // Email Templates
-  emailDefaultLocale        String  @default("en")
   shareEmailSubject         String?
   shareEmailHtml            String?
   shareEmailText            String?

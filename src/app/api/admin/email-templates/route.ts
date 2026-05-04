@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
   try {
     const settings = await prisma.settings.findFirst({
       select: {
-        emailDefaultLocale: true,
         shareEmailSubject: true,
         shareEmailHtml: true,
         shareEmailText: true,
@@ -43,7 +42,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       templates: {
-        emailDefaultLocale: settings?.emailDefaultLocale ?? "en",
         shareEmailSubject: settings?.shareEmailSubject ?? null,
         shareEmailHtml: settings?.shareEmailHtml ?? null,
         shareEmailText: settings?.shareEmailText ?? null,
@@ -67,7 +65,6 @@ export async function GET(request: NextRequest) {
 }
 
 const TEMPLATE_FIELDS = [
-  "emailDefaultLocale",
   "shareEmailSubject",
   "shareEmailHtml",
   "shareEmailText",
@@ -89,7 +86,6 @@ function pickProvided(data: TemplateData) {
 
 function buildCreateData(data: TemplateData) {
   return {
-    emailDefaultLocale: data.emailDefaultLocale ?? "en",
     shareEmailSubject: data.shareEmailSubject ?? null,
     shareEmailHtml: data.shareEmailHtml ?? null,
     shareEmailText: data.shareEmailText ?? null,
@@ -101,7 +97,6 @@ function buildCreateData(data: TemplateData) {
 
 function pickTemplates<T extends TemplateData>(settings: T) {
   return {
-    emailDefaultLocale: settings.emailDefaultLocale,
     shareEmailSubject: settings.shareEmailSubject,
     shareEmailHtml: settings.shareEmailHtml,
     shareEmailText: settings.shareEmailText,

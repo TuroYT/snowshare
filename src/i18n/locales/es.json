@@ -621,7 +621,6 @@
     "email_templates": {
       "title": "Plantillas de correo",
       "description": "Personalice el contenido HTML/texto y el asunto de los correos salientes. Use {{appName}}, {{shareTitle}}, {{shareUrl}} o {{verifyUrl}} como variables.",
-      "default_locale": "Idioma por defecto",
       "type_share": "Correo de compartir",
       "type_verify": "Correo de verificación",
       "subject": "Asunto",
