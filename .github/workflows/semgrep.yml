@@ -14,10 +14,14 @@ jobs:
     name: Semgrep Scan
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
+    timeout-minutes: 20
     container:
       image: returntocorp/semgrep
     steps:
       - uses: actions/checkout@v4
-      - run: semgrep ci
+        with:
+          fetch-depth: 0
+      - run: semgrep ci --timeout 120 --timeout-threshold 3
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          SEMGREP_TIMEOUT: "300"
