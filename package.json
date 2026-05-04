@@ -74,6 +74,7 @@
     "react-markdown": "^10.1.0",
     "react-pdf": "^10.3.0",
     "reactjs-file-preview": "^1.0.11",
+    "sanitize-html": "^2.17.3",
     "tailwind-merge": "^3.4.0",
     "tsx": "^4.21.0",
     "tus-js-client": "^4.3.1"
@@ -92,6 +93,7 @@
     "@types/prismjs": "^1.26.5",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "@types/sanitize-html": "^2.16.1",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "baseline-browser-mapping": "^2.9.19",

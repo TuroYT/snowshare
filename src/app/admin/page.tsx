@@ -11,9 +11,10 @@ import SettingsTab from "@/components/admin/SettingsTab";
 import LogsTab from "@/components/admin/LogsTab";
 import BrandingTab from "@/components/admin/BrandingTab";
 import OAuthProvidersTab from "@/components/admin/OAuthProvidersTab";
+import EmailTemplatesTab from "@/components/admin/EmailTemplatesTab";
 import UpdateNotification, { VersionInfo } from "@/components/admin/UpdateNotification";
 
-type Tab = "users" | "settings" | "branding" | "logs" | "oauth";
+type Tab = "users" | "settings" | "branding" | "logs" | "oauth" | "email";
 
 export default function AdminPage() {
   const { status } = useSession();
@@ -117,7 +118,7 @@ export default function AdminPage() {
 
           {/* Tabs */}
           <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto">
-            {(["users", "settings", "branding", "oauth", "logs"] as const).map((tab) => (
+            {(["users", "settings", "branding", "oauth", "email", "logs"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -138,6 +139,7 @@ export default function AdminPage() {
             {activeTab === "settings" && <SettingsTab />}
             {activeTab === "branding" && <BrandingTab />}
             {activeTab === "oauth" && <OAuthProvidersTab />}
+            {activeTab === "email" && <EmailTemplatesTab />}
             {activeTab === "logs" && <LogsTab />}
           </div>
         </div>
