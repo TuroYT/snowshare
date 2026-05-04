@@ -380,6 +380,17 @@ const tusServer = new TusServer({
           console.error(`[Upload] Bulk share not found: ${bulkShareId}`);
           throw new Error("Bulk share not found");
         }
+
+        // Verify ownership: authenticated users must own the share, anonymous users must match IP
+        const ownsShare = isAuthenticated
+          ? share.ownerId === userId
+          : share.ipSource === clientIp;
+
+        if (!ownsShare) {
+          console.error(`[Upload] Unauthorized bulk share access attempt: ${bulkShareId} by ${isAuthenticated ? `user ${userId}` : `IP ${clientIp}`}`);
+          const body = { error: "UNAUTHORIZED_SHARE_ACCESS" };
+          throw { status_code: 403, body: JSON.stringify(body) };
+        }
       } else if (isBulk && fileIndex === 0) {
         let finalSlug = slug;
         if (finalSlug && !SLUG_REGEX.test(finalSlug)) {
