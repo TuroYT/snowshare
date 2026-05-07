@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Enable output as standalone to reduce runtime dependencies in Docker
+  allowedDevOrigins: ["3000.code.romain-pinsolle.fr"],
   output: "standalone",
   compress: true,
   serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "pg"],

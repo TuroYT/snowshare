@@ -186,6 +186,7 @@ export default function Navigation() {
                   sx={{ p: 0 }}
                 >
                   <Avatar
+                    src={session.user?.image ?? undefined}
                     sx={{
                       background:
                         "linear-gradient(to bottom right, var(--primary), var(--secondary))",
@@ -344,6 +345,7 @@ export default function Navigation() {
           <List>
             <ListItem sx={{ py: 2, px: 2 }}>
               <Avatar
+                src={session.user?.image ?? undefined}
                 sx={{
                   background: "linear-gradient(to bottom right, var(--primary), var(--secondary))",
                   mr: 2,
