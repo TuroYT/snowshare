@@ -3,6 +3,7 @@ import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { gravatarUrl } from "@/lib/gravatar";
 import bcrypt from "bcryptjs";
 import { Provider } from "next-auth/providers/index";
 import { providerMap } from "./providers";
@@ -26,6 +27,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     name?: string | null;
+    image?: string | null;
   }
 }
 
@@ -292,6 +294,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         if (user) {
           token.id = user.id;
           token.name = user.name;
+          token.image = user.image || gravatarUrl(token.email as string);
         }
         return token;
       },
@@ -299,6 +302,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         if (token && session.user) {
           session.user.id = token.id as string;
           session.user.name = token.name as string | null;
+          session.user.image = token.image as string | null;
         }
         return session;
       },
