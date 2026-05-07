@@ -296,6 +296,9 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           token.name = user.name;
           token.image = user.image || gravatarUrl(token.email as string);
         }
+        if (!token.image && token.email) {
+          token.image = gravatarUrl(token.email as string);
+        }
         return token;
       },
       session: async ({ session, token }) => {
