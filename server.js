@@ -170,20 +170,27 @@ async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   });
 
   let totalSize = 0;
+  const useS3 = !!process.env.S3_BUCKET;
+  let storageModule = null;
+  if (useS3) {
+    storageModule = await import("./src/lib/storage.js");
+  }
+
   for (const share of shares) {
     if (share.isBulk && share.files?.length > 0) {
-      // Bulk upload: sum ShareFile sizes
       for (const file of share.files) {
         totalSize += Number(file.size);
       }
     } else if (share.filePath) {
-      // Single upload: stat file on disk
-      const fullPath = path.join(uploadsDir, share.filePath);
       try {
-        const stats = await stat(fullPath);
-        totalSize += stats.size;
+        if (useS3 && storageModule) {
+          totalSize += await storageModule.getStorageFileSize(share.filePath);
+        } else {
+          const stats = await stat(path.join(uploadsDir, share.filePath));
+          totalSize += stats.size;
+        }
       } catch {
-        // File doesn't exist, skip
+        // File missing — skip
       }
     }
   }
@@ -525,8 +532,17 @@ const tusServer = new TusServer({
         await unlink(tusMetaPath);
       }
 
+      // Upload to S3 when configured, then remove the local copy
+      if (process.env.S3_BUCKET) {
+        const { uploadToStorage } = await import("./src/lib/storage.js");
+        await uploadToStorage(finalFilePath, finalFileName);
+        await unlink(finalFilePath);
+      }
+
       if (isBulk) {
-        const fileStats = await stat(finalFilePath);
+        const fileStats = process.env.S3_BUCKET
+          ? { size: upload.size ?? 0 }
+          : await stat(finalFilePath);
         // Re-validate the bulk share exists to avoid FK errors if it was removed between checks
         const currentShare = await prisma.share.findUnique({
           where: { id: share.id },

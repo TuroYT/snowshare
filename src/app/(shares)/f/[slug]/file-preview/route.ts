@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import path from "path";
-import { existsSync, createReadStream } from "fs";
-import { stat } from "fs/promises";
-import { getUploadDir } from "@/lib/constants";
+import { getStorageReadStream, getStorageFileSize, storageFileExists } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
 import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
@@ -25,12 +23,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    // Security: Prevent path traversal attempts and validate input
     if (relativePath.includes("..") || relativePath.startsWith("/") || relativePath.length > 500) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
-    // Get the share
     const share = await prisma.share.findUnique({
       where: { slug },
       select: {
@@ -50,7 +46,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.SHARE_EXPIRED);
     }
 
-    // Check password if required
     if (share.password) {
       if (!password) {
         return apiError(request, ErrorCode.PASSWORD_REQUIRED);
@@ -62,7 +57,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Find the specific file in the share
     const shareFile = await prisma.shareFile.findFirst({
       where: {
         shareId: share.id,
@@ -80,28 +74,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const fullPath = path.join(getUploadDir(), shareFile.filePath);
-
-    if (!existsSync(fullPath)) {
+    if (!(await storageFileExists(shareFile.filePath))) {
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const stats = await stat(fullPath);
-    const fileSize = stats.size;
+    const fileSize = await getStorageFileSize(shareFile.filePath);
 
-    // Determine content type from mimeType or extension
     let contentType = shareFile.mimeType || "application/octet-stream";
-
     if (!shareFile.mimeType) {
-      const ext = path.extname(fullPath).toLowerCase();
+      const ext = path.extname(shareFile.filePath).toLowerCase();
       contentType = getMimeType(ext);
     }
 
-    // Sanitize filename for Content-Disposition header
     const safeFilename = sanitizeFilenameForHeader(shareFile.originalName || "download");
 
-    // Stream the file
-    const fileStream = createReadStream(fullPath);
+    const fileStream = await getStorageReadStream(shareFile.filePath);
     const webStream = nodeStreamToWebStream(fileStream);
 
     const headers = new Headers();
@@ -110,7 +97,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     headers.set("Accept-Ranges", "bytes");
     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
 
-    // Allow inline viewing only for safe types (excludes SVG/HTML to prevent XSS)
     if (isSafeForInline(contentType)) {
       headers.set("Content-Disposition", `inline; filename="${safeFilename}"`);
     } else {

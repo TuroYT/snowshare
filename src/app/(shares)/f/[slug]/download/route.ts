@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { createReadStream, existsSync } from "fs";
-import { stat } from "fs/promises";
-import path from "path";
+import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { getMimeType, sanitizeFilenameForHeader } from "@/lib/mime-types";
+import path from "path";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -34,20 +33,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    const { filePath: fullPath, originalFilename } = result;
+    const { storageKey, originalFilename } = result;
 
-    if (!fullPath || !existsSync(fullPath)) {
+    if (!storageKey) {
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const stats = await stat(fullPath);
-    const fileSize = stats.size;
-
-    const ext = path.extname(fullPath).toLowerCase();
+    const fileSize = await getStorageFileSize(storageKey);
+    const ext = path.extname(storageKey).toLowerCase();
     const contentType = getMimeType(ext);
     const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
 
-    // Handle range request
     const range = request.headers.get("range");
 
     if (range) {
@@ -62,7 +58,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
       const { start, end } = rangeResult;
       const chunksize = end - start + 1;
-      const fileStream = createReadStream(fullPath, { start, end });
+      const fileStream = await getStorageReadStream(storageKey, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);
 
       const headers = new Headers();
@@ -81,8 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       });
     }
 
-    // Full file download
-    const fileStream = createReadStream(fullPath);
+    const fileStream = await getStorageReadStream(storageKey);
     const webStream = nodeStreamToWebStream(fileStream);
 
     const headers = new Headers();

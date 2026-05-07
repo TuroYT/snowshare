@@ -1,10 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-
-import path from "path";
-
-import { getUploadDir } from "@/lib/constants";
-import { existsSync } from "fs";
+import { storageFileExists } from "@/lib/storage";
 import { ErrorCode } from "@/lib/api-errors";
 
 export const getFileShare = async (slug: string, password?: string) => {
@@ -47,7 +43,6 @@ export const getFileShare = async (slug: string, password?: string) => {
   }
 
   if (share.isBulk) {
-    // Fetch only the file metadata needed for listing to avoid loading heavy columns
     const files = await prisma.shareFile.findMany({
       where: { shareId: share.id },
       select: {
@@ -67,14 +62,14 @@ export const getFileShare = async (slug: string, password?: string) => {
     return { errorCode: ErrorCode.FILE_NOT_FOUND };
   }
 
-  const filePath = path.join(getUploadDir(), share.filePath);
-  if (!existsSync(filePath)) {
+  if (!(await storageFileExists(share.filePath))) {
     return { errorCode: ErrorCode.FILE_NOT_FOUND };
   }
 
   return {
     share,
-    filePath,
+    // storageKey is the relative filename used by storage.ts (local or S3)
+    storageKey: share.filePath,
     originalFilename: share.filePath.split("_").slice(1).join("_"),
   };
 };

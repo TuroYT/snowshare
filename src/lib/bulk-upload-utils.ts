@@ -7,6 +7,7 @@ import { Readable } from "stream";
 import crypto from "crypto";
 import { getUploadDir } from "./constants";
 import { getMimeType as getMimeTypeFromLib } from "./mime-types";
+import { isS3Enabled, getStorageReadStream, storageFileExists } from "./storage";
 
 export interface FileEntry {
   file: File;
@@ -85,16 +86,27 @@ export async function createZipStream(
     zlib: { level: 6 },
   });
 
-  const uploadsDir = getUploadDir();
-
-  for (const file of files) {
-    const fullPath = path.join(uploadsDir, file.filePath);
-    try {
-      await access(fullPath);
-      const displayPath = file.relativePath || file.originalName;
-      archive.file(fullPath, { name: displayPath });
-    } catch {
-      // Skip missing files
+  if (isS3Enabled()) {
+    for (const file of files) {
+      try {
+        const stream = await getStorageReadStream(file.filePath);
+        const displayPath = file.relativePath || file.originalName;
+        archive.append(stream, { name: displayPath });
+      } catch {
+        // skip missing files
+      }
+    }
+  } else {
+    const uploadsDir = getUploadDir();
+    for (const file of files) {
+      const fullPath = path.join(uploadsDir, file.filePath);
+      try {
+        await access(fullPath);
+        const displayPath = file.relativePath || file.originalName;
+        archive.file(fullPath, { name: displayPath });
+      } catch {
+        // skip missing files
+      }
     }
   }
 
@@ -113,3 +125,5 @@ export function validateFilePath(filePath: string): boolean {
 export function normalizeRelativePath(relativePath: string): string {
   return relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\.\.+/g, ".");
 }
+
+export { storageFileExists };
