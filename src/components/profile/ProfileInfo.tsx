@@ -8,6 +8,7 @@ type User = {
   name?: string;
   email: string;
   createdAt: string;
+  defaultTab?: string;
 };
 
 type ProfileInfoProps = {
@@ -19,6 +20,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
   const { t } = useTranslation();
   const [name, setName] = useState(user.name || "");
   const [email, setEmail] = useState(user.email);
+  const [defaultTab, setDefaultTab] = useState(user.defaultTab || "linkshare");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -49,7 +51,8 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         email?: string;
         currentPassword?: string;
         newPassword?: string;
-      } = { name, email };
+        defaultTab?: string;
+      } = { name, email, defaultTab };
 
       if (newPassword) {
         updateData.currentPassword = currentPassword;
@@ -136,6 +139,24 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
               className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              {t("profile.default_tab")}
+            </label>
+            <p className="text-xs text-[var(--foreground-muted)] mb-2">
+              {t("profile.default_tab_desc")}
+            </p>
+            <select
+              value={defaultTab}
+              onChange={(e) => setDefaultTab(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
+            >
+              <option value="linkshare">{t("profile.default_tab_linkshare")}</option>
+              <option value="pasteshare">{t("profile.default_tab_pasteshare")}</option>
+              <option value="fileshare">{t("profile.default_tab_fileshare")}</option>
+            </select>
           </div>
         </div>
 
