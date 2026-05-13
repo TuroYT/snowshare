@@ -7,6 +7,58 @@ import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
 import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
 
+type ShareAccess = {
+  id: string;
+  type: string;
+  password: string | null;
+  expiresAt: Date | null;
+  isBulk: boolean;
+} | null;
+
+async function validateShareAccess(
+  request: NextRequest,
+  share: ShareAccess,
+  password: string | undefined
+): Promise<NextResponse | null> {
+  if (!share || share.type !== "FILE" || !share.isBulk) {
+    return apiError(request, ErrorCode.SHARE_NOT_FOUND);
+  }
+  if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
+    return apiError(request, ErrorCode.SHARE_EXPIRED);
+  }
+  if (share.password) {
+    if (!password) return apiError(request, ErrorCode.PASSWORD_REQUIRED);
+    const valid = await bcrypt.compare(password, share.password);
+    if (!valid) return apiError(request, ErrorCode.PASSWORD_INCORRECT);
+  }
+  return null;
+}
+
+async function buildFileResponse(
+  shareFile: { filePath: string; originalName: string | null; mimeType: string | null },
+  fileSize: number
+): Promise<NextResponse> {
+  let contentType = shareFile.mimeType || "application/octet-stream";
+  if (!shareFile.mimeType) {
+    contentType = getMimeType(path.extname(shareFile.filePath).toLowerCase());
+  }
+  const safeFilename = sanitizeFilenameForHeader(shareFile.originalName || "download");
+  const fileStream = await getStorageReadStream(shareFile.filePath);
+  const webStream = nodeStreamToWebStream(fileStream);
+
+  const headers = new Headers();
+  headers.set("Content-Length", fileSize.toString());
+  headers.set("Content-Type", contentType);
+  headers.set("Accept-Ranges", "bytes");
+  headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+  headers.set(
+    "Content-Disposition",
+    `${isSafeForInline(contentType) ? "inline" : "attachment"}; filename="${safeFilename}"`
+  );
+
+  return new NextResponse(webStream as ReadableStream<Uint8Array>, { status: 200, headers });
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
@@ -29,84 +81,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const share = await prisma.share.findUnique({
       where: { slug },
-      select: {
-        id: true,
-        type: true,
-        password: true,
-        expiresAt: true,
-        isBulk: true,
-      },
+      select: { id: true, type: true, password: true, expiresAt: true, isBulk: true },
     });
 
-    if (!share || share.type !== "FILE" || !share.isBulk) {
-      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
-    }
-
-    if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-      return apiError(request, ErrorCode.SHARE_EXPIRED);
-    }
-
-    if (share.password) {
-      if (!password) {
-        return apiError(request, ErrorCode.PASSWORD_REQUIRED);
-      }
-
-      const passwordValid = await bcrypt.compare(password, share.password);
-      if (!passwordValid) {
-        return apiError(request, ErrorCode.PASSWORD_INCORRECT);
-      }
-    }
+    const accessError = await validateShareAccess(request, share, password);
+    if (accessError) return accessError;
 
     const shareFile = await prisma.shareFile.findFirst({
-      where: {
-        shareId: share.id,
-        relativePath: relativePath,
-      },
-      select: {
-        filePath: true,
-        originalName: true,
-        mimeType: true,
-        size: true,
-      },
+      where: { shareId: share!.id, relativePath },
+      select: { filePath: true, originalName: true, mimeType: true, size: true },
     });
 
-    if (!shareFile) {
-      return apiError(request, ErrorCode.FILE_NOT_FOUND);
-    }
-
-    if (!(await storageFileExists(shareFile.filePath))) {
+    if (!shareFile || !(await storageFileExists(shareFile.filePath))) {
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
     const fileSize = await getStorageFileSize(shareFile.filePath);
-
-    let contentType = shareFile.mimeType || "application/octet-stream";
-    if (!shareFile.mimeType) {
-      const ext = path.extname(shareFile.filePath).toLowerCase();
-      contentType = getMimeType(ext);
-    }
-
-    const safeFilename = sanitizeFilenameForHeader(shareFile.originalName || "download");
-
-    const fileStream = await getStorageReadStream(shareFile.filePath);
-    const webStream = nodeStreamToWebStream(fileStream);
-
-    const headers = new Headers();
-    headers.set("Content-Length", fileSize.toString());
-    headers.set("Content-Type", contentType);
-    headers.set("Accept-Ranges", "bytes");
-    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-
-    if (isSafeForInline(contentType)) {
-      headers.set("Content-Disposition", `inline; filename="${safeFilename}"`);
-    } else {
-      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
-    }
-
-    return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-      status: 200,
-      headers,
-    });
+    return buildFileResponse(shareFile, fileSize);
   } catch (error) {
     console.error("File preview error:", error);
     return internalError(request);

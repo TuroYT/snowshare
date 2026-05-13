@@ -188,6 +188,55 @@ async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   return totalSize;
 }
 
+function resolveUploadLimits(settings, isAuthenticated) {
+  const maxFileSizeMB = isAuthenticated
+    ? settings?.authMaxUpload || 51200
+    : settings?.anoMaxUpload || 2048;
+  const ipQuotaMB = isAuthenticated
+    ? settings?.authIpQuota || 102400
+    : settings?.anoIpQuota || 4096;
+  return {
+    maxFileSizeBytes: maxFileSizeMB * 1024 * 1024,
+    ipQuotaBytes: ipQuotaMB * 1024 * 1024,
+  };
+}
+
+function parseAndClampExpiresAt(expiresAt, isAuthenticated) {
+  let parsed = null;
+  if (expiresAt) {
+    parsed = new Date(expiresAt);
+    if (isNaN(parsed.getTime())) parsed = null;
+  }
+  if (!isAuthenticated) {
+    const maxExpiry = new Date();
+    maxExpiry.setDate(maxExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
+    if (!parsed) return maxExpiry;
+    if (parsed > maxExpiry) return maxExpiry;
+  }
+  return parsed;
+}
+
+async function hashUploadPassword(password) {
+  if (!password) return null;
+  const bcrypt = await import("bcryptjs");
+  return bcrypt.default.hash(password, BCRYPT_COST);
+}
+
+async function resolveSlugOrGenerate(prisma, slug) {
+  let finalSlug = slug;
+  if (finalSlug && !SLUG_REGEX.test(finalSlug)) {
+    throw { status_code: 400, body: JSON.stringify({ error: "SLUG_INVALID" }) };
+  }
+  if (finalSlug) {
+    const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
+    if (existing) throw { status_code: 409, body: JSON.stringify({ error: "SLUG_ALREADY_TAKEN" }) };
+  }
+  if (!finalSlug) {
+    finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
+  }
+  return finalSlug;
+}
+
 // Ensure directories exist
 const uploadsDir = getUploadDir();
 const tusTempDir = getTusTempDir();
@@ -265,18 +314,7 @@ const tusServer = new TusServer({
 
     // Get settings
     const settings = await prisma.settings.findFirst();
-
-    let maxFileSizeMB, ipQuotaMB;
-    if (isAuthenticated) {
-      maxFileSizeMB = settings?.authMaxUpload || 51200;
-      ipQuotaMB = settings?.authIpQuota || 102400;
-    } else {
-      maxFileSizeMB = settings?.anoMaxUpload || 2048;
-      ipQuotaMB = settings?.anoIpQuota || 4096;
-    }
-
-    const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-    const ipQuotaBytes = ipQuotaMB * 1024 * 1024;
+    const { maxFileSizeBytes, ipQuotaBytes } = resolveUploadLimits(settings, isAuthenticated);
 
     // Check file size limit
     // upload.size property contains the size from the Upload-Length header
@@ -390,51 +428,9 @@ const tusServer = new TusServer({
           throw { status_code: 403, body: JSON.stringify(body) };
         }
       } else if (isBulk && fileIndex === 0) {
-        let finalSlug = slug;
-        if (finalSlug && !SLUG_REGEX.test(finalSlug)) {
-          const body = { error: "SLUG_INVALID" };
-          throw { status_code: 400, body: JSON.stringify(body) };
-        }
-
-        if (finalSlug) {
-          const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
-          if (existing) {
-            const body = { error: "SLUG_ALREADY_TAKEN" };
-            throw { status_code: 409, body: JSON.stringify(body) };
-          }
-        }
-        if (!finalSlug) {
-          finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
-        }
-
-        let parsedExpiresAt = null;
-        if (expiresAt) {
-          parsedExpiresAt = new Date(expiresAt);
-          if (isNaN(parsedExpiresAt.getTime())) {
-            parsedExpiresAt = null;
-          }
-        }
-
-        if (!isAuthenticated) {
-          const defaultExpiry = new Date();
-          defaultExpiry.setDate(defaultExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
-
-          if (!parsedExpiresAt) {
-            parsedExpiresAt = defaultExpiry;
-          } else {
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
-            if (parsedExpiresAt > maxExpiry) {
-              parsedExpiresAt = maxExpiry;
-            }
-          }
-        }
-
-        let hashedPassword = null;
-        if (password) {
-          const bcrypt = await import("bcryptjs");
-          hashedPassword = await bcrypt.default.hash(password, BCRYPT_COST);
-        }
+        const finalSlug = await resolveSlugOrGenerate(prisma, slug);
+        const parsedExpiresAt = parseAndClampExpiresAt(expiresAt, isAuthenticated);
+        const hashedPassword = await hashUploadPassword(password);
 
         share = await prisma.share.create({
           data: {
@@ -451,51 +447,9 @@ const tusServer = new TusServer({
 
         console.log(`Created bulk share: ${share.slug}`);
       } else {
-        let finalSlug = slug;
-        if (finalSlug && !SLUG_REGEX.test(finalSlug)) {
-          const body = { error: "SLUG_INVALID" };
-          throw { status_code: 400, body: JSON.stringify(body) };
-        }
-
-        if (finalSlug) {
-          const existing = await prisma.share.findUnique({ where: { slug: finalSlug } });
-          if (existing) {
-            const body = { error: "SLUG_ALREADY_TAKEN" };
-            throw { status_code: 409, body: JSON.stringify(body) };
-          }
-        }
-        if (!finalSlug) {
-          finalSlug = crypto.randomBytes(8).toString("hex").slice(0, 16);
-        }
-
-        let parsedExpiresAt = null;
-        if (expiresAt) {
-          parsedExpiresAt = new Date(expiresAt);
-          if (isNaN(parsedExpiresAt.getTime())) {
-            parsedExpiresAt = null;
-          }
-        }
-
-        if (!isAuthenticated) {
-          const defaultExpiry = new Date();
-          defaultExpiry.setDate(defaultExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
-
-          if (!parsedExpiresAt) {
-            parsedExpiresAt = defaultExpiry;
-          } else {
-            const maxExpiry = new Date();
-            maxExpiry.setDate(maxExpiry.getDate() + MAX_ANON_EXPIRY_DAYS);
-            if (parsedExpiresAt > maxExpiry) {
-              parsedExpiresAt = maxExpiry;
-            }
-          }
-        }
-
-        let hashedPassword = null;
-        if (password) {
-          const bcrypt = await import("bcryptjs");
-          hashedPassword = await bcrypt.default.hash(password, BCRYPT_COST);
-        }
+        const finalSlug = await resolveSlugOrGenerate(prisma, slug);
+        const parsedExpiresAt = parseAndClampExpiresAt(expiresAt, isAuthenticated);
+        const hashedPassword = await hashUploadPassword(password);
 
         share = await prisma.share.create({
           data: {

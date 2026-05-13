@@ -3,6 +3,90 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import type { Settings } from "@/generated/prisma";
+
+type SettingsInput = Record<string, unknown>;
+
+function field<K extends keyof Settings>(
+  data: SettingsInput,
+  current: Settings,
+  key: K
+): Settings[K] {
+  return key in data && data[key] !== undefined ? (data[key] as Settings[K]) : current[key];
+}
+
+function nullableString<K extends keyof Settings>(
+  data: SettingsInput,
+  current: Settings,
+  key: K
+): Settings[K] {
+  return key in data && data[key] !== undefined
+    ? (((data[key] as string) || null) as Settings[K])
+    : current[key];
+}
+
+function maskedSecret<K extends keyof Settings>(
+  data: SettingsInput,
+  current: Settings,
+  key: K
+): Settings[K] {
+  const val = data[key];
+  if (val !== undefined && val !== "••••••••") return ((val as string) || null) as Settings[K];
+  return current[key];
+}
+
+function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
+  return {
+    allowSignin: field(data, current, "allowSignin"),
+    disableCredentialsLogin: field(data, current, "disableCredentialsLogin"),
+    allowAnonFileShare: field(data, current, "allowAnonFileShare"),
+    allowAnonLinkShare: field(data, current, "allowAnonLinkShare"),
+    allowAnonPasteShare: field(data, current, "allowAnonPasteShare"),
+    anoMaxUpload: (data.anoMaxUpload as number) || current.anoMaxUpload,
+    authMaxUpload: (data.authMaxUpload as number) || current.authMaxUpload,
+    anoIpQuota: (data.anoIpQuota as number) || current.anoIpQuota,
+    authIpQuota: (data.authIpQuota as number) || current.authIpQuota,
+    useGiBForAnon: field(data, current, "useGiBForAnon"),
+    useGiBForAuth: field(data, current, "useGiBForAuth"),
+    appName: field(data, current, "appName"),
+    appDescription: field(data, current, "appDescription"),
+    logoUrl: field(data, current, "logoUrl"),
+    faviconUrl: field(data, current, "faviconUrl"),
+    primaryColor: field(data, current, "primaryColor"),
+    primaryHover: field(data, current, "primaryHover"),
+    primaryDark: field(data, current, "primaryDark"),
+    secondaryColor: field(data, current, "secondaryColor"),
+    secondaryHover: field(data, current, "secondaryHover"),
+    secondaryDark: field(data, current, "secondaryDark"),
+    backgroundColor: field(data, current, "backgroundColor"),
+    backgroundImageUrl: field(data, current, "backgroundImageUrl"),
+    surfaceColor: field(data, current, "surfaceColor"),
+    textColor: field(data, current, "textColor"),
+    textMuted: field(data, current, "textMuted"),
+    borderColor: field(data, current, "borderColor"),
+    fontFamily: field(data, current, "fontFamily"),
+    termsOfUses: field(data, current, "termsOfUses"),
+    captchaEnabled: field(data, current, "captchaEnabled"),
+    captchaProvider: field(data, current, "captchaProvider"),
+    captchaSiteKey: field(data, current, "captchaSiteKey"),
+    captchaSecretKey: maskedSecret(data, current, "captchaSecretKey"),
+    smtpEnabled: field(data, current, "smtpEnabled"),
+    smtpHost: nullableString(data, current, "smtpHost"),
+    smtpPort: field(data, current, "smtpPort"),
+    smtpUser: nullableString(data, current, "smtpUser"),
+    smtpPassword: maskedSecret(data, current, "smtpPassword"),
+    smtpFrom: nullableString(data, current, "smtpFrom"),
+    smtpSecure: field(data, current, "smtpSecure"),
+    emailVerificationRequired: field(data, current, "emailVerificationRequired"),
+    allowIframeEmbedding: field(data, current, "allowIframeEmbedding"),
+    s3Enabled: field(data, current, "s3Enabled"),
+    s3Endpoint: nullableString(data, current, "s3Endpoint"),
+    s3Region: nullableString(data, current, "s3Region"),
+    s3Bucket: nullableString(data, current, "s3Bucket"),
+    s3AccessKeyId: nullableString(data, current, "s3AccessKeyId"),
+    s3SecretAccessKey: maskedSecret(data, current, "s3SecretAccessKey"),
+  };
+}
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -200,101 +284,7 @@ Thank you for using SnowShare!`,
     } else {
       settings = await prisma.settings.update({
         where: { id: settings.id },
-        data: {
-          allowSignin: data.allowSignin !== undefined ? data.allowSignin : settings.allowSignin,
-          disableCredentialsLogin:
-            data.disableCredentialsLogin !== undefined
-              ? data.disableCredentialsLogin
-              : settings.disableCredentialsLogin,
-          allowAnonFileShare:
-            data.allowAnonFileShare !== undefined
-              ? data.allowAnonFileShare
-              : settings.allowAnonFileShare,
-          allowAnonLinkShare:
-            data.allowAnonLinkShare !== undefined
-              ? data.allowAnonLinkShare
-              : settings.allowAnonLinkShare,
-          allowAnonPasteShare:
-            data.allowAnonPasteShare !== undefined
-              ? data.allowAnonPasteShare
-              : settings.allowAnonPasteShare,
-          anoMaxUpload: data.anoMaxUpload || settings.anoMaxUpload,
-          authMaxUpload: data.authMaxUpload || settings.authMaxUpload,
-          anoIpQuota: data.anoIpQuota || settings.anoIpQuota,
-          authIpQuota: data.authIpQuota || settings.authIpQuota,
-          useGiBForAnon:
-            data.useGiBForAnon !== undefined ? data.useGiBForAnon : settings.useGiBForAnon,
-          useGiBForAuth:
-            data.useGiBForAuth !== undefined ? data.useGiBForAuth : settings.useGiBForAuth,
-          appName: data.appName !== undefined ? data.appName : settings.appName,
-          appDescription:
-            data.appDescription !== undefined ? data.appDescription : settings.appDescription,
-          logoUrl: data.logoUrl !== undefined ? data.logoUrl : settings.logoUrl,
-          faviconUrl: data.faviconUrl !== undefined ? data.faviconUrl : settings.faviconUrl,
-          primaryColor: data.primaryColor !== undefined ? data.primaryColor : settings.primaryColor,
-          primaryHover: data.primaryHover !== undefined ? data.primaryHover : settings.primaryHover,
-          primaryDark: data.primaryDark !== undefined ? data.primaryDark : settings.primaryDark,
-          secondaryColor:
-            data.secondaryColor !== undefined ? data.secondaryColor : settings.secondaryColor,
-          secondaryHover:
-            data.secondaryHover !== undefined ? data.secondaryHover : settings.secondaryHover,
-          secondaryDark:
-            data.secondaryDark !== undefined ? data.secondaryDark : settings.secondaryDark,
-          backgroundColor:
-            data.backgroundColor !== undefined ? data.backgroundColor : settings.backgroundColor,
-          backgroundImageUrl:
-            data.backgroundImageUrl !== undefined
-              ? data.backgroundImageUrl
-              : settings.backgroundImageUrl,
-          surfaceColor: data.surfaceColor !== undefined ? data.surfaceColor : settings.surfaceColor,
-          textColor: data.textColor !== undefined ? data.textColor : settings.textColor,
-          textMuted: data.textMuted !== undefined ? data.textMuted : settings.textMuted,
-          borderColor: data.borderColor !== undefined ? data.borderColor : settings.borderColor,
-          fontFamily: data.fontFamily !== undefined ? data.fontFamily : settings.fontFamily,
-          termsOfUses: data.termsOfUses !== undefined ? data.termsOfUses : settings.termsOfUses,
-          // CAPTCHA
-          captchaEnabled:
-            data.captchaEnabled !== undefined ? data.captchaEnabled : settings.captchaEnabled,
-          captchaProvider:
-            data.captchaProvider !== undefined ? data.captchaProvider : settings.captchaProvider,
-          captchaSiteKey:
-            data.captchaSiteKey !== undefined ? data.captchaSiteKey : settings.captchaSiteKey,
-          // Only update secret if a real value is provided (not the masked placeholder)
-          captchaSecretKey:
-            data.captchaSecretKey !== undefined && data.captchaSecretKey !== "••••••••"
-              ? data.captchaSecretKey || null
-              : settings.captchaSecretKey,
-          // SMTP
-          smtpEnabled: data.smtpEnabled !== undefined ? data.smtpEnabled : settings.smtpEnabled,
-          smtpHost: data.smtpHost !== undefined ? data.smtpHost || null : settings.smtpHost,
-          smtpPort: data.smtpPort !== undefined ? data.smtpPort : settings.smtpPort,
-          smtpUser: data.smtpUser !== undefined ? data.smtpUser || null : settings.smtpUser,
-          smtpPassword:
-            data.smtpPassword !== undefined && data.smtpPassword !== "••••••••"
-              ? data.smtpPassword || null
-              : settings.smtpPassword,
-          smtpFrom: data.smtpFrom !== undefined ? data.smtpFrom || null : settings.smtpFrom,
-          smtpSecure: data.smtpSecure !== undefined ? data.smtpSecure : settings.smtpSecure,
-          emailVerificationRequired:
-            data.emailVerificationRequired !== undefined
-              ? data.emailVerificationRequired
-              : settings.emailVerificationRequired,
-          allowIframeEmbedding:
-            data.allowIframeEmbedding !== undefined
-              ? data.allowIframeEmbedding
-              : settings.allowIframeEmbedding,
-          // S3 Storage
-          s3Enabled: data.s3Enabled !== undefined ? data.s3Enabled : settings.s3Enabled,
-          s3Endpoint: data.s3Endpoint !== undefined ? data.s3Endpoint || null : settings.s3Endpoint,
-          s3Region: data.s3Region !== undefined ? data.s3Region || null : settings.s3Region,
-          s3Bucket: data.s3Bucket !== undefined ? data.s3Bucket || null : settings.s3Bucket,
-          s3AccessKeyId:
-            data.s3AccessKeyId !== undefined ? data.s3AccessKeyId || null : settings.s3AccessKeyId,
-          s3SecretAccessKey:
-            data.s3SecretAccessKey !== undefined && data.s3SecretAccessKey !== "••••••••"
-              ? data.s3SecretAccessKey || null
-              : settings.s3SecretAccessKey,
-        },
+        data: buildSettingsUpdateData(data, settings),
       });
     }
 
