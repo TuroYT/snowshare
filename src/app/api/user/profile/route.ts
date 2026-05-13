@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         image: true,
         createdAt: true,
         isAdmin: true,
+        defaultTab: true,
       },
     });
 
@@ -47,7 +48,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { name, email, currentPassword, newPassword } = data;
+    const { name, email, currentPassword, newPassword, defaultTab } = data;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -57,15 +58,23 @@ export async function PATCH(request: NextRequest) {
       return apiError(request, ErrorCode.USER_NOT_FOUND);
     }
 
+    const VALID_TABS = ["linkshare", "pasteshare", "fileshare"];
     const updateData: {
       name?: string;
       email?: string;
       password?: string;
+      defaultTab?: "linkshare" | "pasteshare" | "fileshare";
     } = {};
 
-    // Mise à jour du nom
     if (name !== undefined) {
       updateData.name = name;
+    }
+
+    if (defaultTab !== undefined) {
+      if (!VALID_TABS.includes(defaultTab)) {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
+      updateData.defaultTab = defaultTab;
     }
 
     // Mise à jour de l'email
@@ -109,6 +118,7 @@ export async function PATCH(request: NextRequest) {
         email: true,
         image: true,
         createdAt: true,
+        defaultTab: true,
       },
     });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 interface AdvancedSettingsProps {
@@ -26,6 +26,11 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
   passwordLabelKey,
 }) => {
   const { t } = useTranslation();
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   return (
     <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50 space-y-4">
@@ -48,7 +53,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
           </label>
           <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2">
             <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">
-              {typeof window !== "undefined" ? window.location.origin + slugPrefix : slugPrefix}
+              {origin + slugPrefix}
             </span>
             <input
               id="slug"

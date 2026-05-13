@@ -316,7 +316,12 @@
       "error_unlink": "Fehler beim Trennen des Kontos",
       "unlink_success": "Konto erfolgreich getrennt"
     },
-    "tab_apikeys": "API-Schlüssel"
+    "tab_apikeys": "API-Schlüssel",
+    "default_tab": "Standard-Tab",
+    "default_tab_desc": "Standardmäßig angezeigter Tab auf der Startseite",
+    "default_tab_linkshare": "LinkShare",
+    "default_tab_pasteshare": "PasteShare",
+    "default_tab_fileshare": "FileShare"
   },
   "apikeys": {
     "title": "API-Schlüssel",

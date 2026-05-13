@@ -324,7 +324,12 @@
       "error_unlink": "Błąd usuwania konta",
       "unlink_success": "Konto rozłączone pomyślnie"
     },
-    "tab_apikeys": "Klucze API"
+    "tab_apikeys": "Klucze API",
+    "default_tab": "Domyślna zakładka",
+    "default_tab_desc": "Zakładka wyświetlana domyślnie na stronie głównej",
+    "default_tab_linkshare": "LinkShare",
+    "default_tab_pasteshare": "PasteShare",
+    "default_tab_fileshare": "FileShare"
   },
   "apikeys": {
     "title": "Klucze API",

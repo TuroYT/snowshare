@@ -320,7 +320,12 @@
       "error_unlink": "Error unlinking account",
       "unlink_success": "Account unlinked successfully"
     },
-    "tab_apikeys": "API Keys"
+    "tab_apikeys": "API Keys",
+    "default_tab": "Default tab",
+    "default_tab_desc": "Tab shown by default on the home page",
+    "default_tab_linkshare": "LinkShare",
+    "default_tab_pasteshare": "PasteShare",
+    "default_tab_fileshare": "FileShare"
   },
   "apikeys": {
     "title": "API Keys",

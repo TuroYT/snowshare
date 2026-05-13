@@ -320,7 +320,12 @@
       "error_unlink": "Erreur lors de la suppression du compte",
       "unlink_success": "Compte délié avec succès"
     },
-    "tab_apikeys": "Clés API"
+    "tab_apikeys": "Clés API",
+    "default_tab": "Onglet par défaut",
+    "default_tab_desc": "Onglet affiché par défaut sur la page d'accueil",
+    "default_tab_linkshare": "LinkShare",
+    "default_tab_pasteshare": "PasteShare",
+    "default_tab_fileshare": "FileShare"
   },
   "apikeys": {
     "title": "Clés API",
