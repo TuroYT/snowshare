@@ -70,6 +70,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
       if (res.ok) {
         setMessage(t("profile.success_update"));
         onUpdate(data.user);
+        localStorage.setItem("defaultTab", defaultTab);
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");

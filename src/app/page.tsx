@@ -15,7 +15,10 @@ const PASTE_SHARE = <PasteShare />;
 const FILE_SHARE = <FileShare />;
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("linkshare");
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === "undefined") return "linkshare";
+    return localStorage.getItem("defaultTab") ?? "linkshare";
+  });
   const { t } = useTranslation();
   const { colors, branding } = useTheme();
   const { status } = useSession();
@@ -23,9 +26,12 @@ export default function Home() {
   useEffect(() => {
     if (status !== "authenticated") return;
     fetch("/api/user/profile")
-      .then((res) => res.ok ? res.json() : null)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.user?.defaultTab) setActiveTab(data.user.defaultTab);
+        if (data?.user?.defaultTab) {
+          setActiveTab(data.user.defaultTab);
+          localStorage.setItem("defaultTab", data.user.defaultTab);
+        }
       })
       .catch(() => {});
   }, [status]);
