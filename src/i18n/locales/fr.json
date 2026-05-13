@@ -503,7 +503,22 @@
       "smtp_secure": "Utiliser SSL/TLS",
       "smtp_secure_hint": "Activer pour le port 465, désactiver pour le port 587 (STARTTLS)",
       "email_verification_required": "Exiger la vérification de l'email",
-      "email_verification_required_desc": "Les nouveaux utilisateurs doivent vérifier leur adresse email avant de se connecter"
+      "email_verification_required_desc": "Les nouveaux utilisateurs doivent vérifier leur adresse email avant de se connecter",
+      "section_s3": "Stockage objet S3",
+      "s3_enabled": "Activer le stockage S3",
+      "s3_enabled_desc": "Stocker les fichiers uploadés dans un bucket compatible S3 plutôt que sur le système de fichiers local",
+      "s3_bucket": "Bucket",
+      "s3_region": "Région",
+      "s3_endpoint": "Endpoint personnalisé",
+      "s3_endpoint_hint": "Optionnel. Requis pour MinIO ou d'autres services compatibles S3.",
+      "s3_access_key_id": "Access Key ID",
+      "s3_secret_access_key": "Secret Access Key",
+      "s3_secret_access_key_placeholder": "Laisser vide pour conserver la clé existante",
+      "s3_env_priority": "Note : les variables d'environnement (S3_BUCKET, S3_REGION, etc.) ont toujours la priorité sur ces paramètres.",
+      "s3_test": "Tester la connexion",
+      "s3_testing": "Test en cours…",
+      "s3_test_success": "Connexion réussie.",
+      "s3_test_error": "Échec de la connexion : {{error}}"
     },
     "quotas": {
       "title": "Quotas d'upload",

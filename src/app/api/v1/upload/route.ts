@@ -110,10 +110,16 @@ export async function POST(request: NextRequest) {
     const safeFilename = generateSafeFilename(file.name, share.id);
     const finalPath = path.join(uploadsDir, safeFilename);
 
-    // Rename + DB update: clean up on failure to keep FS and DB consistent
     const { prisma } = await import("@/lib/prisma");
+    const { isS3Enabled, uploadToStorage } = await import("@/lib/storage");
+    const s3Active = await isS3Enabled();
     try {
-      await rename(tmpPath, finalPath);
+      if (s3Active) {
+        await uploadToStorage(tmpPath, safeFilename);
+        unlink(tmpPath).catch(() => {});
+      } else {
+        await rename(tmpPath, finalPath);
+      }
       await prisma.share.update({
         where: { id: share.id },
         data: { filePath: safeFilename },
@@ -122,7 +128,7 @@ export async function POST(request: NextRequest) {
       // Roll back: delete share record and temp file
       await prisma.share.delete({ where: { id: share.id } }).catch(() => {});
       unlink(tmpPath).catch(() => {});
-      unlink(finalPath).catch(() => {});
+      if (!s3Active) unlink(finalPath).catch(() => {});
       throw fsErr;
     }
 

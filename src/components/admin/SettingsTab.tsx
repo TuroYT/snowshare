@@ -8,6 +8,7 @@ import MDEditor from "@uiw/react-md-editor";
 import { Snackbar, Alert } from "@mui/material";
 import { convertFromMB, convertToMB } from "@/lib/formatSize";
 import WarningModal from "./WarningModal";
+import S3StorageSection from "./S3StorageSection";
 
 interface Settings {
   id: number;
@@ -38,6 +39,13 @@ interface Settings {
   smtpFrom: string | null;
   smtpSecure: boolean;
   emailVerificationRequired: boolean;
+  // S3 Storage
+  s3Enabled: boolean;
+  s3Endpoint: string | null;
+  s3Region: string | null;
+  s3Bucket: string | null;
+  s3AccessKeyId: string | null;
+  s3SecretAccessKey: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +205,12 @@ export default function SettingsTab() {
         smtpFrom: data.settings.smtpFrom ?? null,
         smtpSecure: data.settings.smtpSecure ?? false,
         emailVerificationRequired: data.settings.emailVerificationRequired ?? false,
+        s3Enabled: data.settings.s3Enabled ?? false,
+        s3Endpoint: data.settings.s3Endpoint ?? null,
+        s3Region: data.settings.s3Region ?? null,
+        s3Bucket: data.settings.s3Bucket ?? null,
+        s3AccessKeyId: data.settings.s3AccessKeyId ?? null,
+        s3SecretAccessKey: data.settings.s3SecretAccessKey ?? null,
       });
     } catch (err) {
       setToastMessage(t("admin.error_load_data"));
@@ -787,6 +801,13 @@ export default function SettingsTab() {
               </div>
             )}
           </div>
+
+          {/* S3 Storage */}
+          {/* TODO: refactor other sections (General, CAPTCHA, SMTP, Quotas) into controlled components following the same pattern as S3StorageSection */}
+          <S3StorageSection
+            settings={settings}
+            onChange={(patch) => setSettings((prev) => (prev ? { ...prev, ...patch } : prev))}
+          />
 
           {/* Save Button */}
           <div className="flex justify-end">

@@ -78,12 +78,13 @@ Thank you for using SnowShare!`,
       });
     }
 
-    // Never expose CAPTCHA secret key or SMTP password to the client
+    // Never expose secret keys to the client
     const safeSettings = {
       ...settings,
       captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
       smtpPassword: settings.smtpPassword ? "••••••••" : null,
       allowIframeEmbedding: settings.allowIframeEmbedding,
+      s3SecretAccessKey: settings.s3SecretAccessKey ? "••••••••" : null,
     };
 
     return NextResponse.json({ settings: safeSettings, hasActiveSSO: activeProvidersCount > 0 });
@@ -282,6 +283,17 @@ Thank you for using SnowShare!`,
             data.allowIframeEmbedding !== undefined
               ? data.allowIframeEmbedding
               : settings.allowIframeEmbedding,
+          // S3 Storage
+          s3Enabled: data.s3Enabled !== undefined ? data.s3Enabled : settings.s3Enabled,
+          s3Endpoint: data.s3Endpoint !== undefined ? data.s3Endpoint || null : settings.s3Endpoint,
+          s3Region: data.s3Region !== undefined ? data.s3Region || null : settings.s3Region,
+          s3Bucket: data.s3Bucket !== undefined ? data.s3Bucket || null : settings.s3Bucket,
+          s3AccessKeyId:
+            data.s3AccessKeyId !== undefined ? data.s3AccessKeyId || null : settings.s3AccessKeyId,
+          s3SecretAccessKey:
+            data.s3SecretAccessKey !== undefined && data.s3SecretAccessKey !== "••••••••"
+              ? data.s3SecretAccessKey || null
+              : settings.s3SecretAccessKey,
         },
       });
     }
@@ -290,6 +302,7 @@ Thank you for using SnowShare!`,
       ...settings,
       captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
       smtpPassword: settings.smtpPassword ? "••••••••" : null,
+      s3SecretAccessKey: settings.s3SecretAccessKey ? "••••••••" : null,
     };
 
     return NextResponse.json({ settings: safeUpdated });

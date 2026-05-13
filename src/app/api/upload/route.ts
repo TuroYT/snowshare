@@ -355,12 +355,19 @@ export async function POST(req: NextRequest) {
 
         lookupIpGeolocation(clientIp);
 
-        // Rename temp file to final name
+        // Move temp file to final destination (local) or upload directly to S3
         const finalFileName = generateSafeFilename(originalFilename, share.id);
         const finalFilePath = path.join(uploadsDir, finalFileName);
 
-        await rename(tempFilePath, finalFilePath);
-        tempFilePath = null; // Prevent cleanup of renamed file
+        const { isS3Enabled, uploadToStorage } = await import("@/lib/storage");
+        const s3Active = await isS3Enabled();
+        if (s3Active) {
+          await uploadToStorage(tempFilePath, finalFileName);
+          unlink(tempFilePath).catch(() => {});
+        } else {
+          await rename(tempFilePath, finalFilePath);
+        }
+        tempFilePath = null; // Prevent cleanup of moved/uploaded file
 
         // Update database with final file path
         await prisma.share.update({

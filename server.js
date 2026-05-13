@@ -170,11 +170,7 @@ async function calculateIpUsage(prisma, clientIp, uploadsDir) {
   });
 
   let totalSize = 0;
-  const useS3 = !!process.env.S3_BUCKET;
-  let storageModule = null;
-  if (useS3) {
-    storageModule = await import("./src/lib/storage.js");
-  }
+  const storageModule = await import("./src/lib/storage.js");
 
   for (const share of shares) {
     if (share.isBulk && share.files?.length > 0) {
@@ -183,12 +179,7 @@ async function calculateIpUsage(prisma, clientIp, uploadsDir) {
       }
     } else if (share.filePath) {
       try {
-        if (useS3 && storageModule) {
-          totalSize += await storageModule.getStorageFileSize(share.filePath);
-        } else {
-          const stats = await stat(path.join(uploadsDir, share.filePath));
-          totalSize += stats.size;
-        }
+        totalSize += await storageModule.getStorageFileSize(share.filePath);
       } catch {
         // File missing — skip
       }
@@ -389,12 +380,12 @@ const tusServer = new TusServer({
         }
 
         // Verify ownership: authenticated users must own the share, anonymous users must match IP
-        const ownsShare = isAuthenticated
-          ? share.ownerId === userId
-          : share.ipSource === clientIp;
+        const ownsShare = isAuthenticated ? share.ownerId === userId : share.ipSource === clientIp;
 
         if (!ownsShare) {
-          console.error(`[Upload] Unauthorized bulk share access attempt: ${bulkShareId} by ${isAuthenticated ? `user ${userId}` : `IP ${clientIp}`}`);
+          console.error(
+            `[Upload] Unauthorized bulk share access attempt: ${bulkShareId} by ${isAuthenticated ? `user ${userId}` : `IP ${clientIp}`}`
+          );
           const body = { error: "UNAUTHORIZED_SHARE_ACCESS" };
           throw { status_code: 403, body: JSON.stringify(body) };
         }
@@ -525,24 +516,25 @@ const tusServer = new TusServer({
       const finalFileName = await generateSafeFilename(filename, share.id);
       const finalFilePath = path.join(uploadsDir, finalFileName);
 
-      await rename(tusFilePath, finalFilePath);
-
       const tusMetaPath = `${tusFilePath}.json`;
+
+      const { uploadToStorage, isS3Enabled } = await import("./src/lib/storage.js");
+      const s3Active = await isS3Enabled();
+
+      if (s3Active) {
+        // Upload directly from tus temp — never touch uploads/
+        await uploadToStorage(tusFilePath, finalFileName);
+        await unlink(tusFilePath);
+      } else {
+        await rename(tusFilePath, finalFilePath);
+      }
+
       if (existsSync(tusMetaPath)) {
         await unlink(tusMetaPath);
       }
 
-      // Upload to S3 when configured, then remove the local copy
-      if (process.env.S3_BUCKET) {
-        const { uploadToStorage } = await import("./src/lib/storage.js");
-        await uploadToStorage(finalFilePath, finalFileName);
-        await unlink(finalFilePath);
-      }
-
       if (isBulk) {
-        const fileStats = process.env.S3_BUCKET
-          ? { size: upload.size ?? 0 }
-          : await stat(finalFilePath);
+        const fileStats = s3Active ? { size: upload.size ?? 0 } : await stat(finalFilePath);
         // Re-validate the bulk share exists to avoid FK errors if it was removed between checks
         const currentShare = await prisma.share.findUnique({
           where: { id: share.id },
@@ -551,7 +543,7 @@ const tusServer = new TusServer({
 
         if (!currentShare) {
           console.error(`[Upload] Bulk share disappeared before linking file: ${share.id}`);
-          await unlink(finalFilePath).catch(() => {});
+          if (!s3Active) await unlink(finalFilePath).catch(() => {});
           throw new Error("Bulk share no longer exists");
         }
 
@@ -572,7 +564,7 @@ const tusServer = new TusServer({
           );
         } catch (error) {
           // Clean up the file if we fail to persist the DB relation to avoid orphaned disk usage
-          await unlink(finalFilePath).catch(() => {});
+          if (!s3Active) await unlink(finalFilePath).catch(() => {});
           if (error?.code === "P2003") {
             console.error(
               `[Upload] FK constraint when linking bulk file to share ${share.id}:`,

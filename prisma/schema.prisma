@@ -188,6 +188,14 @@ model Settings {
   verifyEmailSubject        String?
   verifyEmailHtml           String?
   verifyEmailText           String?
+
+  // S3-compatible object storage
+  s3Enabled         Boolean @default(false)
+  s3Endpoint        String? // Custom endpoint (MinIO, etc.)
+  s3Region          String? // Defaults to "us-east-1"
+  s3Bucket          String?
+  s3AccessKeyId     String?
+  s3SecretAccessKey String?
 }
 
 model CustomLink {

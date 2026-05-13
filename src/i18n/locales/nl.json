@@ -507,7 +507,22 @@
       "smtp_secure": "SSL/TLS gebruiken",
       "smtp_secure_hint": "Inschakelen voor poort 465, uitschakelen voor poort 587 (STARTTLS)",
       "email_verification_required": "E-mailverificatie vereisen",
-      "email_verification_required_desc": "Nieuwe gebruikers moeten hun e-mailadres verifiëren voordat ze kunnen inloggen"
+      "email_verification_required_desc": "Nieuwe gebruikers moeten hun e-mailadres verifiëren voordat ze kunnen inloggen",
+      "section_s3": "S3-objectopslag",
+      "s3_enabled": "S3-opslag inschakelen",
+      "s3_enabled_desc": "Geüploade bestanden opslaan in een S3-compatibele bucket in plaats van het lokale bestandssysteem",
+      "s3_bucket": "Bucket",
+      "s3_region": "Regio",
+      "s3_endpoint": "Aangepast eindpunt",
+      "s3_endpoint_hint": "Optioneel. Vereist voor MinIO of andere S3-compatibele services.",
+      "s3_access_key_id": "Access Key ID",
+      "s3_secret_access_key": "Secret Access Key",
+      "s3_secret_access_key_placeholder": "Leeg laten om de bestaande sleutel te behouden",
+      "s3_env_priority": "Opmerking: omgevingsvariabelen (S3_BUCKET, S3_REGION, etc.) hebben altijd voorrang op deze instellingen.",
+      "s3_test": "Verbinding testen",
+      "s3_testing": "Testen…",
+      "s3_test_success": "Verbinding geslaagd.",
+      "s3_test_error": "Verbinding mislukt: {{error}}"
     },
     "quotas": {
       "title": "Uploadquota",

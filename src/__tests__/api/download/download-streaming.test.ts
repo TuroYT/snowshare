@@ -11,13 +11,9 @@ jest.mock("@/app/api/shares/(fileShare)/fileshare", () => ({
   getFileShare: jest.fn(),
 }));
 
-jest.mock("fs", () => ({
-  createReadStream: jest.fn(),
-  existsSync: jest.fn(),
-}));
-
-jest.mock("fs/promises", () => ({
-  stat: jest.fn(),
+jest.mock("@/lib/storage", () => ({
+  getStorageReadStream: jest.fn(),
+  getStorageFileSize: jest.fn(),
 }));
 
 jest.mock("@/lib/mime-types", () => ({
@@ -32,15 +28,13 @@ jest.mock("@/lib/i18n-server", () => ({
 }));
 
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { createReadStream, existsSync } from "fs";
-import { stat } from "fs/promises";
+import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { Readable } from "stream";
 import { NextRequest } from "next/server";
 
 const mockGetFileShare = getFileShare as jest.Mock;
-const mockCreateReadStream = createReadStream as jest.Mock;
-const mockExistsSync = existsSync as jest.Mock;
-const mockStat = stat as jest.Mock;
+const mockGetStorageReadStream = getStorageReadStream as jest.Mock;
+const mockGetStorageFileSize = getStorageFileSize as jest.Mock;
 
 function makeRequest(headers: Record<string, string> = {}, slug = "test-slug"): NextRequest {
   return {
@@ -55,40 +49,41 @@ function makeRequest(headers: Record<string, string> = {}, slug = "test-slug"): 
   } as unknown as NextRequest;
 }
 
+function makeReadableStream(): Readable {
+  return new Readable({
+    read() {
+      this.push("data");
+      this.push(null);
+    },
+  });
+}
+
 describe("File Download Streaming", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockExistsSync.mockReturnValue(true);
-    mockStat.mockResolvedValue({ size: 1000000 });
+    mockGetStorageFileSize.mockResolvedValue(1000000);
     mockGetFileShare.mockResolvedValue({
-      filePath: "/uploads/share-123_file.txt",
+      storageKey: "share-123_file.txt",
       originalFilename: "file.txt",
     });
-
-    const mockStream = new Readable({
-      read() {
-        this.push("data");
-        this.push(null);
-      },
-    });
-    mockCreateReadStream.mockReturnValue(mockStream);
+    mockGetStorageReadStream.mockResolvedValue(makeReadableStream());
   });
 
-  it("should use streaming (createReadStream) instead of loading the entire file into memory", async () => {
+  it("should use streaming (getStorageReadStream) instead of loading the entire file into memory", async () => {
     const { GET } = await import("@/app/api/download/[slug]/route");
     const request = makeRequest({}, "test-slug");
 
     await GET(request, { params: Promise.resolve({ slug: "test-slug" }) });
 
-    expect(mockCreateReadStream).toHaveBeenCalledWith("/uploads/share-123_file.txt");
-    expect(mockCreateReadStream).toHaveBeenCalledTimes(1);
+    expect(mockGetStorageReadStream).toHaveBeenCalledWith("share-123_file.txt");
+    expect(mockGetStorageReadStream).toHaveBeenCalledTimes(1);
   });
 
   it("should support range requests for resumable downloads", async () => {
     const fileSize = 10000000;
-    mockStat.mockResolvedValue({ size: fileSize });
+    mockGetStorageFileSize.mockResolvedValue(fileSize);
     mockGetFileShare.mockResolvedValue({
-      filePath: "/uploads/share-456_large.bin",
+      storageKey: "share-456_large.bin",
       originalFilename: "large.bin",
     });
 
@@ -97,8 +92,8 @@ describe("File Download Streaming", () => {
 
     await GET(request, { params: Promise.resolve({ slug: "large-file-slug" }) });
 
-    expect(mockCreateReadStream).toHaveBeenCalledWith(
-      "/uploads/share-456_large.bin",
+    expect(mockGetStorageReadStream).toHaveBeenCalledWith(
+      "share-456_large.bin",
       expect.objectContaining({ start: 0, end: 999999 })
     );
   });
@@ -112,12 +107,11 @@ describe("File Download Streaming", () => {
     const response = await GET(request, { params: Promise.resolve({ slug: "missing-slug" }) });
 
     expect(response.status).toBe(404);
-    expect(mockCreateReadStream).not.toHaveBeenCalled();
+    expect(mockGetStorageReadStream).not.toHaveBeenCalled();
   });
 
   it("should return 416 for an invalid range header", async () => {
-    // Range header beyond file size
-    mockStat.mockResolvedValue({ size: 100 });
+    mockGetStorageFileSize.mockResolvedValue(100);
 
     const { GET } = await import("@/app/api/download/[slug]/route");
     const request = makeRequest({ range: "bytes=500-999" }, "test-slug");
@@ -125,11 +119,11 @@ describe("File Download Streaming", () => {
     const response = await GET(request, { params: Promise.resolve({ slug: "test-slug" }) });
 
     expect(response.status).toBe(416);
-    expect(mockCreateReadStream).not.toHaveBeenCalled();
+    expect(mockGetStorageReadStream).not.toHaveBeenCalled();
   });
 
-  it("should confirm createReadStream is available as a streaming API", () => {
-    expect(mockCreateReadStream).toBeDefined();
-    expect(typeof mockCreateReadStream).toBe("function");
+  it("should confirm getStorageReadStream is available as a streaming API", () => {
+    expect(mockGetStorageReadStream).toBeDefined();
+    expect(typeof mockGetStorageReadStream).toBe("function");
   });
 });

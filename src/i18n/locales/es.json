@@ -499,7 +499,22 @@
       "smtp_secure": "Usar SSL/TLS",
       "smtp_secure_hint": "Activar para el puerto 465, desactivar para el puerto 587 (STARTTLS)",
       "email_verification_required": "Requerir verificación de email",
-      "email_verification_required_desc": "Los nuevos usuarios deben verificar su dirección de email antes de iniciar sesión"
+      "email_verification_required_desc": "Los nuevos usuarios deben verificar su dirección de email antes de iniciar sesión",
+      "section_s3": "Almacenamiento de objetos S3",
+      "s3_enabled": "Activar almacenamiento S3",
+      "s3_enabled_desc": "Almacenar los archivos subidos en un bucket compatible con S3 en lugar del sistema de archivos local",
+      "s3_bucket": "Bucket",
+      "s3_region": "Región",
+      "s3_endpoint": "Endpoint personalizado",
+      "s3_endpoint_hint": "Opcional. Necesario para MinIO u otros servicios compatibles con S3.",
+      "s3_access_key_id": "Access Key ID",
+      "s3_secret_access_key": "Secret Access Key",
+      "s3_secret_access_key_placeholder": "Dejar en blanco para conservar la clave existente",
+      "s3_env_priority": "Nota: las variables de entorno (S3_BUCKET, S3_REGION, etc.) siempre tienen prioridad sobre estos ajustes.",
+      "s3_test": "Probar conexión",
+      "s3_testing": "Probando…",
+      "s3_test_success": "Conexión exitosa.",
+      "s3_test_error": "Conexión fallida: {{error}}"
     },
     "quotas": {
       "title": "Cuotas de Carga",

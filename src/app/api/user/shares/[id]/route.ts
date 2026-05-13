@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { unlink } from "fs/promises";
-import { join } from "path";
+import { deleteFromStorage } from "@/lib/storage";
 import {
   isValidPasteLanguage,
   isValidUrl,
@@ -39,11 +38,9 @@ export async function DELETE(
       return apiError(request, ErrorCode.FORBIDDEN);
     }
 
-    // Si c'est un fichier, le supprimer du système de fichiers
     if (share.type === "FILE" && share.filePath) {
       try {
-        const filePath = join(process.cwd(), "uploads", share.filePath);
-        await unlink(filePath);
+        await deleteFromStorage(share.filePath);
       } catch (error) {
         console.error("Error deleting file:", error);
       }

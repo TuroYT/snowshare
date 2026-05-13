@@ -55,3 +55,4 @@ docs/superpowers
 e2e/.venv
 e2e/results
 .vscode/settings.json
+memory

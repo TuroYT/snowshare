@@ -4,10 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { stat } from "fs/promises";
-import path from "path";
-import { getUploadDir } from "@/lib/constants";
-import { isS3Enabled, getStorageFileSize } from "@/lib/storage";
+import { getStorageFileSize } from "@/lib/storage";
 
 /**
  * Calculate total upload size in bytes for an IP address.
@@ -35,12 +32,7 @@ export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<num
       }
     } else if (share.filePath) {
       try {
-        if (isS3Enabled()) {
-          totalSize += await getStorageFileSize(share.filePath);
-        } else {
-          const stats = await stat(path.join(getUploadDir(), share.filePath));
-          totalSize += stats.size;
-        }
+        totalSize += await getStorageFileSize(share.filePath);
       } catch {
         // File missing — skip
       }
