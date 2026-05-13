@@ -316,7 +316,12 @@
       "error_unlink": "Error al desvincular la cuenta",
       "unlink_success": "Cuenta desvinculada con éxito"
     },
-    "tab_apikeys": "Claves API"
+    "tab_apikeys": "Claves API",
+    "default_tab": "Pestaña predeterminada",
+    "default_tab_desc": "Pestaña mostrada por defecto en la página de inicio",
+    "default_tab_linkshare": "LinkShare",
+    "default_tab_pasteshare": "PasteShare",
+    "default_tab_fileshare": "FileShare"
   },
   "apikeys": {
     "title": "Claves API",

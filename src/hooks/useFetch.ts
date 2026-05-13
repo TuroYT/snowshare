@@ -45,7 +45,7 @@ export function useFetch<T>(url: string | null, options?: FetchOptions): FetchSt
           return res.json() as Promise<T>;
         });
         inflightRequests.set(url, promise);
-        promise.finally(() => inflightRequests.delete(url));
+        promise.finally(() => inflightRequests.delete(url)).catch(() => {});
       }
       const json = await promise;
       if (id === counterRef.current) {
@@ -55,8 +55,7 @@ export function useFetch<T>(url: string | null, options?: FetchOptions): FetchSt
       if (err instanceof Error && err.name === "AbortError") return;
       if (id === counterRef.current) {
         setError(
-          optionsRef.current?.errorMessage ??
-            (err instanceof Error ? err.message : "Unknown error")
+          optionsRef.current?.errorMessage ?? (err instanceof Error ? err.message : "Unknown error")
         );
       }
     } finally {

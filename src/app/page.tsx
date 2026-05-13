@@ -1,7 +1,8 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect } from "react";
+import { useSession } from "next-auth/react";
 import LinkShare from "@/components/LinkShare";
 import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
@@ -17,6 +18,25 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
   const { t } = useTranslation();
   const { colors, branding } = useTheme();
+  const { status } = useSession();
+
+  useLayoutEffect(() => {
+    const saved = localStorage.getItem("defaultTab");
+    if (saved) setActiveTab(saved);
+  }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    fetch("/api/user/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user?.defaultTab) {
+          setActiveTab(data.user.defaultTab);
+          localStorage.setItem("defaultTab", data.user.defaultTab);
+        }
+      })
+      .catch(() => {});
+  }, [status]);
 
   const tabs = useMemo(
     () => [
