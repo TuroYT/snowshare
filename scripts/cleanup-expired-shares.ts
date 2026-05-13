@@ -2,7 +2,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { prisma } from "@/lib/prisma";
-import { deleteFromStorage } from "@/lib/storage";
+import { deleteFromStorage, storageFileExists } from "@/lib/storage";
 
 function getUploadDir(): string {
   return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
@@ -46,14 +46,13 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
   let deletedFiles = 0;
 
   const deleteFileIfExists = async (relativePath: string, shareSlug: string): Promise<void> => {
+    if (!(await storageFileExists(relativePath))) return;
     try {
       await deleteFromStorage(relativePath);
       deletedFiles++;
       console.log(`🗑️  File deleted: ${relativePath} (share: ${shareSlug})`);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-        console.error(`❌ Error deleting file ${relativePath}:`, error);
-      }
+      console.error(`❌ Error deleting file ${relativePath}:`, error);
     }
   };
 
