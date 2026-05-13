@@ -35,6 +35,78 @@ function maskedSecret<K extends keyof Settings>(
   return current[key];
 }
 
+const DEFAULT_TERMS = `# Terms of Use
+
+Welcome to SnowShare! By using our platform, you agree to the following terms and conditions. Please read them carefully.
+
+## 1. Acceptance of Terms
+By accessing or using SnowShare, you agree to be bound by these Terms of Use and our Privacy Policy. If you do not agree, please do not use our platform.
+
+## 2. Description of Service
+SnowShare is a secure file, link, and paste sharing platform. We provide users with the ability to share content with expiration dates, user authentication, and quotas.
+
+## 3. User Responsibilities
+- You are responsible for maintaining the confidentiality of your account credentials.
+- You agree not to use SnowShare for any illegal or unauthorized purposes.
+- You must comply with all applicable laws and regulations.
+
+## 4. Content Restrictions
+- Do not upload or share content that is illegal, harmful, or violates the rights of others.
+- We reserve the right to remove any content that violates these terms.
+
+## 5. Privacy
+Your use of SnowShare is subject to our Privacy Policy, which explains how we collect, use, and protect your information.
+
+## 6. Limitation of Liability
+SnowShare is provided "as is" without any warranties. We are not liable for any damages arising from your use of the platform.
+
+## 7. Changes to Terms
+We reserve the right to update these Terms of Use at any time. Changes will be effective upon posting.
+
+## 8. Contact Us
+If you have any questions about these Terms of Use, please contact us at support@snowshare.com.
+
+Thank you for using SnowShare!`;
+
+function d<T>(val: unknown, fallback: T): T {
+  return val !== undefined ? (val as T) : fallback;
+}
+
+function buildFirstRunSettingsCreate(data: SettingsInput) {
+  return {
+    allowSignin: d(data.allowSignin, true),
+    disableCredentialsLogin: d(data.disableCredentialsLogin, false),
+    allowAnonFileShare: d(data.allowAnonFileShare, true),
+    allowAnonLinkShare: d(data.allowAnonLinkShare, true),
+    allowAnonPasteShare: d(data.allowAnonPasteShare, true),
+    anoMaxUpload: (data.anoMaxUpload as number) || 2048,
+    authMaxUpload: (data.authMaxUpload as number) || 51200,
+    anoIpQuota: (data.anoIpQuota as number) || 4096,
+    authIpQuota: (data.authIpQuota as number) || 102400,
+    useGiBForAnon: d(data.useGiBForAnon, false),
+    useGiBForAuth: d(data.useGiBForAuth, false),
+    appName: (data.appName as string) || "SnowShare",
+    appDescription: (data.appDescription as string) || "Share your files, pastes and URLs securely",
+    logoUrl: (data.logoUrl as string) || null,
+    faviconUrl: (data.faviconUrl as string) || null,
+    primaryColor: (data.primaryColor as string) || "#3B82F6",
+    primaryHover: (data.primaryHover as string) || "#2563EB",
+    primaryDark: (data.primaryDark as string) || "#1E40AF",
+    secondaryColor: (data.secondaryColor as string) || "#8B5CF6",
+    secondaryHover: (data.secondaryHover as string) || "#7C3AED",
+    secondaryDark: (data.secondaryDark as string) || "#6D28D9",
+    backgroundColor: (data.backgroundColor as string) || "#111827",
+    backgroundImageUrl: (data.backgroundImageUrl as string) || null,
+    surfaceColor: (data.surfaceColor as string) || "#1F2937",
+    textColor: (data.textColor as string) || "#F9FAFB",
+    textMuted: (data.textMuted as string) || "#D1D5DB",
+    borderColor: (data.borderColor as string) || "#374151",
+    fontFamily: (data.fontFamily as string) || "Geist",
+    allowIframeEmbedding: d(data.allowIframeEmbedding, false),
+    termsOfUses: (data.termsOfUses as string) || DEFAULT_TERMS,
+  };
+}
+
 function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
   return {
     allowSignin: field(data, current, "allowSignin"),
@@ -111,55 +183,8 @@ export async function GET(request: NextRequest) {
       where: { enabled: true },
     });
 
-    // Create default settings if not exist
     if (!settings) {
-      settings = await prisma.settings.create({
-        data: {
-          allowSignin: true,
-          disableCredentialsLogin: false,
-          allowAnonFileShare: true,
-          allowAnonLinkShare: true,
-          allowAnonPasteShare: true,
-          anoMaxUpload: 2048,
-          authMaxUpload: 51200,
-          anoIpQuota: 4096,
-          authIpQuota: 102400,
-          useGiBForAnon: false,
-          useGiBForAuth: false,
-          termsOfUses: `# Terms of Use
-
-Welcome to SnowShare! By using our platform, you agree to the following terms and conditions. Please read them carefully.
-
-## 1. Acceptance of Terms
-By accessing or using SnowShare, you agree to be bound by these Terms of Use and our Privacy Policy. If you do not agree, please do not use our platform.
-
-## 2. Description of Service
-SnowShare is a secure file, link, and paste sharing platform. We provide users with the ability to share content with expiration dates, user authentication, and quotas.
-
-## 3. User Responsibilities
-- You are responsible for maintaining the confidentiality of your account credentials.
-- You agree not to use SnowShare for any illegal or unauthorized purposes.
-- You must comply with all applicable laws and regulations.
-
-## 4. Content Restrictions
-- Do not upload or share content that is illegal, harmful, or violates the rights of others.
-- We reserve the right to remove any content that violates these terms.
-
-## 5. Privacy
-Your use of SnowShare is subject to our Privacy Policy, which explains how we collect, use, and protect your information.
-
-## 6. Limitation of Liability
-SnowShare is provided "as is" without any warranties. We are not liable for any damages arising from your use of the platform.
-
-## 7. Changes to Terms
-We reserve the right to update these Terms of Use at any time. Changes will be effective upon posting.
-
-## 8. Contact Us
-If you have any questions about these Terms of Use, please contact us at support@snowshare.com.
-
-Thank you for using SnowShare!`,
-        },
-      });
+      settings = await prisma.settings.create({ data: buildFirstRunSettingsCreate({}) });
     }
 
     // Never expose secret keys to the client
@@ -209,78 +234,7 @@ export async function PATCH(request: NextRequest) {
     let settings = await prisma.settings.findFirst();
 
     if (!settings) {
-      settings = await prisma.settings.create({
-        data: {
-          allowSignin: data.allowSignin !== undefined ? data.allowSignin : true,
-          disableCredentialsLogin:
-            data.disableCredentialsLogin !== undefined ? data.disableCredentialsLogin : false,
-          allowAnonFileShare:
-            data.allowAnonFileShare !== undefined ? data.allowAnonFileShare : true,
-          allowAnonLinkShare:
-            data.allowAnonLinkShare !== undefined ? data.allowAnonLinkShare : true,
-          allowAnonPasteShare:
-            data.allowAnonPasteShare !== undefined ? data.allowAnonPasteShare : true,
-          anoMaxUpload: data.anoMaxUpload || 2048,
-          authMaxUpload: data.authMaxUpload || 51200,
-          anoIpQuota: data.anoIpQuota || 4096,
-          authIpQuota: data.authIpQuota || 102400,
-          useGiBForAnon: data.useGiBForAnon !== undefined ? data.useGiBForAnon : false,
-          useGiBForAuth: data.useGiBForAuth !== undefined ? data.useGiBForAuth : false,
-          appName: data.appName || "SnowShare",
-          appDescription: data.appDescription || "Share your files, pastes and URLs securely",
-          logoUrl: data.logoUrl || null,
-          faviconUrl: data.faviconUrl || null,
-          primaryColor: data.primaryColor || "#3B82F6",
-          primaryHover: data.primaryHover || "#2563EB",
-          primaryDark: data.primaryDark || "#1E40AF",
-          secondaryColor: data.secondaryColor || "#8B5CF6",
-          secondaryHover: data.secondaryHover || "#7C3AED",
-          secondaryDark: data.secondaryDark || "#6D28D9",
-          backgroundColor: data.backgroundColor || "#111827",
-          backgroundImageUrl: data.backgroundImageUrl || null,
-          surfaceColor: data.surfaceColor || "#1F2937",
-          textColor: data.textColor || "#F9FAFB",
-          textMuted: data.textMuted || "#D1D5DB",
-          borderColor: data.borderColor || "#374151",
-          fontFamily: data.fontFamily || "Geist",
-          allowIframeEmbedding:
-            data.allowIframeEmbedding !== undefined ? data.allowIframeEmbedding : false,
-          termsOfUses:
-            data.termsOfUses ||
-            `# Terms of Use
-
-Welcome to SnowShare! By using our platform, you agree to the following terms and conditions. Please read them carefully.
-
-## 1. Acceptance of Terms
-By accessing or using SnowShare, you agree to be bound by these Terms of Use and our Privacy Policy. If you do not agree, please do not use our platform.
-
-## 2. Description of Service
-SnowShare is a secure file, link, and paste sharing platform. We provide users with the ability to share content with expiration dates, user authentication, and quotas.
-
-## 3. User Responsibilities
-- You are responsible for maintaining the confidentiality of your account credentials.
-- You agree not to use SnowShare for any illegal or unauthorized purposes.
-- You must comply with all applicable laws and regulations.
-
-## 4. Content Restrictions
-- Do not upload or share content that is illegal, harmful, or violates the rights of others.
-- We reserve the right to remove any content that violates these terms.
-
-## 5. Privacy
-Your use of SnowShare is subject to our Privacy Policy, which explains how we collect, use, and protect your information.
-
-## 6. Limitation of Liability
-SnowShare is provided "as is" without any warranties. We are not liable for any damages arising from your use of the platform.
-
-## 7. Changes to Terms
-We reserve the right to update these Terms of Use at any time. Changes will be effective upon posting.
-
-## 8. Contact Us
-If you have any questions about these Terms of Use, please contact us at support@snowshare.com.
-
-Thank you for using SnowShare!`,
-        },
-      });
+      settings = await prisma.settings.create({ data: buildFirstRunSettingsCreate(data) });
     } else {
       settings = await prisma.settings.update({
         where: { id: settings.id },

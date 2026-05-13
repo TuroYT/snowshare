@@ -803,7 +803,7 @@ export default function SettingsTab() {
           </div>
 
           {/* S3 Storage */}
-          {/* TODO: refactor other sections (General, CAPTCHA, SMTP, Quotas) into controlled components following the same pattern as S3StorageSection */}
+          {/* See issue #261: refactor General/CAPTCHA/SMTP/Quotas sections into controlled components */}
           <S3StorageSection
             settings={settings}
             onChange={(patch) => setSettings((prev) => (prev ? { ...prev, ...patch } : prev))}

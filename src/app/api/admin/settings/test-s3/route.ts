@@ -11,6 +11,43 @@ import { apiError, ErrorCode } from "@/lib/api-errors";
 // 404 = bucket not found (server reached), 301/400 = various redirect/config issues — all mean connectivity works.
 const REACHABLE_STATUS_CODES = new Set([200, 301, 400, 403, 404]);
 
+async function resolveS3TestSecret(fromBody: string | undefined): Promise<string | undefined> {
+  if (fromBody) return fromBody;
+  const settings = await prisma.settings.findFirst({ select: { s3SecretAccessKey: true } });
+  return settings?.s3SecretAccessKey ?? undefined;
+}
+
+function buildS3TestClient(
+  region: string,
+  endpoint: string | undefined,
+  accessKeyId: string | undefined,
+  secretAccessKey: string | undefined
+): S3Client {
+  return new S3Client({
+    region,
+    ...(endpoint && { endpoint }),
+    ...(accessKeyId && secretAccessKey && { credentials: { accessKeyId, secretAccessKey } }),
+    forcePathStyle: !!endpoint,
+  });
+}
+
+async function testS3Connectivity(
+  s3: S3Client,
+  bucket: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: bucket }));
+    return { success: true };
+  } catch (err) {
+    if (err instanceof S3ServiceException) {
+      const status = err.$metadata?.httpStatusCode;
+      if (status && REACHABLE_STATUS_CODES.has(status)) return { success: true };
+      return { success: false, error: err.message };
+    }
+    throw err;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return apiError(request, ErrorCode.UNAUTHORIZED);
@@ -24,7 +61,7 @@ export async function POST(request: NextRequest) {
     const region: string = body.s3Region || "us-east-1";
     const endpoint: string | undefined = body.s3Endpoint || undefined;
     const accessKeyId: string | undefined = body.s3AccessKeyId || undefined;
-    const secretAccessKey: string | undefined =
+    const secretFromBody: string | undefined =
       body.s3SecretAccessKey && body.s3SecretAccessKey !== "••••••••"
         ? body.s3SecretAccessKey
         : undefined;
@@ -36,37 +73,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If secret is masked, fall back to the stored value
-    let resolvedSecret = secretAccessKey;
-    if (!resolvedSecret) {
-      const settings = await prisma.settings.findFirst({ select: { s3SecretAccessKey: true } });
-      resolvedSecret = settings?.s3SecretAccessKey ?? undefined;
-    }
-
-    const s3 = new S3Client({
-      region,
-      ...(endpoint && { endpoint }),
-      ...(accessKeyId &&
-        resolvedSecret && {
-          credentials: { accessKeyId, secretAccessKey: resolvedSecret },
-        }),
-      forcePathStyle: !!endpoint,
-    });
-
-    try {
-      await s3.send(new HeadBucketCommand({ Bucket: bucket }));
-      return NextResponse.json({ success: true });
-    } catch (err) {
-      if (err instanceof S3ServiceException) {
-        const status = err.$metadata?.httpStatusCode;
-        // Any HTTP response from S3 means the endpoint is reachable
-        if (status && REACHABLE_STATUS_CODES.has(status)) {
-          return NextResponse.json({ success: true });
-        }
-        return NextResponse.json({ success: false, error: err.message });
-      }
-      throw err;
-    }
+    const resolvedSecret = await resolveS3TestSecret(secretFromBody);
+    const s3 = buildS3TestClient(region, endpoint, accessKeyId, resolvedSecret);
+    const result = await testS3Connectivity(s3, bucket);
+    return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Connection failed";
     console.error("S3 test error:", error);
