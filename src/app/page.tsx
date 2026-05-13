@@ -1,7 +1,7 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect } from "react";
 import { useSession } from "next-auth/react";
 import LinkShare from "@/components/LinkShare";
 import PasteShare from "@/components/PasteShare";
@@ -15,13 +15,15 @@ const PASTE_SHARE = <PasteShare />;
 const FILE_SHARE = <FileShare />;
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window === "undefined") return "linkshare";
-    return localStorage.getItem("defaultTab") ?? "linkshare";
-  });
+  const [activeTab, setActiveTab] = useState("linkshare");
   const { t } = useTranslation();
   const { colors, branding } = useTheme();
   const { status } = useSession();
+
+  useLayoutEffect(() => {
+    const saved = localStorage.getItem("defaultTab");
+    if (saved) setActiveTab(saved);
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated") return;
