@@ -1,9 +1,9 @@
 #!/usr/bin/env node
+import * as fs from "fs";
+import * as path from "path";
 import { prisma } from "@/lib/prisma";
-import fs from "fs";
-import path from "path";
+import { deleteFromStorage, storageFileExists } from "@/lib/storage";
 
-// Get upload directory from env or default to ./uploads
 function getUploadDir(): string {
   return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
 }
@@ -46,15 +46,13 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
   let deletedFiles = 0;
 
   const deleteFileIfExists = async (relativePath: string, shareSlug: string): Promise<void> => {
-    const fullFilePath = path.join(getUploadDir(), relativePath);
+    if (!(await storageFileExists(relativePath))) return;
     try {
-      await fs.promises.unlink(fullFilePath);
+      await deleteFromStorage(relativePath);
       deletedFiles++;
       console.log(`🗑️  File deleted: ${relativePath} (share: ${shareSlug})`);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-        console.error(`❌ Error deleting file ${relativePath}:`, error);
-      }
+      console.error(`❌ Error deleting file ${relativePath}:`, error);
     }
   };
 
@@ -206,7 +204,6 @@ async function runCleanup(): Promise<void> {
   }
 }
 
-// Execute the script if it is called directly
 const isMain =
   process.argv[1] &&
   (process.argv[1].endsWith("cleanup-expired-shares.ts") ||

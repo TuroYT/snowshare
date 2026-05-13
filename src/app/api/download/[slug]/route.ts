@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { createReadStream, existsSync } from "fs";
-import { stat } from "fs/promises";
-import path from "path";
+import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
+import path from "path";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -15,7 +14,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   try {
-    // Get password from query params if provided
     const url = new URL(request.url);
     const password = url.searchParams.get("password") || undefined;
 
@@ -25,24 +23,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, result.errorCode);
     }
 
-    const { filePath: fullPath, originalFilename } = result;
+    const { storageKey, originalFilename } = result;
 
-    if (!fullPath || !existsSync(fullPath)) {
+    if (!storageKey) {
       return apiError(request, ErrorCode.RESOURCE_NOT_FOUND);
     }
 
-    // Get file stats for size
-    const stats = await stat(fullPath);
-    const fileSize = stats.size;
-
-    // Determine content type
-    const ext = path.extname(fullPath).toLowerCase();
+    const fileSize = await getStorageFileSize(storageKey);
+    const ext = path.extname(storageKey).toLowerCase();
     const contentType = getMimeType(ext);
-
-    // Sanitize filename for Content-Disposition header to prevent header injection
     const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
 
-    // Handle range request for resumable downloads
     const range = request.headers.get("range");
 
     if (range) {
@@ -57,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
       const { start, end } = rangeResult;
       const chunksize = end - start + 1;
-      const fileStream = createReadStream(fullPath, { start, end });
+      const fileStream = await getStorageReadStream(storageKey, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);
 
       const headers = new Headers();
@@ -76,26 +67,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       });
     }
 
-    // Full file download using streaming
-    const fileStream = createReadStream(fullPath);
+    const fileStream = await getStorageReadStream(storageKey);
     const webStream = nodeStreamToWebStream(fileStream);
 
-    // Set appropriate headers
     const headers = new Headers();
     headers.set("Content-Length", fileSize.toString());
     headers.set("Content-Type", contentType);
-    headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
     headers.set("Accept-Ranges", "bytes");
     headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");
 
-    // Allow inline viewing only for safe types (excludes SVG/HTML to prevent XSS)
     if (isSafeForInline(contentType)) {
       const disposition = request.headers.get("accept")?.includes("text/html")
         ? "inline"
         : "attachment";
       headers.set("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
+    } else {
+      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
     }
 
     return new NextResponse(webStream as ReadableStream<Uint8Array>, {

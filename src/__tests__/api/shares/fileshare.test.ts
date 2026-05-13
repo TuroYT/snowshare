@@ -26,20 +26,21 @@ jest.mock("bcryptjs", () => ({
   ),
 }));
 
-jest.mock("fs", () => ({
-  existsSync: jest.fn(() => true),
+jest.mock("@/lib/storage", () => ({
+  storageFileExists: jest.fn(() => Promise.resolve(true)),
+  isS3Enabled: jest.fn(() => false),
 }));
 
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { existsSync } from "fs";
+import { storageFileExists } from "@/lib/storage";
 import { ErrorCode } from "@/lib/api-errors";
 
 const mockPrismaFindUnique = prisma.share.findUnique as jest.Mock;
 const mockShareFileFindMany = prisma.shareFile.findMany as jest.Mock;
 const mockBcryptCompare = bcrypt.compare as jest.Mock;
-const mockExistsSync = existsSync as jest.Mock;
+const mockStorageFileExists = storageFileExists as jest.Mock;
 
 const baseShare = {
   id: "share-123",
@@ -56,7 +57,7 @@ const baseShare = {
 describe("getFileShare", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockExistsSync.mockReturnValue(true);
+    mockStorageFileExists.mockResolvedValue(true);
     mockPrismaFindUnique.mockResolvedValue(baseShare);
   });
 
@@ -135,19 +136,19 @@ describe("getFileShare", () => {
       expect(result.errorCode).toBe(ErrorCode.FILE_NOT_FOUND);
     });
 
-    it("should return FILE_NOT_FOUND if the physical file does not exist on disk", async () => {
-      mockExistsSync.mockReturnValue(false);
+    it("should return FILE_NOT_FOUND if the file does not exist in storage", async () => {
+      mockStorageFileExists.mockResolvedValue(false);
       const result = await getFileShare("my-share");
       expect(result.errorCode).toBe(ErrorCode.FILE_NOT_FOUND);
     });
   });
 
   describe("successful retrieval", () => {
-    it("should return share data, filePath, and originalFilename", async () => {
+    it("should return share data, storageKey, and originalFilename", async () => {
       const result = await getFileShare("my-share");
       expect(result.errorCode).toBeUndefined();
       expect(result.share).toMatchObject({ id: "share-123", slug: "my-share" });
-      expect(result.filePath).toContain("uploads");
+      expect(result.storageKey).toBe("share-123_document.pdf");
       expect(result.originalFilename).toBe("document.pdf");
     });
 

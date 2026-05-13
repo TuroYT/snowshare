@@ -504,7 +504,22 @@
       "smtp_secure": "SSL/TLS verwenden",
       "smtp_secure_hint": "Für Port 465 aktivieren, für Port 587 (STARTTLS) deaktivieren",
       "email_verification_required": "E-Mail-Verifizierung erforderlich",
-      "email_verification_required_desc": "Neue Benutzer müssen ihre E-Mail-Adresse verifizieren, bevor sie sich anmelden können"
+      "email_verification_required_desc": "Neue Benutzer müssen ihre E-Mail-Adresse verifizieren, bevor sie sich anmelden können",
+      "section_s3": "S3-Objektspeicher",
+      "s3_enabled": "S3-Speicher aktivieren",
+      "s3_enabled_desc": "Hochgeladene Dateien in einem S3-kompatiblen Bucket statt im lokalen Dateisystem speichern",
+      "s3_bucket": "Bucket",
+      "s3_region": "Region",
+      "s3_endpoint": "Benutzerdefinierter Endpunkt",
+      "s3_endpoint_hint": "Optional. Erforderlich für MinIO oder andere S3-kompatible Dienste.",
+      "s3_access_key_id": "Access Key ID",
+      "s3_secret_access_key": "Secret Access Key",
+      "s3_secret_access_key_placeholder": "Leer lassen, um den bestehenden Schlüssel zu behalten",
+      "s3_env_priority": "Hinweis: Umgebungsvariablen (S3_BUCKET, S3_REGION, etc.) haben immer Vorrang vor diesen Einstellungen.",
+      "s3_test": "Verbindung testen",
+      "s3_testing": "Teste…",
+      "s3_test_success": "Verbindung erfolgreich.",
+      "s3_test_error": "Verbindung fehlgeschlagen: {{error}}"
     },
     "quotas": {
       "title": "Upload-Quoten",

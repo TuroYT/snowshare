@@ -4,13 +4,11 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { stat } from "fs/promises";
-import path from "path";
-import { getUploadDir } from "@/lib/constants";
+import { getStorageFileSize } from "@/lib/storage";
 
 /**
  * Calculate total upload size in bytes for an IP address.
- * Handles both single files (stat on disk) and bulk uploads (sizes from DB).
+ * Bulk uploads use sizes stored in DB; single-file uploads stat the local file or query S3.
  */
 export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<number> {
   const shares = await prisma.share.findMany({
@@ -25,7 +23,6 @@ export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<num
     },
   });
 
-  const uploadsDir = getUploadDir();
   let totalSize = 0;
 
   for (const share of shares) {
@@ -34,12 +31,10 @@ export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<num
         totalSize += Number(file.size);
       }
     } else if (share.filePath) {
-      const fullPath = path.join(uploadsDir, share.filePath);
       try {
-        const stats = await stat(fullPath);
-        totalSize += stats.size;
+        totalSize += await getStorageFileSize(share.filePath);
       } catch {
-        // File doesn't exist on disk, skip
+        // File missing — skip
       }
     }
   }

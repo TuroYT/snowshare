@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUploadDir } from "@/lib/constants";
-import { unlink } from "fs/promises";
-import path from "path";
+import { deleteFromStorage } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 export async function DELETE(
@@ -38,9 +36,7 @@ export async function DELETE(
 
     if (share.type === "FILE" && share.filePath) {
       try {
-        const uploadDir = getUploadDir();
-        const filePath = path.join(uploadDir, share.filePath);
-        await unlink(filePath);
+        await deleteFromStorage(share.filePath);
       } catch (error) {
         console.error("Error deleting file:", error);
       }

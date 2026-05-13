@@ -509,7 +509,22 @@
       "smtp_secure": "Używaj SSL/TLS",
       "smtp_secure_hint": "Włącz dla portu 465, wyłącz dla portu 587 (STARTTLS)",
       "email_verification_required": "Wymagaj weryfikacji e-mail",
-      "email_verification_required_desc": "Nowi użytkownicy muszą zweryfikować swój adres e-mail przed zalogowaniem"
+      "email_verification_required_desc": "Nowi użytkownicy muszą zweryfikować swój adres e-mail przed zalogowaniem",
+      "section_s3": "Obiektowy magazyn S3",
+      "s3_enabled": "Włącz magazyn S3",
+      "s3_enabled_desc": "Przechowuj przesłane pliki w zasobniku kompatybilnym z S3 zamiast lokalnego systemu plików",
+      "s3_bucket": "Bucket",
+      "s3_region": "Region",
+      "s3_endpoint": "Niestandardowy endpoint",
+      "s3_endpoint_hint": "Opcjonalne. Wymagane dla MinIO lub innych usług kompatybilnych z S3.",
+      "s3_access_key_id": "Access Key ID",
+      "s3_secret_access_key": "Secret Access Key",
+      "s3_secret_access_key_placeholder": "Zostaw puste, aby zachować istniejący klucz",
+      "s3_env_priority": "Uwaga: zmienne środowiskowe (S3_BUCKET, S3_REGION, itp.) zawsze mają pierwszeństwo przed tymi ustawieniami.",
+      "s3_test": "Testuj połączenie",
+      "s3_testing": "Testowanie…",
+      "s3_test_success": "Połączenie udane.",
+      "s3_test_error": "Połączenie nie powiodło się: {{error}}"
     },
     "quotas": {
       "title": "Limity przesyłania",
