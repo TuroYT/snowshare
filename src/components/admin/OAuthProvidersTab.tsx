@@ -17,7 +17,6 @@ import {
   FormControlLabel,
   Switch,
   Alert,
-  CircularProgress,
   IconButton,
 } from "@mui/material";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";

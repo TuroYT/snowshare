@@ -16,8 +16,6 @@ import SubmitButton from "./shareComponents/SubmitButton";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
-const MAX_FILE_SIZE_ANON = 50 * 1024 * 1024; // 50MB
-const MAX_FILE_SIZE_AUTH = 500 * 1024 * 1024; // 500MB
 
 interface FileWithPath {
   file: File;

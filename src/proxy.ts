@@ -8,7 +8,7 @@ const SCALAR_DOMAINS =
 // Helper function to add security headers
 function addSecurityHeaders(
   response: NextResponse,
-  isApiDocs = false,
+  _isApiDocs = false,
   isScalarHtml = false,
   allowIframeEmbedding = false
 ): NextResponse {
