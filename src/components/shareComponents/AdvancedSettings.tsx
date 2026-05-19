@@ -88,7 +88,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
               id="password"
               type="password"
               placeholder={t(
-                `${translationPrefix}.password_placeholder`,
+                `${translationPrefix}.placeholder_password`,
                 "Optionnel - laissez vide pour un accès libre"
               )}
               value={password}
