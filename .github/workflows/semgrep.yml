@@ -19,7 +19,7 @@ jobs:
       image: returntocorp/semgrep
     steps:
       - name: Fix workspace permissions
-        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || true
+        run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
