@@ -59,7 +59,8 @@
     "view_limit": "Ansichtslimit",
     "view_limit_desc": "Der Paste läuft nach einer festgelegten Anzahl von Ansichten ab",
     "views": "Ansichten",
-    "view_limit_info": "Dieser Paste läuft nach {{count}} Ansicht(en) ab"
+    "view_limit_info": "Dieser Paste läuft nach {{count}} Ansicht(en) ab",
+    "password_placeholder": "Optional - leer lassen für freien Zugang"
   },
   "fileshare": {
     "title": "FileShare",

@@ -147,7 +147,6 @@ const ManageCodeBlock: React.FC<{
         slugPrefix="/p/"
         translationPrefix="pasteshare_ui"
         passwordLabelKey="pasteshare_ui.label_password"
-        passwordPlaceholderKey="pasteshare_ui.placeholder_password"
       />
 
       <SubmitButton

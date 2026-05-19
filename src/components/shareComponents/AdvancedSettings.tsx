@@ -14,8 +14,6 @@ interface AdvancedSettingsProps {
   translationPrefix: string;
   /** Override the password label i18n key (defaults to translationPrefix.password_protect) */
   passwordLabelKey?: string;
-  /** Override the password placeholder i18n key (defaults to translationPrefix.password_placeholder) */
-  passwordPlaceholderKey?: string;
 }
 
 const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
@@ -26,7 +24,6 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
   slugPrefix,
   translationPrefix,
   passwordLabelKey,
-  passwordPlaceholderKey,
 }) => {
   const { t } = useTranslation();
   const [origin, setOrigin] = useState("");
@@ -91,7 +88,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
               id="password"
               type="password"
               placeholder={t(
-                passwordPlaceholderKey || `${translationPrefix}.password_placeholder`,
+                `${translationPrefix}.password_placeholder`,
                 "Optionnel - laissez vide pour un accès libre"
               )}
               value={password}

@@ -59,7 +59,8 @@
     "view_limit": "Limite de vues",
     "view_limit_desc": "Le paste expirera après un nombre défini de vues",
     "views": "vues",
-    "view_limit_info": "Ce paste expirera après {{count}} vue(s)"
+    "view_limit_info": "Ce paste expirera après {{count}} vue(s)",
+    "password_placeholder": "Optionnel - laissez vide pour un accès libre"
   },
   "fileshare": {
     "title": "FileShare",
