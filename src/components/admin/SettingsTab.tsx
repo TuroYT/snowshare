@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import MDEditor from "@uiw/react-md-editor";
 import { Snackbar, Alert } from "@mui/material";
-import { convertFromMB, convertToMB } from "@/lib/formatSize";
 import WarningModal from "./WarningModal";
+import GeneralSection from "./GeneralSection";
+import CaptchaSection from "./CaptchaSection";
+import SmtpSection from "./SmtpSection";
+import QuotasSection from "./QuotasSection";
 import S3StorageSection from "./S3StorageSection";
 
 interface Settings {
@@ -25,12 +28,10 @@ interface Settings {
   useGiBForAuth: boolean;
   termsOfUses: string;
   allowIframeEmbedding: boolean;
-  // CAPTCHA
   captchaEnabled: boolean;
   captchaProvider: string | null;
   captchaSiteKey: string | null;
   captchaSecretKey: string | null;
-  // SMTP / Email Verification
   smtpEnabled: boolean;
   smtpHost: string | null;
   smtpPort: number | null;
@@ -39,7 +40,6 @@ interface Settings {
   smtpFrom: string | null;
   smtpSecure: boolean;
   emailVerificationRequired: boolean;
-  // S3 Storage
   s3Enabled: boolean;
   s3Endpoint: string | null;
   s3Region: string | null;
@@ -47,124 +47,6 @@ interface Settings {
   s3AccessKeyId: string | null;
   s3SecretAccessKey: string | null;
 }
-
-// ---------------------------------------------------------------------------
-// Sub-components (not exported)
-// ---------------------------------------------------------------------------
-
-interface ToggleProps {
-  checked: boolean;
-  onChange: () => void;
-  activeColor?: string;
-  disabled?: boolean;
-}
-
-function Toggle({ checked, onChange, activeColor = "bg-[var(--primary)]", disabled }: ToggleProps) {
-  return (
-    <button
-      disabled={disabled}
-      onClick={onChange}
-      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-        checked ? activeColor : "bg-gray-600"
-      }${disabled ? " opacity-50 cursor-not-allowed" : " cursor-pointer"}`}
-    >
-      <span
-        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-          checked ? "translate-x-7" : "translate-x-1"
-        }`}
-      />
-    </button>
-  );
-}
-
-interface ToggleRowProps {
-  label: ReactNode;
-  description?: ReactNode;
-  extra?: ReactNode;
-  checked: boolean;
-  onChange: () => void;
-  disabled?: boolean;
-  activeColor?: string;
-}
-
-function ToggleRow({
-  label,
-  description,
-  extra,
-  checked,
-  onChange,
-  disabled,
-  activeColor,
-}: ToggleRowProps) {
-  return (
-    <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-      <div>
-        <label className="text-[var(--foreground)] font-medium">{label}</label>
-        {description && (
-          <p className="text-sm text-[var(--foreground-muted)] mt-1">{description}</p>
-        )}
-        {extra}
-      </div>
-      <Toggle checked={checked} onChange={onChange} disabled={disabled} activeColor={activeColor} />
-    </div>
-  );
-}
-
-interface QuotaInputProps {
-  label: string;
-  hint: string;
-  value: number;
-  onChange: (raw: number) => void;
-  unit: string;
-  currentValueLabel: string;
-}
-
-function QuotaInput({ label, hint, value, onChange, unit, currentValueLabel }: QuotaInputProps) {
-  return (
-    <div>
-      <label className="text-sm text-[var(--foreground)]">{label}</label>
-      <p className="text-xs text-[var(--foreground-muted)] mb-2">{hint}</p>
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(parseInt(e.target.value))}
-            className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            min="0"
-          />
-        </div>
-        <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">{unit}</span>
-      </div>
-      <p className="text-xs text-[var(--foreground-muted)] mt-1">{currentValueLabel}</p>
-    </div>
-  );
-}
-
-interface SettingsInputProps {
-  type: "text" | "password" | "number";
-  value: string | number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  min?: number;
-}
-
-function SettingsInput({ type, value, onChange, placeholder, min }: SettingsInputProps) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      min={min}
-      className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
 
 export default function SettingsTab() {
   const { t } = useTranslation();
@@ -184,7 +66,6 @@ export default function SettingsTab() {
       if (!response.ok) throw new Error("Failed to fetch settings");
       const data = await response.json();
       setHasActiveSSO(data.hasActiveSSO);
-      // Ensure all boolean fields have default values
       setSettings({
         ...data.settings,
         allowSignin: data.settings.allowSignin ?? true,
@@ -226,89 +107,17 @@ export default function SettingsTab() {
     fetchSettings();
   }, [fetchSettings]);
 
-  // Force allowSignin to true when disableCredentialsLogin is true
-  useEffect(() => {
-    if (!settings?.disableCredentialsLogin) {
-      return;
-    }
-
-    setSettings((prev) => {
-      if (!prev || !prev.disableCredentialsLogin || prev.allowSignin) {
-        return prev;
-      }
-      return {
-        ...prev,
-        allowSignin: true,
-      };
-    });
-  }, [settings?.disableCredentialsLogin]);
-
-  const handleToggle = (key: keyof Settings) => {
-    if (settings && typeof settings[key] === "boolean") {
-      // Special handling for disableCredentialsLogin - show warning modal
-      if (key === "disableCredentialsLogin" && !settings.disableCredentialsLogin) {
-        setShowWarningModal(true);
-        return;
-      }
-
-      setSettings({
-        ...settings,
-        [key]: !settings[key],
-      });
-    }
-  };
+  const patchSettings = useCallback((patch: Partial<Settings>) => {
+    setSettings((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
 
   const handleConfirmDisableCredentials = () => {
-    if (settings) {
-      setSettings({
-        ...settings,
-        disableCredentialsLogin: true,
-        allowSignin: true, // Force allowSignin to true when enabling SSO-only
-      });
-    }
+    patchSettings({ disableCredentialsLogin: true, allowSignin: true });
     setShowWarningModal(false);
-  };
-
-  const handleCancelDisableCredentials = () => {
-    setShowWarningModal(false);
-  };
-
-  const handleChange = (key: keyof Settings, value: number) => {
-    if (settings) {
-      setSettings({
-        ...settings,
-        [key]: value,
-      });
-    }
-  };
-
-  const handleUnitToggle = (key: "useGiBForAnon" | "useGiBForAuth") => {
-    if (settings) {
-      // Simply toggle the unit preference - values stay in MB internally
-      setSettings({
-        ...settings,
-        [key]: !settings[key],
-      });
-    }
-  };
-
-  const handleTextChange = (key: keyof Settings, value: string | null) => {
-    if (settings) {
-      setSettings({ ...settings, [key]: value });
-    }
   };
 
   const handleMarkdownChange = (value: string | undefined) => {
-    if (settings) {
-      setSettings({
-        ...settings,
-        termsOfUses: value || "",
-      });
-    }
-  };
-
-  const handleToastClose = () => {
-    setToastOpen(false);
+    patchSettings({ termsOfUses: value || "" });
   };
 
   const handleSave = async () => {
@@ -369,257 +178,33 @@ export default function SettingsTab() {
     <SkeletonTransition loading={loading} skeleton={skeleton} className="w-full">
       {settings && (
         <div className="space-y-6 w-full">
-          {/* Warning Modal */}
           <WarningModal
             open={showWarningModal}
             title={t("admin.settings.warning_disable_credentials_title")}
             message={t("admin.settings.warning_disable_credentials_message")}
             onConfirm={handleConfirmDisableCredentials}
-            onCancel={handleCancelDisableCredentials}
+            onCancel={() => setShowWarningModal(false)}
           />
 
-          {/* Toast Notifications */}
-          <Snackbar open={toastOpen} autoHideDuration={3000} onClose={handleToastClose}>
-            <Alert onClose={handleToastClose} severity={toastSeverity} sx={{ width: "100%" }}>
+          <Snackbar open={toastOpen} autoHideDuration={3000} onClose={() => setToastOpen(false)}>
+            <Alert
+              onClose={() => setToastOpen(false)}
+              severity={toastSeverity}
+              sx={{ width: "100%" }}
+            >
               {toastMessage}
             </Alert>
           </Snackbar>
 
-          {/* General Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              {t("admin.settings.section_general")}
-            </h3>
+          <GeneralSection
+            settings={settings}
+            hasActiveSSO={hasActiveSSO}
+            onChange={patchSettings}
+            onRequestDisableCredentials={() => setShowWarningModal(true)}
+          />
 
-            <ToggleRow
-              label={t("admin.settings.disable_credentials_login")}
-              description={t("admin.settings.disable_credentials_login_desc")}
-              extra={
-                !hasActiveSSO && (
-                  <p className="text-xs text-red-400 mt-1">{t("admin.settings.no_sso_active")}</p>
-                )
-              }
-              checked={settings.disableCredentialsLogin}
-              onChange={() => handleToggle("disableCredentialsLogin")}
-              disabled={!hasActiveSSO}
-            />
+          <QuotasSection settings={settings} onChange={patchSettings} />
 
-            {!settings.disableCredentialsLogin && (
-              <ToggleRow
-                label={t("admin.settings.allow_signup")}
-                description={t("admin.settings.allow_signup_desc")}
-                checked={settings.allowSignin}
-                onChange={() => handleToggle("allowSignin")}
-              />
-            )}
-
-            <ToggleRow
-              label={t("admin.settings.allow_anon_fileshare")}
-              description={t("admin.settings.allow_anon_fileshare_desc")}
-              checked={settings.allowAnonFileShare}
-              onChange={() => handleToggle("allowAnonFileShare")}
-            />
-
-            <ToggleRow
-              label={t("admin.settings.allow_anon_linkshare")}
-              description={t("admin.settings.allow_anon_linkshare_desc")}
-              checked={settings.allowAnonLinkShare}
-              onChange={() => handleToggle("allowAnonLinkShare")}
-            />
-
-            <ToggleRow
-              label={t("admin.settings.allow_anon_pasteshare")}
-              description={t("admin.settings.allow_anon_pasteshare_desc")}
-              checked={settings.allowAnonPasteShare}
-              onChange={() => handleToggle("allowAnonPasteShare")}
-            />
-
-            <ToggleRow
-              label={t("admin.settings.allow_iframe_embedding")}
-              description={t("admin.settings.allow_iframe_embedding_desc")}
-              extra={
-                settings.allowIframeEmbedding && (
-                  <p className="text-xs text-yellow-400 mt-1">
-                    {t("admin.settings.allow_iframe_embedding_warning")}
-                  </p>
-                )
-              }
-              checked={settings.allowIframeEmbedding}
-              onChange={() => handleToggle("allowIframeEmbedding")}
-              activeColor="bg-yellow-500"
-            />
-          </div>
-
-          {/* Upload Quotas */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-[var(--primary)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--foreground)]">
-                {t("admin.quotas.title")}
-              </h3>
-            </div>
-
-            {/* Anonymous Users */}
-            <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-              <div className="flex items-center gap-2 mb-2 justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-[var(--primary)]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                  </div>
-                  <label className="text-[var(--foreground)] font-medium">
-                    {t("admin.quotas.section_anonymous")}
-                  </label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-[var(--foreground-muted)]">
-                    {t("admin.quotas.unit_format")}
-                  </label>
-                  <button
-                    onClick={() => handleUnitToggle("useGiBForAnon")}
-                    className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                      settings.useGiBForAnon
-                        ? "bg-[var(--secondary)] text-white"
-                        : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
-                    }`}
-                  >
-                    {settings.useGiBForAnon ? "GiB" : "MiB"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <QuotaInput
-                  label={t("admin.quotas.max_file_size")}
-                  hint={t("admin.quotas.max_file_size_hint")}
-                  value={convertFromMB(settings.anoMaxUpload, settings.useGiBForAnon)}
-                  onChange={(raw) =>
-                    handleChange("anoMaxUpload", convertToMB(raw, settings.useGiBForAnon))
-                  }
-                  unit={settings.useGiBForAnon ? "GiB" : "MiB"}
-                  currentValueLabel={t("admin.quotas.current_value", {
-                    value: convertFromMB(settings.anoMaxUpload, settings.useGiBForAnon),
-                  })}
-                />
-                <QuotaInput
-                  label={t("admin.quotas.ip_quota")}
-                  hint={t("admin.quotas.ip_quota_hint")}
-                  value={convertFromMB(settings.anoIpQuota, settings.useGiBForAnon)}
-                  onChange={(raw) =>
-                    handleChange("anoIpQuota", convertToMB(raw, settings.useGiBForAnon))
-                  }
-                  unit={settings.useGiBForAnon ? "GiB" : "MiB"}
-                  currentValueLabel={t("admin.quotas.current_value", {
-                    value: convertFromMB(settings.anoIpQuota, settings.useGiBForAnon),
-                  })}
-                />
-              </div>
-            </div>
-
-            {/* Authenticated Users */}
-            <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-              <div className="flex items-center gap-2 mb-2 justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-lg bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]/50 flex items-center justify-center">
-                    <svg
-                      className="w-3 h-3 text-[var(--secondary)]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <label className="text-[var(--foreground)] font-medium">
-                    {t("admin.quotas.section_authenticated")}
-                  </label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm text-[var(--foreground-muted)]">
-                    {t("admin.quotas.unit_format")}
-                  </label>
-                  <button
-                    onClick={() => handleUnitToggle("useGiBForAuth")}
-                    className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                      settings.useGiBForAuth
-                        ? "bg-[var(--secondary)] text-white"
-                        : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
-                    }`}
-                  >
-                    {settings.useGiBForAuth ? "GiB" : "MiB"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <QuotaInput
-                  label={t("admin.quotas.max_file_size")}
-                  hint={t("admin.quotas.max_file_size_hint")}
-                  value={convertFromMB(settings.authMaxUpload, settings.useGiBForAuth)}
-                  onChange={(raw) =>
-                    handleChange("authMaxUpload", convertToMB(raw, settings.useGiBForAuth))
-                  }
-                  unit={settings.useGiBForAuth ? "GiB" : "MiB"}
-                  currentValueLabel={t("admin.quotas.current_value", {
-                    value: convertFromMB(settings.authMaxUpload, settings.useGiBForAuth),
-                  })}
-                />
-                <QuotaInput
-                  label={t("admin.quotas.ip_quota")}
-                  hint={t("admin.quotas.ip_quota_hint")}
-                  value={convertFromMB(settings.authIpQuota, settings.useGiBForAuth)}
-                  onChange={(raw) =>
-                    handleChange("authIpQuota", convertToMB(raw, settings.useGiBForAuth))
-                  }
-                  unit={settings.useGiBForAuth ? "GiB" : "MiB"}
-                  currentValueLabel={t("admin.quotas.current_value", {
-                    value: convertFromMB(settings.authIpQuota, settings.useGiBForAuth),
-                  })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Info Box */}
-          <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg text-[var(--primary-hover)] text-sm">
-            <p className="font-medium mb-2">💡 Info</p>
-            <ul className="space-y-1 text-xs">
-              <li>• {t("admin.quotas.max_file_size_hint")}</li>
-              <li>• {t("admin.quotas.ip_quota_hint")}</li>
-            </ul>
-          </div>
-
-          {/* Markdown Editor for Terms of Use */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">
               {t("footer.terms_of_use")}
@@ -631,185 +216,12 @@ export default function SettingsTab() {
             />
           </div>
 
-          {/* CAPTCHA Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              {t("admin.settings.section_captcha")}
-            </h3>
+          <CaptchaSection settings={settings} onChange={patchSettings} />
 
-            <ToggleRow
-              label={t("admin.settings.captcha_enabled")}
-              description={t("admin.settings.captcha_enabled_desc")}
-              checked={settings.captchaEnabled}
-              onChange={() => handleToggle("captchaEnabled")}
-            />
+          <SmtpSection settings={settings} onChange={patchSettings} />
 
-            {settings.captchaEnabled && (
-              <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-                <div>
-                  <label className="text-sm font-medium text-[var(--foreground)]">
-                    {t("admin.settings.captcha_provider")}
-                  </label>
-                  <select
-                    value={settings.captchaProvider ?? ""}
-                    onChange={(e) => handleTextChange("captchaProvider", e.target.value || null)}
-                    className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  >
-                    <option value="">{t("admin.settings.captcha_provider_select")}</option>
-                    <option value="recaptcha">Google reCAPTCHA v2</option>
-                    <option value="turnstile">Cloudflare Turnstile</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-[var(--foreground)]">
-                    {t("admin.settings.captcha_site_key")}
-                  </label>
-                  <SettingsInput
-                    type="text"
-                    value={settings.captchaSiteKey ?? ""}
-                    onChange={(e) => handleTextChange("captchaSiteKey", e.target.value || null)}
-                    placeholder={t("admin.settings.captcha_site_key_placeholder") as string}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-[var(--foreground)]">
-                    {t("admin.settings.captcha_secret_key")}
-                  </label>
-                  <SettingsInput
-                    type="password"
-                    value={settings.captchaSecretKey ?? ""}
-                    onChange={(e) => handleTextChange("captchaSecretKey", e.target.value || null)}
-                    placeholder={t("admin.settings.captcha_secret_key_placeholder") as string}
-                  />
-                  <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                    {t("admin.settings.captcha_secret_key_hint")}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+          <S3StorageSection settings={settings} onChange={patchSettings} />
 
-          {/* SMTP / Email Verification Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-[var(--foreground)]">
-              {t("admin.settings.section_smtp")}
-            </h3>
-
-            <ToggleRow
-              label={t("admin.settings.smtp_enabled")}
-              description={t("admin.settings.smtp_enabled_desc")}
-              checked={settings.smtpEnabled}
-              onChange={() => handleToggle("smtpEnabled")}
-            />
-
-            {settings.smtpEnabled && (
-              <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-[var(--foreground)]">
-                      {t("admin.settings.smtp_host")}
-                    </label>
-                    <SettingsInput
-                      type="text"
-                      value={settings.smtpHost ?? ""}
-                      onChange={(e) => handleTextChange("smtpHost", e.target.value || null)}
-                      placeholder="smtp.example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-[var(--foreground)]">
-                      {t("admin.settings.smtp_port")}
-                    </label>
-                    <SettingsInput
-                      type="number"
-                      value={settings.smtpPort ?? 587}
-                      onChange={(e) => handleChange("smtpPort", parseInt(e.target.value) || 587)}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-[var(--foreground)]">
-                      {t("admin.settings.smtp_user")}
-                    </label>
-                    <SettingsInput
-                      type="text"
-                      value={settings.smtpUser ?? ""}
-                      onChange={(e) => handleTextChange("smtpUser", e.target.value || null)}
-                      placeholder="user@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-[var(--foreground)]">
-                      {t("admin.settings.smtp_password")}
-                    </label>
-                    <SettingsInput
-                      type="password"
-                      value={settings.smtpPassword ?? ""}
-                      onChange={(e) => handleTextChange("smtpPassword", e.target.value || null)}
-                      placeholder={t("admin.settings.smtp_password_placeholder") as string}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-[var(--foreground)]">
-                      {t("admin.settings.smtp_from")}
-                    </label>
-                    <SettingsInput
-                      type="text"
-                      value={settings.smtpFrom ?? ""}
-                      onChange={(e) => handleTextChange("smtpFrom", e.target.value || null)}
-                      placeholder="noreply@example.com"
-                    />
-                    <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                      {t("admin.settings.smtp_from_hint")}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between mt-6">
-                    <div>
-                      <label className="text-sm font-medium text-[var(--foreground)]">
-                        {t("admin.settings.smtp_secure")}
-                      </label>
-                      <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                        {t("admin.settings.smtp_secure_hint")}
-                      </p>
-                    </div>
-                    <Toggle
-                      checked={settings.smtpSecure}
-                      onChange={() => handleToggle("smtpSecure")}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-[var(--border)]/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-[var(--foreground)] font-medium">
-                        {t("admin.settings.email_verification_required")}
-                      </label>
-                      <p className="text-sm text-[var(--foreground-muted)] mt-1">
-                        {t("admin.settings.email_verification_required_desc")}
-                      </p>
-                    </div>
-                    <Toggle
-                      checked={settings.emailVerificationRequired}
-                      onChange={() => handleToggle("emailVerificationRequired")}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* S3 Storage */}
-          {/* See issue #261: refactor General/CAPTCHA/SMTP/Quotas sections into controlled components */}
-          <S3StorageSection
-            settings={settings}
-            onChange={(patch) => setSettings((prev) => (prev ? { ...prev, ...patch } : prev))}
-          />
-
-          {/* Save Button */}
           <div className="flex justify-end">
             <button
               onClick={handleSave}

@@ -159,7 +159,7 @@ async function generateSafeFilename(originalName, shareId) {
 }
 
 // Calculate IP usage for quota (single + bulk uploads)
-async function calculateIpUsage(prisma, clientIp, uploadsDir) {
+async function calculateIpUsage(prisma, clientIp, _uploadsDir) {
   const shares = await prisma.share.findMany({
     where: { ipSource: clientIp, type: "FILE" },
     select: {
@@ -417,7 +417,7 @@ const tusServer = new TusServer({
   maxSize: 1024 * 1024 * 1024 * 1024, // 1TB absolute max
   // Expose custom headers to client
   respectForwardedHeaders: true,
-  generateUrl(req, { proto, host, path, id }) {
+  generateUrl(req, { proto: _proto, host: _host, path, id }) {
     // Use relative URL to avoid protocol mismatch behind reverse proxies (CSP 'self')
     return `${path}/${id}`;
   },

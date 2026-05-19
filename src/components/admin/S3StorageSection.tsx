@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { FieldInput, Toggle } from "./settings/primitives";
 
 export interface S3SectionSettings {
   s3Enabled: boolean;
@@ -16,61 +17,6 @@ interface Props {
   settings: S3SectionSettings;
   onChange: (patch: Partial<S3SectionSettings>) => void;
 }
-
-// ---------------------------------------------------------------------------
-// Local UI primitives
-// ---------------------------------------------------------------------------
-
-interface ToggleProps {
-  checked: boolean;
-  onChange: () => void;
-}
-
-function Toggle({ checked, onChange }: ToggleProps) {
-  return (
-    <button
-      onClick={onChange}
-      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors cursor-pointer ${
-        checked ? "bg-[var(--primary)]" : "bg-gray-600"
-      }`}
-    >
-      <span
-        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-          checked ? "translate-x-7" : "translate-x-1"
-        }`}
-      />
-    </button>
-  );
-}
-
-interface FieldInputProps {
-  label: string;
-  type?: "text" | "password";
-  value: string;
-  onChange: (value: string | null) => void;
-  placeholder?: string;
-  hint?: string;
-}
-
-function FieldInput({ label, type = "text", value, onChange, placeholder, hint }: FieldInputProps) {
-  return (
-    <div>
-      <label className="text-sm font-medium text-[var(--foreground)]">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value || null)}
-        placeholder={placeholder}
-        className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-      />
-      {hint && <p className="text-xs text-[var(--foreground-muted)] mt-1">{hint}</p>}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Controlled section — no own state, no save button
-// ---------------------------------------------------------------------------
 
 export default function S3StorageSection({ settings, onChange }: Props) {
   const { t } = useTranslation();
