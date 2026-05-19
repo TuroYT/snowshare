@@ -11,15 +11,6 @@ jobs:
       contents: write
 
     steps:
-      - name: Fix workspace permissions
-        run: |
-          USER_ID="$(id -u)"
-          GROUP_ID="$(id -g)"
-          if command -v docker >/dev/null 2>&1; then
-            docker run --rm -v "$GITHUB_WORKSPACE":/ws alpine chown -R "$USER_ID:$GROUP_ID" /ws
-          else
-            sudo -n chown -R "$USER_ID:$GROUP_ID" "$GITHUB_WORKSPACE"
-          fi
       - name: Checkout repository
         uses: actions/checkout@v4
         with:

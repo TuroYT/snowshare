@@ -15,15 +15,6 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
-      - name: Fix workspace permissions
-        run: |
-          USER_ID="$(id -u)"
-          GROUP_ID="$(id -g)"
-          if command -v docker >/dev/null 2>&1; then
-            docker run --rm -v "$GITHUB_WORKSPACE":/ws alpine chown -R "$USER_ID:$GROUP_ID" /ws
-          else
-            sudo -n chown -R "$USER_ID:$GROUP_ID" "$GITHUB_WORKSPACE"
-          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -38,15 +29,6 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
-      - name: Fix workspace permissions
-        run: |
-          USER_ID="$(id -u)"
-          GROUP_ID="$(id -g)"
-          if command -v docker >/dev/null 2>&1; then
-            docker run --rm -v "$GITHUB_WORKSPACE":/ws alpine chown -R "$USER_ID:$GROUP_ID" /ws
-          else
-            sudo -n chown -R "$USER_ID:$GROUP_ID" "$GITHUB_WORKSPACE"
-          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -62,15 +44,6 @@ jobs:
     env:
       DATABASE_URL: postgresql://e2e_user:e2e_password@localhost:5432/e2e_db?schema=public
     steps:
-      - name: Fix workspace permissions
-        run: |
-          USER_ID="$(id -u)"
-          GROUP_ID="$(id -g)"
-          if command -v docker >/dev/null 2>&1; then
-            docker run --rm -v "$GITHUB_WORKSPACE":/ws alpine chown -R "$USER_ID:$GROUP_ID" /ws
-          else
-            sudo -n chown -R "$USER_ID:$GROUP_ID" "$GITHUB_WORKSPACE"
-          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -95,15 +68,6 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
-      - name: Fix workspace permissions
-        run: |
-          USER_ID="$(id -u)"
-          GROUP_ID="$(id -g)"
-          if command -v docker >/dev/null 2>&1; then
-            docker run --rm -v "$GITHUB_WORKSPACE":/ws alpine chown -R "$USER_ID:$GROUP_ID" /ws
-          else
-            sudo -n chown -R "$USER_ID:$GROUP_ID" "$GITHUB_WORKSPACE"
-          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
