@@ -15,12 +15,24 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     timeout-minutes: 20
-    container:
-      image: returntocorp/semgrep
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: semgrep ci --timeout 60 --timeout-threshold 3 --max-memory 5000 --oss-only
+      - name: Run Semgrep
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e SEMGREP_APP_TOKEN \
+            -e GITHUB_TOKEN \
+            -e GITHUB_REPOSITORY \
+            -e GITHUB_REF \
+            -e GITHUB_SHA \
+            -e GITHUB_EVENT_NAME \
+            -e GITHUB_ACTIONS=true \
+            -v "$GITHUB_WORKSPACE":/src \
+            -w /src \
+            returntocorp/semgrep \
+            semgrep ci --timeout 60 --timeout-threshold 3 --max-memory 5000 --oss-only
