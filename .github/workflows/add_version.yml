@@ -11,6 +11,8 @@ jobs:
       contents: write
 
     steps:
+      - name: Fix workspace permissions
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || true
       - name: Checkout repository
         uses: actions/checkout@v4
         with:

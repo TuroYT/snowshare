@@ -15,6 +15,8 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
+      - name: Fix workspace permissions
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -29,6 +31,8 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
+      - name: Fix workspace permissions
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -44,6 +48,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://e2e_user:e2e_password@localhost:5432/e2e_db?schema=public
     steps:
+      - name: Fix workspace permissions
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -68,6 +74,8 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     steps:
+      - name: Fix workspace permissions
+        run: sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE" || true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
