@@ -152,7 +152,10 @@
     "password_incorrect": "Onjuist wachtwoord",
     "download_progress": "Downloaden: {{percent}}%",
     "cancel_download": "Download annuleren",
-    "download_cancelled": "Download geannuleerd"
+    "download_cancelled": "Download geannuleerd",
+    "badge": "Bestand",
+    "preview": "Voorbeeld",
+    "files_list_aria": "Bestanden in dit gedeelde item, {{count}} items"
   },
   "home": {
     "title": "Welkom bij SnowShare",
@@ -709,7 +712,8 @@
     "disclaimer": "Door deze link te openen ga je ermee akkoord dat deze wordt ontsleuteld en dat je wordt doorgestuurd naar de bestemming.",
     "error_generic": "Er is een fout opgetreden",
     "error_url_not_found": "URL niet gevonden",
-    "error_connection": "Verbindingsfout"
+    "error_connection": "Verbindingsfout",
+    "badge": "Beveiligde link"
   },
   "api": {
     "errors": {

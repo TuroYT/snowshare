@@ -148,7 +148,10 @@
     "password_incorrect": "Incorrect password",
     "download_progress": "Downloading: {{percent}}%",
     "cancel_download": "Cancel download",
-    "download_cancelled": "Download cancelled"
+    "download_cancelled": "Download cancelled",
+    "badge": "File",
+    "preview": "Preview",
+    "files_list_aria": "Files in this share, {{count}} items"
   },
   "home": {
     "title": "Welcome to SnowShare",
@@ -706,7 +709,8 @@
     "disclaimer": "By accessing this link, you agree that it will be decrypted and you will be redirected to its destination.",
     "error_generic": "An error occurred",
     "error_url_not_found": "URL not found",
-    "error_connection": "Connection error"
+    "error_connection": "Connection error",
+    "badge": "Protected link"
   },
   "api": {
     "errors": {
