@@ -48,7 +48,7 @@ export default function Modal({ isOpen, onClose, children, title, size = "lg" }:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -57,7 +57,7 @@ export default function Modal({ isOpen, onClose, children, title, size = "lg" }:
     >
       <div
         ref={modalRef}
-        className={`relative w-full ${sizeClasses[size]} max-h-[90vh] bg-[var(--surface)] rounded-lg shadow-2xl border border-[var(--border)] animate-scale-in overflow-hidden flex flex-col`}
+        className={`relative w-full ${sizeClasses[size]} max-h-[90vh] bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border border-[var(--border)] animate-scale-in overflow-hidden flex flex-col`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">

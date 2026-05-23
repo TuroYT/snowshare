@@ -12,26 +12,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{label}</label>
+          <label className="block text-xs text-[var(--foreground-muted)] mb-1.5">{label}</label>
         )}
         <input
           ref={ref}
           className={cn(
-            "w-full px-4 py-2 rounded-lg",
+            "w-full px-3 py-2 text-sm rounded-[var(--radius)]",
             "bg-[var(--input)] text-[var(--foreground)]",
             "border border-[var(--border)]",
-            "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]",
-            "placeholder:text-[var(--foreground-muted)]",
-            "transition-colors",
-            error && "border-[var(--destructive)] focus:ring-[var(--destructive)]",
+            "focus:outline-none focus:border-[var(--foreground)]",
+            "placeholder:text-[var(--foreground-subtle)]",
+            "transition-colors duration-100",
+            error && "border-[var(--destructive)] focus:border-[var(--destructive)]",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             className
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-[var(--destructive)]">{error}</p>}
+        {error && <p className="mt-1 text-xs text-[var(--destructive)]">{error}</p>}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-[var(--foreground-muted)]">{helperText}</p>
+          <p className="mt-1 text-xs text-[var(--foreground-muted)]">{helperText}</p>
         )}
       </div>
     );
@@ -52,27 +52,27 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">{label}</label>
+          <label className="block text-xs text-[var(--foreground-muted)] mb-1.5">{label}</label>
         )}
         <textarea
           ref={ref}
           rows={rows}
           className={cn(
-            "w-full px-4 py-2 rounded-lg resize-none",
+            "w-full px-3 py-2 text-sm rounded-[var(--radius)] resize-none",
             "bg-[var(--input)] text-[var(--foreground)]",
             "border border-[var(--border)]",
-            "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)]",
-            "placeholder:text-[var(--foreground-muted)]",
-            "transition-colors",
-            error && "border-[var(--destructive)] focus:ring-[var(--destructive)]",
+            "focus:outline-none focus:border-[var(--foreground)]",
+            "placeholder:text-[var(--foreground-subtle)]",
+            "transition-colors duration-100",
+            error && "border-[var(--destructive)] focus:border-[var(--destructive)]",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             className
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-[var(--destructive)]">{error}</p>}
+        {error && <p className="mt-1 text-xs text-[var(--destructive)]">{error}</p>}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-[var(--foreground-muted)]">{helperText}</p>
+          <p className="mt-1 text-xs text-[var(--foreground-muted)]">{helperText}</p>
         )}
       </div>
     );
