@@ -255,7 +255,11 @@
     "verify_email_success_title": "Email verified!",
     "verify_email_success_message": "Your email has been verified. You can now sign in.",
     "verify_email_error_title": "Verification failed",
-    "verify_email_error_generic": "An error occurred during verification"
+    "verify_email_error_generic": "An error occurred during verification",
+    "have_account": "Already have an account?",
+    "signin_link": "Sign in",
+    "signup_link": "Sign up",
+    "signin_with": "Sign in with"
   },
   "profile": {
     "title": "My Profile",

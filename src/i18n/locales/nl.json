@@ -259,7 +259,11 @@
     "verify_email_success_title": "E-mail geverifieerd!",
     "verify_email_success_message": "Uw e-mail is geverifieerd. U kunt nu inloggen.",
     "verify_email_error_title": "Verificatie mislukt",
-    "verify_email_error_generic": "Er is een fout opgetreden tijdens de verificatie"
+    "verify_email_error_generic": "Er is een fout opgetreden tijdens de verificatie",
+    "have_account": "Al een account?",
+    "signin_link": "Inloggen",
+    "signup_link": "Registreren",
+    "signin_with": "Inloggen met"
   },
   "profile": {
     "title": "Mijn profiel",

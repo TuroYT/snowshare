@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { signIn, getSession, getProviders, ClientSafeProvider } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/hooks/useTheme";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -17,6 +21,7 @@ export default function SignIn() {
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
   const { t } = useTranslation();
+  const { branding } = useTheme();
 
   useEffect(() => {
     (async () => {
@@ -71,7 +76,7 @@ export default function SignIn() {
       } else if (result?.error) {
         setError(t("auth.error_invalid_credentials"));
       } else {
-        // Vérifier si la session est créée
+        // Verify session was created successfully
         const session = await getSession();
         if (session) {
           router.push("/");
@@ -85,153 +90,48 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="flex justify-start mb-6">
-          <Link
-            href="/"
-            className="flex items-center text-sm text-[var(--foreground-muted)] hover:text-[var(--primary)] transition-colors"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            {t("auth.return_to_main_page")}
-          </Link>
-        </div>
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-blue-900/20 border border-blue-800">
-            <svg
-              className="h-8 w-8 text-[var(--primary)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
-            {t("auth.signin_title")}
-          </h2>
-          <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-            {t("auth.signin_subtitle")}
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
+      <div className="w-full max-w-sm">
+        {/* Logo and title */}
+        <div className="text-center mb-8">
+          <Image src="/logo.svg" alt="" width={40} height={40} className="mx-auto mb-3" />
+          <h1 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">
+            {t("auth.signin_title", "Sign in")}
+          </h1>
+          <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
 
+        {/* Error message */}
+        {error && <p className="mb-4 text-sm text-[var(--destructive)] text-center">{error}</p>}
+
+        {/* Credentials form */}
         {!disableCredentialsLogin && (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-[var(--foreground)] mb-2"
-                >
-                  {t("auth.email_label")}
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] focus:z-10 sm:text-sm transition-colors"
-                  placeholder={t("auth.email_placeholder") as string}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-[var(--foreground)] mb-2"
-                >
-                  {t("auth.password_label")}
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] focus:z-10 sm:text-sm transition-colors"
-                  placeholder={t("auth.password_placeholder") as string}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">
-                <div className="flex items-center justify-center">
-                  <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {error}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    {t("auth.signin_loading")}
-                  </div>
-                ) : (
-                  t("auth.signin_button")
-                )}
-              </button>
-
-              <div className="text-center">
-                <Link
-                  href="/auth/signup"
-                  className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
-                >
-                  {t("auth.no_account")}
-                </Link>
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label={t("auth.email_label", "Email")}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              placeholder={t("auth.email_placeholder") as string}
+              required
+            />
+            <Input
+              label={t("auth.password_label", "Password")}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder={t("auth.password_placeholder") as string}
+              required
+            />
+            <Button type="submit" isLoading={loading} className="w-full">
+              {t("auth.signin_button", "Sign in")}
+            </Button>
           </form>
         )}
 
+        {/* OAuth providers */}
         {providers &&
           Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials")
             .length > 0 && (
@@ -249,21 +149,32 @@ export default function SignIn() {
                 </div>
               )}
 
-              <div className="grid gap-3">
+              <div className="space-y-2">
                 {Object.values(providers)
                   .filter((p: ClientSafeProvider) => p.name !== "credentials")
                   .map((provider: ClientSafeProvider) => (
-                    <button
+                    <Button
                       key={provider.name}
+                      variant="secondary"
+                      className="w-full"
                       onClick={() => signIn(provider.id, { callbackUrl: "/" })}
-                      className="flex items-center justify-center w-full px-4 py-3 border border-[var(--border)] rounded-md shadow-sm bg-[var(--surface)] text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background)] transition-colors capitalize"
                     >
-                      {provider.name}
-                    </button>
+                      {t("auth.signin_with", "Sign in with")} {provider.name}
+                    </Button>
                   ))}
               </div>
             </>
           )}
+
+        {/* Sign up link */}
+        {!disableCredentialsLogin && (
+          <p className="text-center text-sm text-[var(--foreground-muted)] mt-6">
+            {t("auth.no_account", "No account?")}{" "}
+            <Link href="/auth/signup" className="text-[var(--primary)] hover:underline">
+              {t("auth.signup_link", "Sign up")}
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

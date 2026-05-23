@@ -251,7 +251,11 @@
     "verify_email_success_title": "¡Email verificado!",
     "verify_email_success_message": "Tu email ha sido verificado. Ahora puedes iniciar sesión.",
     "verify_email_error_title": "Error de verificación",
-    "verify_email_error_generic": "Ocurrió un error durante la verificación"
+    "verify_email_error_generic": "Ocurrió un error durante la verificación",
+    "have_account": "¿Ya tienes cuenta?",
+    "signin_link": "Iniciar sesión",
+    "signup_link": "Registrarse",
+    "signin_with": "Iniciar sesión con"
   },
   "profile": {
     "title": "Mi Perfil",

@@ -255,7 +255,11 @@
     "verify_email_success_title": "Email vérifié !",
     "verify_email_success_message": "Votre email a été vérifié. Vous pouvez maintenant vous connecter.",
     "verify_email_error_title": "Échec de la vérification",
-    "verify_email_error_generic": "Une erreur s'est produite lors de la vérification"
+    "verify_email_error_generic": "Une erreur s'est produite lors de la vérification",
+    "have_account": "Déjà un compte ?",
+    "signin_link": "Se connecter",
+    "signup_link": "S'inscrire",
+    "signin_with": "Se connecter avec"
   },
   "profile": {
     "title": "Mon Profil",

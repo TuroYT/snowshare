@@ -251,7 +251,11 @@
     "verify_email_success_title": "E-Mail verifiziert!",
     "verify_email_success_message": "Ihre E-Mail wurde verifiziert. Sie können sich jetzt anmelden.",
     "verify_email_error_title": "Verifizierung fehlgeschlagen",
-    "verify_email_error_generic": "Bei der Verifizierung ist ein Fehler aufgetreten"
+    "verify_email_error_generic": "Bei der Verifizierung ist ein Fehler aufgetreten",
+    "have_account": "Schon ein Konto?",
+    "signin_link": "Anmelden",
+    "signup_link": "Registrieren",
+    "signin_with": "Anmelden mit"
   },
   "profile": {
     "title": "Mein Profil",

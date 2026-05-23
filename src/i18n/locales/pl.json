@@ -259,7 +259,11 @@
     "verify_email_success_title": "E-mail zweryfikowany!",
     "verify_email_success_message": "Twój e-mail został zweryfikowany. Możesz się teraz zalogować.",
     "verify_email_error_title": "Weryfikacja nie powiodła się",
-    "verify_email_error_generic": "Wystąpił błąd podczas weryfikacji"
+    "verify_email_error_generic": "Wystąpił błąd podczas weryfikacji",
+    "have_account": "Masz już konto?",
+    "signin_link": "Zaloguj się",
+    "signup_link": "Zarejestruj się",
+    "signin_with": "Zaloguj się przez"
   },
   "profile": {
     "title": "Mój profil",
