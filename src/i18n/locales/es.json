@@ -672,6 +672,10 @@
       "view_release": "Ver notas de la versión",
       "upgrade_guide": "Guía de actualización",
       "dismiss": "Descartar"
+    },
+    "theme": {
+      "presets_label": "Preajustes",
+      "preset_helper": "Haga clic en un preajuste para rellenar los campos de color. Puede personalizarlos después."
     }
   },
   "paste_view": {

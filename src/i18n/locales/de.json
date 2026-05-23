@@ -672,6 +672,10 @@
       "view_release": "Release-Notes ansehen",
       "upgrade_guide": "Upgrade-Anleitung",
       "dismiss": "Schließen"
+    },
+    "theme": {
+      "presets_label": "Voreinstellungen",
+      "preset_helper": "Klicken Sie auf eine Voreinstellung, um die Farbfelder auszufüllen. Sie können diese danach anpassen."
     }
   },
   "paste_view": {

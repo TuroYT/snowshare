@@ -670,6 +670,10 @@
       "test_error": "Échec de l'envoi de l'e-mail de test.",
       "error_load": "Impossible de charger les modèles d'e-mail."
     },
+    "theme": {
+      "presets_label": "Préréglages",
+      "preset_helper": "Cliquer un préréglage pré-remplit les champs de couleur. Vous pouvez les personnaliser ensuite."
+    },
     "update": {
       "title": "Mise à jour disponible",
       "description": "Une nouvelle version de SnowShare est disponible.",

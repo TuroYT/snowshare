@@ -2,18 +2,21 @@
 
 import { themePresets } from "@/lib/theme-presets";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTranslation } from "react-i18next";
+import type { PresetColors } from "@/lib/theme-presets";
 
 interface ThemePresetSelectorProps {
-  onSelectPreset: (colors: Record<string, string>) => void;
+  onSelectPreset: (colors: PresetColors) => void;
 }
 
 export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps) {
   const { isDark } = useColorScheme();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-3">
       <h4 className="text-xs font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">
-        Presets
+        {t("admin.theme.presets_label", "Presets")}
       </h4>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {themePresets.map((preset) => {
@@ -21,7 +24,7 @@ export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps
           return (
             <button
               key={preset.id}
-              onClick={() => onSelectPreset(colors as Record<string, string>)}
+              onClick={() => onSelectPreset(colors)}
               className="group p-3 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors text-left"
               title={preset.description}
             >
@@ -44,7 +47,10 @@ export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps
         })}
       </div>
       <p className="text-xs text-[var(--foreground-muted)]">
-        Click a preset to pre-fill the color fields. You can customize them afterward.
+        {t(
+          "admin.theme.preset_helper",
+          "Click a preset to pre-fill the color fields. You can customize them afterward."
+        )}
       </p>
     </div>
   );

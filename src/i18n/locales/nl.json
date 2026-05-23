@@ -673,6 +673,10 @@
       "test_error": "Test-e-mail verzenden mislukt.",
       "error_load": "E-mailsjablonen laden mislukt."
     },
+    "theme": {
+      "presets_label": "Voorinstellingen",
+      "preset_helper": "Klik op een voorinstelling om de kleurvelden vooraf in te vullen. U kunt deze daarna aanpassen."
+    },
     "update": {
       "title": "Update beschikbaar",
       "description": "Er is een nieuwe versie van SnowShare beschikbaar.",

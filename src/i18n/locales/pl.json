@@ -670,6 +670,10 @@
       "test_error": "Nie udało się wysłać testowego e-maila.",
       "error_load": "Nie udało się załadować szablonów e-mail."
     },
+    "theme": {
+      "presets_label": "Presety",
+      "preset_helper": "Kliknij preset, aby wstępnie wypełnić pola kolorów. Możesz je dostosować później."
+    },
     "update": {
       "title": "Dostępna aktualizacja",
       "description": "Dostępna jest nowa wersja SnowShare.",

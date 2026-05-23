@@ -670,6 +670,10 @@
       "test_error": "Failed to send test email.",
       "error_load": "Failed to load email templates."
     },
+    "theme": {
+      "presets_label": "Presets",
+      "preset_helper": "Click a preset to pre-fill the color fields. You can customize them afterward."
+    },
     "update": {
       "title": "Update Available",
       "description": "A new version of SnowShare is available.",
