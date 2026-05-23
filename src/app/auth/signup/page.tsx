@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { signIn, type SignInResponse } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -145,7 +145,8 @@ export default function SignUp() {
   }
 
   if (disableCredentialsLogin) {
-    redirect("/auth/signin");
+    router.push("/auth/signin");
+    return null;
   }
 
   // Show disabled message if signup is not allowed
@@ -159,12 +160,9 @@ export default function SignUp() {
           <p className="text-sm text-[var(--foreground-muted)] mb-6">
             {t("auth.signup_disabled_message", "New registrations are currently not allowed.")}
           </p>
-          <Link
-            href="/auth/signin"
-            className="inline-flex items-center justify-center w-full text-sm font-medium px-4 py-2 rounded-[var(--radius)] bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors duration-100"
-          >
-            {t("nav.signin")}
-          </Link>
+          <Button asChild className="w-full">
+            <Link href="/auth/signin">{t("nav.signin")}</Link>
+          </Button>
         </div>
       </div>
     );
