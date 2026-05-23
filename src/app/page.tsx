@@ -9,7 +9,7 @@ import FileShare from "@/components/FileShare";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
@@ -17,7 +17,7 @@ export default function Home() {
   const { branding } = useTheme();
   const { status } = useSession();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const saved = localStorage.getItem("defaultTab");
     if (saved) setActiveTab(saved);
   }, []);
@@ -30,6 +30,8 @@ export default function Home() {
         if (d?.user?.defaultTab) {
           setActiveTab(d.user.defaultTab);
           localStorage.setItem("defaultTab", d.user.defaultTab);
+        } else {
+          localStorage.removeItem("defaultTab");
         }
       })
       .catch(() => {});
