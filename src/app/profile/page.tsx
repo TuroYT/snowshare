@@ -159,114 +159,35 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <Navigation />
-
-      <main className="flex-grow max-w-6xl mx-auto py-16 px-4 sm:px-6 lg:px-8 w-full">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1
-            className="text-5xl font-extrabold sm:text-6xl bg-clip-text text-transparent mb-4"
-            style={{
-              backgroundImage:
-                "linear-gradient(to right, var(--primary), var(--secondary), var(--primary))",
-            }}
-          >
-            {t("profile.title")}
-          </h1>
-          <p className="text-xl text-[var(--foreground)]">{t("profile.subtitle")}</p>
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10">
+        {/* Tab navigation */}
+        <div className="mb-8 border-b border-[var(--border)]">
+          <nav className="flex gap-0 -mb-px">
+            {[
+              { key: "profile", label: t("profile.tab_profile", "Profile") },
+              { key: "shares", label: t("profile.tab_shares", "Shares") },
+              { key: "accounts", label: t("profile.tab_accounts", "Linked accounts") },
+              { key: "apikeys", label: t("profile.tab_apikeys", "API Keys") },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key as typeof activeTab)}
+                className={[
+                  "px-4 py-2.5 text-sm border-b-2 transition-colors",
+                  activeTab === key
+                    ? "border-[var(--primary)] text-[var(--foreground)] font-medium"
+                    : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]",
+                ].join(" ")}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`modern-tab ${
-              activeTab === "profile" ? "modern-tab-active" : "modern-tab-inactive"
-            }`}
-          >
-            <svg
-              className="w-4 h-4 inline-block mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            {t("profile.tab_info")}
-          </button>
-          <button
-            onClick={() => setActiveTab("shares")}
-            className={`modern-tab ${
-              activeTab === "shares" ? "modern-tab-active" : "modern-tab-inactive"
-            }`}
-          >
-            <svg
-              className="w-4 h-4 inline-block mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-              />
-            </svg>
-            {t("profile.tab_shares")} ({shares.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("accounts")}
-            className={`modern-tab ${
-              activeTab === "accounts" ? "modern-tab-active" : "modern-tab-inactive"
-            }`}
-          >
-            <svg
-              className="w-4 h-4 inline-block mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-              />
-            </svg>
-            {t("profile.tab_accounts")}
-          </button>
-          <button
-            onClick={() => setActiveTab("apikeys")}
-            className={`modern-tab ${
-              activeTab === "apikeys" ? "modern-tab-active" : "modern-tab-inactive"
-            }`}
-          >
-            <svg
-              className="w-4 h-4 inline-block mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-              />
-            </svg>
-            {t("profile.tab_apikeys", "API Keys")}
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="mt-8 ">
+        <div>
           {activeTab === "profile" && user && <ProfileInfo user={user} onUpdate={setUser} />}
 
           {activeTab === "shares" && (
@@ -285,7 +206,6 @@ const ProfilePage = () => {
           {activeTab === "apikeys" && <ApiKeysSection />}
         </div>
       </main>
-
       <Footer />
     </div>
   );

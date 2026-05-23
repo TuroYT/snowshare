@@ -261,6 +261,7 @@
     "title": "Mon Profil",
     "subtitle": "Gérez vos informations personnelles et vos partages",
     "loading": "Chargement...",
+    "tab_profile": "Profil",
     "tab_info": "Informations personnelles",
     "tab_shares": "Mes partages",
     "tab_accounts": "Comptes connectés",

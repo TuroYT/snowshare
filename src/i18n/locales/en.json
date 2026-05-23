@@ -261,6 +261,7 @@
     "title": "My Profile",
     "subtitle": "Manage your personal information and shares",
     "loading": "Loading...",
+    "tab_profile": "Profile",
     "tab_info": "Personal information",
     "tab_shares": "My shares",
     "tab_accounts": "Connected accounts",
