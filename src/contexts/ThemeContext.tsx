@@ -71,18 +71,18 @@ export interface ThemeContextType {
 }
 
 const defaultColors: ThemeColors = {
-  primaryColor: "#3B82F6",
-  primaryHover: "#2563EB",
-  primaryDark: "#1E40AF",
-  secondaryColor: "#8B5CF6",
-  secondaryHover: "#7C3AED",
-  secondaryDark: "#6D28D9",
-  backgroundColor: "#111827",
+  primaryColor: "#3b82f6",
+  primaryHover: "#2563eb",
+  primaryDark: "#1e40af",
+  secondaryColor: "#64748b",
+  secondaryHover: "#475569",
+  secondaryDark: "#334155",
+  backgroundColor: "#fafaf9",
   backgroundImageUrl: null,
-  surfaceColor: "#1F2937",
-  textColor: "#F9FAFB",
-  textMuted: "#D1D5DB",
-  borderColor: "#374151",
+  surfaceColor: "#ffffff",
+  textColor: "#1c1917",
+  textMuted: "#78716c",
+  borderColor: "#e7e5e4",
 };
 
 const defaultBranding: BrandingSettings = {
@@ -145,7 +145,11 @@ export function ThemeProvider({
 
       setColors(newColors);
       setBranding(newBranding);
-      applyThemeToDOM(newColors);
+      const isDark =
+        document.documentElement.getAttribute("data-theme") === "dark" ||
+        (!document.documentElement.hasAttribute("data-theme") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      applyThemeToDOM(newColors, isDark);
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
     } catch (error) {
@@ -186,7 +190,11 @@ export function ThemeProvider({
 
       setColors(newColors);
       setBranding(newBranding);
-      applyThemeToDOM(newColors);
+      const isDark =
+        document.documentElement.getAttribute("data-theme") === "dark" ||
+        (!document.documentElement.hasAttribute("data-theme") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      applyThemeToDOM(newColors, isDark);
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
       setIsLoading(false);
@@ -288,27 +296,26 @@ function loadGoogleFont(fontFamily: string) {
 /**
  * Apply theme colors to CSS custom properties
  */
-function applyThemeToDOM(colors: ThemeColors) {
+function applyThemeToDOM(colors: ThemeColors, isDark = false) {
   const root = document.documentElement;
+  root.setAttribute("data-theme", isDark ? "dark" : "light");
 
-  // Primary colors
   root.style.setProperty("--primary", colors.primaryColor);
   root.style.setProperty("--primary-hover", colors.primaryHover);
   root.style.setProperty("--primary-dark", colors.primaryDark);
-
-  // Secondary colors
   root.style.setProperty("--secondary", colors.secondaryColor);
   root.style.setProperty("--secondary-hover", colors.secondaryHover);
   root.style.setProperty("--secondary-dark", colors.secondaryDark);
-
-  // Background colors
   root.style.setProperty("--background", colors.backgroundColor);
-  root.style.setProperty("--surface", hexToRgba(colors.surfaceColor, 0.85));
-  root.style.setProperty("--surface-hover", hexToRgba(colors.surfaceColor, 0.85));
+  root.style.setProperty("--surface", colors.surfaceColor);
+  root.style.setProperty("--surface-hover", hexShift(colors.surfaceColor, isDark ? 15 : -5));
   root.style.setProperty("--input", colors.surfaceColor);
   root.style.setProperty("--input-focus", colors.backgroundColor);
+  root.style.setProperty("--foreground", colors.textColor);
+  root.style.setProperty("--foreground-muted", colors.textMuted);
+  root.style.setProperty("--border", colors.borderColor);
+  root.style.setProperty("--border-hover", hexShift(colors.borderColor, isDark ? 25 : -15));
 
-  // Background image
   if (colors.backgroundImageUrl) {
     const img = new Image();
     const url = colors.backgroundImageUrl;
@@ -319,31 +326,11 @@ function applyThemeToDOM(colors: ThemeColors) {
       document.body.style.backgroundAttachment = "fixed";
       document.body.style.backgroundRepeat = "no-repeat";
     };
-    img.onerror = () => {
-      clearBodyBackground();
-    };
+    img.onerror = clearBodyBackground;
     img.src = url;
   } else {
     clearBodyBackground();
   }
-
-  // Text colors
-  root.style.setProperty("--foreground", colors.textColor);
-  root.style.setProperty("--foreground-muted", colors.textMuted);
-
-  // Border colors
-  root.style.setProperty("--border", hexToRgba(colors.borderColor, 0.7));
-  root.style.setProperty("--border-hover", hexToRgba(colors.borderColor, 0.85));
-
-  // Gradients
-  root.style.setProperty(
-    "--gradient-primary",
-    `linear-gradient(135deg, ${colors.primaryColor} 0%, ${colors.secondaryColor} 100%)`
-  );
-  root.style.setProperty(
-    "--gradient-secondary",
-    `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.secondaryDark} 100%)`
-  );
 }
 
 // Update document metadata (favicon, title) when branding changes
@@ -366,6 +353,20 @@ function applyBrandingMeta(branding: BrandingSettings) {
 }
 
 // (no-op outside React components)
+
+function hexShift(hex: string, delta: number): string {
+  if (!hex || !/^#[0-9A-Fa-f]{3,6}$/.test(hex)) return hex;
+  let h = hex.replace("#", "");
+  if (h.length === 3)
+    h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  const r = Math.min(255, Math.max(0, parseInt(h.slice(0, 2), 16) + delta));
+  const g = Math.min(255, Math.max(0, parseInt(h.slice(2, 4), 16) + delta));
+  const b = Math.min(255, Math.max(0, parseInt(h.slice(4, 6), 16) + delta));
+  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
 
 /**
  * Convert hex color to rgba
