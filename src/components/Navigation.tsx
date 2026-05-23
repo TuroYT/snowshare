@@ -5,450 +5,315 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect, SetStateAction } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/hooks/useTheme";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Button,
-  Menu,
-  MenuItem,
-  Avatar,
-  Box,
-  Typography,
-  Select,
-  SelectChangeEvent,
-  FormControl,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-} from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Person as PersonIcon,
-  AdminPanelSettings as AdminIcon,
-  ExitToApp as LogoutIcon,
-} from "@mui/icons-material";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { User, Settings, LogOut, Menu, X, Sun, Moon, Monitor } from "lucide-react";
 import { languages } from "@/i18n/client";
 
 export default function Navigation() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const { branding, colors } = useTheme();
+  const { branding } = useTheme();
+  const { theme, setTheme } = useColorScheme();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileMenuAnchor, setProfileMenuAnchor] = useState<null | HTMLElement>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [showSignupButton, setShowSignupButton] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showSignup, setShowSignup] = useState(true);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  // Fetch signup status from database
   useEffect(() => {
-    const fetchSignupStatus = async () => {
-      try {
-        const response = await fetch("/api/setup/check");
-        if (response.ok) {
-          const data = await response.json();
-          setShowSignupButton(data.allowSignup && data.onlySSOMode === false);
-        }
-      } catch (error) {
-        console.error("Error fetching signup status:", error);
-        setShowSignupButton(true); // Default to true on error
+    fetch("/api/setup/check")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d) setShowSignup(d.allowSignup && !d.onlySSOMode);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    fetch("/api/user/profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.user?.isAdmin) setIsAdmin(true);
+      });
+  }, [status]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     };
-
-    fetchSignupStatus();
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const handleSignOut = async () => {
     setMobileOpen(false);
-    setProfileMenuAnchor(null);
+    setProfileOpen(false);
     await signOut({ redirect: false });
     router.push("/");
   };
 
-  // Fetch user's profile to determine admin status (endpoint returns { isAdmin })
-  useEffect(() => {
-    if (status !== "authenticated") return;
-    fetch("/api/user/profile")
-      .then((res) => {
-        if (!res.ok) return null;
-        return res.json();
-      })
-      .then((data) => {
-        if (!data) return;
-        setIsAdmin(data.user.isAdmin);
-      });
-  }, [status]);
-
-  // changeLang optionally closes the mobile menu and persists choice to localStorage.
-  const changeLang = (lng: string, closeMenu = false) => {
+  const changeLang = (lng: string) => {
     i18n.changeLanguage(lng);
     try {
       localStorage.setItem("i18nextLng", lng);
-    } catch {
-      // ignore if not available
+    } catch (_) {
+      // localStorage may be unavailable (e.g. private browsing)
     }
-    if (closeMenu) setMobileOpen(false);
+    setMobileOpen(false);
   };
 
   const currentLang = (i18n.language || "en").split("-")[0];
 
-  if (status === "loading") {
-    return (
-      <AppBar position="sticky" sx={{ bgcolor: "var(--surface)", color: "var(--foreground)" }}>
-        <Toolbar>
-          <Typography suppressHydrationWarning>{t("loading")}</Typography>
-        </Toolbar>
-      </AppBar>
+  const cycleTheme = () => {
+    if (theme === "system") setTheme("light");
+    else if (theme === "light") setTheme("dark");
+    else setTheme("system");
+  };
+
+  const themeIcon =
+    theme === "dark" ? (
+      <Moon className="w-4 h-4" />
+    ) : theme === "light" ? (
+      <Sun className="w-4 h-4" />
+    ) : (
+      <Monitor className="w-4 h-4" />
     );
-  }
+
+  const initials =
+    session?.user?.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ??
+    session?.user?.email?.[0]?.toUpperCase() ??
+    "?";
 
   return (
     <>
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 95%, transparent)`,
-          borderBottom: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
-        }}
-      >
-        <Toolbar sx={{ maxWidth: "1280px", width: "100%", mx: "auto", px: { xs: 2, sm: 4 } }}>
-          <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-            <Link
-              href="/"
-              style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--surface)]">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          {/* Brand */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 shrink-0 text-[var(--foreground)] no-underline"
+          >
+            {branding.logoUrl ? (
+              <Image src={branding.logoUrl} alt="" width={24} height={24} className="rounded" />
+            ) : (
+              <Image src="/logo.svg" alt="" width={24} height={24} />
+            )}
+            <span className="font-semibold text-sm tracking-tight">{branding.appName}</span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden sm:flex items-center gap-1 ml-auto">
+            <select
+              value={currentLang}
+              onChange={(e) => changeLang(e.target.value)}
+              className="text-sm px-2 py-1 rounded-[var(--radius)] border border-[var(--border)] bg-transparent text-[var(--foreground-muted)] focus:outline-none focus:border-[var(--foreground)]"
             >
-              <Box sx={{ position: "relative" }}>
-                {branding.logoUrl ? (
-                  <Image
-                    src={branding.logoUrl}
-                    alt={`${branding.appName} Logo`}
-                    width={36}
-                    height={36}
-                    style={{ borderRadius: "50%", objectFit: "contain" }}
-                  />
-                ) : (
-                  <Image src="/logo.svg" alt={`${branding.appName} Logo`} width={36} height={36} />
-                )}
-              </Box>
-              <Typography
-                variant="h6"
-                component="span"
-                sx={{
-                  fontWeight: 700,
-                  background: `linear-gradient(to right, var(--primary), var(--secondary))`,
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  "&:hover": { opacity: 0.8 },
-                }}
-              >
-                {branding.appName}
-              </Typography>
-            </Link>
-          </Box>
+              {languages.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
 
-          {/* Desktop Navigation */}
-          <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 2 }}>
-            <FormControl size="small">
-              <Select
-                value={currentLang}
-                onChange={(e: SelectChangeEvent<string>) => changeLang(e.target.value)}
-                sx={{
-                  bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
-                  color: "var(--foreground)",
-                  border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
-                  borderRadius: "12px",
-                  minWidth: "80px",
-                  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                  "& .MuiSelect-select": { py: 1 },
-                }}
-              >
-                {languages.map((lng) => (
-                  <MenuItem key={lng.code} value={lng.code}>
-                    {lng.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <button
+              onClick={cycleTheme}
+              className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+              aria-label="Toggle theme"
+            >
+              {themeIcon}
+            </button>
 
-            {session ? (
-              <>
-                <IconButton
-                  onClick={(e: { currentTarget: SetStateAction<HTMLElement | null> }) =>
-                    setProfileMenuAnchor(e.currentTarget)
-                  }
-                  sx={{ p: 0 }}
+            {status === "authenticated" && session ? (
+              <div ref={profileRef} className="relative">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="w-8 h-8 rounded-full bg-[var(--primary)] text-white text-xs font-semibold overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
                 >
-                  <Avatar
-                    src={session.user?.image ?? undefined}
-                    sx={{
-                      background:
-                        "linear-gradient(to bottom right, var(--primary), var(--secondary))",
-                      width: 36,
-                      height: 36,
-                    }}
-                  >
-                    {session.user?.name
-                      ?.split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
-                  </Avatar>
-                </IconButton>
-                <Menu
-                  anchorEl={profileMenuAnchor}
-                  open={Boolean(profileMenuAnchor)}
-                  onClose={() => setProfileMenuAnchor(null)}
-                  disableScrollLock
-                  PaperProps={{
-                    sx: {
-                      bgcolor: "var(--surface)",
-                      border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
-                      borderRadius: "12px",
-                      minWidth: "220px",
-                    },
-                  }}
-                >
-                  <MenuItem
-                    component={Link}
-                    href="/profile"
-                    onClick={() => setProfileMenuAnchor(null)}
-                    sx={{ color: "var(--foreground)" }}
-                  >
-                    <ListItemIcon>
-                      <PersonIcon sx={{ color: "var(--primary)" }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t("nav.profile", "Mon Profil")} />
-                  </MenuItem>
-                  {isAdmin && [
-                    <Divider
-                      key="admin-divider"
-                      sx={{
-                        borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
-                      }}
-                    />,
-                    <MenuItem
-                      key="admin-item"
-                      component={Link}
-                      href="/admin"
-                      onClick={() => setProfileMenuAnchor(null)}
-                      sx={{ color: "var(--foreground)" }}
+                  {session.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    initials
+                  )}
+                </button>
+                {profileOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-52 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] py-1 z-50">
+                    <div className="px-3 py-2 text-xs text-[var(--foreground-muted)] border-b border-[var(--border)] truncate">
+                      {session.user?.name || session.user?.email}
+                    </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
                     >
-                      <ListItemIcon>
-                        <AdminIcon sx={{ color: "#f59e0b" }} />
-                      </ListItemIcon>
-                      <ListItemText primary={t("nav.admin", "Admin")} />
-                    </MenuItem>,
-                  ]}
-                  <Divider
-                    sx={{
-                      borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
-                    }}
-                  />
-                  <MenuItem onClick={handleSignOut} sx={{ color: "#f87171" }}>
-                    <ListItemIcon>
-                      <LogoutIcon sx={{ color: "#f87171" }} />
-                    </ListItemIcon>
-                    <ListItemText primary={t("nav.signout", "Déconnexion")} />
-                  </MenuItem>
-                </Menu>
-              </>
+                      <User className="w-4 h-4 text-[var(--foreground-muted)]" />
+                      {t("nav.profile", "Mon Profil")}
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+                      >
+                        <Settings className="w-4 h-4 text-[var(--foreground-muted)]" />
+                        {t("nav.admin", "Admin")}
+                      </Link>
+                    )}
+                    <div className="border-t border-[var(--border)] mt-1" />
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--surface-hover)] transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t("nav.signout", "Déconnexion")}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
-                <Button
-                  component={Link}
+                <Link
                   href="/auth/signin"
-                  sx={{
-                    color: "var(--foreground)",
-                    textTransform: "none",
-                    "&:hover": {
-                      bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
-                    },
-                  }}
+                  className="text-sm px-3 py-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors"
                 >
                   {t("nav.signin")}
-                </Button>
-                {showSignupButton && (
-                  <Button
-                    component={Link}
+                </Link>
+                {showSignup && (
+                  <Link
                     href="/auth/signup"
-                    variant="contained"
-                    sx={{
-                      background: "linear-gradient(to right, var(--primary), var(--secondary))",
-                      textTransform: "none",
-                      borderRadius: "12px",
-                      "&:hover": {
-                        boxShadow: "0 20px 25px -5px rgb(from var(--primary) r g b / 0.3)",
-                      },
-                    }}
+                    className="text-sm px-3 py-1.5 bg-[var(--primary)] text-white rounded-[var(--radius)] hover:bg-[var(--primary-hover)] transition-colors"
                   >
                     {t("nav.signup")}
-                  </Button>
+                  </Link>
                 )}
               </>
             )}
-          </Box>
+          </nav>
 
-          {/* Mobile Menu Button */}
-          <IconButton
-            sx={{ display: { xs: "flex", sm: "none" }, color: "var(--foreground)" }}
+          {/* Mobile burger */}
+          <button
+            className="sm:hidden p-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
             onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
           >
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
 
-      {/* Mobile Drawer */}
-      <Drawer
-        anchor="right"
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        disableScrollLock
-        PaperProps={{
-          sx: {
-            bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 98%, transparent)`,
-            color: "var(--foreground)",
-            width: "280px",
-          },
-        }}
-      >
-        <Box sx={{ p: 2 }}>
-          <FormControl fullWidth size="small">
-            <Select
-              value={currentLang}
-              onChange={(e: SelectChangeEvent<string>) => changeLang(e.target.value, true)}
-              sx={{
-                bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
-                color: "var(--foreground)",
-                border: `1px solid color-mix(in srgb, ${colors.borderColor} 50%, transparent)`,
-                borderRadius: "12px",
-                "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-              }}
-            >
-              {languages.map((lng) => (
-                <MenuItem key={lng.code} value={lng.code}>
-                  {lng.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+          <div className="relative ml-auto w-72 bg-[var(--surface)] h-full shadow-[var(--shadow-lg)] flex flex-col">
+            <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--border)]">
+              <span className="font-semibold text-sm">{branding.appName}</span>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="p-1 text-[var(--foreground-muted)]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+              <select
+                value={currentLang}
+                onChange={(e) => changeLang(e.target.value)}
+                className="w-full text-sm px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] focus:outline-none mb-3"
+              >
+                {languages.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
 
-        {session ? (
-          <List>
-            <ListItem sx={{ py: 2, px: 2 }}>
-              <Avatar
-                src={session.user?.image ?? undefined}
-                sx={{
-                  background: "linear-gradient(to bottom right, var(--primary), var(--secondary))",
-                  mr: 2,
-                }}
+              {status === "authenticated" && session ? (
+                <>
+                  <div className="text-xs text-[var(--foreground-subtle)] px-2 py-1 truncate">
+                    {session.user?.name || session.user?.email}
+                  </div>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                  >
+                    <User className="w-4 h-4" />
+                    {t("nav.profile", "Mon Profil")}
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                    >
+                      <Settings className="w-4 h-4" />
+                      {t("nav.admin", "Admin")}
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--destructive)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {t("nav.signout", "Déconnexion")}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    onClick={() => setMobileOpen(false)}
+                    className="block px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                  >
+                    {t("nav.signin")}
+                  </Link>
+                  {showSignup && (
+                    <Link
+                      href="/auth/signup"
+                      onClick={() => setMobileOpen(false)}
+                      className="block px-3 py-2 text-sm bg-[var(--primary)] text-white rounded-[var(--radius)] text-center"
+                    >
+                      {t("nav.signup")}
+                    </Link>
+                  )}
+                </>
+              )}
+            </nav>
+            <div className="border-t border-[var(--border)] p-3">
+              <button
+                onClick={cycleTheme}
+                className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] px-3 py-2 w-full rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
               >
-                {session.user?.name
-                  ?.split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase() || session.user?.email?.[0]?.toUpperCase()}
-              </Avatar>
-              <Typography variant="body2" noWrap>
-                {session.user?.name || session.user?.email}
-              </Typography>
-            </ListItem>
-            <Divider
-              sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }}
-            />
-            <ListItem
-              component={Link}
-              href="/profile"
-              onClick={() => setMobileOpen(false)}
-              sx={{
-                cursor: "pointer",
-                "&:hover": {
-                  bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
-                },
-              }}
-            >
-              <ListItemIcon>
-                <PersonIcon sx={{ color: "var(--primary)" }} />
-              </ListItemIcon>
-              <ListItemText primary={t("nav.profile", "Mon Profil")} />
-            </ListItem>
-            {isAdmin && (
-              <ListItem
-                component={Link}
-                href="/admin"
-                onClick={() => setMobileOpen(false)}
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": {
-                    bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <AdminIcon sx={{ color: "#f59e0b" }} />
-                </ListItemIcon>
-                <ListItemText primary={t("nav.admin", "Admin")} />
-              </ListItem>
-            )}
-            <Divider
-              sx={{ borderColor: `color-mix(in srgb, ${colors.borderColor} 50%, transparent)` }}
-            />
-            <ListItem
-              onClick={handleSignOut}
-              sx={{
-                cursor: "pointer",
-                "&:hover": { bgcolor: "rgba(220, 38, 38, 0.2)" },
-                color: "#f87171",
-              }}
-            >
-              <ListItemIcon>
-                <LogoutIcon sx={{ color: "#f87171" }} />
-              </ListItemIcon>
-              <ListItemText primary={t("nav.signout", "Déconnexion")} />
-            </ListItem>
-          </List>
-        ) : (
-          <List>
-            <ListItem
-              component={Link}
-              href="/auth/signin"
-              onClick={() => setMobileOpen(false)}
-              sx={{
-                cursor: "pointer",
-                "&:hover": {
-                  bgcolor: `color-mix(in srgb, ${colors.surfaceColor} 50%, transparent)`,
-                },
-              }}
-            >
-              <ListItemText primary={t("nav.signin")} />
-            </ListItem>
-            {showSignupButton && (
-              <ListItem
-                component={Link}
-                href="/auth/signup"
-                onClick={() => setMobileOpen(false)}
-                sx={{
-                  cursor: "pointer",
-                  background: "linear-gradient(to right, var(--primary), var(--secondary))",
-                  borderRadius: "12px",
-                  mx: 2,
-                  mt: 1,
-                }}
-              >
-                <ListItemText primary={t("nav.signup")} sx={{ textAlign: "center" }} />
-              </ListItem>
-            )}
-          </List>
-        )}
-      </Drawer>
+                {themeIcon}
+                <span>
+                  {theme === "dark"
+                    ? "Mode sombre"
+                    : theme === "light"
+                      ? "Mode clair"
+                      : "Automatique"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

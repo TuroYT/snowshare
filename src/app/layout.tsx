@@ -9,7 +9,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense } from "react";
 import "@/i18n/client";
 import { getPublicSettings } from "@/lib/settings";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export const revalidate = 0; // Disable caching for metadata
 
@@ -44,7 +44,7 @@ export default function RootLayout({
   const plausibleHost = process.env.PLAUSIBLE_HOST || "https://stats.sheephost.fr";
 
   return (
-    <html lang="fr" className="dark">
+    <html lang="fr" suppressHydrationWarning>
       <head>
         {/* Privacy-friendly analytics by Plausible - no cookies, GDPR compliant */}
         {/* Disable with TELEMETRY=false in .env */}
@@ -57,21 +57,14 @@ export default function RootLayout({
           enabled={telemetryEnabled}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{
-          backgroundColor: "var(--background)",
-          color: "var(--foreground)",
-          minHeight: "100vh",
-        }}
-      >
-        <AppRouterCacheProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <NextThemesProvider attribute="data-theme" defaultTheme="system" enableSystem>
           <NextAuthProvider>
             <Suspense fallback={<LoadingScreen />}>
               <ThemeInitializer>{children}</ThemeInitializer>
             </Suspense>
           </NextAuthProvider>
-        </AppRouterCacheProvider>
+        </NextThemesProvider>
       </body>
     </html>
   );
