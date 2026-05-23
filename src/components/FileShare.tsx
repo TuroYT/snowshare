@@ -350,13 +350,14 @@ const FileShare: React.FC = () => {
             }
           },
           onSuccess: () => {
-            if (shareSlug) {
-              setSuccess(`${window.location.origin}/f/${shareSlug}`);
-              setSuccessSlug(shareSlug);
-            } else {
-              setSuccess(t("fileshare.success_title", "File shared successfully!"));
+            if (!shareSlug) {
+              setError(t("fileshare.network_error", "Network error — could not create share"));
+              setLoading(false);
+              setUploadProgress(0);
+              return;
             }
-
+            setSuccess(`${window.location.origin}/f/${shareSlug}`);
+            setSuccessSlug(shareSlug);
             setFiles([]);
             setSlug("");
             setPassword("");
@@ -440,6 +441,8 @@ const FileShare: React.FC = () => {
             bytesUploadedSoFar += files[i].file.size;
           }
 
+          let fileProcessed = false;
+
           const upload = new tus.Upload(file, {
             endpoint: "/api/tus",
             retryDelays: [0, 1000, 3000, 5000, 10000],
@@ -488,12 +491,21 @@ const FileShare: React.FC = () => {
               const idHeader = res.getHeader("X-Share-Id");
               if (slugHeader) {
                 shareSlug = slugHeader;
+                fileProcessed = true;
               }
               if (idHeader) {
                 shareId = idHeader;
               }
             },
             onSuccess: () => {
+              if (!fileProcessed) {
+                setError(
+                  `${t("fileshare.file", "File")} ${index + 1}: ${t("fileshare.network_error", "Network error — could not create share")}`
+                );
+                setLoading(false);
+                setUploadProgress(0);
+                return;
+              }
               uploadNextFile(index + 1);
             },
           });
