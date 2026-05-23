@@ -156,12 +156,13 @@
   },
   "home": {
     "title": "Welkom bij SnowShare",
-    "description": "Deel je bestanden, code en URL's veilig en eenvoudig."
+    "description": "Deel je bestanden, code en URL's veilig en eenvoudig.",
+    "eyebrow": "Veilig delen"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Link",
+    "pasteshare": "Tekst",
+    "fileshare": "Bestand"
   },
   "linkshare": {
     "title": "Link delen",

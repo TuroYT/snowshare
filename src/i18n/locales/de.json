@@ -148,12 +148,13 @@
   },
   "home": {
     "title": "Willkommen bei SnowShare",
-    "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach."
+    "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach.",
+    "eyebrow": "Sicheres Teilen"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Link",
+    "pasteshare": "Text",
+    "fileshare": "Datei"
   },
   "linkshare": {
     "title": "Einen Link teilen",

@@ -152,12 +152,13 @@
   },
   "home": {
     "title": "Bienvenue sur SnowShare",
-    "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."
+    "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité.",
+    "eyebrow": "Partage sécurisé"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Lien",
+    "pasteshare": "Texte",
+    "fileshare": "Fichier"
   },
   "linkshare": {
     "title": "Partager un lien",

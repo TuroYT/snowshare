@@ -156,12 +156,13 @@
   },
   "home": {
     "title": "Witamy w SnowShare",
-    "description": "Udostępniaj pliki, kod i linki - łatwo i bezpiecznie."
+    "description": "Udostępniaj pliki, kod i linki - łatwo i bezpiecznie.",
+    "eyebrow": "Bezpieczne udostępnianie"
   },
   "tabs": {
-    "linkshare": "Udostępnianie linków",
-    "pasteshare": "Udostępnianie kodu",
-    "fileshare": "Udostępnianie plików"
+    "linkshare": "Link",
+    "pasteshare": "Tekst",
+    "fileshare": "Plik"
   },
   "linkshare": {
     "title": "Udostępnij link",

@@ -1,23 +1,20 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
-import { useState, useMemo, useEffect, useLayoutEffect } from "react";
-import { useSession } from "next-auth/react";
+import Footer from "@/components/Footer";
+import { Tabs, Tab } from "@/components/ui";
 import LinkShare from "@/components/LinkShare";
 import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
-import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
-
-const LINK_SHARE = <LinkShare />;
-const PASTE_SHARE = <PasteShare />;
-const FILE_SHARE = <FileShare />;
+import { useSession } from "next-auth/react";
+import { useState, useEffect, useLayoutEffect } from "react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
   const { t } = useTranslation();
-  const { colors, branding } = useTheme();
+  const { branding } = useTheme();
   const { status } = useSession();
 
   useLayoutEffect(() => {
@@ -28,79 +25,43 @@ export default function Home() {
   useEffect(() => {
     if (status !== "authenticated") return;
     fetch("/api/user/profile")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.user?.defaultTab) {
-          setActiveTab(data.user.defaultTab);
-          localStorage.setItem("defaultTab", data.user.defaultTab);
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.user?.defaultTab) {
+          setActiveTab(d.user.defaultTab);
+          localStorage.setItem("defaultTab", d.user.defaultTab);
         }
       })
       .catch(() => {});
   }, [status]);
 
-  const tabs = useMemo(
-    () => [
-      { id: "linkshare", label: t("tabs.linkshare", "LinkShare"), component: LINK_SHARE },
-      { id: "pasteshare", label: t("tabs.pasteshare", "PasteShare"), component: PASTE_SHARE },
-      { id: "fileshare", label: t("tabs.fileshare", "FileShare"), component: FILE_SHARE },
-    ],
-    [t]
-  );
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <Navigation />
-      <main
-        className={`${activeTab === "pasteshare" ? "max-w-[90rem]" : "max-w-6xl"} mx-auto py-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 w-full flex-grow`}
-      >
-        <div className="text-center">
-          {/* Hero Section */}
-          <div className="mb-12">
-            <h1
-              className="text-5xl font-extrabold sm:text-6xl md:text-7xl bg-clip-text text-transparent"
-              style={{
-                backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor}, ${colors.primaryColor})`,
-              }}
-            >
-              {branding.appName}
-            </h1>
-            <p className="mt-6 max-w-3xl mx-auto text-xl text-[var(--foreground)] leading-8">
-              {branding.appDescription}
-            </p>
-          </div>
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        {/* Hero */}
+        <div className="mb-10">
+          <p className="text-xs uppercase tracking-widest text-[var(--foreground-subtle)] mb-3">
+            {t("home.eyebrow", "Secure sharing")}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)] mb-3">
+            {branding.appName}
+          </h1>
+          <p className="text-[var(--foreground-muted)] max-w-lg">{branding.appDescription}</p>
+        </div>
 
-          {/* Tabs Section */}
-          <div className="mt-12">
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`group relative px-6 py-3 rounded-xl font-medium text-sm transition-all duration-300 ${
-                    activeTab === tab.id
-                      ? "text-white shadow-lg scale-105"
-                      : "bg-[var(--surface)]/50 text-[var(--foreground)] hover:bg-[var(--surface)]/70 hover:text-[var(--foreground)] hover:scale-105 border border-[var(--border)]/50"
-                  }`}
-                  style={
-                    activeTab === tab.id
-                      ? {
-                          backgroundImage: `linear-gradient(to right, ${colors.primaryColor}, ${colors.secondaryColor})`,
-                          boxShadow: `0 10px 15px -3px ${colors.primaryColor}40`,
-                        }
-                      : undefined
-                  }
-                >
-                  <span className="relative z-10">{tab.label}</span>
-                </button>
-              ))}
-            </div>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <Tab value="linkshare">{t("tabs.linkshare", "Link")}</Tab>
+          <Tab value="pasteshare">{t("tabs.pasteshare", "Text")}</Tab>
+          <Tab value="fileshare">{t("tabs.fileshare", "File")}</Tab>
+        </Tabs>
 
-            {/* Content Area */}
-
-            <div key={activeTab} className="flex justify-center animate-fade-in-up">
-              {tabs.find((tab) => tab.id === activeTab)?.component}
-            </div>
-          </div>
+        {/* Content */}
+        <div key={activeTab} className="animate-fade-in-up">
+          {activeTab === "linkshare" && <LinkShare />}
+          {activeTab === "pasteshare" && <PasteShare />}
+          {activeTab === "fileshare" && <FileShare />}
         </div>
       </main>
       <Footer />
