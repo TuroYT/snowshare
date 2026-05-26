@@ -11,6 +11,206 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { User, Settings, LogOut, Menu, X, Sun, Moon, Monitor } from "lucide-react";
 import { languages } from "@/i18n/client";
 
+interface ProfileDropdownProps {
+  session: ReturnType<typeof useSession>["data"];
+  isAdmin: boolean;
+  profileOpen: boolean;
+  setProfileOpen: (v: boolean) => void;
+  profileRef: React.RefObject<HTMLDivElement | null>;
+  handleSignOut: () => void;
+  initials: string;
+  t: (key: string, fallback?: string) => string;
+}
+
+function ProfileDropdown({
+  session,
+  isAdmin,
+  profileOpen,
+  setProfileOpen,
+  profileRef,
+  handleSignOut,
+  initials,
+  t,
+}: ProfileDropdownProps) {
+  return (
+    <div ref={profileRef} className="relative">
+      <button
+        onClick={() => setProfileOpen(!profileOpen)}
+        className="w-8 h-8 rounded-full bg-[var(--primary)] text-white text-xs font-semibold overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+      >
+        {session?.user?.image ? (
+          <Image
+            src={session.user.image}
+            alt=""
+            width={32}
+            height={32}
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          initials
+        )}
+      </button>
+      {profileOpen && (
+        <div className="absolute right-0 top-full mt-1.5 w-52 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] py-1 z-50">
+          <div className="px-3 py-2 text-xs text-[var(--foreground-muted)] border-b border-[var(--border)] truncate">
+            {session?.user?.name || session?.user?.email}
+          </div>
+          <Link
+            href="/profile"
+            onClick={() => setProfileOpen(false)}
+            className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            <User className="w-4 h-4 text-[var(--foreground-muted)]" />
+            {t("nav.profile", "Mon Profil")}
+          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setProfileOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+            >
+              <Settings className="w-4 h-4 text-[var(--foreground-muted)]" />
+              {t("nav.admin", "Admin")}
+            </Link>
+          )}
+          <div className="border-t border-[var(--border)] mt-1" />
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            {t("nav.signout", "Déconnexion")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface MobileDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  appName: string;
+  currentLang: string;
+  changeLang: (lng: string) => void;
+  status: string;
+  session: ReturnType<typeof useSession>["data"];
+  isAdmin: boolean;
+  handleSignOut: () => void;
+  theme: string;
+  cycleTheme: () => void;
+  themeIcon: React.ReactNode;
+  showSignup: boolean;
+  t: (key: string, fallback?: string) => string;
+}
+
+function MobileDrawer({
+  open,
+  onClose,
+  appName,
+  currentLang,
+  changeLang,
+  status,
+  session,
+  isAdmin,
+  handleSignOut,
+  theme,
+  cycleTheme,
+  themeIcon,
+  showSignup,
+  t,
+}: MobileDrawerProps) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative ml-auto w-72 bg-[var(--surface)] h-full shadow-[var(--shadow-lg)] flex flex-col">
+        <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--border)]">
+          <span className="font-semibold text-sm">{appName}</span>
+          <button onClick={onClose} className="p-1 text-[var(--foreground-muted)]">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          <select
+            value={currentLang}
+            onChange={(e) => changeLang(e.target.value)}
+            className="w-full text-sm px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] focus:outline-none mb-3"
+          >
+            {languages.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.label}
+              </option>
+            ))}
+          </select>
+          {status === "authenticated" && session ? (
+            <>
+              <div className="text-xs text-[var(--foreground-subtle)] px-2 py-1 truncate">
+                {session.user?.name || session.user?.email}
+              </div>
+              <Link
+                href="/profile"
+                onClick={onClose}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+              >
+                <User className="w-4 h-4" />
+                {t("nav.profile", "Mon Profil")}
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={onClose}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                >
+                  <Settings className="w-4 h-4" />
+                  {t("nav.admin", "Admin")}
+                </Link>
+              )}
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--destructive)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+              >
+                <LogOut className="w-4 h-4" />
+                {t("nav.signout", "Déconnexion")}
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth/signin"
+                onClick={onClose}
+                className="block px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+              >
+                {t("nav.signin")}
+              </Link>
+              {showSignup && (
+                <Link
+                  href="/auth/signup"
+                  onClick={onClose}
+                  className="block px-3 py-2 text-sm bg-[var(--primary)] text-white rounded-[var(--radius)] text-center"
+                >
+                  {t("nav.signup")}
+                </Link>
+              )}
+            </>
+          )}
+        </nav>
+        <div className="border-t border-[var(--border)] p-3">
+          <button
+            onClick={cycleTheme}
+            className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] px-3 py-2 w-full rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+          >
+            {themeIcon}
+            <span>
+              {theme === "dark" ? "Mode sombre" : theme === "light" ? "Mode clair" : "Automatique"}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Navigation() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -135,57 +335,16 @@ export default function Navigation() {
             </button>
 
             {status === "authenticated" && session ? (
-              <div ref={profileRef} className="relative">
-                <button
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="w-8 h-8 rounded-full bg-[var(--primary)] text-white text-xs font-semibold overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-                >
-                  {session.user?.image ? (
-                    <Image
-                      src={session.user.image}
-                      alt=""
-                      width={32}
-                      height={32}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    initials
-                  )}
-                </button>
-                {profileOpen && (
-                  <div className="absolute right-0 top-full mt-1.5 w-52 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] py-1 z-50">
-                    <div className="px-3 py-2 text-xs text-[var(--foreground-muted)] border-b border-[var(--border)] truncate">
-                      {session.user?.name || session.user?.email}
-                    </div>
-                    <Link
-                      href="/profile"
-                      onClick={() => setProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
-                    >
-                      <User className="w-4 h-4 text-[var(--foreground-muted)]" />
-                      {t("nav.profile", "Mon Profil")}
-                    </Link>
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
-                      >
-                        <Settings className="w-4 h-4 text-[var(--foreground-muted)]" />
-                        {t("nav.admin", "Admin")}
-                      </Link>
-                    )}
-                    <div className="border-t border-[var(--border)] mt-1" />
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--surface-hover)] transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {t("nav.signout", "Déconnexion")}
-                    </button>
-                  </div>
-                )}
-              </div>
+              <ProfileDropdown
+                session={session}
+                isAdmin={isAdmin}
+                profileOpen={profileOpen}
+                setProfileOpen={setProfileOpen}
+                profileRef={profileRef}
+                handleSignOut={handleSignOut}
+                initials={initials}
+                t={t}
+              />
             ) : (
               <>
                 <Link
@@ -218,102 +377,22 @@ export default function Navigation() {
       </header>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <div className="relative ml-auto w-72 bg-[var(--surface)] h-full shadow-[var(--shadow-lg)] flex flex-col">
-            <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--border)]">
-              <span className="font-semibold text-sm">{branding.appName}</span>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-1 text-[var(--foreground-muted)]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-              <select
-                value={currentLang}
-                onChange={(e) => changeLang(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] focus:outline-none mb-3"
-              >
-                {languages.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
-
-              {status === "authenticated" && session ? (
-                <>
-                  <div className="text-xs text-[var(--foreground-subtle)] px-2 py-1 truncate">
-                    {session.user?.name || session.user?.email}
-                  </div>
-                  <Link
-                    href="/profile"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
-                  >
-                    <User className="w-4 h-4" />
-                    {t("nav.profile", "Mon Profil")}
-                  </Link>
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
-                    >
-                      <Settings className="w-4 h-4" />
-                      {t("nav.admin", "Admin")}
-                    </Link>
-                  )}
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--destructive)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    {t("nav.signout", "Déconnexion")}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/auth/signin"
-                    onClick={() => setMobileOpen(false)}
-                    className="block px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
-                  >
-                    {t("nav.signin")}
-                  </Link>
-                  {showSignup && (
-                    <Link
-                      href="/auth/signup"
-                      onClick={() => setMobileOpen(false)}
-                      className="block px-3 py-2 text-sm bg-[var(--primary)] text-white rounded-[var(--radius)] text-center"
-                    >
-                      {t("nav.signup")}
-                    </Link>
-                  )}
-                </>
-              )}
-            </nav>
-            <div className="border-t border-[var(--border)] p-3">
-              <button
-                onClick={cycleTheme}
-                className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] px-3 py-2 w-full rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
-              >
-                {themeIcon}
-                <span>
-                  {theme === "dark"
-                    ? "Mode sombre"
-                    : theme === "light"
-                      ? "Mode clair"
-                      : "Automatique"}
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileDrawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        appName={branding.appName}
+        currentLang={currentLang}
+        changeLang={changeLang}
+        status={status}
+        session={session}
+        isAdmin={isAdmin}
+        handleSignOut={handleSignOut}
+        theme={theme}
+        cycleTheme={cycleTheme}
+        themeIcon={themeIcon}
+        showSignup={showSignup}
+        t={t}
+      />
     </>
   );
 }

@@ -93,6 +93,38 @@ const defaultBranding: BrandingSettings = {
   fontFamily: "Geist",
 };
 
+function parseSettings(settings: ThemeData["settings"]): {
+  colors: ThemeColors;
+  branding: BrandingSettings;
+} {
+  return {
+    colors: {
+      primaryColor: settings.primaryColor || defaultColors.primaryColor,
+      primaryHover: settings.primaryHover || defaultColors.primaryHover,
+      primaryDark: settings.primaryDark || defaultColors.primaryDark,
+      secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
+      secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
+      secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
+      backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
+      backgroundImageUrl:
+        settings.backgroundImageUrl !== undefined
+          ? settings.backgroundImageUrl
+          : defaultColors.backgroundImageUrl,
+      surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
+      textColor: settings.textColor || defaultColors.textColor,
+      textMuted: settings.textMuted || defaultColors.textMuted,
+      borderColor: settings.borderColor || defaultColors.borderColor,
+    },
+    branding: {
+      appName: settings.appName || defaultBranding.appName,
+      appDescription: settings.appDescription || defaultBranding.appDescription,
+      logoUrl: settings.logoUrl || null,
+      faviconUrl: settings.faviconUrl || null,
+      fontFamily: settings.fontFamily || defaultBranding.fontFamily,
+    },
+  };
+}
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({
@@ -115,33 +147,7 @@ export function ThemeProvider({
       }
 
       const data = await response.json();
-      const settings = data.settings;
-
-      const newColors: ThemeColors = {
-        primaryColor: settings.primaryColor || defaultColors.primaryColor,
-        primaryHover: settings.primaryHover || defaultColors.primaryHover,
-        primaryDark: settings.primaryDark || defaultColors.primaryDark,
-        secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
-        secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
-        secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
-        backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
-        backgroundImageUrl:
-          settings.backgroundImageUrl !== undefined
-            ? settings.backgroundImageUrl
-            : defaultColors.backgroundImageUrl,
-        surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
-        textColor: settings.textColor || defaultColors.textColor,
-        textMuted: settings.textMuted || defaultColors.textMuted,
-        borderColor: settings.borderColor || defaultColors.borderColor,
-      };
-
-      const newBranding: BrandingSettings = {
-        appName: settings.appName || defaultBranding.appName,
-        appDescription: settings.appDescription || defaultBranding.appDescription,
-        logoUrl: settings.logoUrl || null,
-        faviconUrl: settings.faviconUrl || null,
-        fontFamily: settings.fontFamily || defaultBranding.fontFamily,
-      };
+      const { colors: newColors, branding: newBranding } = parseSettings(data.settings);
 
       setColors(newColors);
       setBranding(newBranding);
@@ -161,33 +167,7 @@ export function ThemeProvider({
 
   useEffect(() => {
     if (initialData) {
-      const settings = initialData.settings;
-      const newColors: ThemeColors = {
-        primaryColor: settings.primaryColor || defaultColors.primaryColor,
-        primaryHover: settings.primaryHover || defaultColors.primaryHover,
-        primaryDark: settings.primaryDark || defaultColors.primaryDark,
-        secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
-        secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
-        secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
-        backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
-        backgroundImageUrl:
-          settings.backgroundImageUrl !== undefined
-            ? settings.backgroundImageUrl
-            : defaultColors.backgroundImageUrl,
-        surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
-        textColor: settings.textColor || defaultColors.textColor,
-        textMuted: settings.textMuted || defaultColors.textMuted,
-        borderColor: settings.borderColor || defaultColors.borderColor,
-      };
-
-      const newBranding: BrandingSettings = {
-        appName: settings.appName || defaultBranding.appName,
-        appDescription: settings.appDescription || defaultBranding.appDescription,
-        logoUrl: settings.logoUrl || null,
-        faviconUrl: settings.faviconUrl || null,
-        fontFamily: settings.fontFamily || defaultBranding.fontFamily,
-      };
-
+      const { colors: newColors, branding: newBranding } = parseSettings(initialData.settings);
       setColors(newColors);
       setBranding(newBranding);
       const isDark =
@@ -198,8 +178,6 @@ export function ThemeProvider({
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
       setIsLoading(false);
-
-      // Ensure we refresh settings on the client as well. In production
       void refreshSettings();
     } else {
       refreshSettings();

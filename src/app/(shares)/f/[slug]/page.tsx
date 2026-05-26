@@ -24,6 +24,87 @@ interface FileInfo {
   files?: FileListItem[];
 }
 
+function FilePasswordGate({
+  onSubmit,
+  password,
+  setPassword,
+  loading,
+  error,
+  t,
+}: {
+  onSubmit: (e: React.FormEvent) => void;
+  password: string;
+  setPassword: (v: string) => void;
+  loading: boolean;
+  error: string;
+  t: (key: string) => string;
+}) {
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4"
+    >
+      <p className="text-sm text-[var(--foreground-muted)]">
+        {t("file_download.password_protected")}
+      </p>
+      <Input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder={t("file_download.password_placeholder")}
+        error={error || undefined}
+      />
+      <Button type="submit" isLoading={loading} className="w-full">
+        {t("file_download.verify_password")}
+      </Button>
+    </form>
+  );
+}
+
+function BulkFileList({
+  files,
+  formatFileSize,
+  onFileClick,
+  t,
+}: {
+  files: FileListItem[];
+  formatFileSize: (bytes?: number) => string;
+  onFileClick: (f: FileListItem) => void;
+  t: (key: string, fallback?: string, opts?: Record<string, unknown>) => string;
+}) {
+  return (
+    <ul
+      className="divide-y divide-[var(--border)]"
+      role="list"
+      aria-label={t("file_download.files_list_aria", "Files in this share, {{count}} items", {
+        count: files.length,
+      })}
+    >
+      {files.map((f) => (
+        <li
+          key={f.path}
+          className="flex items-center justify-between py-2.5 gap-4 cursor-pointer hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded transition-colors"
+          aria-label={`${f.path}, ${formatFileSize(f.size)}`}
+          onClick={() => onFileClick(f)}
+        >
+          <div className="min-w-0">
+            <p className="text-sm text-[var(--foreground)] truncate">{f.name}</p>
+            <p className="text-xs text-[var(--foreground-muted)]">{formatFileSize(f.size)}</p>
+          </div>
+          <a
+            href={`/api/shares/fileShare/download?path=${encodeURIComponent(f.path)}`}
+            className="shrink-0 text-xs text-[var(--primary)] hover:underline"
+            download
+            onClick={(e) => e.stopPropagation()}
+          >
+            {t("file_download.download", "Download")}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function FileSharePage() {
   const { t } = useTranslation();
   const [password, setPassword] = useState("");
@@ -323,24 +404,14 @@ export default function FileSharePage() {
 
           {/* Password gate */}
           {fileInfo?.requiresPassword && !passwordSubmitted && (
-            <form
+            <FilePasswordGate
               onSubmit={handlePasswordSubmit}
-              className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4"
-            >
-              <p className="text-sm text-[var(--foreground-muted)]">
-                {t("file_download.password_protected")}
-              </p>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("file_download.password_placeholder")}
-                error={error || undefined}
-              />
-              <Button type="submit" isLoading={loading} className="w-full">
-                {t("file_download.verify_password")}
-              </Button>
-            </form>
+              password={password}
+              setPassword={setPassword}
+              loading={loading}
+              error={error}
+              t={t}
+            />
           )}
 
           {/* Download area */}
@@ -350,39 +421,12 @@ export default function FileSharePage() {
               {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
 
               {fileInfo.isBulk && fileInfo.files && fileInfo.files.length > 0 ? (
-                <ul
-                  className="divide-y divide-[var(--border)]"
-                  role="list"
-                  aria-label={t(
-                    "file_download.files_list_aria",
-                    "Files in this share, {{count}} items",
-                    { count: fileInfo.files.length }
-                  )}
-                >
-                  {fileInfo.files.map((f) => (
-                    <li
-                      key={f.path}
-                      className="flex items-center justify-between py-2.5 gap-4 cursor-pointer hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded transition-colors"
-                      aria-label={`${f.path}, ${formatFileSize(f.size)}`}
-                      onClick={() => handleFileClick(f)}
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm text-[var(--foreground)] truncate">{f.name}</p>
-                        <p className="text-xs text-[var(--foreground-muted)]">
-                          {formatFileSize(f.size)}
-                        </p>
-                      </div>
-                      <a
-                        href={`/api/shares/fileShare/download?path=${encodeURIComponent(f.path)}`}
-                        className="shrink-0 text-xs text-[var(--primary)] hover:underline"
-                        download
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {t("file_download.download", "Download")}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <BulkFileList
+                  files={fileInfo.files}
+                  formatFileSize={formatFileSize}
+                  onFileClick={handleFileClick}
+                  t={t}
+                />
               ) : (
                 <>
                   {/* Single file preview button */}

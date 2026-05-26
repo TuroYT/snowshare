@@ -38,6 +38,28 @@ interface BrandingSettings {
   fontFamily: string;
 }
 
+function mapBrandingFromApi(s: Record<string, string | null>): BrandingSettings {
+  return {
+    appName: s.appName || "SnowShare",
+    appDescription: s.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    logoUrl: s.logoUrl || null,
+    faviconUrl: s.faviconUrl || null,
+    primaryColor: s.primaryColor || "#3B82F6",
+    primaryHover: s.primaryHover || "#2563EB",
+    primaryDark: s.primaryDark || "#1E40AF",
+    secondaryColor: s.secondaryColor || "#8B5CF6",
+    secondaryHover: s.secondaryHover || "#7C3AED",
+    secondaryDark: s.secondaryDark || "#6D28D9",
+    backgroundColor: s.backgroundColor || "#111827",
+    backgroundImageUrl: s.backgroundImageUrl || null,
+    surfaceColor: s.surfaceColor || "#1F2937",
+    textColor: s.textColor || "#F9FAFB",
+    textMuted: s.textMuted || "#D1D5DB",
+    borderColor: s.borderColor || "#374151",
+    fontFamily: s.fontFamily || "Geist",
+  };
+}
+
 export default function BrandingTab() {
   const { t } = useTranslation();
   const { updateTheme, refreshSettings } = useTheme();
@@ -125,26 +147,7 @@ export default function BrandingTab() {
       const response = await fetch("/api/admin/settings");
       if (!response.ok) throw new Error("Failed to fetch settings");
       const data = await response.json();
-      setSettings({
-        appName: data.settings.appName || "SnowShare",
-        appDescription:
-          data.settings.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
-        logoUrl: data.settings.logoUrl || null,
-        faviconUrl: data.settings.faviconUrl || null,
-        primaryColor: data.settings.primaryColor || "#3B82F6",
-        primaryHover: data.settings.primaryHover || "#2563EB",
-        primaryDark: data.settings.primaryDark || "#1E40AF",
-        secondaryColor: data.settings.secondaryColor || "#8B5CF6",
-        secondaryHover: data.settings.secondaryHover || "#7C3AED",
-        secondaryDark: data.settings.secondaryDark || "#6D28D9",
-        backgroundColor: data.settings.backgroundColor || "#111827",
-        backgroundImageUrl: data.settings.backgroundImageUrl || null,
-        surfaceColor: data.settings.surfaceColor || "#1F2937",
-        textColor: data.settings.textColor || "#F9FAFB",
-        textMuted: data.settings.textMuted || "#D1D5DB",
-        borderColor: data.settings.borderColor || "#374151",
-        fontFamily: data.settings.fontFamily || "Geist",
-      });
+      setSettings(mapBrandingFromApi(data.settings));
     } catch (err) {
       toast.error(t("admin.error_load_data"));
       console.error(err);

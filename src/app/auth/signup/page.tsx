@@ -171,28 +171,31 @@ export default function SignUp() {
     );
   }
 
+  const validateForm = (): string | null => {
+    if (password !== confirmPassword) return t("auth.error_passwords_mismatch");
+    if (password.length < 6) return t("auth.error_password_too_short");
+    if (captchaEnabled && !captchaToken) return t("auth.error_captcha_required");
+    return null;
+  };
+
+  const resetCaptcha = () => {
+    if (captchaProvider === "recaptcha" && window.grecaptcha) {
+      window.grecaptcha.reset(captchaWidgetId.current as number);
+    } else if (captchaProvider === "turnstile" && window.turnstile) {
+      window.turnstile.reset(captchaWidgetId.current as string);
+    }
+    setCaptchaToken("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setLoading(true);
     setError("");
-
-    if (password !== confirmPassword) {
-      setError(t("auth.error_passwords_mismatch"));
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      setError(t("auth.error_password_too_short"));
-      setLoading(false);
-      return;
-    }
-
-    if (captchaEnabled && !captchaToken) {
-      setError(t("auth.error_captcha_required"));
-      setLoading(false);
-      return;
-    }
 
     try {
       const response = await fetch("/api/auth/register", {
@@ -228,15 +231,7 @@ export default function SignUp() {
         }
       } else {
         setError(data.error || t("auth.error_generic").replace(" : ", ""));
-        // Reset CAPTCHA on error
-        if (captchaEnabled) {
-          if (captchaProvider === "recaptcha" && window.grecaptcha) {
-            window.grecaptcha.reset(captchaWidgetId.current as number);
-          } else if (captchaProvider === "turnstile" && window.turnstile) {
-            window.turnstile.reset(captchaWidgetId.current as string);
-          }
-          setCaptchaToken("");
-        }
+        if (captchaEnabled) resetCaptcha();
       }
     } catch {
       setError(t("auth.error_generic").replace(" : ", ""));
