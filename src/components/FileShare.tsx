@@ -533,7 +533,7 @@ const FileShare: React.FC = () => {
 
   return (
     <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
-      <div className="flex items-center gap-4 mb-6 justify-center">
+      <div className="flex items-center gap-4 mb-6">
         <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
           <svg
             className="w-6 h-6 text-[var(--primary)]"
