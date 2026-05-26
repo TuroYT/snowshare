@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,8 +11,6 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, children, title, size = "lg" }: ModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -56,7 +54,6 @@ export default function Modal({ isOpen, onClose, children, title, size = "lg" }:
       }}
     >
       <div
-        ref={modalRef}
         className={`relative w-full ${sizeClasses[size]} max-h-[90vh] bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border border-[var(--border)] animate-scale-in overflow-hidden flex flex-col`}
       >
         {/* Header */}

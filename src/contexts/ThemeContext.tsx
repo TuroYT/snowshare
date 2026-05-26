@@ -344,35 +344,3 @@ function applyBrandingMeta(branding: BrandingSettings) {
     }
   }
 }
-
-// (no-op outside React components)
-
-/**
- * Convert hex color to rgba
- */
-function _hexToRgba(hex: string, alpha: number): string {
-  // Handle empty or invalid hex values
-  if (!hex || typeof hex !== "string") {
-    return `rgba(0, 0, 0, ${alpha})`;
-  }
-
-  hex = hex.replace("#", "");
-
-  // Validate hex format (must be 3 or 6 characters and all hex digits)
-  if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex)) {
-    return `rgba(0, 0, 0, ${alpha})`;
-  }
-
-  if (hex.length === 3) {
-    hex = hex
-      .split("")
-      .map((char) => char + char)
-      .join("");
-  }
-
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
