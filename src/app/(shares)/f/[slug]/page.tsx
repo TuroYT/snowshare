@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { formatBytes } from "@/lib/formatSize";
@@ -37,7 +38,7 @@ function FilePasswordGate({
   setPassword: (v: string) => void;
   loading: boolean;
   error: string;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   return (
     <form
@@ -70,7 +71,7 @@ function BulkFileList({
   files: FileListItem[];
   formatFileSize: (bytes?: number) => string;
   onFileClick: (f: FileListItem) => void;
-  t: (key: string, fallback?: string, opts?: Record<string, unknown>) => string;
+  t: TFunction;
 }) {
   return (
     <ul
