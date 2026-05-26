@@ -160,9 +160,12 @@ export default function SignUp() {
           <p className="text-sm text-[var(--foreground-muted)] mb-6">
             {t("auth.signup_disabled_message", "New registrations are currently not allowed.")}
           </p>
-          <Button asChild className="w-full">
-            <Link href="/auth/signin">{t("nav.signin")}</Link>
-          </Button>
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center justify-center w-full px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors"
+          >
+            {t("nav.signin")}
+          </Link>
         </div>
       </div>
     );

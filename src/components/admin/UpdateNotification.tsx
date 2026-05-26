@@ -60,7 +60,7 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Prop
   }
 
   return (
-    <div className="mb-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl">
+    <div className="mb-6 p-4 bg-[var(--primary)]/10 border border-[var(--primary)]/30 rounded-xl">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="p-2 bg-blue-500/20 rounded-lg shrink-0">

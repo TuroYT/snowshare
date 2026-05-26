@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Snackbar, Alert as MuiAlert } from "@mui/material";
+import { toast } from "@/components/ui/Toast";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { useTranslation } from "react-i18next";
@@ -62,9 +62,6 @@ export default function BrandingTab() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastErrorOpen, setToastErrorOpen] = useState(false);
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const [formData, setFormData] = useState({ name: "", url: "" });
   const [errors, setErrors] = useState({ name: "", url: "" });
@@ -82,8 +79,7 @@ export default function BrandingTab() {
   const validateSettingsBeforeSave = (): boolean => {
     // Required text fields
     if (!settings.appName?.trim() || !settings.appDescription?.trim()) {
-      setError(t("admin.validation_required"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.validation_required"));
       return false;
     }
 
@@ -105,25 +101,21 @@ export default function BrandingTab() {
     for (const key of colorKeys) {
       const val = settings[key] as string;
       if (!val || !isHexColor(val)) {
-        setError(t("admin.validation_invalid_color"));
-        setToastErrorOpen(true);
+        toast.error(t("admin.validation_invalid_color"));
         return false;
       }
     }
 
     // Optional URLs when provided
     if (settings.logoUrl && !isValidUrl(settings.logoUrl)) {
-      setError(t("admin.validation_invalid_url"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.validation_invalid_url"));
       return false;
     }
     if (settings.faviconUrl && !isValidUrl(settings.faviconUrl)) {
-      setError(t("admin.validation_invalid_url"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.validation_invalid_url"));
       return false;
     }
 
-    setError(null);
     return true;
   };
 
@@ -153,10 +145,8 @@ export default function BrandingTab() {
         borderColor: data.settings.borderColor || "#374151",
         fontFamily: data.settings.fontFamily || "Geist",
       });
-      setError(null);
     } catch (err) {
-      setError(t("admin.error_load_data"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.error_load_data"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -228,10 +218,9 @@ export default function BrandingTab() {
       setCustomLinks([...customLinks, data.link]);
       setFormData({ name: "", url: "" });
       setErrors({ name: "", url: "" });
-      setToastOpen(true);
+      toast.success(t("admin.save_success"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("admin.links.error_add"));
-      setToastErrorOpen(true);
+      toast.error(err instanceof Error ? err.message : t("admin.links.error_add"));
       console.error(err);
     }
   };
@@ -247,10 +236,9 @@ export default function BrandingTab() {
       if (!response.ok) throw new Error("Failed to delete link");
 
       setCustomLinks(customLinks.filter((link) => link.id !== id));
-      setToastOpen(true);
+      toast.success(t("admin.save_success"));
     } catch (err) {
-      setError(t("admin.links.error_delete"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.links.error_delete"));
       console.error(err);
     }
   };
@@ -298,12 +286,10 @@ export default function BrandingTab() {
       });
 
       // Show toast and refresh theme (metadata + favicon) without full reload
-      setToastOpen(true);
-      setError(null);
+      toast.success(t("admin.save_success"));
       await refreshSettings();
     } catch (err) {
-      setError(t("admin.save_error"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.save_error"));
       console.error(err);
     } finally {
       setSaving(false);
@@ -386,28 +372,6 @@ export default function BrandingTab() {
   return (
     <SkeletonTransition loading={loading} skeleton={skeleton} className="w-full">
       <div className="space-y-6 w-full">
-        <Snackbar
-          open={toastOpen}
-          autoHideDuration={1200}
-          onClose={() => setToastOpen(false)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <MuiAlert elevation={6} variant="filled" severity="success" sx={{ width: "100%" }}>
-            {t("admin.save_success")}
-          </MuiAlert>
-        </Snackbar>
-
-        <Snackbar
-          open={toastErrorOpen}
-          autoHideDuration={3000}
-          onClose={() => setToastErrorOpen(false)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <MuiAlert elevation={6} variant="filled" severity="error" sx={{ width: "100%" }}>
-            {error || t("admin.save_error")}
-          </MuiAlert>
-        </Snackbar>
-
         {/* App Identity */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-4">

@@ -107,7 +107,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold text-[var(--foreground)] mb-2">
               {t("admin.title")} - v{versionInfo?.currentVersion ?? "loading..."}
             </h1>
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>

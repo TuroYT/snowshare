@@ -32,7 +32,7 @@ export default function SharesList({ shares, onDelete, onUpdate }: SharesListPro
     return (
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-12 text-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-gray-700/20 to-gray-800/20 border border-[var(--border)]/50 flex items-center justify-center">
+          <div className="h-16 w-16 rounded-xl bg-[var(--surface-hover)] border border-[var(--border)]/50 flex items-center justify-center">
             <svg
               className="w-8 h-8 text-[var(--foreground-muted)]"
               fill="none"

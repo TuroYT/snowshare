@@ -24,9 +24,17 @@ export default function Footer() {
   return (
     <footer className="mt-auto border-t border-[var(--border)] bg-[var(--surface)]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-[var(--foreground-subtle)]">
-          © {year} {branding.appName}
-        </p>
+        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-sm text-[var(--foreground-subtle)]">
+          <span>
+            © {year} {branding.appName}
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span>{t("footer.all_rights_reserved", "Tous droits réservés")}</span>
+          <span className="hidden sm:inline">·</span>
+          <span>
+            {t("footer.powered_by", "Powered by")} {branding.appName}
+          </span>
+        </div>
         <nav className="flex flex-wrap items-center gap-4 justify-center">
           {customLinks.length > 0 ? (
             customLinks.map((l) => (

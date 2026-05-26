@@ -72,12 +72,12 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
                 onChange={(e) => setNeverExpires(e.target.checked)}
                 className="sr-only"
               />
-              <div className={`toggle-slider ${neverExpires ? "toggle-slider-active" : ""}`}>
-                <div
-                  className={`toggle-slider-thumb ${
-                    neverExpires ? "toggle-slider-thumb-active" : ""
-                  }`}
-                ></div>
+              <div
+                className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${neverExpires ? "bg-[var(--primary)]" : "bg-[var(--border-hover)]"}`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${neverExpires ? "translate-x-4" : ""}`}
+                />
               </div>
             </div>
             <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
             value={expiresDays}
             onChange={(e) => setExpiresDays(Number(e.target.value))}
             disabled={isAuthenticated && neverExpires}
-            className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
         <span className="text-sm text-[var(--foreground-muted)] min-w-0">

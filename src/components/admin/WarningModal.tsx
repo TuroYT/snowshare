@@ -1,6 +1,5 @@
 "use client";
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
 interface WarningModalProps {
@@ -24,109 +23,66 @@ export default function WarningModal({
 }: WarningModalProps) {
   const { t } = useTranslation();
 
+  if (!open) return null;
+
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      maxWidth="sm"
-      fullWidth
-      disableScrollLock
-      slotProps={{
-        backdrop: {
-          style: {
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            opacity: 1,
-          },
-        },
-        paper: {
-          style: {
-            backgroundColor: "var(--surface)",
-            color: "var(--foreground)",
-            border: "1px solid var(--border)",
-            backdropFilter: "none",
-            opacity: 1,
-          },
-        },
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <DialogTitle
-        style={{
-          color: "var(--foreground)",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          backgroundColor: "var(--surface)",
-        }}
-      >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          style={{ color: "var(--primary-hover)" }}
+      <div className="relative w-full max-w-sm bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden">
+        {/* Header */}
+        <div
+          className="flex items-center gap-2 px-4 py-3 border-b border-[var(--border)]"
+          style={{ backgroundColor: "var(--surface)" }}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-        {title}
-      </DialogTitle>
-      <DialogContent
-        style={{
-          paddingTop: "1rem",
-          backgroundColor: "var(--surface)",
-          opacity: 1,
-        }}
-      >
-        <p
-          style={{
-            color: "var(--foreground)",
-            lineHeight: "1.6",
-            whiteSpace: "pre-line",
-          }}
-        >
-          {message}
-        </p>
-      </DialogContent>
-      <DialogActions
-        style={{
-          padding: "1rem",
-          borderTop: "1px solid var(--border)",
-          backgroundColor: "var(--surface)",
-          opacity: 1,
-        }}
-      >
-        <Button
-          onClick={onCancel}
-          style={{
-            color: "var(--foreground-muted)",
-            textTransform: "none",
-          }}
-        >
-          {cancelText || t("common.cancel")}
-        </Button>
-        <Button
-          onClick={onConfirm}
-          variant="contained"
-          style={{
-            backgroundColor: "var(--primary)",
-            color: "white",
-            textTransform: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--primary-hover)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--primary)";
-          }}
-        >
-          {confirmText || t("common.confirm")}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <svg
+            className="w-6 h-6 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ color: "var(--primary-hover)" }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <span className="font-semibold text-[var(--foreground)]">{title}</span>
+        </div>
+
+        {/* Content */}
+        <div className="px-4 py-4">
+          <p className="text-[var(--foreground)] leading-relaxed whitespace-pre-line">{message}</p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--border)]">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground-muted)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            {cancelText || t("common.cancel")}
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+            style={{ backgroundColor: "var(--primary)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--primary-hover)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--primary)";
+            }}
+          >
+            {confirmText || t("common.confirm")}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

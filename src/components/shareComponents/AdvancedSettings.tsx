@@ -62,7 +62,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               pattern="[a-zA-Z0-9-_]+"
-              className="input-paste flex-1 w-full"
+              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] flex-1"
             />
           </div>
           <p className="text-xs text-[var(--foreground-muted)] mt-1">
@@ -93,7 +93,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
               )}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-paste w-full pr-10"
+              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] pr-10"
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
               <svg

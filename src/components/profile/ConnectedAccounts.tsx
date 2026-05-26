@@ -192,7 +192,7 @@ export default function ConnectedAccounts() {
       <>
         <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center modern-icon-blue">
+            <div className="h-12 w-12 rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/10 flex items-center justify-center">
               <svg
                 className="w-6 h-6 text-[var(--primary)]"
                 fill="none"

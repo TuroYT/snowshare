@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import MDEditor from "@uiw/react-md-editor";
-import { Snackbar, Alert } from "@mui/material";
+import { toast } from "@/components/ui/Toast";
 import WarningModal from "./WarningModal";
 import GeneralSection from "./GeneralSection";
 import CaptchaSection from "./CaptchaSection";
@@ -54,9 +54,6 @@ export default function SettingsTab() {
   const [hasActiveSSO, setHasActiveSSO] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   const fetchSettings = useCallback(async () => {
@@ -94,9 +91,7 @@ export default function SettingsTab() {
         s3SecretAccessKey: data.settings.s3SecretAccessKey ?? null,
       });
     } catch (err) {
-      setToastMessage(t("admin.error_load_data"));
-      setToastSeverity("error");
-      setToastOpen(true);
+      toast.error(t("admin.error_load_data"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -132,13 +127,9 @@ export default function SettingsTab() {
       if (!response.ok) throw new Error("Failed to save settings");
       const data = await response.json();
       setSettings(data.settings);
-      setToastMessage(t("admin.save_success"));
-      setToastSeverity("success");
-      setToastOpen(true);
+      toast.success(t("admin.save_success"));
     } catch (err) {
-      setToastMessage(t("admin.save_error"));
-      setToastSeverity("error");
-      setToastOpen(true);
+      toast.error(t("admin.save_error"));
       console.error(err);
     } finally {
       setSaving(false);
@@ -185,16 +176,6 @@ export default function SettingsTab() {
             onConfirm={handleConfirmDisableCredentials}
             onCancel={() => setShowWarningModal(false)}
           />
-
-          <Snackbar open={toastOpen} autoHideDuration={3000} onClose={() => setToastOpen(false)}>
-            <Alert
-              onClose={() => setToastOpen(false)}
-              severity={toastSeverity}
-              sx={{ width: "100%" }}
-            >
-              {toastMessage}
-            </Alert>
-          </Snackbar>
 
           <GeneralSection
             settings={settings}

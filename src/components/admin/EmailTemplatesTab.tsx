@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Snackbar, Alert as MuiAlert, CircularProgress } from "@mui/material";
+import { Spinner } from "@/components/ui/Spinner";
+import { toast } from "@/components/ui/Toast";
 import { useTranslation } from "react-i18next";
 
 type EmailType = "share" | "verify";
@@ -54,11 +55,6 @@ export default function EmailTemplatesTab() {
   const [saving, setSaving] = useState(false);
   const [testSending, setTestSending] = useState(false);
 
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastErrorOpen, setToastErrorOpen] = useState(false);
-  const [toastTestOpen, setToastTestOpen] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -74,8 +70,7 @@ export default function EmailTemplatesTab() {
       setDefaults(data.defaults);
     } catch (err) {
       console.error(err);
-      setErrorMsg(t("admin.email_templates.error_load", "Failed to load email templates."));
-      setToastErrorOpen(true);
+      toast.error(t("admin.email_templates.error_load", "Failed to load email templates."));
     } finally {
       setLoading(false);
     }
@@ -167,11 +162,10 @@ export default function EmailTemplatesTab() {
       if (!res.ok) throw new Error("Save failed");
       const data = await res.json();
       setTemplates((prev) => ({ ...prev, ...data.templates }));
-      setToastOpen(true);
+      toast.success(t("admin.save_success", "Changes saved successfully"));
     } catch (err) {
       console.error(err);
-      setErrorMsg(t("admin.save_error", "Error saving changes"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.save_error", "Error saving changes"));
     } finally {
       setSaving(false);
     }
@@ -202,11 +196,10 @@ export default function EmailTemplatesTab() {
       if (!res.ok) throw new Error("Reset failed");
       const data = await res.json();
       setTemplates((prev) => ({ ...prev, ...data.templates }));
-      setToastOpen(true);
+      toast.success(t("admin.save_success", "Changes saved successfully"));
     } catch (err) {
       console.error(err);
-      setErrorMsg(t("admin.save_error", "Error saving changes"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.save_error", "Error saving changes"));
     } finally {
       setSaving(false);
     }
@@ -231,11 +224,10 @@ export default function EmailTemplatesTab() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err?.error || "Send failed");
       }
-      setToastTestOpen(true);
+      toast.success(t("admin.email_templates.test_sent", "Test email sent to your address."));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setErrorMsg(msg || t("admin.email_templates.test_error", "Failed to send test email."));
-      setToastErrorOpen(true);
+      toast.error(msg || t("admin.email_templates.test_error", "Failed to send test email."));
     } finally {
       setTestSending(false);
     }
@@ -246,7 +238,7 @@ export default function EmailTemplatesTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <CircularProgress size={40} />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -367,7 +359,7 @@ export default function EmailTemplatesTab() {
             <h3 className="text-sm font-semibold text-[var(--foreground)]">
               {t("admin.email_templates.preview_title", "Live Preview")}
             </h3>
-            {previewLoading && <CircularProgress size={16} />}
+            {previewLoading && <Spinner size="sm" />}
           </div>
 
           {preview && (
@@ -407,40 +399,6 @@ export default function EmailTemplatesTab() {
           )}
         </div>
       </div>
-
-      {/* Toasts */}
-      <Snackbar
-        open={toastOpen}
-        autoHideDuration={3000}
-        onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert severity="success" onClose={() => setToastOpen(false)}>
-          {t("admin.save_success", "Changes saved successfully")}
-        </MuiAlert>
-      </Snackbar>
-
-      <Snackbar
-        open={toastTestOpen}
-        autoHideDuration={4000}
-        onClose={() => setToastTestOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert severity="success" onClose={() => setToastTestOpen(false)}>
-          {t("admin.email_templates.test_sent", "Test email sent to your address.")}
-        </MuiAlert>
-      </Snackbar>
-
-      <Snackbar
-        open={toastErrorOpen}
-        autoHideDuration={5000}
-        onClose={() => setToastErrorOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <MuiAlert severity="error" onClose={() => setToastErrorOpen(false)}>
-          {errorMsg}
-        </MuiAlert>
-      </Snackbar>
     </div>
   );
 }

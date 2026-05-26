@@ -371,7 +371,7 @@ function hexShift(hex: string, delta: number): string {
 /**
  * Convert hex color to rgba
  */
-function hexToRgba(hex: string, alpha: number): string {
+function _hexToRgba(hex: string, alpha: number): string {
   // Handle empty or invalid hex values
   if (!hex || typeof hex !== "string") {
     return `rgba(0, 0, 0, ${alpha})`;

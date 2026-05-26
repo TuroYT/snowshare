@@ -106,11 +106,11 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   const getTypeIconClass = () => {
     switch (share.type) {
       case "FILE":
-        return "modern-icon-purple text-[var(--secondary)]";
+        return "bg-[var(--secondary)]/10 border-[var(--secondary)]/30 text-[var(--secondary)]";
       case "PASTE":
-        return "modern-icon-blue text-[var(--primary)]";
+        return "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)]";
       case "URL":
-        return "modern-icon-green text-emerald-400";
+        return "bg-emerald-500/10 border-emerald-700/30 text-emerald-400";
     }
   };
 
@@ -136,7 +136,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
       <div className="flex flex-col md:flex-row gap-4">
         {/* Icon and Type */}
         <div
-          className={`h-12 w-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${isExpired ? "modern-icon-red text-red-400" : getTypeIconClass()}`}
+          className={`h-12 w-12 rounded-xl border flex items-center justify-center flex-shrink-0 ${isExpired ? "bg-red-500/10 border-red-700/50 text-red-400" : getTypeIconClass()}`}
         >
           {getTypeIcon()}
         </div>
