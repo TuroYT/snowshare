@@ -287,7 +287,7 @@ export default function BrandingTab() {
 
       // Show toast and refresh theme (metadata + favicon) without full reload
       toast.success(t("admin.save_success"));
-      await refreshSettings();
+      await refreshSettings({ force: true });
     } catch (err) {
       toast.error(t("admin.save_error"));
       console.error(err);

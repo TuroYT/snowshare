@@ -67,7 +67,7 @@ export interface ThemeContextType {
   branding: BrandingSettings;
   isLoading: boolean;
   updateTheme: (colors: Partial<ThemeColors>) => void;
-  refreshSettings: () => Promise<void>;
+  refreshSettings: (options?: { force?: boolean }) => Promise<void>;
 }
 
 const defaultColors: ThemeColors = {
@@ -106,9 +106,9 @@ export function ThemeProvider({
   const [branding, setBranding] = useState<BrandingSettings>(defaultBranding);
   const [isLoading, setIsLoading] = useState(!initialData);
 
-  const refreshSettings = async () => {
+  const refreshSettings = async (options?: { force?: boolean }) => {
     try {
-      const response = await fetch("/api/settings");
+      const response = await fetch("/api/settings", options?.force ? { cache: "reload" } : {});
       if (!response.ok) {
         setIsLoading(false);
         return;
