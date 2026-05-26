@@ -120,8 +120,8 @@ const LEGACY_DARK: PresetColors = {
 export const themePresets: ThemePreset[] = [
   {
     id: "sober",
-    name: "Sobre",
-    description: "Minimal chaud, sobre et intemporel",
+    name: "Sober",
+    description: "Warm minimal, clean and timeless",
     light: SOBER_LIGHT,
     dark: SOBER_DARK,
     colors: SOBER_DARK,
@@ -129,15 +129,15 @@ export const themePresets: ThemePreset[] = [
   {
     id: "glacier",
     name: "Glacier",
-    description: "Bleus froids, blancs purs",
+    description: "Cool blues, pure whites",
     light: GLACIER_LIGHT,
     dark: GLACIER_DARK,
     colors: GLACIER_DARK,
   },
   {
     id: "ink",
-    name: "Encre",
-    description: "Monochrome contrasté",
+    name: "Ink",
+    description: "High-contrast monochrome",
     light: INK_LIGHT,
     dark: INK_DARK,
     colors: INK_DARK,
@@ -145,7 +145,7 @@ export const themePresets: ThemePreset[] = [
   {
     id: "legacy",
     name: "Legacy",
-    description: "Bleu & violet — thème d'origine",
+    description: "Blue & purple — original theme",
     light: LEGACY_DARK,
     dark: LEGACY_DARK,
     colors: LEGACY_DARK,

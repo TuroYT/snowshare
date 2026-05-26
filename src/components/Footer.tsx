@@ -29,7 +29,7 @@ export default function Footer() {
             © {year} {branding.appName}
           </span>
           <span className="hidden sm:inline">·</span>
-          <span>{t("footer.all_rights_reserved", "Tous droits réservés")}</span>
+          <span>{t("footer.rights", "All rights reserved.")}</span>
           <span className="hidden sm:inline">·</span>
           <span>
             {t("footer.powered_by", "Powered by")} {branding.appName}

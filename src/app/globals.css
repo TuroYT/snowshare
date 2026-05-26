@@ -165,6 +165,15 @@ body {
   }
 }
 
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 0.2s ease-in-out;
 }

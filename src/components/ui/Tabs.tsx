@@ -33,7 +33,9 @@ export function Tab({ value, children }: { value: string; children: React.ReactN
   const isActive = active === value;
   return (
     <button
+      type="button"
       role="tab"
+      id={`tab-${value}`}
       aria-selected={isActive}
       onClick={() => onChange(value)}
       className={cn(

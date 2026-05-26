@@ -211,6 +211,7 @@
     "github": "GitHub",
     "license": "License",
     "rights": "Alle Rechte vorbehalten.",
+    "powered_by": "Bereitgestellt von",
     "terms_of_use": "Nutzungsbedingungen"
   },
   "auth": {

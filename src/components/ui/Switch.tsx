@@ -22,6 +22,7 @@ export function Switch({ checked, onChange, label, disabled, id }: SwitchProps) 
         role="switch"
         aria-checked={checked}
         disabled={disabled}
+        type="button"
         onClick={() => onChange(!checked)}
         className={cn(
           "relative w-9 h-5 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
