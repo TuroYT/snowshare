@@ -136,15 +136,9 @@ const LinkShare: React.FC = () => {
       skeleton={<ShareFormSkeleton />}
       className="w-full"
     >
-      <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-left">
+      <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
         <div className="flex items-center gap-4 mb-6 justify-center">
-          <div
-            className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
-            style={{
-              background:
-                "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-            }}
-          >
+          <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
             <svg
               className="w-6 h-6 text-[var(--primary)]"
               fill="none"
@@ -174,7 +168,7 @@ const LinkShare: React.FC = () => {
           <div className="space-y-2">
             <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">
               {t("linkshare.label_url", "URL to share")}&nbsp;
-              <span className="text-red-400">*</span>
+              <span className="text-[var(--destructive)]">*</span>
             </label>
             <div className="relative">
               <input
@@ -184,14 +178,14 @@ const LinkShare: React.FC = () => {
                 value={url}
                 onChange={(e) => handleUrlChange(e.target.value)}
                 required
-                className={`w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] pr-10 ${
-                  urlError ? "border-red-500 focus:ring-red-500" : ""
+                className={`w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)] pr-10 ${
+                  urlError ? "border-[var(--destructive)]" : ""
                 }`}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 {url && isValidUrl(url) && (
                   <svg
-                    className="w-5 h-5 text-green-400"
+                    className="w-5 h-5 text-[var(--success)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -206,7 +200,7 @@ const LinkShare: React.FC = () => {
                 )}
               </div>
             </div>
-            {urlError && <p className="text-xs text-red-400 mt-1">{urlError}</p>}
+            {urlError && <p className="text-xs text-[var(--destructive)] mt-1">{urlError}</p>}
           </div>
 
           <ExpirationSettings
