@@ -650,7 +650,9 @@
       "background_image_preview": "Aperçu de l'arrière-plan",
       "section_typography": "Typographie",
       "font_family": "Police d'écriture",
-      "font_family_hint": "La police utilisée globalement dans toute l'application"
+      "font_family_hint": "La police utilisée globalement dans toute l'application",
+      "accent_colors_label": "Couleurs d'accent",
+      "accent_colors_hint": "Utilisées pour les boutons, liens et états de focus. Sélectionner un preset remplace ces valeurs."
     },
     "email_templates": {
       "title": "Modèles d'e-mail",

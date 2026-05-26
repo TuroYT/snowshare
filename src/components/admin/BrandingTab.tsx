@@ -617,23 +617,29 @@ export default function BrandingTab() {
             />
           </div>
 
-          {/* Accent color — only primary is exposed; chrome colors are managed by the theme system */}
+          {/* Accent colors — primary and secondary; chrome colors managed by the theme system */}
           <div className="p-4 bg-[var(--surface-hover)] rounded-[var(--radius-lg)] border border-[var(--border)]">
             <h4 className="text-sm font-semibold text-[var(--foreground)] mb-1">
-              {t("admin.branding.primary_label", "Accent color")}
+              {t("admin.branding.accent_colors_label", "Accent colors")}
             </h4>
             <p className="text-xs text-[var(--foreground-muted)] mb-4">
               {t(
-                "admin.branding.primary_hint",
-                "Used for buttons, links, and focus states. Selecting a preset above overrides this."
+                "admin.branding.accent_colors_hint",
+                "Used for buttons, links, and focus states. Selecting a preset above overrides these."
               )}
             </p>
-            <ColorInput
-              label={t("admin.branding.primary_label", "Primary")}
-              value={settings.primaryColor}
-              onChange={(v) => handleChange("primaryColor", v)}
-              hint=""
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <ColorInput
+                label={t("admin.branding.primary_label", "Primary")}
+                value={settings.primaryColor}
+                onChange={(v) => handleChange("primaryColor", v)}
+              />
+              <ColorInput
+                label={t("admin.branding.secondary_label", "Secondary")}
+                value={settings.secondaryColor}
+                onChange={(v) => handleChange("secondaryColor", v)}
+              />
+            </div>
           </div>
 
           {/* Background image (orthogonal to color system) */}
@@ -919,13 +925,13 @@ function ColorInput({
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-10 h-10 rounded-lg border border-[var(--border)]/50 cursor-pointer bg-transparent"
+          className="w-10 h-10 rounded-[var(--radius)] border border-[var(--border)] cursor-pointer bg-transparent"
         />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-2 py-1.5 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-mono"
+          className="flex-1 px-2 py-1.5 bg-[var(--input)] border border-[var(--border)] rounded-[var(--radius)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--foreground)] font-mono"
           placeholder="#000000"
         />
       </div>

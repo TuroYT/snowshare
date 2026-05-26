@@ -653,7 +653,9 @@
       "background_image_preview": "Achtergrondvoorbeeld",
       "section_typography": "Typografie",
       "font_family": "Lettertype",
-      "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt"
+      "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt",
+      "accent_colors_label": "Accentkleuren",
+      "accent_colors_hint": "Gebruikt voor knoppen, links en focusstatussen. Een preset overschrijft deze waarden."
     },
     "email_templates": {
       "title": "E-mailsjablonen",

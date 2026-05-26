@@ -646,7 +646,9 @@
       "background_image_preview": "Vista previa del fondo",
       "section_typography": "Tipografía",
       "font_family": "Fuente",
-      "font_family_hint": "La fuente utilizada globalmente en toda la aplicación"
+      "font_family_hint": "La fuente utilizada globalmente en toda la aplicación",
+      "accent_colors_label": "Colores de acento",
+      "accent_colors_hint": "Usados para botones, enlaces y estados de foco. Seleccionar un preset anula estos valores."
     },
     "email_templates": {
       "title": "Plantillas de correo",

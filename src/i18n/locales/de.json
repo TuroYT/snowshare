@@ -646,7 +646,9 @@
       "background_image_preview": "Hintergrundvorschau",
       "section_typography": "Typografie",
       "font_family": "Schriftart",
-      "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird"
+      "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird",
+      "accent_colors_label": "Akzentfarben",
+      "accent_colors_hint": "Für Schaltflächen, Links und Fokuszustände. Ein Preset überschreibt diese Werte."
     },
     "email_templates": {
       "title": "E-Mail-Vorlagen",

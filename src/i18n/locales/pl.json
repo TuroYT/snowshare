@@ -650,7 +650,9 @@
       "background_image_preview": "Podgląd tła",
       "section_typography": "Typografia",
       "font_family": "Czcionka",
-      "font_family_hint": "Czcionka używana globalnie w całej aplikacji"
+      "font_family_hint": "Czcionka używana globalnie w całej aplikacji",
+      "accent_colors_label": "Kolory akcentu",
+      "accent_colors_hint": "Używane dla przycisków, linków i stanów fokusa. Wybór presetu nadpisuje te wartości."
     },
     "email_templates": {
       "title": "Szablony e-mail",

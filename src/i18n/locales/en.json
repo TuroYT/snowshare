@@ -650,7 +650,9 @@
       "background_image_preview": "Background Preview",
       "section_typography": "Typography",
       "font_family": "Font Family",
-      "font_family_hint": "The font used globally across the entire application"
+      "font_family_hint": "The font used globally across the entire application",
+      "accent_colors_label": "Accent colors",
+      "accent_colors_hint": "Used for buttons, links, and focus states. Selecting a preset above overrides these."
     },
     "email_templates": {
       "title": "Email Templates",
