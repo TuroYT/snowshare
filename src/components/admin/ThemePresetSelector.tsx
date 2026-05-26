@@ -35,7 +35,7 @@ export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps
                 />
                 <span
                   className="w-5 h-5 rounded-full border border-black/10"
-                  style={{ backgroundColor: colors.backgroundColor }}
+                  style={{ backgroundColor: colors.secondaryColor }}
                 />
               </div>
               <p className="text-xs font-medium text-[var(--foreground)] truncate">{preset.name}</p>
