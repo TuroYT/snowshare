@@ -102,10 +102,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
   };
 
   return (
-    <div role="status" className="mt-6 bg-green-900/20 border border-green-800 rounded-lg p-4">
+    <div
+      role="status"
+      className="mt-6 bg-[var(--surface)] border border-[var(--success)] rounded-[var(--radius)] p-4"
+    >
       <div className="flex items-start gap-3">
         <svg
-          className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5"
+          className="w-5 h-5 text-[var(--success)] flex-shrink-0 mt-0.5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -118,10 +121,10 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
           />
         </svg>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-green-300 mb-2">
+          <h4 className="text-sm font-medium text-[var(--success)] mb-2">
             {t(`${translationPrefix}.success_title`, "Partage créé avec succès !")}
           </h4>
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
+          <div className="bg-[var(--surface-hover)] border border-[var(--border)] rounded-[var(--radius)] p-3 flex flex-col sm:flex-row sm:items-start gap-3">
             <div className="flex-1 min-w-0">
               <a
                 href={url}
@@ -132,7 +135,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                 {url}
               </a>
               {copied && (
-                <p className="text-xs text-green-400 mt-2">
+                <p className="text-xs text-[var(--success)] mt-2">
                   {t(`${translationPrefix}.copied`, "✓ Copié dans le presse-papiers")}
                 </p>
               )}
@@ -140,12 +143,12 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
             <div className="flex-shrink-0 flex items-start gap-2">
               <button
                 onClick={() => copyToClipboard(url)}
-                className="p-2 text-[var(--foreground-muted)] hover:text-white hover:bg-[var(--surface)] rounded transition-colors"
+                className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)] rounded-[var(--radius)] transition-colors"
                 title={t(`${translationPrefix}.copy_title`, "Copier le lien")}
               >
                 {copied ? (
                   <svg
-                    className="w-4 h-4 text-green-400"
+                    className="w-4 h-4 text-[var(--success)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -173,7 +176,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
 
           {/* Email sending section — only shown when SMTP is enabled, user is logged in, and slug is available */}
           {emailEnabled && isAuthenticated && !!slug && (
-            <div className="mt-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3">
+            <div className="mt-4 bg-[var(--surface-hover)] border border-[var(--border)] rounded-[var(--radius)] p-3">
               <p className="text-sm font-medium text-[var(--foreground)] mb-2">
                 {t("share_email.section_title", "Send by email")}
               </p>
@@ -194,13 +197,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                     "share_email.recipients_placeholder",
                     "alice@example.com, bob@example.com"
                   )}
-                  className="flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
+                  className="flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-[var(--radius)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
                   disabled={emailStatus === "sending"}
                 />
                 <button
                   onClick={handleSendEmail}
                   disabled={emailStatus === "sending" || !recipientsRaw.trim()}
-                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   {emailStatus === "sending" ? (
                     <>
@@ -246,9 +249,9 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                   )}
                 </button>
               </div>
-              {emailError && <p className="mt-2 text-xs text-red-400">{emailError}</p>}
+              {emailError && <p className="mt-2 text-xs text-[var(--destructive)]">{emailError}</p>}
               {emailStatus === "success" && (
-                <p className="mt-2 text-xs text-green-400">
+                <p className="mt-2 text-xs text-[var(--success)]">
                   {t("share_email.success", "Email sent successfully!")}
                 </p>
               )}
@@ -256,8 +259,8 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
           )}
 
           <div className="mt-4 flex justify-center">
-            <div className="flex flex-col items-center bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
-              <p className="text-sm text-[var(--foreground)] mb-2 text-center">
+            <div className="flex flex-col items-center bg-[var(--surface-hover)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
+              <p className="text-sm text-[var(--foreground-muted)] mb-2 text-center">
                 {t(`${translationPrefix}.qr_info`, "Scanner ce QR code pour accéder au partage")}
               </p>
               <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>

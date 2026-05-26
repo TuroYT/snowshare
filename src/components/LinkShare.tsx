@@ -178,7 +178,7 @@ const LinkShare: React.FC = () => {
                 value={url}
                 onChange={(e) => handleUrlChange(e.target.value)}
                 required
-                className={`w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)] pr-10 ${
+                className={`w-full bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)] pr-10 ${
                   urlError ? "border-[var(--destructive)]" : ""
                 }`}
               />
@@ -238,7 +238,7 @@ const LinkShare: React.FC = () => {
 
           {!loading && url.trim() && !urlError && (
             <p className="text-xs text-[var(--foreground-muted)] text-center mt-2">
-              💡 {t("linkshare.shortcut", "Tip:")}{" "}
+              {t("linkshare.shortcut", "Tip:")}{" "}
               <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
                 Ctrl
               </kbd>{" "}

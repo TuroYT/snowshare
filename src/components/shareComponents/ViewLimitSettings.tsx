@@ -23,8 +23,8 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
-        <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--surface)]/30 rounded-lg p-3 -m-3 transition-colors">
+      <div className="bg-[var(--surface-hover)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
+        <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--border)] rounded-[var(--radius)] p-3 -m-3 transition-colors">
           <div className="relative flex-shrink-0">
             <input
               type="checkbox"
@@ -63,7 +63,7 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
               max={10000}
               value={maxViews}
               onChange={(e) => setMaxViews(Math.max(1, Number(e.target.value)))}
-              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              className="w-full bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)]"
             />
           </div>
           <span className="text-sm text-[var(--foreground-muted)] min-w-0">
@@ -73,7 +73,7 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
       )}
 
       {hasViewLimit && (
-        <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)]/30 p-3 rounded-xl border border-[var(--border)]/30">
+        <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface-hover)] p-3 rounded-[var(--radius)] border border-[var(--border)]">
           <div className="flex items-center gap-2">
             <svg
               className="w-3 h-3 text-[var(--primary)] flex-shrink-0"

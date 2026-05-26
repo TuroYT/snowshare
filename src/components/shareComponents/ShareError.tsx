@@ -13,10 +13,13 @@ const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => 
   const { t } = useTranslation();
 
   return (
-    <div role="alert" className="mt-6 bg-red-900/20 border border-red-800 rounded-lg p-4">
+    <div
+      role="alert"
+      className="mt-6 bg-[var(--surface)] border border-[var(--destructive)] rounded-[var(--radius)] p-4"
+    >
       <div className="flex items-start gap-3">
         <svg
-          className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
+          className="w-5 h-5 text-[var(--destructive)] flex-shrink-0 mt-0.5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -29,10 +32,10 @@ const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => 
           />
         </svg>
         <div>
-          <h4 className="text-sm font-medium text-red-300 mb-1">
+          <h4 className="text-sm font-medium text-[var(--destructive)] mb-1">
             {t(`${translationPrefix}.error_title`, "Erreur")}
           </h4>
-          <p className="text-sm text-red-400">{error}</p>
+          <p className="text-sm text-[var(--foreground-muted)]">{error}</p>
         </div>
       </div>
     </div>
