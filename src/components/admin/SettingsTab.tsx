@@ -207,8 +207,7 @@ export default function SettingsTab() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 text-white rounded-lg font-medium transition-all disabled:opacity-50"
-              style={{ background: "linear-gradient(to right, var(--primary), var(--secondary))" }}
+              className="px-6 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors disabled:opacity-50"
             >
               {saving ? t("admin.settings.saving") : t("admin.settings.save")}
             </button>

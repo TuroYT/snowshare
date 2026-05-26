@@ -21,13 +21,7 @@ export function Tabs({
 }) {
   return (
     <Ctx.Provider value={{ active: value, onChange: onValueChange }}>
-      <div
-        role="tablist"
-        className={cn(
-          "inline-flex gap-0.5 p-0.5 bg-[var(--background)] border border-[var(--border)] rounded-[var(--radius)]",
-          className
-        )}
-      >
+      <div role="tablist" className={cn("flex border-b border-[var(--border)]", className)}>
         {children}
       </div>
     </Ctx.Provider>
@@ -43,10 +37,10 @@ export function Tab({ value, children }: { value: string; children: React.ReactN
       aria-selected={isActive}
       onClick={() => onChange(value)}
       className={cn(
-        "px-4 py-1.5 text-sm rounded-[4px] transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+        "px-4 py-2 text-sm transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] border-b-2 -mb-px",
         isActive
-          ? "bg-[var(--surface)] text-[var(--foreground)] shadow-[var(--shadow-sm)]"
-          : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+          ? "border-[var(--primary)] text-[var(--foreground)] font-medium"
+          : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
       )}
     >
       {children}

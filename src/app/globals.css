@@ -44,6 +44,9 @@
   /* Dynamically calculated colors — used in CodeMirror focus */
   --primary-light: color-mix(in srgb, var(--primary) 10%, transparent);
   --secondary-light: color-mix(in srgb, var(--secondary) 10%, transparent);
+
+  /* Page background: very subtle primary tint — auto-updates when --primary or --background change */
+  --background-page: color-mix(in srgb, var(--primary) 5%, var(--background));
 }
 
 [data-theme="dark"] {
@@ -92,7 +95,7 @@ html {
 }
 
 body {
-  background-color: var(--background);
+  background-color: var(--background-page);
   color: var(--foreground);
   font-family: var(--font-app, var(--font-geist-sans)), system-ui, sans-serif;
   font-feature-settings: "cv11", "ss01";

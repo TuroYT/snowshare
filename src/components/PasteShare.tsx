@@ -24,7 +24,7 @@ const PasteShare: React.FC = () => {
     ) : (
       <div className="w-full max-w-full overflow-hidden text-left">
         {/* Header avec icône */}
-        <div className="flex items-center gap-4 mb-6 lg:hidden justify-center">
+        <div className="flex items-center gap-4 mb-6 lg:hidden">
           <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
             <svg
               className="w-6 h-6 text-[var(--primary)]"
@@ -54,7 +54,7 @@ const PasteShare: React.FC = () => {
           {/* Grand éditeur de code */}
           <div className="flex-1 min-w-0 max-w-full flex-container-safe">
             <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] min-h-[60vh] lg:min-h-[80vh]">
-              <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
+              <div className="hidden lg:flex items-center gap-4 mb-6">
                 <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-[var(--primary)]"
