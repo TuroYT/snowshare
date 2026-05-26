@@ -347,20 +347,6 @@ function applyBrandingMeta(branding: BrandingSettings) {
 
 // (no-op outside React components)
 
-function hexShift(hex: string, delta: number): string {
-  if (!hex || !/^#[0-9A-Fa-f]{3,6}$/.test(hex)) return hex;
-  let h = hex.replace("#", "");
-  if (h.length === 3)
-    h = h
-      .split("")
-      .map((c) => c + c)
-      .join("");
-  const r = Math.min(255, Math.max(0, parseInt(h.slice(0, 2), 16) + delta));
-  const g = Math.min(255, Math.max(0, parseInt(h.slice(2, 4), 16) + delta));
-  const b = Math.min(255, Math.max(0, parseInt(h.slice(4, 6), 16) + delta));
-  return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
-}
-
 /**
  * Convert hex color to rgba
  */
