@@ -68,7 +68,7 @@ describe("Footer", () => {
 
   it("displays all rights reserved text", () => {
     render(<Footer />);
-    expect(screen.getByText(/Tous droits réservés/i)).toBeInTheDocument();
+    expect(screen.getByText(/All rights reserved/i)).toBeInTheDocument();
   });
 
   it("displays Powered by SnowShare", () => {
