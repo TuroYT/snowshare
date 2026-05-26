@@ -617,180 +617,48 @@ export default function BrandingTab() {
             />
           </div>
 
-          {/* Primary Colors Group */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.primary_colors")}
+          {/* Accent color — only primary is exposed; chrome colors are managed by the theme system */}
+          <div className="p-4 bg-[var(--surface-hover)] rounded-[var(--radius-lg)] border border-[var(--border)]">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-1">
+              {t("admin.branding.primary_label", "Accent color")}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ColorInput
-                label={t("admin.branding.primary_label")}
-                value={settings.primaryColor}
-                onChange={(v) => handleChange("primaryColor", v)}
-                hint={t("admin.branding.primary_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.primary_hover_label")}
-                value={settings.primaryHover}
-                onChange={(v) => handleChange("primaryHover", v)}
-                hint={t("admin.branding.primary_hover_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.primary_dark_label")}
-                value={settings.primaryDark}
-                onChange={(v) => handleChange("primaryDark", v)}
-                hint={t("admin.branding.primary_dark_hint")}
-              />
-            </div>
-          </div>
-
-          {/* Secondary Colors Group */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.secondary_colors")}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ColorInput
-                label={t("admin.branding.secondary_label")}
-                value={settings.secondaryColor}
-                onChange={(v) => handleChange("secondaryColor", v)}
-                hint={t("admin.branding.secondary_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.secondary_hover_label")}
-                value={settings.secondaryHover}
-                onChange={(v) => handleChange("secondaryHover", v)}
-                hint={t("admin.branding.secondary_hover_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.secondary_dark_label")}
-                value={settings.secondaryDark}
-                onChange={(v) => handleChange("secondaryDark", v)}
-                hint={t("admin.branding.secondary_dark_hint")}
-              />
-            </div>
-          </div>
-
-          {/* Background & Surface Colors */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.background_surfaces")}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ColorInput
-                label={t("admin.branding.background_label")}
-                value={settings.backgroundColor}
-                onChange={(v) => handleChange("backgroundColor", v)}
-                hint={t("admin.branding.background_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.surface_label")}
-                value={settings.surfaceColor}
-                onChange={(v) => handleChange("surfaceColor", v)}
-                hint={t("admin.branding.surface_hint")}
-              />
-            </div>
-
-            {/* Background Image URL */}
-            <div className="mt-4">
-              <label className="text-sm text-[var(--foreground)] block mb-2">
-                {t("admin.branding.background_image_url")}
-              </label>
-              <input
-                type="url"
-                value={settings.backgroundImageUrl || ""}
-                onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
-                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                placeholder="https://example.com/background.jpg"
-              />
-              <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("admin.branding.background_image_url_hint")}
-              </p>
-              {settings.backgroundImageUrl && (
-                <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
-                  <p className="text-xs text-[var(--foreground-muted)] mb-2">
-                    {t("admin.branding.background_image_preview")}
-                  </p>
-                  <BackgroundImagePreview url={settings.backgroundImageUrl} />
-                </div>
+            <p className="text-xs text-[var(--foreground-muted)] mb-4">
+              {t(
+                "admin.branding.primary_hint",
+                "Used for buttons, links, and focus states. Selecting a preset above overrides this."
               )}
-            </div>
-          </div>
-
-          {/* Text & Border Colors */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.text_borders")}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ColorInput
-                label={t("admin.branding.main_text_label")}
-                value={settings.textColor}
-                onChange={(v) => handleChange("textColor", v)}
-                hint={t("admin.branding.main_text_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.muted_text_label")}
-                value={settings.textMuted}
-                onChange={(v) => handleChange("textMuted", v)}
-                hint={t("admin.branding.muted_text_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.borders_label")}
-                value={settings.borderColor}
-                onChange={(v) => handleChange("borderColor", v)}
-                hint={t("admin.branding.borders_hint")}
-              />
-            </div>
-          </div>
-
-          {/* Color Preview */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <p className="text-sm text-[var(--foreground)] mb-3">
-              {t("admin.branding.theme_preview")}
             </p>
-            <div
-              className="p-6 rounded-lg space-y-4"
-              style={{ backgroundColor: settings.backgroundColor }}
-            >
-              <div
-                className="p-4 rounded-lg"
-                style={{
-                  backgroundColor: settings.surfaceColor,
-                  borderColor: settings.borderColor,
-                  borderWidth: "1px",
-                }}
-              >
-                <p style={{ color: settings.textColor }} className="font-medium">
-                  {t("admin.branding.preview_button_primary")}
+            <ColorInput
+              label={t("admin.branding.primary_label", "Primary")}
+              value={settings.primaryColor}
+              onChange={(v) => handleChange("primaryColor", v)}
+              hint=""
+            />
+          </div>
+
+          {/* Background image (orthogonal to color system) */}
+          <div className="p-4 bg-[var(--surface-hover)] rounded-[var(--radius-lg)] border border-[var(--border)]">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
+              {t("admin.branding.background_image_url", "Background image")}
+            </h4>
+            <input
+              type="url"
+              value={settings.backgroundImageUrl || ""}
+              onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
+              className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-[var(--radius)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--foreground)]"
+              placeholder="https://example.com/background.jpg"
+            />
+            <p className="text-xs text-[var(--foreground-muted)] mt-1">
+              {t("admin.branding.background_image_url_hint")}
+            </p>
+            {settings.backgroundImageUrl && (
+              <div className="mt-3 p-2 bg-[var(--surface)] rounded-[var(--radius)] border border-[var(--border)]">
+                <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                  {t("admin.branding.background_image_preview")}
                 </p>
-                <p style={{ color: settings.textMuted }} className="text-sm mt-1">
-                  {t("admin.branding.preview_button_accent")}
-                </p>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    className="px-4 py-2 rounded-lg text-white font-medium"
-                    style={{ backgroundColor: settings.primaryColor }}
-                  >
-                    {t("admin.branding.preview_button_primary")}
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-white font-medium"
-                    style={{ backgroundColor: settings.secondaryColor }}
-                  >
-                    {t("admin.branding.preview_button_accent")}
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-white font-medium"
-                    style={{
-                      background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
-                    }}
-                  >
-                    {t("admin.branding.preview_button_gradient")}
-                  </button>
-                </div>
+                <BackgroundImagePreview url={settings.backgroundImageUrl} />
               </div>
-            </div>
+            )}
           </div>
         </div>
 

@@ -294,27 +294,20 @@ function loadGoogleFont(fontFamily: string) {
 }
 
 /**
- * Apply theme colors to CSS custom properties
+ * Apply admin-configurable accent colors to CSS custom properties.
+ * Chrome colors (background, surface, text, border) are intentionally
+ * left to globals.css so next-themes can control light/dark switching.
  */
-function applyThemeToDOM(colors: ThemeColors, isDark = false) {
+function applyThemeToDOM(colors: ThemeColors, _isDark = false) {
   const root = document.documentElement;
-  root.setAttribute("data-theme", isDark ? "dark" : "light");
 
+  // Only override accent colors — next-themes owns data-theme and bg/surface/text/border
   root.style.setProperty("--primary", colors.primaryColor);
   root.style.setProperty("--primary-hover", colors.primaryHover);
   root.style.setProperty("--primary-dark", colors.primaryDark);
   root.style.setProperty("--secondary", colors.secondaryColor);
   root.style.setProperty("--secondary-hover", colors.secondaryHover);
   root.style.setProperty("--secondary-dark", colors.secondaryDark);
-  root.style.setProperty("--background", colors.backgroundColor);
-  root.style.setProperty("--surface", colors.surfaceColor);
-  root.style.setProperty("--surface-hover", hexShift(colors.surfaceColor, isDark ? 15 : -5));
-  root.style.setProperty("--input", colors.surfaceColor);
-  root.style.setProperty("--input-focus", colors.backgroundColor);
-  root.style.setProperty("--foreground", colors.textColor);
-  root.style.setProperty("--foreground-muted", colors.textMuted);
-  root.style.setProperty("--border", colors.borderColor);
-  root.style.setProperty("--border-hover", hexShift(colors.borderColor, isDark ? 25 : -15));
 
   if (colors.backgroundImageUrl) {
     const img = new Image();
