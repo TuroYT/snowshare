@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import { ThemeInitializer } from "@/components/ThemeInitializer";
+import { Toaster } from "@/components/ui/Toast";
 import PlausibleProvider from "next-plausible";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense } from "react";
@@ -63,6 +64,7 @@ export default function RootLayout({
             <Suspense fallback={<LoadingScreen />}>
               <ThemeInitializer>{children}</ThemeInitializer>
             </Suspense>
+            <Toaster />
           </NextAuthProvider>
         </NextThemesProvider>
       </body>
