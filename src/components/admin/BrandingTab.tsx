@@ -38,6 +38,15 @@ interface BrandingSettings {
   fontFamily: string;
 }
 
+function darkenHex(hex: string, factor: number): string {
+  const clean = hex.replace("#", "");
+  if (!/^[0-9A-Fa-f]{6}$/.test(clean)) return hex;
+  const r = Math.max(0, Math.round(parseInt(clean.slice(0, 2), 16) * (1 - factor)));
+  const g = Math.max(0, Math.round(parseInt(clean.slice(2, 4), 16) * (1 - factor)));
+  const b = Math.max(0, Math.round(parseInt(clean.slice(4, 6), 16) * (1 - factor)));
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
 function mapBrandingFromApi(s: Record<string, string | null>): BrandingSettings {
   return {
     appName: s.appName || "SnowShare",
@@ -247,17 +256,22 @@ export default function BrandingTab() {
   };
 
   const handleChange = (key: keyof BrandingSettings, value: string | null) => {
-    const newSettings = {
-      ...settings,
-      [key]: value,
-    };
+    const updates: Partial<BrandingSettings> = { [key]: value };
+
+    if (key === "primaryColor" && value && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+      updates.primaryHover = darkenHex(value, 0.1);
+      updates.primaryDark = darkenHex(value, 0.25);
+    } else if (key === "secondaryColor" && value && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+      updates.secondaryHover = darkenHex(value, 0.1);
+      updates.secondaryDark = darkenHex(value, 0.25);
+    }
+
+    const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
 
     // Live preview: update theme immediately for color changes
     if (key.includes("Color")) {
-      updateTheme({
-        [key]: value as string,
-      });
+      updateTheme(updates as Partial<Parameters<typeof updateTheme>[0]>);
     }
   };
 

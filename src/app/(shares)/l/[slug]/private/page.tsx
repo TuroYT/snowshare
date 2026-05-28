@@ -74,6 +74,7 @@ export default function PrivateLinkPage() {
               error={error || undefined}
               autoComplete="current-password"
               autoFocus
+              required
             />
             <Button type="submit" isLoading={loading} className="w-full">
               {t("link_private.access_link")}

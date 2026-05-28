@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useId } from "react";
 import { useTranslation } from "react-i18next";
 
 interface WarningModalProps {
@@ -22,6 +23,16 @@ export default function WarningModal({
   cancelText,
 }: WarningModalProps) {
   const { t } = useTranslation();
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, onCancel]);
 
   if (!open) return null;
 
@@ -32,7 +43,12 @@ export default function WarningModal({
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <div className="relative w-full max-w-sm bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="relative w-full max-w-sm bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
+      >
         {/* Header */}
         <div
           className="flex items-center gap-2 px-4 py-3 border-b border-[var(--border)]"
@@ -44,6 +60,7 @@ export default function WarningModal({
             stroke="currentColor"
             viewBox="0 0 24 24"
             style={{ color: "var(--primary-hover)" }}
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -52,7 +69,9 @@ export default function WarningModal({
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             />
           </svg>
-          <span className="font-semibold text-[var(--foreground)]">{title}</span>
+          <span id={titleId} className="font-semibold text-[var(--foreground)]">
+            {title}
+          </span>
         </div>
 
         {/* Content */}
@@ -63,12 +82,14 @@ export default function WarningModal({
         {/* Actions */}
         <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--border)]">
           <button
+            type="button"
             onClick={onCancel}
             className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground-muted)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             {cancelText || t("common.cancel")}
           </button>
           <button
+            type="button"
             onClick={onConfirm}
             className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
             style={{ backgroundColor: "var(--primary)" }}

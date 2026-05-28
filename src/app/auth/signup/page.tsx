@@ -45,6 +45,12 @@ export default function SignUp() {
   const { t } = useTranslation();
   const { branding } = useTheme();
 
+  useEffect(() => {
+    if (disableCredentialsLogin) {
+      router.push("/auth/signin");
+    }
+  }, [disableCredentialsLogin, router]);
+
   // Check signup status from database
   useEffect(() => {
     const fetchSignupStatus = async () => {
@@ -148,8 +154,6 @@ export default function SignUp() {
     router.push("/auth/signin");
     return null;
   }
-
-  // Show disabled message if signup is not allowed
   if (!allowSignup) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
