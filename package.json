@@ -1,6 +1,6 @@
 {
   "name": "snowshare",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "type": "module",
   "private": true,
   "scripts": {
@@ -131,6 +131,7 @@
     "readdir-glob": ">=2.0.2",
     "glob": ">=13.0.4",
     "srvx": ">=0.11.13",
+    "ws": ">=8.20.1",
     "@typescript-eslint/typescript-estree": {
       "minimatch": ">=10.2.1"
     }
