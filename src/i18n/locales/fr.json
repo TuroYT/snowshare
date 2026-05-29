@@ -332,6 +332,20 @@
       "unlink_success": "Compte délié avec succès"
     },
     "tab_apikeys": "Clés API",
+    "tab_accesslogs": "Journal d'accès",
+    "access_logs": {
+      "title": "Journal d'accès",
+      "description": "Chaque accès à l'un de vos partages est enregistré ici.",
+      "total": "{{count}} accès",
+      "empty": "Aucun accès enregistré pour l'instant.",
+      "col_share": "Partage",
+      "col_ip": "IP",
+      "col_user_agent": "User Agent",
+      "col_date": "Date",
+      "prev": "Précédent",
+      "next": "Suivant",
+      "page": "Page {{page}} / {{total}}"
+    },
     "default_tab": "Onglet par défaut",
     "default_tab_desc": "Onglet affiché par défaut sur la page d'accueil",
     "default_tab_linkshare": "LinkShare",

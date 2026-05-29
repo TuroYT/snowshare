@@ -336,6 +336,20 @@
       "unlink_success": "Account succesvol ontkoppeld"
     },
     "tab_apikeys": "API-sleutels",
+    "tab_accesslogs": "Toegangslogboek",
+    "access_logs": {
+      "title": "Toegangslogboek",
+      "description": "Elke keer dat een van uw shares wordt geopend, wordt dit hier geregistreerd.",
+      "total": "{{count}} toegangen",
+      "empty": "Nog geen toegangen geregistreerd.",
+      "col_share": "Share",
+      "col_ip": "IP",
+      "col_user_agent": "User Agent",
+      "col_date": "Datum",
+      "prev": "Vorige",
+      "next": "Volgende",
+      "page": "Pagina {{page}} / {{total}}"
+    },
     "default_tab": "Standaard tabblad",
     "default_tab_desc": "Tabblad dat standaard wordt weergegeven op de startpagina",
     "default_tab_linkshare": "LinkShare",

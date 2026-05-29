@@ -5,6 +5,7 @@ import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { prisma } from "@/lib/prisma";
+import { logShareAccess } from "@/lib/access-log";
 import path from "path";
 
 // Handle POST requests for file info and download actions
@@ -97,6 +98,7 @@ export async function POST(
           where: { id: result.share.id },
           data: { viewCount: { increment: 1 } },
         });
+        void logShareAccess(request, result.share.id);
       }
 
       if (result.isBulk) {

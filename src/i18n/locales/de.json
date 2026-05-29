@@ -328,6 +328,20 @@
       "unlink_success": "Konto erfolgreich getrennt"
     },
     "tab_apikeys": "API-Schlüssel",
+    "tab_accesslogs": "Zugriffsprotokolle",
+    "access_logs": {
+      "title": "Zugriffsprotokolle",
+      "description": "Jeder Zugriff auf Ihre Freigaben wird hier erfasst.",
+      "total": "{{count}} Zugriffe",
+      "empty": "Noch keine Zugriffe aufgezeichnet.",
+      "col_share": "Freigabe",
+      "col_ip": "IP",
+      "col_user_agent": "User Agent",
+      "col_date": "Datum",
+      "prev": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {{page}} / {{total}}"
+    },
     "default_tab": "Standard-Tab",
     "default_tab_desc": "Standardmäßig angezeigter Tab auf der Startseite",
     "default_tab_linkshare": "LinkShare",

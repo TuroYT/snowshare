@@ -2,6 +2,7 @@ import { decrypt } from "@/lib/crypto-link";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { apiError, ErrorCode } from "@/lib/api-errors";
+import { logShareAccess } from "@/lib/access-log";
 import { NextRequest } from "next/server";
 
 function jsonResponse(body: unknown, status = 200) {
@@ -54,6 +55,8 @@ export async function GET(request: NextRequest) {
     data: { viewCount: { increment: 1 } },
   });
 
+  void logShareAccess(request, share.id);
+
   return Response.redirect(share.urlOriginal, 302);
 }
 
@@ -97,6 +100,8 @@ export async function POST(request: NextRequest) {
     where: { id: share.id },
     data: { viewCount: { increment: 1 } },
   });
+
+  void logShareAccess(request, share.id);
 
   const decrypted = decrypt(share.urlOriginal || "", password);
   return jsonResponse({ url: decrypted });

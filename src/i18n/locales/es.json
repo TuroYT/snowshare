@@ -328,6 +328,20 @@
       "unlink_success": "Cuenta desvinculada con éxito"
     },
     "tab_apikeys": "Claves API",
+    "tab_accesslogs": "Registros de acceso",
+    "access_logs": {
+      "title": "Registros de acceso",
+      "description": "Cada acceso a uno de sus recursos compartidos se registra aquí.",
+      "total": "{{count}} accesos",
+      "empty": "Aún no hay accesos registrados.",
+      "col_share": "Recurso",
+      "col_ip": "IP",
+      "col_user_agent": "User Agent",
+      "col_date": "Fecha",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "page": "Página {{page}} / {{total}}"
+    },
     "default_tab": "Pestaña predeterminada",
     "default_tab_desc": "Pestaña mostrada por defecto en la página de inicio",
     "default_tab_linkshare": "LinkShare",
