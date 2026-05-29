@@ -34,6 +34,7 @@ const ManageCodeBlock: React.FC<{
 }> = ({ code, language, onLanguageChange }) => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   const [slug, setSlug] = React.useState("");
   const [expiresDays, setExpiresDays] = React.useState<number>(isAuthenticated ? 30 : 7);
@@ -50,8 +51,7 @@ const ManageCodeBlock: React.FC<{
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !loading && code.trim()) {
         e.preventDefault();
-        const form = document.querySelector("form");
-        if (form) form.requestSubmit();
+        if (formRef.current) formRef.current.requestSubmit();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -102,7 +102,7 @@ const ManageCodeBlock: React.FC<{
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       {error && <ShareError error={error} translationPrefix="pasteshare_ui" />}
 
       {success && (
