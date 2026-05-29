@@ -53,7 +53,7 @@ export default function Home() {
           pasteInitialCodeRef.current = text;
           setPasteInitialCode(text);
           setActiveTab("pasteshare");
-        }).catch((err) => { console.error("Failed to read clipboard:", err); });
+        }).catch((err) => { console.error("Failed to read clipboard:", err); throw err; });
       }
     };
 
