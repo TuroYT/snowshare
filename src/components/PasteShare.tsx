@@ -9,7 +9,12 @@ import LockedShare from "./shareComponents/LockedShare";
 import PasteShareSkeleton from "./PasteShareSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 
-const PasteShare: React.FC = () => {
+interface PasteShareProps {
+  initialCode?: string;
+  onInitialCodeConsumed?: () => void;
+}
+
+const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsumed }) => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [code, setCode] = React.useState(`function helloWorld() {
@@ -17,6 +22,13 @@ const PasteShare: React.FC = () => {
   }`);
   const [language, setLanguage] = React.useState("javascript");
   const { allowAnonPasteShare, loading: settingsLoading } = useShareSettings();
+
+  React.useEffect(() => {
+    if (initialCode) {
+      setCode(initialCode);
+      onInitialCodeConsumed?.();
+    }
+  }, [initialCode, onInitialCodeConsumed]);
 
   const content =
     !isAuthenticated && allowAnonPasteShare === false ? (

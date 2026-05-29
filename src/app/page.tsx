@@ -9,10 +9,12 @@ import FileShare from "@/components/FileShare";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
+  const [pasteInitialCode, setPasteInitialCode] = useState<string | undefined>(undefined);
+  const pasteInitialCodeRef = useRef<string | undefined>(undefined);
   const { t } = useTranslation();
   const { branding } = useTheme();
   const { status } = useSession();
@@ -20,6 +22,43 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("defaultTab");
     if (saved) setActiveTab(saved);
+  }, []);
+
+  useEffect(() => {
+    const isInputFocused = () => {
+      const el = document.activeElement;
+      if (!el) return false;
+      const tag = el.tagName.toLowerCase();
+      return (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        (el as HTMLElement).isContentEditable
+      );
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt+1/2/3 → switch tabs
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        if (e.key === "1") { e.preventDefault(); setActiveTab("linkshare"); return; }
+        if (e.key === "2") { e.preventDefault(); setActiveTab("pasteshare"); return; }
+        if (e.key === "3") { e.preventDefault(); setActiveTab("fileshare"); return; }
+      }
+
+      // Ctrl+V (or Cmd+V) when not in an input → paste clipboard text into PasteShare
+      if ((e.ctrlKey || e.metaKey) && e.key === "v" && !isInputFocused()) {
+        e.preventDefault();
+        navigator.clipboard.readText().then((text) => {
+          if (!text.trim()) return;
+          pasteInitialCodeRef.current = text;
+          setPasteInitialCode(text);
+          setActiveTab("pasteshare");
+        }).catch(() => {});
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -62,7 +101,15 @@ export default function Home() {
         {/* Content */}
         <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "linkshare" && <LinkShare />}
-          {activeTab === "pasteshare" && <PasteShare />}
+          {activeTab === "pasteshare" && (
+            <PasteShare
+              initialCode={pasteInitialCode}
+              onInitialCodeConsumed={() => {
+                setPasteInitialCode(undefined);
+                pasteInitialCodeRef.current = undefined;
+              }}
+            />
+          )}
           {activeTab === "fileshare" && <FileShare />}
         </div>
       </main>

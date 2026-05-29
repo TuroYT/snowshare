@@ -46,6 +46,18 @@ const ManageCodeBlock: React.FC<{
   const [success, setSuccess] = React.useState<string | null>(null);
   const [successSlug, setSuccessSlug] = React.useState<string>("");
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !loading && code.trim()) {
+        e.preventDefault();
+        const form = document.querySelector("form");
+        if (form) form.requestSubmit();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [loading, code]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -154,6 +166,20 @@ const ManageCodeBlock: React.FC<{
         submitText={t("pasteshare_ui.submit", "Create paste")}
         iconPath="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
       />
+
+      {!loading && code.trim() && (
+        <p className="text-xs text-[var(--foreground-muted)] text-center mt-2">
+          {t("pasteshare_ui.shortcut", "Tip:")}{" "}
+          <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
+            Ctrl
+          </kbd>{" "}
+          +{" "}
+          <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
+            Enter
+          </kbd>{" "}
+          {t("pasteshare_ui.shortcut_tail", "to create quickly")}
+        </p>
+      )}
     </form>
   );
 };

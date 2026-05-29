@@ -64,7 +64,9 @@
     "view_limit_desc": "Wklejka wygasa po określonej liczbie wyświetleń",
     "views": "wyświetlenia",
     "view_limit_info": "Ta wklejka wygaśnie po {{count}} wyświetleniu/ach",
-    "password_placeholder": "Zostaw puste dla otwartego dostępu"
+    "password_placeholder": "Zostaw puste dla otwartego dostępu",
+    "shortcut": "Wskazówka:",
+    "shortcut_tail": "aby utworzyć szybko"
   },
   "fileshare": {
     "title": "Udostępnianie plików",
