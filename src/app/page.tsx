@@ -47,6 +47,7 @@ export default function Home() {
 
       // Ctrl+V (or Cmd+V) when not in an input → paste clipboard text into PasteShare
       if ((e.ctrlKey || e.metaKey) && e.key === "v" && !isInputFocused()) {
+        if (!navigator?.clipboard?.readText) return;
         e.preventDefault();
         navigator.clipboard.readText().then((text) => {
           if (!text.trim()) return;
