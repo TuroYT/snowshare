@@ -344,6 +344,7 @@
       "empty": "Brak zarejestrowanych wejść.",
       "col_share": "Udostępnienie",
       "col_ip": "IP",
+      "col_location": "Lokalizacja",
       "col_user_agent": "User Agent",
       "col_date": "Data",
       "prev": "Poprzednia",

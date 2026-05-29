@@ -336,6 +336,7 @@
       "empty": "Noch keine Zugriffe aufgezeichnet.",
       "col_share": "Freigabe",
       "col_ip": "IP",
+      "col_location": "Standort",
       "col_user_agent": "User Agent",
       "col_date": "Datum",
       "prev": "Zurück",

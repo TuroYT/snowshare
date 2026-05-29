@@ -340,6 +340,7 @@
       "empty": "Aucun accès enregistré pour l'instant.",
       "col_share": "Partage",
       "col_ip": "IP",
+      "col_location": "Localisation",
       "col_user_agent": "User Agent",
       "col_date": "Date",
       "prev": "Précédent",

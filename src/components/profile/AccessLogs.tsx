@@ -2,12 +2,27 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
+  if (!countryCode || countryCode.length !== 2) return "❓";
+  const code = countryCode.toUpperCase();
+  const offset = 0x1f1e6 - 65;
+  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
+}
+
+type IpGeo = {
+  countryCode: string | null;
+  countryName: string | null;
+  city: string | null;
+  stateProv: string | null;
+  status: string;
+};
 
 type AccessLog = {
   id: string;
   ip: string | null;
   userAgent: string | null;
   accessedAt: string;
+  ipGeo: IpGeo | null;
   share: {
     slug: string;
     type: "FILE" | "PASTE" | "URL";
@@ -25,6 +40,23 @@ const TYPE_BADGE: Record<string, string> = {
   PASTE: "bg-purple-500/20 text-purple-300",
   URL: "bg-green-500/20 text-green-300",
 };
+
+function GeoCell({ geo }: { geo: IpGeo | null }) {
+  if (!geo || geo.status === "pending") {
+    return <span className="text-[var(--foreground-muted)]">—</span>;
+  }
+  if (geo.status === "unknown") {
+    return <span className="text-[var(--foreground-muted)]">?</span>;
+  }
+  const flag = countryCodeToFlagEmoji(geo.countryCode);
+  const location = [geo.city, geo.countryName].filter(Boolean).join(", ");
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-[var(--foreground)]" title={[geo.city, geo.stateProv, geo.countryName].filter(Boolean).join(", ")}>
+      <span>{flag}</span>
+      <span className="truncate max-w-[120px]">{location || geo.countryCode}</span>
+    </span>
+  );
+}
 
 export default function AccessLogs() {
   const { t } = useTranslation();
@@ -91,7 +123,10 @@ export default function AccessLogs() {
                   <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium">
                     {t("profile.access_logs.col_ip", "IP")}
                   </th>
-                  <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden md:table-cell">
+                  <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden sm:table-cell">
+                    {t("profile.access_logs.col_location", "Location")}
+                  </th>
+                  <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden lg:table-cell">
                     {t("profile.access_logs.col_user_agent", "User Agent")}
                   </th>
                   <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium">
@@ -120,7 +155,10 @@ export default function AccessLogs() {
                     <td className="px-4 py-3 font-mono text-xs text-[var(--foreground)]">
                       {log.ip ?? "—"}
                     </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <GeoCell geo={log.ipGeo} />
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
                       <span
                         className="text-xs text-[var(--foreground-muted)] max-w-xs block truncate"
                         title={log.userAgent ?? undefined}

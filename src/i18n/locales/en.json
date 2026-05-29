@@ -340,6 +340,7 @@
       "empty": "No accesses recorded yet.",
       "col_share": "Share",
       "col_ip": "IP",
+      "col_location": "Location",
       "col_user_agent": "User Agent",
       "col_date": "Date",
       "prev": "Previous",

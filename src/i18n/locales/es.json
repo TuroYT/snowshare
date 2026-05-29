@@ -336,6 +336,7 @@
       "empty": "Aún no hay accesos registrados.",
       "col_share": "Recurso",
       "col_ip": "IP",
+      "col_location": "Ubicación",
       "col_user_agent": "User Agent",
       "col_date": "Fecha",
       "prev": "Anterior",

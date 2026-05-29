@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       ? { shareId, share: { ownerId: session.user.id } }
       : { share: { ownerId: session.user.id } };
 
-    const [logs, total] = await Promise.all([
+    const [rawLogs, total] = await Promise.all([
       prisma.shareAccessLog.findMany({
         where,
         orderBy: { accessedAt: "desc" },
@@ -42,6 +42,33 @@ export async function GET(request: NextRequest) {
       }),
       prisma.shareAccessLog.count({ where }),
     ]);
+
+    const uniqueIps = [
+      ...new Set(rawLogs.map((l) => l.ip).filter((ip): ip is string => !!ip)),
+    ];
+
+    const geoData =
+      uniqueIps.length > 0
+        ? await prisma.ipLocalisation.findMany({ where: { ip: { in: uniqueIps } } })
+        : [];
+
+    const geoMap = new Map(geoData.map((g) => [g.ip, g]));
+
+    const logs = rawLogs.map((log) => {
+      const geo = log.ip ? geoMap.get(log.ip) : undefined;
+      return {
+        ...log,
+        ipGeo: geo
+          ? {
+              countryCode: geo.countryCode,
+              countryName: geo.countryName,
+              city: geo.city,
+              stateProv: geo.stateProv,
+              status: geo.status,
+            }
+          : null,
+      };
+    });
 
     return NextResponse.json({ logs, total, page, limit });
   } catch (error) {

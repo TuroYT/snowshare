@@ -344,6 +344,7 @@
       "empty": "Nog geen toegangen geregistreerd.",
       "col_share": "Share",
       "col_ip": "IP",
+      "col_location": "Locatie",
       "col_user_agent": "User Agent",
       "col_date": "Datum",
       "prev": "Vorige",
