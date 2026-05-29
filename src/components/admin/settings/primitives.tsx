@@ -20,7 +20,7 @@ export function Toggle({
       disabled={disabled}
       onClick={onChange}
       className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-        checked ? activeColor : "bg-gray-600"
+        checked ? activeColor : "bg-[var(--border-hover)]"
       }${disabled ? " opacity-50 cursor-not-allowed" : " cursor-pointer"}`}
     >
       <span

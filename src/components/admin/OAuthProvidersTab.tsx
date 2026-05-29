@@ -1,27 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Button,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControlLabel,
-  Switch,
-  Alert,
-  IconButton,
-} from "@mui/material";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
-import { Close as CloseIcon } from "@mui/icons-material";
 import { availableProviders } from "@/lib/providers";
 import Link from "next/link";
 
@@ -53,6 +35,9 @@ export default function OAuthProvidersTab() {
     enabled: false,
   });
   const [origin, setOrigin] = useState("");
+  const dialogId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const fetchProviders = async () => {
     try {
@@ -72,6 +57,54 @@ export default function OAuthProvidersTab() {
     fetchProviders();
     setOrigin(window.location.origin);
   }, []);
+
+  useEffect(() => {
+    if (!editingProvider) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
+    const focusableSelectors =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    const trap = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setEditingProvider(null);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelectors)).filter(
+        (el) => !el.hasAttribute("disabled")
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    const dialog = dialogRef.current;
+    if (dialog) {
+      const focusable = dialog.querySelector<HTMLElement>(focusableSelectors);
+      focusable?.focus();
+    }
+
+    document.addEventListener("keydown", trap);
+    return () => {
+      document.removeEventListener("keydown", trap);
+      previousFocusRef.current?.focus();
+    };
+  }, [editingProvider]);
 
   const handleEdit = (providerName: string) => {
     const provider = providers.find((p) => p.name === providerName);
@@ -120,260 +153,301 @@ export default function OAuthProvidersTab() {
   };
 
   const skeleton = (
-    <Box>
-      <Paper sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}>
-        <WaveSkeleton variant="text" width={192} height={32} sx={{ mb: 0.5 }} />
-        <WaveSkeleton variant="text" width={384} height={22} sx={{ mb: 3 }} />
-        <Grid container spacing={3}>
+    <div className="space-y-4">
+      <div className="p-6 bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)]">
+        <WaveSkeleton variant="text" width={192} height={32} className="mb-2" />
+        <WaveSkeleton variant="text" width={384} height={22} className="mb-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[0, 1, 2].map((i) => (
-            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
-              <Paper
-                variant="outlined"
-                sx={{ p: 2, display: "flex", flexDirection: "column", height: "100%" }}
-              >
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <WaveSkeleton variant="text" width={96} height={26} />
-                  <WaveSkeleton
-                    variant="rounded"
-                    width={64}
-                    height={24}
-                    sx={{ borderRadius: "9999px" }}
-                  />
-                </Box>
-                <WaveSkeleton variant="text" width="80%" height={20} sx={{ mb: 2, flexGrow: 1 }} />
-                <WaveSkeleton variant="rounded" height={38} />
-              </Paper>
-            </Grid>
+            <div
+              key={i}
+              className="flex flex-col p-4 rounded-[var(--radius)] border border-[var(--border)]"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <WaveSkeleton variant="text" width={96} height={26} />
+                <WaveSkeleton variant="rounded" width={64} height={24} className="rounded-full" />
+              </div>
+              <WaveSkeleton variant="text" width="80%" height={20} className="mb-4 flex-1" />
+              <WaveSkeleton variant="rounded" height={38} />
+            </div>
           ))}
-        </Grid>
-      </Paper>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 
   return (
     <SkeletonTransition loading={loading} skeleton={skeleton}>
-      <Box>
-        <Paper sx={{ p: 3, mb: 3, backgroundColor: "background.paper" }}>
-          <Typography variant="h6" gutterBottom color="text.primary">
+      <div className="space-y-4">
+        <div className="p-6 bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)]">
+          <h2 className="text-lg font-semibold text-[var(--foreground)] mb-1">
             {t("admin.oauth.title", "Fournisseurs OAuth")}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
+          </h2>
+          <p className="text-sm text-[var(--foreground-muted)] mb-6">
             {t(
               "admin.oauth.description",
               "Configurez les fournisseurs d'authentification externes. Vous devrez créer une application OAuth sur la console développeur du fournisseur."
             )}
-          </Typography>
+          </p>
 
-          <Grid container spacing={3}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {availableProviders.map((p) => {
               const configured = providers.find((cp) => cp.name === p.id);
               const isEnabled = configured?.enabled;
 
               return (
-                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={p.id}>
-                  <Paper
-                    variant="outlined"
-                    sx={{
-                      p: 2,
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      borderColor: isEnabled ? "success.main" : "divider",
-                      bgcolor: isEnabled ? "rgba(76, 175, 80, 0.04)" : "background.default",
+                <div
+                  key={p.id}
+                  className={`flex flex-col p-4 rounded-[var(--radius)] border transition-colors ${
+                    isEnabled
+                      ? "border-green-600/50 bg-green-600/5"
+                      : "border-[var(--border)] bg-[var(--background)]"
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="font-semibold text-[var(--foreground)]">{p.name}</span>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
+                        isEnabled
+                          ? "bg-green-600/20 text-green-400 border-green-600/40"
+                          : "bg-[var(--surface-hover)] text-[var(--foreground-muted)] border-[var(--border)]"
+                      }`}
+                    >
+                      {isEnabled
+                        ? t("admin.oauth.enabled", "Activé")
+                        : t("admin.oauth.disabled", "Désactivé")}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-[var(--foreground-muted)] mb-4 flex-1">
+                    {configured
+                      ? `${t("admin.oauth.client_id", "Client ID")}: ${configured.clientId?.substring(0, 8)}...`
+                      : t("admin.oauth.not_configured", "Non configuré")}
+                  </p>
+
+                  <button
+                    onClick={() => handleEdit(p.id)}
+                    className="w-full px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white transition-colors"
+                    style={{ backgroundColor: "var(--primary)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "var(--primary-hover)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "var(--primary)";
                     }}
                   >
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="flex-start"
-                      mb={2}
-                    >
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {p.name}
-                      </Typography>
-                      <Chip
-                        label={
-                          isEnabled
-                            ? t("admin.oauth.enabled", "Activé")
-                            : t("admin.oauth.disabled", "Désactivé")
-                        }
-                        color={isEnabled ? "success" : "default"}
-                        size="small"
-                        variant={isEnabled ? "filled" : "outlined"}
-                      />
-                    </Box>
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, flexGrow: 1 }}>
-                      {configured
-                        ? `${t("admin.oauth.client_id", "Client ID")}: ${configured.clientId?.substring(0, 8)}...`
-                        : t("admin.oauth.not_configured", "Non configuré")}
-                    </Typography>
-
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      onClick={() => handleEdit(p.id)}
-                    >
-                      {configured
-                        ? t("admin.oauth.edit", "Configurer")
-                        : t("admin.oauth.setup", "Installer")}
-                    </Button>
-                  </Paper>
-                </Grid>
+                    {configured
+                      ? t("admin.oauth.edit", "Configurer")
+                      : t("admin.oauth.setup", "Installer")}
+                  </button>
+                </div>
               );
             })}
-          </Grid>
-        </Paper>
+          </div>
+        </div>
 
-        <Dialog
-          open={!!editingProvider}
-          onClose={() => setEditingProvider(null)}
-          maxWidth="sm"
-          fullWidth
-          disableScrollLock
-        >
-          <DialogTitle>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              {t("admin.oauth.configure_provider", "Configurer {{provider}}", {
-                provider: availableProviders.find((p) => p.id === editingProvider)?.name,
-              })}
-              <IconButton onClick={() => setEditingProvider(null)} size="small">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-
-          <form onSubmit={handleSave}>
-            <DialogContent dividers>
-              <Alert severity="info" sx={{ mb: 1 }}>
-                <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
-                  {t("admin.oauth.callback_url", "URL de Callback (Redirect URI)")}
-                </Typography>
-
-                <Box
-                  component="code"
-                  sx={{
-                    display: "block",
-                    p: 1,
-                    bgcolor: "rgba(0, 0, 0, 0.1)",
-                    borderRadius: 1,
-                    fontFamily: "monospace",
-                    wordBreak: "break-all",
-                    userSelect: "all",
-                  }}
+        {/* Edit dialog */}
+        {editingProvider && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setEditingProvider(null);
+            }}
+          >
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={dialogId}
+              className="relative w-full max-w-lg bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+                <h3 id={dialogId} className="font-semibold text-[var(--foreground)]">
+                  {t("admin.oauth.configure_provider", "Configurer {{provider}}", {
+                    provider: availableProviders.find((p) => p.id === editingProvider)?.name,
+                  })}
+                </h3>
+                <button
+                  onClick={() => setEditingProvider(null)}
+                  className="p-1.5 rounded-full hover:bg-[var(--background)] transition-colors"
+                  aria-label="Close"
                 >
-                  {origin}
-                  {CALLBACK_PATH}
-                  {editingProvider}
-                </Box>
-                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                  {t(
-                    "admin.oauth.callback_help",
-                    "Copiez cette URL dans les paramètres de votre fournisseur OAuth."
+                  <svg
+                    className="w-4 h-4 text-[var(--foreground-muted)]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleSave}>
+                <div className="px-4 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                  {/* Callback URL info */}
+                  <div className="p-3 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--border)] text-sm">
+                    <p className="font-semibold text-[var(--foreground)] mb-1 uppercase text-xs tracking-wide">
+                      {t("admin.oauth.callback_url", "URL de Callback (Redirect URI)")}
+                    </p>
+                    <code className="block p-2 rounded bg-black/20 font-mono text-xs text-[var(--foreground)] break-all select-all">
+                      {origin}
+                      {CALLBACK_PATH}
+                      {editingProvider}
+                    </code>
+                    <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                      {t(
+                        "admin.oauth.callback_help",
+                        "Copiez cette URL dans les paramètres de votre fournisseur OAuth."
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Documentation link */}
+                  <div className="p-3 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--border)] text-sm">
+                    <p className="font-semibold text-[var(--foreground)] mb-1 uppercase text-xs tracking-wide">
+                      {t("admin.oauth.documentation", "Documentation du fournisseur")}
+                    </p>
+                    <Link
+                      href={
+                        availableProviders.find((p) => p.id === editingProvider)
+                          ?.documentationUrl || "#"
+                      }
+                      target="_BLANK"
+                      rel="noopener noreferrer"
+                      className="text-[var(--primary)] hover:underline break-all text-xs"
+                    >
+                      {availableProviders.find((p) => p.id === editingProvider)?.documentationUrl}
+                    </Link>
+                  </div>
+
+                  {/* Fields */}
+                  {editingProvider === "oidc" && (
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-[var(--foreground)]">
+                        {t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.issuer}
+                        onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
+                        required
+                        className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                        placeholder="https://auth.example.com/realms/myrealm"
+                      />
+                      <p className="text-xs text-[var(--foreground-muted)]">
+                        {t(
+                          "admin.oauth.issuer_help",
+                          "L'URL de base de votre fournisseur OpenID Connect"
+                        )}
+                      </p>
+                    </div>
                   )}
-                </Typography>
-              </Alert>
 
-              <Alert severity="info" sx={{ mb: 3, mt: 0 }}>
-                <Typography variant="caption" display="block" gutterBottom fontWeight="bold">
-                  {t("admin.oauth.documentation", "Documentation du fournisseur")}
-                </Typography>
-                <Link
-                  href={
-                    availableProviders.find((p) => p.id === editingProvider)?.documentationUrl ||
-                    "#"
-                  }
-                  target="_BLANK"
-                  rel="noopener noreferrer"
-                  style={{ wordBreak: "break-all" }}
-                >
-                  {availableProviders.find((p) => p.id === editingProvider)?.documentationUrl}
-                </Link>
-              </Alert>
-
-              <Box display="flex" flexDirection="column" gap={2}>
-                {editingProvider === "oidc" && (
-                  <TextField
-                    label={t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
-                    value={formData.issuer}
-                    onChange={(e) => setFormData({ ...formData, issuer: e.target.value })}
-                    fullWidth
-                    required
-                    variant="outlined"
-                    helperText={t(
-                      "admin.oauth.issuer_help",
-                      "L'URL de base de votre fournisseur OpenID Connect (ex: https://auth.example.com/realms/myrealm)"
-                    )}
-                  />
-                )}
-
-                {editingProvider === "azure-ad" && (
-                  <TextField
-                    label={t("admin.oauth.tenant_id", "Tenant ID")}
-                    value={formData.tenantId}
-                    onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-                    fullWidth
-                    required
-                    variant="outlined"
-                    helperText={t(
-                      "admin.oauth.tenant_id_help",
-                      "L'identifiant de votre locataire Azure AD (Tenant ID)"
-                    )}
-                  />
-                )}
-
-                <TextField
-                  label={t("admin.oauth.client_id_field", "Client ID")}
-                  value={formData.clientId}
-                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                  fullWidth
-                  required
-                  variant="outlined"
-                />
-
-                <TextField
-                  label={t("admin.oauth.client_secret", "Client Secret")}
-                  type="password"
-                  value={formData.clientSecret}
-                  onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
-                  fullWidth
-                  variant="outlined"
-                  placeholder={
-                    providers.find((p) => p.name === editingProvider)?.clientId
-                      ? t("admin.oauth.secret_placeholder", "(Laisser vide pour ne pas changer)")
-                      : ""
-                  }
-                  helperText={t(
-                    "admin.oauth.secret_help",
-                    "Le secret est chiffré avant d'être stocké."
+                  {editingProvider === "azure-ad" && (
+                    <div className="space-y-1">
+                      <label className="block text-sm font-medium text-[var(--foreground)]">
+                        {t("admin.oauth.tenant_id", "Tenant ID")}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tenantId}
+                        onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
+                        required
+                        className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      />
+                      <p className="text-xs text-[var(--foreground-muted)]">
+                        {t(
+                          "admin.oauth.tenant_id_help",
+                          "L'identifiant de votre locataire Azure AD (Tenant ID)"
+                        )}
+                      </p>
+                    </div>
                   )}
-                />
 
-                <FormControlLabel
-                  control={
-                    <Switch
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-[var(--foreground)]">
+                      {t("admin.oauth.client_id_field", "Client ID")}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.clientId}
+                      onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                      required
+                      className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-[var(--foreground)]">
+                      {t("admin.oauth.client_secret", "Client Secret")}
+                    </label>
+                    <input
+                      type="password"
+                      value={formData.clientSecret}
+                      onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
+                      className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      placeholder={
+                        providers.find((p) => p.name === editingProvider)?.clientId
+                          ? t(
+                              "admin.oauth.secret_placeholder",
+                              "(Laisser vide pour ne pas changer)"
+                            )
+                          : ""
+                      }
+                    />
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      {t("admin.oauth.secret_help", "Le secret est chiffré avant d'être stocké.")}
+                    </p>
+                  </div>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
                       checked={formData.enabled}
                       onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
-                      color="primary"
+                      className="w-4 h-4 rounded accent-[var(--primary)]"
                     />
-                  }
-                  label={t("admin.oauth.enable_provider", "Activer ce fournisseur")}
-                />
-              </Box>
-            </DialogContent>
+                    <span className="text-sm text-[var(--foreground)]">
+                      {t("admin.oauth.enable_provider", "Activer ce fournisseur")}
+                    </span>
+                  </label>
+                </div>
 
-            <DialogActions>
-              <Button onClick={() => setEditingProvider(null)} color="inherit">
-                {t("common.cancel", "Annuler")}
-              </Button>
-              <Button type="submit" variant="contained" color="primary">
-                {t("common.save", "Enregistrer")}
-              </Button>
-            </DialogActions>
-          </form>
-        </Dialog>
-      </Box>
+                {/* Footer */}
+                <div className="flex justify-end gap-2 px-4 py-3 border-t border-[var(--border)]">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProvider(null)}
+                    className="px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-[var(--foreground-muted)] hover:bg-[var(--surface-hover)] transition-colors"
+                  >
+                    {t("common.cancel", "Annuler")}
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white transition-colors"
+                    style={{ backgroundColor: "var(--primary)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "var(--primary-hover)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "var(--primary)";
+                    }}
+                  >
+                    {t("common.save", "Enregistrer")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </SkeletonTransition>
   );
 }

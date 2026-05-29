@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Snackbar, Alert as MuiAlert } from "@mui/material";
+import { toast } from "@/components/ui/Toast";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { useTranslation } from "react-i18next";
@@ -38,6 +38,37 @@ interface BrandingSettings {
   fontFamily: string;
 }
 
+function darkenHex(hex: string, factor: number): string {
+  const clean = hex.replace("#", "");
+  if (!/^[0-9A-Fa-f]{6}$/.test(clean)) return hex;
+  const r = Math.max(0, Math.round(parseInt(clean.slice(0, 2), 16) * (1 - factor)));
+  const g = Math.max(0, Math.round(parseInt(clean.slice(2, 4), 16) * (1 - factor)));
+  const b = Math.max(0, Math.round(parseInt(clean.slice(4, 6), 16) * (1 - factor)));
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+function mapBrandingFromApi(s: Record<string, string | null>): BrandingSettings {
+  return {
+    appName: s.appName || "SnowShare",
+    appDescription: s.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    logoUrl: s.logoUrl || null,
+    faviconUrl: s.faviconUrl || null,
+    primaryColor: s.primaryColor || "#3B82F6",
+    primaryHover: s.primaryHover || "#2563EB",
+    primaryDark: s.primaryDark || "#1E40AF",
+    secondaryColor: s.secondaryColor || "#8B5CF6",
+    secondaryHover: s.secondaryHover || "#7C3AED",
+    secondaryDark: s.secondaryDark || "#6D28D9",
+    backgroundColor: s.backgroundColor || "#111827",
+    backgroundImageUrl: s.backgroundImageUrl || null,
+    surfaceColor: s.surfaceColor || "#1F2937",
+    textColor: s.textColor || "#F9FAFB",
+    textMuted: s.textMuted || "#D1D5DB",
+    borderColor: s.borderColor || "#374151",
+    fontFamily: s.fontFamily || "Geist",
+  };
+}
+
 export default function BrandingTab() {
   const { t } = useTranslation();
   const { updateTheme, refreshSettings } = useTheme();
@@ -62,9 +93,6 @@ export default function BrandingTab() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastErrorOpen, setToastErrorOpen] = useState(false);
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const [formData, setFormData] = useState({ name: "", url: "" });
   const [errors, setErrors] = useState({ name: "", url: "" });
@@ -82,8 +110,7 @@ export default function BrandingTab() {
   const validateSettingsBeforeSave = (): boolean => {
     // Required text fields
     if (!settings.appName?.trim() || !settings.appDescription?.trim()) {
-      setError(t("admin.validation_required"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.validation_required"));
       return false;
     }
 
@@ -105,25 +132,21 @@ export default function BrandingTab() {
     for (const key of colorKeys) {
       const val = settings[key] as string;
       if (!val || !isHexColor(val)) {
-        setError(t("admin.validation_invalid_color"));
-        setToastErrorOpen(true);
+        toast.error(t("admin.validation_invalid_color"));
         return false;
       }
     }
 
     // Optional URLs when provided
     if (settings.logoUrl && !isValidUrl(settings.logoUrl)) {
-      setError(t("admin.validation_invalid_url"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.validation_invalid_url"));
       return false;
     }
     if (settings.faviconUrl && !isValidUrl(settings.faviconUrl)) {
-      setError(t("admin.validation_invalid_url"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.validation_invalid_url"));
       return false;
     }
 
-    setError(null);
     return true;
   };
 
@@ -133,30 +156,9 @@ export default function BrandingTab() {
       const response = await fetch("/api/admin/settings");
       if (!response.ok) throw new Error("Failed to fetch settings");
       const data = await response.json();
-      setSettings({
-        appName: data.settings.appName || "SnowShare",
-        appDescription:
-          data.settings.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
-        logoUrl: data.settings.logoUrl || null,
-        faviconUrl: data.settings.faviconUrl || null,
-        primaryColor: data.settings.primaryColor || "#3B82F6",
-        primaryHover: data.settings.primaryHover || "#2563EB",
-        primaryDark: data.settings.primaryDark || "#1E40AF",
-        secondaryColor: data.settings.secondaryColor || "#8B5CF6",
-        secondaryHover: data.settings.secondaryHover || "#7C3AED",
-        secondaryDark: data.settings.secondaryDark || "#6D28D9",
-        backgroundColor: data.settings.backgroundColor || "#111827",
-        backgroundImageUrl: data.settings.backgroundImageUrl || null,
-        surfaceColor: data.settings.surfaceColor || "#1F2937",
-        textColor: data.settings.textColor || "#F9FAFB",
-        textMuted: data.settings.textMuted || "#D1D5DB",
-        borderColor: data.settings.borderColor || "#374151",
-        fontFamily: data.settings.fontFamily || "Geist",
-      });
-      setError(null);
+      setSettings(mapBrandingFromApi(data.settings));
     } catch (err) {
-      setError(t("admin.error_load_data"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.error_load_data"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -228,10 +230,9 @@ export default function BrandingTab() {
       setCustomLinks([...customLinks, data.link]);
       setFormData({ name: "", url: "" });
       setErrors({ name: "", url: "" });
-      setToastOpen(true);
+      toast.success(t("admin.save_success"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("admin.links.error_add"));
-      setToastErrorOpen(true);
+      toast.error(err instanceof Error ? err.message : t("admin.links.error_add"));
       console.error(err);
     }
   };
@@ -247,26 +248,30 @@ export default function BrandingTab() {
       if (!response.ok) throw new Error("Failed to delete link");
 
       setCustomLinks(customLinks.filter((link) => link.id !== id));
-      setToastOpen(true);
+      toast.success(t("admin.save_success"));
     } catch (err) {
-      setError(t("admin.links.error_delete"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.links.error_delete"));
       console.error(err);
     }
   };
 
   const handleChange = (key: keyof BrandingSettings, value: string | null) => {
-    const newSettings = {
-      ...settings,
-      [key]: value,
-    };
+    const updates: Partial<BrandingSettings> = { [key]: value };
+
+    if (key === "primaryColor" && value && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+      updates.primaryHover = darkenHex(value, 0.1);
+      updates.primaryDark = darkenHex(value, 0.25);
+    } else if (key === "secondaryColor" && value && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+      updates.secondaryHover = darkenHex(value, 0.1);
+      updates.secondaryDark = darkenHex(value, 0.25);
+    }
+
+    const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
 
     // Live preview: update theme immediately for color changes
     if (key.includes("Color")) {
-      updateTheme({
-        [key]: value as string,
-      });
+      updateTheme(updates as Partial<Parameters<typeof updateTheme>[0]>);
     }
   };
 
@@ -298,12 +303,10 @@ export default function BrandingTab() {
       });
 
       // Show toast and refresh theme (metadata + favicon) without full reload
-      setToastOpen(true);
-      setError(null);
-      await refreshSettings();
+      toast.success(t("admin.save_success"));
+      await refreshSettings({ force: true });
     } catch (err) {
-      setError(t("admin.save_error"));
-      setToastErrorOpen(true);
+      toast.error(t("admin.save_error"));
       console.error(err);
     } finally {
       setSaving(false);
@@ -386,28 +389,6 @@ export default function BrandingTab() {
   return (
     <SkeletonTransition loading={loading} skeleton={skeleton} className="w-full">
       <div className="space-y-6 w-full">
-        <Snackbar
-          open={toastOpen}
-          autoHideDuration={1200}
-          onClose={() => setToastOpen(false)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <MuiAlert elevation={6} variant="filled" severity="success" sx={{ width: "100%" }}>
-            {t("admin.save_success")}
-          </MuiAlert>
-        </Snackbar>
-
-        <Snackbar
-          open={toastErrorOpen}
-          autoHideDuration={3000}
-          onClose={() => setToastErrorOpen(false)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <MuiAlert elevation={6} variant="filled" severity="error" sx={{ width: "100%" }}>
-            {error || t("admin.save_error")}
-          </MuiAlert>
-        </Snackbar>
-
         {/* App Identity */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 mb-4">
@@ -653,180 +634,54 @@ export default function BrandingTab() {
             />
           </div>
 
-          {/* Primary Colors Group */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.primary_colors")}
+          {/* Accent colors — primary and secondary; chrome colors managed by the theme system */}
+          <div className="p-4 bg-[var(--surface-hover)] rounded-[var(--radius-lg)] border border-[var(--border)]">
+            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-1">
+              {t("admin.branding.accent_colors_label", "Accent colors")}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <p className="text-xs text-[var(--foreground-muted)] mb-4">
+              {t(
+                "admin.branding.accent_colors_hint",
+                "Used for buttons, links, and focus states. Selecting a preset above overrides these."
+              )}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ColorInput
-                label={t("admin.branding.primary_label")}
+                label={t("admin.branding.primary_label", "Primary")}
                 value={settings.primaryColor}
                 onChange={(v) => handleChange("primaryColor", v)}
-                hint={t("admin.branding.primary_hint")}
               />
               <ColorInput
-                label={t("admin.branding.primary_hover_label")}
-                value={settings.primaryHover}
-                onChange={(v) => handleChange("primaryHover", v)}
-                hint={t("admin.branding.primary_hover_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.primary_dark_label")}
-                value={settings.primaryDark}
-                onChange={(v) => handleChange("primaryDark", v)}
-                hint={t("admin.branding.primary_dark_hint")}
-              />
-            </div>
-          </div>
-
-          {/* Secondary Colors Group */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.secondary_colors")}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ColorInput
-                label={t("admin.branding.secondary_label")}
+                label={t("admin.branding.secondary_label", "Secondary")}
                 value={settings.secondaryColor}
                 onChange={(v) => handleChange("secondaryColor", v)}
-                hint={t("admin.branding.secondary_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.secondary_hover_label")}
-                value={settings.secondaryHover}
-                onChange={(v) => handleChange("secondaryHover", v)}
-                hint={t("admin.branding.secondary_hover_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.secondary_dark_label")}
-                value={settings.secondaryDark}
-                onChange={(v) => handleChange("secondaryDark", v)}
-                hint={t("admin.branding.secondary_dark_hint")}
               />
             </div>
           </div>
 
-          {/* Background & Surface Colors */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          {/* Background image (orthogonal to color system) */}
+          <div className="p-4 bg-[var(--surface-hover)] rounded-[var(--radius-lg)] border border-[var(--border)]">
             <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.background_surfaces")}
+              {t("admin.branding.background_image_url", "Background image")}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ColorInput
-                label={t("admin.branding.background_label")}
-                value={settings.backgroundColor}
-                onChange={(v) => handleChange("backgroundColor", v)}
-                hint={t("admin.branding.background_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.surface_label")}
-                value={settings.surfaceColor}
-                onChange={(v) => handleChange("surfaceColor", v)}
-                hint={t("admin.branding.surface_hint")}
-              />
-            </div>
-
-            {/* Background Image URL */}
-            <div className="mt-4">
-              <label className="text-sm text-[var(--foreground)] block mb-2">
-                {t("admin.branding.background_image_url")}
-              </label>
-              <input
-                type="url"
-                value={settings.backgroundImageUrl || ""}
-                onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
-                className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                placeholder="https://example.com/background.jpg"
-              />
-              <p className="text-xs text-[var(--foreground-muted)] mt-1">
-                {t("admin.branding.background_image_url_hint")}
-              </p>
-              {settings.backgroundImageUrl && (
-                <div className="mt-3 p-2 bg-[var(--surface)]/50 rounded-lg">
-                  <p className="text-xs text-[var(--foreground-muted)] mb-2">
-                    {t("admin.branding.background_image_preview")}
-                  </p>
-                  <BackgroundImagePreview url={settings.backgroundImageUrl} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Text & Border Colors */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
-              {t("admin.branding.text_borders")}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ColorInput
-                label={t("admin.branding.main_text_label")}
-                value={settings.textColor}
-                onChange={(v) => handleChange("textColor", v)}
-                hint={t("admin.branding.main_text_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.muted_text_label")}
-                value={settings.textMuted}
-                onChange={(v) => handleChange("textMuted", v)}
-                hint={t("admin.branding.muted_text_hint")}
-              />
-              <ColorInput
-                label={t("admin.branding.borders_label")}
-                value={settings.borderColor}
-                onChange={(v) => handleChange("borderColor", v)}
-                hint={t("admin.branding.borders_hint")}
-              />
-            </div>
-          </div>
-
-          {/* Color Preview */}
-          <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-            <p className="text-sm text-[var(--foreground)] mb-3">
-              {t("admin.branding.theme_preview")}
+            <input
+              type="url"
+              value={settings.backgroundImageUrl || ""}
+              onChange={(e) => handleChange("backgroundImageUrl", e.target.value || null)}
+              className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-[var(--radius)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--foreground)]"
+              placeholder="https://example.com/background.jpg"
+            />
+            <p className="text-xs text-[var(--foreground-muted)] mt-1">
+              {t("admin.branding.background_image_url_hint")}
             </p>
-            <div
-              className="p-6 rounded-lg space-y-4"
-              style={{ backgroundColor: settings.backgroundColor }}
-            >
-              <div
-                className="p-4 rounded-lg"
-                style={{
-                  backgroundColor: settings.surfaceColor,
-                  borderColor: settings.borderColor,
-                  borderWidth: "1px",
-                }}
-              >
-                <p style={{ color: settings.textColor }} className="font-medium">
-                  {t("admin.branding.preview_button_primary")}
+            {settings.backgroundImageUrl && (
+              <div className="mt-3 p-2 bg-[var(--surface)] rounded-[var(--radius)] border border-[var(--border)]">
+                <p className="text-xs text-[var(--foreground-muted)] mb-2">
+                  {t("admin.branding.background_image_preview")}
                 </p>
-                <p style={{ color: settings.textMuted }} className="text-sm mt-1">
-                  {t("admin.branding.preview_button_accent")}
-                </p>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    className="px-4 py-2 rounded-lg text-white font-medium"
-                    style={{ backgroundColor: settings.primaryColor }}
-                  >
-                    {t("admin.branding.preview_button_primary")}
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-white font-medium"
-                    style={{ backgroundColor: settings.secondaryColor }}
-                  >
-                    {t("admin.branding.preview_button_accent")}
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-lg text-white font-medium"
-                    style={{
-                      background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
-                    }}
-                  >
-                    {t("admin.branding.preview_button_gradient")}
-                  </button>
-                </div>
+                <BackgroundImagePreview url={settings.backgroundImageUrl} />
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -878,10 +733,7 @@ export default function BrandingTab() {
 
             <button
               type="submit"
-              className="px-4 py-2 text-white rounded-lg font-medium transition-all"
-              style={{
-                background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
-              }}
+              className="px-4 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors"
             >
               {t("admin.links.button_add")}
             </button>
@@ -964,10 +816,7 @@ export default function BrandingTab() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2 text-white rounded-lg font-medium transition-all disabled:opacity-50"
-            style={{
-              background: `linear-gradient(to right, ${settings.primaryColor}, ${settings.secondaryColor})`,
-            }}
+            className="px-6 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors disabled:opacity-50"
           >
             {saving ? t("admin.settings.saving") : t("admin.settings.save")}
           </button>
@@ -1093,13 +942,13 @@ function ColorInput({
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-10 h-10 rounded-lg border border-[var(--border)]/50 cursor-pointer bg-transparent"
+          className="w-10 h-10 rounded-[var(--radius)] border border-[var(--border)] cursor-pointer bg-transparent"
         />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-2 py-1.5 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-mono"
+          className="flex-1 px-2 py-1.5 bg-[var(--input)] border border-[var(--border)] rounded-[var(--radius)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--foreground)] font-mono"
           placeholder="#000000"
         />
       </div>

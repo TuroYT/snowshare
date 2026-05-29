@@ -152,16 +152,20 @@
     "password_incorrect": "Onjuist wachtwoord",
     "download_progress": "Downloaden: {{percent}}%",
     "cancel_download": "Download annuleren",
-    "download_cancelled": "Download geannuleerd"
+    "download_cancelled": "Download geannuleerd",
+    "badge": "Bestand",
+    "preview": "Voorbeeld",
+    "files_list_aria": "Bestanden in dit gedeelde item, {{count}} items"
   },
   "home": {
     "title": "Welkom bij SnowShare",
-    "description": "Deel je bestanden, code en URL's veilig en eenvoudig."
+    "description": "Deel je bestanden, code en URL's veilig en eenvoudig.",
+    "eyebrow": "Veilig delen"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Link",
+    "pasteshare": "Tekst",
+    "fileshare": "Bestand"
   },
   "linkshare": {
     "title": "Link delen",
@@ -215,6 +219,7 @@
     "github": "GitHub",
     "license": "Licentie",
     "rights": "Alle rechten voorbehouden.",
+    "powered_by": "Mogelijk gemaakt door",
     "terms_of_use": "Gebruiksvoorwaarden"
   },
   "auth": {
@@ -255,12 +260,17 @@
     "verify_email_success_title": "E-mail geverifieerd!",
     "verify_email_success_message": "Uw e-mail is geverifieerd. U kunt nu inloggen.",
     "verify_email_error_title": "Verificatie mislukt",
-    "verify_email_error_generic": "Er is een fout opgetreden tijdens de verificatie"
+    "verify_email_error_generic": "Er is een fout opgetreden tijdens de verificatie",
+    "have_account": "Al een account?",
+    "signin_link": "Inloggen",
+    "signup_link": "Registreren",
+    "signin_with": "Inloggen met"
   },
   "profile": {
     "title": "Mijn profiel",
     "subtitle": "Beheer je persoonlijke gegevens en shares",
     "loading": "Laden...",
+    "tab_profile": "Profiel",
     "tab_info": "Persoonlijke informatie",
     "tab_shares": "Mijn shares",
     "info_title": "Persoonlijke informatie",
@@ -644,7 +654,9 @@
       "background_image_preview": "Achtergrondvoorbeeld",
       "section_typography": "Typografie",
       "font_family": "Lettertype",
-      "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt"
+      "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt",
+      "accent_colors_label": "Accentkleuren",
+      "accent_colors_hint": "Gebruikt voor knoppen, links en focusstatussen. Een preset overschrijft deze waarden."
     },
     "email_templates": {
       "title": "E-mailsjablonen",
@@ -667,6 +679,10 @@
       "test_sent": "Test-e-mail verzonden naar uw adres.",
       "test_error": "Test-e-mail verzenden mislukt.",
       "error_load": "E-mailsjablonen laden mislukt."
+    },
+    "theme": {
+      "presets_label": "Voorinstellingen",
+      "preset_helper": "Klik op een voorinstelling om de kleurvelden vooraf in te vullen. U kunt deze daarna aanpassen."
     },
     "update": {
       "title": "Update beschikbaar",
@@ -708,7 +724,8 @@
     "disclaimer": "Door deze link te openen ga je ermee akkoord dat deze wordt ontsleuteld en dat je wordt doorgestuurd naar de bestemming.",
     "error_generic": "Er is een fout opgetreden",
     "error_url_not_found": "URL niet gevonden",
-    "error_connection": "Verbindingsfout"
+    "error_connection": "Verbindingsfout",
+    "badge": "Beveiligde link"
   },
   "api": {
     "errors": {

@@ -6,6 +6,23 @@ import { renderHook, act } from "@testing-library/react";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import React from "react";
 
+// Mock window.matchMedia (not available in jsdom)
+beforeEach(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: jest.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+});
+
 // Mock fetch for refreshSettings
 beforeEach(() => {
   global.fetch = jest.fn(() =>

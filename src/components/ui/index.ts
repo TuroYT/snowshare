@@ -1,8 +1,15 @@
 export { Button } from "./Button";
 export type { ButtonProps } from "./Button";
-
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./Card";
 export type { CardProps } from "./Card";
-
 export { Input, Textarea } from "./Input";
 export type { InputProps, TextareaProps } from "./Input";
+export { default as Modal } from "./Modal";
+export { Select } from "./Select";
+export type { SelectProps } from "./Select";
+export { Tabs, Tab } from "./Tabs";
+export { Toaster, toast } from "./Toast";
+export { Switch } from "./Switch";
+export { Spinner } from "./Spinner";
+export { Badge } from "./Badge";
+export { Tooltip } from "./Tooltip";

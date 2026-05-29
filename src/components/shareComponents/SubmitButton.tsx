@@ -23,7 +23,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
       <button
         type="submit"
         disabled={disabled}
-        className="btn-paste w-full inline-flex items-center justify-center gap-2 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius)] font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? (
           <>

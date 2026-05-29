@@ -144,16 +144,20 @@
     "password_incorrect": "Falsches Passwort",
     "download_progress": "Herunterladen: {{percent}}%",
     "cancel_download": "Download abbrechen",
-    "download_cancelled": "Download abgebrochen"
+    "download_cancelled": "Download abgebrochen",
+    "badge": "Datei",
+    "preview": "Vorschau",
+    "files_list_aria": "Dateien in dieser Freigabe, {{count}} Elemente"
   },
   "home": {
     "title": "Willkommen bei SnowShare",
-    "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach."
+    "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach.",
+    "eyebrow": "Sicheres Teilen"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Link",
+    "pasteshare": "Text",
+    "fileshare": "Datei"
   },
   "linkshare": {
     "title": "Einen Link teilen",
@@ -207,6 +211,7 @@
     "github": "GitHub",
     "license": "License",
     "rights": "Alle Rechte vorbehalten.",
+    "powered_by": "Bereitgestellt von",
     "terms_of_use": "Nutzungsbedingungen"
   },
   "auth": {
@@ -247,12 +252,17 @@
     "verify_email_success_title": "E-Mail verifiziert!",
     "verify_email_success_message": "Ihre E-Mail wurde verifiziert. Sie können sich jetzt anmelden.",
     "verify_email_error_title": "Verifizierung fehlgeschlagen",
-    "verify_email_error_generic": "Bei der Verifizierung ist ein Fehler aufgetreten"
+    "verify_email_error_generic": "Bei der Verifizierung ist ein Fehler aufgetreten",
+    "have_account": "Schon ein Konto?",
+    "signin_link": "Anmelden",
+    "signup_link": "Registrieren",
+    "signin_with": "Anmelden mit"
   },
   "profile": {
     "title": "Mein Profil",
     "subtitle": "Verwalten Sie Ihre persönlichen Informationen und Freigaben",
     "loading": "Lädt...",
+    "tab_profile": "Profil",
     "tab_info": "Persönliche Informationen",
     "tab_shares": "Meine Freigaben",
     "tab_accounts": "Verbundene Konten",
@@ -637,7 +647,9 @@
       "background_image_preview": "Hintergrundvorschau",
       "section_typography": "Typografie",
       "font_family": "Schriftart",
-      "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird"
+      "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird",
+      "accent_colors_label": "Akzentfarben",
+      "accent_colors_hint": "Für Schaltflächen, Links und Fokuszustände. Ein Preset überschreibt diese Werte."
     },
     "email_templates": {
       "title": "E-Mail-Vorlagen",
@@ -667,6 +679,10 @@
       "view_release": "Release-Notes ansehen",
       "upgrade_guide": "Upgrade-Anleitung",
       "dismiss": "Schließen"
+    },
+    "theme": {
+      "presets_label": "Voreinstellungen",
+      "preset_helper": "Klicken Sie auf eine Voreinstellung, um die Farbfelder auszufüllen. Sie können diese danach anpassen."
     }
   },
   "paste_view": {
@@ -701,7 +717,8 @@
     "disclaimer": "Durch den Zugriff auf diesen Link stimmen Sie zu, dass er entschlüsselt und Sie zu seinem Ziel weitergeleitet werden.",
     "error_generic": "Ein Fehler ist aufgetreten",
     "error_url_not_found": "URL nicht gefunden",
-    "error_connection": "Verbindungsfehler"
+    "error_connection": "Verbindungsfehler",
+    "badge": "Geschützter Link"
   },
   "api": {
     "errors": {

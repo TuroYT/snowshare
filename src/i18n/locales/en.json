@@ -148,16 +148,20 @@
     "password_incorrect": "Incorrect password",
     "download_progress": "Downloading: {{percent}}%",
     "cancel_download": "Cancel download",
-    "download_cancelled": "Download cancelled"
+    "download_cancelled": "Download cancelled",
+    "badge": "File",
+    "preview": "Preview",
+    "files_list_aria": "Files in this share, {{count}} items"
   },
   "home": {
     "title": "Welcome to SnowShare",
-    "description": "Share your files, code and URLs securely and easily."
+    "description": "Share your files, code and URLs securely and easily.",
+    "eyebrow": "Secure sharing"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Link",
+    "pasteshare": "Text",
+    "fileshare": "File"
   },
   "linkshare": {
     "title": "Share a link",
@@ -211,6 +215,7 @@
     "github": "GitHub",
     "license": "License",
     "rights": "All rights reserved.",
+    "powered_by": "Powered by",
     "terms_of_use": "Terms of Use"
   },
   "auth": {
@@ -251,12 +256,17 @@
     "verify_email_success_title": "Email verified!",
     "verify_email_success_message": "Your email has been verified. You can now sign in.",
     "verify_email_error_title": "Verification failed",
-    "verify_email_error_generic": "An error occurred during verification"
+    "verify_email_error_generic": "An error occurred during verification",
+    "have_account": "Already have an account?",
+    "signin_link": "Sign in",
+    "signup_link": "Sign up",
+    "signin_with": "Sign in with"
   },
   "profile": {
     "title": "My Profile",
     "subtitle": "Manage your personal information and shares",
     "loading": "Loading...",
+    "tab_profile": "Profile",
     "tab_info": "Personal information",
     "tab_shares": "My shares",
     "tab_accounts": "Connected accounts",
@@ -641,7 +651,9 @@
       "background_image_preview": "Background Preview",
       "section_typography": "Typography",
       "font_family": "Font Family",
-      "font_family_hint": "The font used globally across the entire application"
+      "font_family_hint": "The font used globally across the entire application",
+      "accent_colors_label": "Accent colors",
+      "accent_colors_hint": "Used for buttons, links, and focus states. Selecting a preset above overrides these."
     },
     "email_templates": {
       "title": "Email Templates",
@@ -664,6 +676,10 @@
       "test_sent": "Test email sent to your address.",
       "test_error": "Failed to send test email.",
       "error_load": "Failed to load email templates."
+    },
+    "theme": {
+      "presets_label": "Presets",
+      "preset_helper": "Click a preset to pre-fill the color fields. You can customize them afterward."
     },
     "update": {
       "title": "Update Available",
@@ -705,7 +721,8 @@
     "disclaimer": "By accessing this link, you agree that it will be decrypted and you will be redirected to its destination.",
     "error_generic": "An error occurred",
     "error_url_not_found": "URL not found",
-    "error_connection": "Connection error"
+    "error_connection": "Connection error",
+    "badge": "Protected link"
   },
   "api": {
     "errors": {

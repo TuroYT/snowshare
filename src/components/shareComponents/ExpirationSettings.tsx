@@ -63,8 +63,8 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
       </label>
 
       {isAuthenticated && (
-        <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
-          <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--surface)]/30 rounded-lg p-3 -m-3 transition-colors">
+        <div className="bg-[var(--surface-hover)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
+          <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--border)] rounded-[var(--radius)] p-3 -m-3 transition-colors">
             <div className="relative flex-shrink-0">
               <input
                 type="checkbox"
@@ -72,12 +72,12 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
                 onChange={(e) => setNeverExpires(e.target.checked)}
                 className="sr-only"
               />
-              <div className={`toggle-slider ${neverExpires ? "toggle-slider-active" : ""}`}>
-                <div
-                  className={`toggle-slider-thumb ${
-                    neverExpires ? "toggle-slider-thumb-active" : ""
-                  }`}
-                ></div>
+              <div
+                className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${neverExpires ? "bg-[var(--primary)]" : "bg-[var(--border-hover)]"}`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${neverExpires ? "translate-x-4" : ""}`}
+                />
               </div>
             </div>
             <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
             value={expiresDays}
             onChange={(e) => setExpiresDays(Number(e.target.value))}
             disabled={isAuthenticated && neverExpires}
-            className="input-paste w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
         <span className="text-sm text-[var(--foreground-muted)] min-w-0">
@@ -117,7 +117,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
         </span>
       </div>
 
-      <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)]/30 p-3 rounded-xl border border-[var(--border)]/30">
+      <div className="text-xs text-[var(--foreground-muted)] bg-[var(--surface-hover)] p-3 rounded-[var(--radius)] border border-[var(--border)]">
         <div className="flex items-center gap-2">
           <svg
             className="w-3 h-3 text-[var(--primary)] flex-shrink-0"
@@ -137,8 +137,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
       </div>
 
       {!isAuthenticated && (
-        <p className="text-xs bg-[var(--surface)] border border-[var(--border)] rounded p-2 text-[var(--foreground-muted)]">
-          💡{" "}
+        <p className="text-xs bg-[var(--surface-hover)] border border-[var(--border)] rounded-[var(--radius)] p-2 text-[var(--foreground-muted)]">
           {t(
             `${translationPrefix}.login_for_more`,
             "Connectez-vous pour des durées plus longues (jusqu'à {{max}} jours) ou sans expiration",

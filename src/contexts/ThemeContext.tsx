@@ -67,22 +67,22 @@ export interface ThemeContextType {
   branding: BrandingSettings;
   isLoading: boolean;
   updateTheme: (colors: Partial<ThemeColors>) => void;
-  refreshSettings: () => Promise<void>;
+  refreshSettings: (options?: { force?: boolean }) => Promise<void>;
 }
 
 const defaultColors: ThemeColors = {
-  primaryColor: "#3B82F6",
-  primaryHover: "#2563EB",
-  primaryDark: "#1E40AF",
-  secondaryColor: "#8B5CF6",
-  secondaryHover: "#7C3AED",
-  secondaryDark: "#6D28D9",
-  backgroundColor: "#111827",
+  primaryColor: "#3b82f6",
+  primaryHover: "#2563eb",
+  primaryDark: "#1e40af",
+  secondaryColor: "#64748b",
+  secondaryHover: "#475569",
+  secondaryDark: "#334155",
+  backgroundColor: "#fafaf9",
   backgroundImageUrl: null,
-  surfaceColor: "#1F2937",
-  textColor: "#F9FAFB",
-  textMuted: "#D1D5DB",
-  borderColor: "#374151",
+  surfaceColor: "#ffffff",
+  textColor: "#1c1917",
+  textMuted: "#78716c",
+  borderColor: "#e7e5e4",
 };
 
 const defaultBranding: BrandingSettings = {
@@ -92,6 +92,38 @@ const defaultBranding: BrandingSettings = {
   faviconUrl: null,
   fontFamily: "Geist",
 };
+
+function parseSettings(settings: ThemeData["settings"]): {
+  colors: ThemeColors;
+  branding: BrandingSettings;
+} {
+  return {
+    colors: {
+      primaryColor: settings.primaryColor || defaultColors.primaryColor,
+      primaryHover: settings.primaryHover || defaultColors.primaryHover,
+      primaryDark: settings.primaryDark || defaultColors.primaryDark,
+      secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
+      secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
+      secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
+      backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
+      backgroundImageUrl:
+        settings.backgroundImageUrl !== undefined
+          ? settings.backgroundImageUrl
+          : defaultColors.backgroundImageUrl,
+      surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
+      textColor: settings.textColor || defaultColors.textColor,
+      textMuted: settings.textMuted || defaultColors.textMuted,
+      borderColor: settings.borderColor || defaultColors.borderColor,
+    },
+    branding: {
+      appName: settings.appName || defaultBranding.appName,
+      appDescription: settings.appDescription || defaultBranding.appDescription,
+      logoUrl: settings.logoUrl || null,
+      faviconUrl: settings.faviconUrl || null,
+      fontFamily: settings.fontFamily || defaultBranding.fontFamily,
+    },
+  };
+}
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -106,46 +138,24 @@ export function ThemeProvider({
   const [branding, setBranding] = useState<BrandingSettings>(defaultBranding);
   const [isLoading, setIsLoading] = useState(!initialData);
 
-  const refreshSettings = async () => {
+  const refreshSettings = async (options?: { force?: boolean }) => {
     try {
-      const response = await fetch("/api/settings");
+      const response = await fetch("/api/settings", options?.force ? { cache: "reload" } : {});
       if (!response.ok) {
         setIsLoading(false);
         return;
       }
 
       const data = await response.json();
-      const settings = data.settings;
-
-      const newColors: ThemeColors = {
-        primaryColor: settings.primaryColor || defaultColors.primaryColor,
-        primaryHover: settings.primaryHover || defaultColors.primaryHover,
-        primaryDark: settings.primaryDark || defaultColors.primaryDark,
-        secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
-        secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
-        secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
-        backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
-        backgroundImageUrl:
-          settings.backgroundImageUrl !== undefined
-            ? settings.backgroundImageUrl
-            : defaultColors.backgroundImageUrl,
-        surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
-        textColor: settings.textColor || defaultColors.textColor,
-        textMuted: settings.textMuted || defaultColors.textMuted,
-        borderColor: settings.borderColor || defaultColors.borderColor,
-      };
-
-      const newBranding: BrandingSettings = {
-        appName: settings.appName || defaultBranding.appName,
-        appDescription: settings.appDescription || defaultBranding.appDescription,
-        logoUrl: settings.logoUrl || null,
-        faviconUrl: settings.faviconUrl || null,
-        fontFamily: settings.fontFamily || defaultBranding.fontFamily,
-      };
+      const { colors: newColors, branding: newBranding } = parseSettings(data.settings);
 
       setColors(newColors);
       setBranding(newBranding);
-      applyThemeToDOM(newColors);
+      const isDark =
+        document.documentElement.getAttribute("data-theme") === "dark" ||
+        (!document.documentElement.hasAttribute("data-theme") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      applyThemeToDOM(newColors, isDark);
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
     } catch (error) {
@@ -157,41 +167,17 @@ export function ThemeProvider({
 
   useEffect(() => {
     if (initialData) {
-      const settings = initialData.settings;
-      const newColors: ThemeColors = {
-        primaryColor: settings.primaryColor || defaultColors.primaryColor,
-        primaryHover: settings.primaryHover || defaultColors.primaryHover,
-        primaryDark: settings.primaryDark || defaultColors.primaryDark,
-        secondaryColor: settings.secondaryColor || defaultColors.secondaryColor,
-        secondaryHover: settings.secondaryHover || defaultColors.secondaryHover,
-        secondaryDark: settings.secondaryDark || defaultColors.secondaryDark,
-        backgroundColor: settings.backgroundColor || defaultColors.backgroundColor,
-        backgroundImageUrl:
-          settings.backgroundImageUrl !== undefined
-            ? settings.backgroundImageUrl
-            : defaultColors.backgroundImageUrl,
-        surfaceColor: settings.surfaceColor || defaultColors.surfaceColor,
-        textColor: settings.textColor || defaultColors.textColor,
-        textMuted: settings.textMuted || defaultColors.textMuted,
-        borderColor: settings.borderColor || defaultColors.borderColor,
-      };
-
-      const newBranding: BrandingSettings = {
-        appName: settings.appName || defaultBranding.appName,
-        appDescription: settings.appDescription || defaultBranding.appDescription,
-        logoUrl: settings.logoUrl || null,
-        faviconUrl: settings.faviconUrl || null,
-        fontFamily: settings.fontFamily || defaultBranding.fontFamily,
-      };
-
+      const { colors: newColors, branding: newBranding } = parseSettings(initialData.settings);
       setColors(newColors);
       setBranding(newBranding);
-      applyThemeToDOM(newColors);
+      const isDark =
+        document.documentElement.getAttribute("data-theme") === "dark" ||
+        (!document.documentElement.hasAttribute("data-theme") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      applyThemeToDOM(newColors, isDark);
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
       setIsLoading(false);
-
-      // Ensure we refresh settings on the client as well. In production
       void refreshSettings();
     } else {
       refreshSettings();
@@ -286,29 +272,21 @@ function loadGoogleFont(fontFamily: string) {
 }
 
 /**
- * Apply theme colors to CSS custom properties
+ * Apply admin-configurable accent colors to CSS custom properties.
+ * Chrome colors (background, surface, text, border) are intentionally
+ * left to globals.css so next-themes can control light/dark switching.
  */
-function applyThemeToDOM(colors: ThemeColors) {
+function applyThemeToDOM(colors: ThemeColors, _isDark = false) {
   const root = document.documentElement;
 
-  // Primary colors
+  // Only override accent colors — next-themes owns data-theme and bg/surface/text/border
   root.style.setProperty("--primary", colors.primaryColor);
   root.style.setProperty("--primary-hover", colors.primaryHover);
   root.style.setProperty("--primary-dark", colors.primaryDark);
-
-  // Secondary colors
   root.style.setProperty("--secondary", colors.secondaryColor);
   root.style.setProperty("--secondary-hover", colors.secondaryHover);
   root.style.setProperty("--secondary-dark", colors.secondaryDark);
 
-  // Background colors
-  root.style.setProperty("--background", colors.backgroundColor);
-  root.style.setProperty("--surface", hexToRgba(colors.surfaceColor, 0.85));
-  root.style.setProperty("--surface-hover", hexToRgba(colors.surfaceColor, 0.85));
-  root.style.setProperty("--input", colors.surfaceColor);
-  root.style.setProperty("--input-focus", colors.backgroundColor);
-
-  // Background image
   if (colors.backgroundImageUrl) {
     const img = new Image();
     const url = colors.backgroundImageUrl;
@@ -319,31 +297,11 @@ function applyThemeToDOM(colors: ThemeColors) {
       document.body.style.backgroundAttachment = "fixed";
       document.body.style.backgroundRepeat = "no-repeat";
     };
-    img.onerror = () => {
-      clearBodyBackground();
-    };
+    img.onerror = clearBodyBackground;
     img.src = url;
   } else {
     clearBodyBackground();
   }
-
-  // Text colors
-  root.style.setProperty("--foreground", colors.textColor);
-  root.style.setProperty("--foreground-muted", colors.textMuted);
-
-  // Border colors
-  root.style.setProperty("--border", hexToRgba(colors.borderColor, 0.7));
-  root.style.setProperty("--border-hover", hexToRgba(colors.borderColor, 0.85));
-
-  // Gradients
-  root.style.setProperty(
-    "--gradient-primary",
-    `linear-gradient(135deg, ${colors.primaryColor} 0%, ${colors.secondaryColor} 100%)`
-  );
-  root.style.setProperty(
-    "--gradient-secondary",
-    `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.secondaryDark} 100%)`
-  );
 }
 
 // Update document metadata (favicon, title) when branding changes
@@ -363,36 +321,4 @@ function applyBrandingMeta(branding: BrandingSettings) {
       document.head.appendChild(newLink);
     }
   }
-}
-
-// (no-op outside React components)
-
-/**
- * Convert hex color to rgba
- */
-function hexToRgba(hex: string, alpha: number): string {
-  // Handle empty or invalid hex values
-  if (!hex || typeof hex !== "string") {
-    return `rgba(0, 0, 0, ${alpha})`;
-  }
-
-  hex = hex.replace("#", "");
-
-  // Validate hex format (must be 3 or 6 characters and all hex digits)
-  if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex)) {
-    return `rgba(0, 0, 0, ${alpha})`;
-  }
-
-  if (hex.length === 3) {
-    hex = hex
-      .split("")
-      .map((char) => char + char)
-      .join("");
-  }
-
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

@@ -40,7 +40,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "modern-icon-blue text-[var(--primary)]",
+      color: "text-[var(--primary)]",
     },
     {
       label: t("profile.stats_files"),
@@ -55,7 +55,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "modern-icon-purple text-[var(--secondary)]",
+      color: "text-[var(--secondary)]",
     },
     {
       label: t("profile.stats_pastes"),
@@ -70,7 +70,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "modern-icon-blue text-[var(--primary)]",
+      color: "text-[var(--primary)]",
     },
     {
       label: t("profile.stats_links"),
@@ -85,7 +85,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "modern-icon-green text-emerald-400",
+      color: "text-emerald-400",
     },
     {
       label: t("profile.stats_active"),
@@ -95,7 +95,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       ),
-      color: "modern-icon-green text-emerald-400",
+      color: "text-emerald-400",
     },
     {
       label: t("profile.stats_expired"),
@@ -110,7 +110,7 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
           />
         </svg>
       ),
-      color: "modern-icon-red text-red-400",
+      color: "text-red-400",
     },
   ];
 

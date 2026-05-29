@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import MDEditor from "@uiw/react-md-editor";
-import { Snackbar, Alert } from "@mui/material";
+import { toast } from "@/components/ui/Toast";
 import WarningModal from "./WarningModal";
 import GeneralSection from "./GeneralSection";
 import CaptchaSection from "./CaptchaSection";
@@ -48,15 +48,42 @@ interface Settings {
   s3SecretAccessKey: string | null;
 }
 
+function mapSettingsWithDefaults(data: Settings): Settings {
+  return {
+    ...data,
+    allowSignin: data.allowSignin ?? true,
+    disableCredentialsLogin: data.disableCredentialsLogin ?? false,
+    allowAnonFileShare: data.allowAnonFileShare ?? true,
+    allowAnonLinkShare: data.allowAnonLinkShare ?? true,
+    allowAnonPasteShare: data.allowAnonPasteShare ?? true,
+    allowIframeEmbedding: data.allowIframeEmbedding ?? false,
+    captchaEnabled: data.captchaEnabled ?? false,
+    captchaProvider: data.captchaProvider ?? null,
+    captchaSiteKey: data.captchaSiteKey ?? null,
+    captchaSecretKey: data.captchaSecretKey ?? null,
+    smtpEnabled: data.smtpEnabled ?? false,
+    smtpHost: data.smtpHost ?? null,
+    smtpPort: data.smtpPort ?? 587,
+    smtpUser: data.smtpUser ?? null,
+    smtpPassword: data.smtpPassword ?? null,
+    smtpFrom: data.smtpFrom ?? null,
+    smtpSecure: data.smtpSecure ?? false,
+    emailVerificationRequired: data.emailVerificationRequired ?? false,
+    s3Enabled: data.s3Enabled ?? false,
+    s3Endpoint: data.s3Endpoint ?? null,
+    s3Region: data.s3Region ?? null,
+    s3Bucket: data.s3Bucket ?? null,
+    s3AccessKeyId: data.s3AccessKeyId ?? null,
+    s3SecretAccessKey: data.s3SecretAccessKey ?? null,
+  };
+}
+
 export default function SettingsTab() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [hasActiveSSO, setHasActiveSSO] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastSeverity, setToastSeverity] = useState<"success" | "error">("success");
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   const fetchSettings = useCallback(async () => {
@@ -66,37 +93,9 @@ export default function SettingsTab() {
       if (!response.ok) throw new Error("Failed to fetch settings");
       const data = await response.json();
       setHasActiveSSO(data.hasActiveSSO);
-      setSettings({
-        ...data.settings,
-        allowSignin: data.settings.allowSignin ?? true,
-        disableCredentialsLogin: data.settings.disableCredentialsLogin ?? false,
-        allowAnonFileShare: data.settings.allowAnonFileShare ?? true,
-        allowAnonLinkShare: data.settings.allowAnonLinkShare ?? true,
-        allowAnonPasteShare: data.settings.allowAnonPasteShare ?? true,
-        allowIframeEmbedding: data.settings.allowIframeEmbedding ?? false,
-        captchaEnabled: data.settings.captchaEnabled ?? false,
-        captchaProvider: data.settings.captchaProvider ?? null,
-        captchaSiteKey: data.settings.captchaSiteKey ?? null,
-        captchaSecretKey: data.settings.captchaSecretKey ?? null,
-        smtpEnabled: data.settings.smtpEnabled ?? false,
-        smtpHost: data.settings.smtpHost ?? null,
-        smtpPort: data.settings.smtpPort ?? 587,
-        smtpUser: data.settings.smtpUser ?? null,
-        smtpPassword: data.settings.smtpPassword ?? null,
-        smtpFrom: data.settings.smtpFrom ?? null,
-        smtpSecure: data.settings.smtpSecure ?? false,
-        emailVerificationRequired: data.settings.emailVerificationRequired ?? false,
-        s3Enabled: data.settings.s3Enabled ?? false,
-        s3Endpoint: data.settings.s3Endpoint ?? null,
-        s3Region: data.settings.s3Region ?? null,
-        s3Bucket: data.settings.s3Bucket ?? null,
-        s3AccessKeyId: data.settings.s3AccessKeyId ?? null,
-        s3SecretAccessKey: data.settings.s3SecretAccessKey ?? null,
-      });
+      setSettings(mapSettingsWithDefaults(data.settings));
     } catch (err) {
-      setToastMessage(t("admin.error_load_data"));
-      setToastSeverity("error");
-      setToastOpen(true);
+      toast.error(t("admin.error_load_data"));
       console.error(err);
     } finally {
       setLoading(false);
@@ -132,13 +131,9 @@ export default function SettingsTab() {
       if (!response.ok) throw new Error("Failed to save settings");
       const data = await response.json();
       setSettings(data.settings);
-      setToastMessage(t("admin.save_success"));
-      setToastSeverity("success");
-      setToastOpen(true);
+      toast.success(t("admin.save_success"));
     } catch (err) {
-      setToastMessage(t("admin.save_error"));
-      setToastSeverity("error");
-      setToastOpen(true);
+      toast.error(t("admin.save_error"));
       console.error(err);
     } finally {
       setSaving(false);
@@ -186,16 +181,6 @@ export default function SettingsTab() {
             onCancel={() => setShowWarningModal(false)}
           />
 
-          <Snackbar open={toastOpen} autoHideDuration={3000} onClose={() => setToastOpen(false)}>
-            <Alert
-              onClose={() => setToastOpen(false)}
-              severity={toastSeverity}
-              sx={{ width: "100%" }}
-            >
-              {toastMessage}
-            </Alert>
-          </Snackbar>
-
           <GeneralSection
             settings={settings}
             hasActiveSSO={hasActiveSSO}
@@ -226,8 +211,7 @@ export default function SettingsTab() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 text-white rounded-lg font-medium transition-all disabled:opacity-50"
-              style={{ background: "linear-gradient(to right, var(--primary), var(--secondary))" }}
+              className="px-6 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors disabled:opacity-50"
             >
               {saving ? t("admin.settings.saving") : t("admin.settings.save")}
             </button>

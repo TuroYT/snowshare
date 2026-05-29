@@ -532,15 +532,9 @@ const FileShare: React.FC = () => {
   }
 
   return (
-    <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto text-left">
-      <div className="flex items-center gap-4 mb-6 justify-center">
-        <div
-          className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-          }}
-        >
+    <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
           <svg
             className="w-6 h-6 text-[var(--primary)]"
             fill="none"
@@ -570,24 +564,16 @@ const FileShare: React.FC = () => {
         <div className="space-y-2">
           <label className="block text-sm font-medium text-[var(--foreground)]">
             {t("fileshare.file_selected", "File to share")}&nbsp;
-            <span className="text-red-400">*</span>
+            <span className="text-[var(--destructive)]">*</span>
           </label>
 
           {files.length === 0 ? (
             <div
-              className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 ${
+              className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center transition-colors duration-200 ${
                 dragOver
-                  ? "scale-105"
-                  : "border-[var(--border)]/50 hover:bg-[var(--surface)]/30 hover:scale-102"
+                  ? "border-[var(--secondary)] bg-[var(--surface-hover)]"
+                  : "border-[var(--border)] hover:bg-[var(--surface-hover)]"
               }`}
-              style={
-                dragOver
-                  ? {
-                      borderColor: "var(--secondary)",
-                      background: "rgb(from var(--secondary) r g b / 0.2)",
-                    }
-                  : undefined
-              }
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -654,7 +640,7 @@ const FileShare: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-[var(--surface)]/50 p-4 rounded-xl border border-[var(--border)]/50">
+            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-medium text-[var(--foreground)]">
                   {t("fileshare.selected_files", "Selected Files")} ({files.length})
@@ -680,7 +666,7 @@ const FileShare: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
-                      className="ml-2 text-red-500 hover:text-red-600 transition-colors"
+                      className="ml-2 text-[var(--destructive)] hover:opacity-80 transition-opacity"
                       title={t("common.remove", "Remove")}
                     >
                       <svg
@@ -736,13 +722,12 @@ const FileShare: React.FC = () => {
                 })}
               </span>
             </div>
-            <div className="w-full bg-[var(--surface)]/50 rounded-full h-3">
+            <div className="w-full bg-[var(--surface)] rounded-full h-3">
               <div
                 className="h-3 rounded-full transition-all duration-300"
                 style={{
                   width: `${uploadProgress}%`,
-                  background: "linear-gradient(to right, var(--secondary), var(--primary))",
-                  boxShadow: "0 10px 15px -3px rgb(from var(--secondary) r g b / 0.25)",
+                  background: "var(--primary)",
                 }}
               />
             </div>

@@ -73,9 +73,7 @@ const ManageCodeBlock: React.FC<{
       });
       const data = await res.json();
       if (!res.ok || data?.error) {
-        setError(
-          data?.error || t("pasteshare_ui.creation_error", "Failed to create share")
-        );
+        setError(data?.error || t("pasteshare_ui.creation_error", "Failed to create share"));
       } else {
         const pasteShare = data?.share?.pasteShare;
         if (pasteShare?.slug) {
@@ -107,7 +105,7 @@ const ManageCodeBlock: React.FC<{
         <select
           value={language}
           onChange={(e) => onLanguageChange(e.target.value)}
-          className="input-paste w-full"
+          className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
         >
           <option value="">{t("pasteshare_ui.language_placeholder")}</option>
           {LANGUAGES.map((l) => (

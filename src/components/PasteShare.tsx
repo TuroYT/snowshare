@@ -24,14 +24,8 @@ const PasteShare: React.FC = () => {
     ) : (
       <div className="w-full max-w-full overflow-hidden text-left">
         {/* Header avec icône */}
-        <div className="flex items-center gap-4 mb-6 lg:hidden justify-center">
-          <div
-            className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
-            style={{
-              background:
-                "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-            }}
-          >
+        <div className="flex items-center gap-4 mb-6 lg:hidden">
+          <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
             <svg
               className="w-6 h-6 text-[var(--primary)]"
               fill="none"
@@ -59,15 +53,9 @@ const PasteShare: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
           {/* Grand éditeur de code */}
           <div className="flex-1 min-w-0 max-w-full flex-container-safe">
-            <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50 min-h-[60vh] lg:min-h-[80vh]">
-              <div className="hidden lg:flex items-center gap-4 mb-6 justify-center">
-                <div
-                  className="h-12 w-12 rounded-xl border border-[var(--primary)]/50 flex items-center justify-center"
-                  style={{
-                    background:
-                      "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-                  }}
-                >
+            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] min-h-[60vh] lg:min-h-[80vh]">
+              <div className="hidden lg:flex items-center gap-4 mb-6">
+                <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-[var(--primary)]"
                     fill="none"
@@ -99,7 +87,7 @@ const PasteShare: React.FC = () => {
 
           {/* Formulaire à droite sur desktop, en bas sur mobile */}
           <div className="w-full lg:w-[32rem] lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
-            <div className="bg-[var(--surface)] bg-opacity-95 p-4 rounded-2xl shadow-2xl border border-[var(--border)]/50">
+            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)]">
               <ManageCodeBlock
                 code={code}
                 onCodeChange={setCode}

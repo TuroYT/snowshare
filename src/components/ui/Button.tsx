@@ -13,22 +13,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variantStyles = {
       primary:
-        "bg-[var(--gradient-primary)] text-white hover:bg-[var(--gradient-secondary)] focus:ring-[var(--primary)] shadow-[var(--shadow-md)]",
+        "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] focus-visible:ring-[var(--primary)] focus-visible:ring-offset-[var(--background)]",
       secondary:
-        "bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-hover)] focus:ring-[var(--secondary)]",
+        "bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-hover)]",
       ghost:
-        "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)]",
-      danger: "bg-[var(--destructive)] text-white hover:opacity-90 focus:ring-[var(--destructive)]",
+        "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)]",
+      danger:
+        "bg-[var(--destructive)] text-white hover:opacity-90 focus-visible:ring-[var(--destructive)]",
     };
 
     const sizeStyles = {
-      sm: "text-sm px-3 py-1.5",
-      md: "text-base px-4 py-2",
-      lg: "text-lg px-6 py-3",
+      sm: "text-sm px-3 py-1.5 rounded-[var(--radius)]",
+      md: "text-sm px-4 py-2 rounded-[var(--radius)]",
+      lg: "text-base px-5 py-2.5 rounded-[var(--radius)]",
     };
 
     return (
@@ -65,5 +66,4 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
   }
 );
-
 Button.displayName = "Button";

@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { formatBytes } from "@/lib/formatSize";
 import FilePreviewModal from "@/components/filePreview/FilePreviewModal";
+import { Button, Badge, Input, Spinner } from "@/components/ui";
 
 interface FileListItem {
   name: string;
@@ -21,6 +23,87 @@ interface FileInfo {
   isBulk?: boolean;
   fileCount?: number;
   files?: FileListItem[];
+}
+
+function FilePasswordGate({
+  onSubmit,
+  password,
+  setPassword,
+  loading,
+  error,
+  t,
+}: {
+  onSubmit: (e: React.FormEvent) => void;
+  password: string;
+  setPassword: (v: string) => void;
+  loading: boolean;
+  error: string;
+  t: TFunction;
+}) {
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4"
+    >
+      <p className="text-sm text-[var(--foreground-muted)]">
+        {t("file_download.password_protected")}
+      </p>
+      <Input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder={t("file_download.password_placeholder")}
+        error={error || undefined}
+      />
+      <Button type="submit" isLoading={loading} className="w-full">
+        {t("file_download.verify_password")}
+      </Button>
+    </form>
+  );
+}
+
+function BulkFileList({
+  files,
+  formatFileSize,
+  onFileClick,
+  t,
+}: {
+  files: FileListItem[];
+  formatFileSize: (bytes?: number) => string;
+  onFileClick: (f: FileListItem) => void;
+  t: TFunction;
+}) {
+  return (
+    <ul
+      className="divide-y divide-[var(--border)]"
+      role="list"
+      aria-label={t("file_download.files_list_aria", "Files in this share, {{count}} items", {
+        count: files.length,
+      })}
+    >
+      {files.map((f) => (
+        <li
+          key={f.path}
+          className="flex items-center justify-between py-2.5 gap-4 cursor-pointer hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded transition-colors"
+          aria-label={`${f.path}, ${formatFileSize(f.size)}`}
+          onClick={() => onFileClick(f)}
+        >
+          <div className="min-w-0">
+            <p className="text-sm text-[var(--foreground)] truncate">{f.name}</p>
+            <p className="text-xs text-[var(--foreground-muted)]">{formatFileSize(f.size)}</p>
+          </div>
+          <a
+            href={`/api/shares/fileShare/download?path=${encodeURIComponent(f.path)}`}
+            className="shrink-0 text-xs text-[var(--primary)] hover:underline"
+            download
+            onClick={(e) => e.stopPropagation()}
+          >
+            {t("file_download.download", "Download")}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default function FileSharePage() {
@@ -266,413 +349,141 @@ export default function FileSharePage() {
     });
   };
 
-  if (loadingInfo) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
-          <p className="text-[var(--foreground-muted)]" suppressHydrationWarning>
-            {t("loading")}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!fileInfo && error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 text-center">
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-900/20 border border-red-800">
-            <svg
-              className="h-8 w-8 text-red-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-extrabold text-[var(--foreground)]">
-            {t("file_download.file_not_found")}
-          </h2>
-          <p className="text-[var(--foreground-muted)]">{error}</p>
-          <Link
-            href="/"
-            className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
-          >
-            <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            {t("file_download.back_to_home")}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[var(--secondary)]/20 border border-[var(--secondary-dark)]">
-              <svg
-                className="h-8 w-8 text-[var(--secondary)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+    <div className="min-h-screen flex flex-col bg-[var(--background)]">
+      <main className="flex-1 flex items-start justify-center px-4 py-12">
+        <div className="w-full max-w-lg">
+          {/* Loading state */}
+          {loadingInfo && (
+            <div className="flex justify-center py-12">
+              <Spinner size="lg" />
             </div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-[var(--foreground)]">
-              {t("file_download.download_file")}
-            </h2>
-            <div className="mt-4 bg-[var(--surface)] rounded-lg p-4 border border-[var(--border)]">
-              <p
-                className="text-lg font-medium text-[var(--foreground)] truncate"
-                title={fileInfo?.filename}
+          )}
+
+          {/* Error state when no file info */}
+          {!loadingInfo && !fileInfo && error && (
+            <div className="text-center py-12 space-y-4">
+              <p className="text-[var(--foreground-muted)]">{error}</p>
+              <Link
+                href="/"
+                className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
               >
-                {fileInfo?.filename}
-              </p>
-              {fileInfo?.isBulk && fileInfo?.fileCount && (
+                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                {t("file_download.back_to_home")}
+              </Link>
+            </div>
+          )}
+
+          {/* File header */}
+          {fileInfo && (
+            <div className="mb-6">
+              <Badge variant="muted" className="mb-3">
+                {t("file_download.badge", "File")}
+              </Badge>
+              <h1 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">
+                {fileInfo.filename ?? fileInfo.files?.[0]?.name ?? t("loading")}
+              </h1>
+              {fileInfo.isBulk && fileInfo.fileCount && (
                 <p className="text-sm text-[var(--foreground-muted)] mt-1">
                   {t("file_download.file_count", "{{count}} files", { count: fileInfo.fileCount })}
                 </p>
               )}
-              {fileInfo?.fileSize && (
+              {fileInfo.fileSize && (
                 <p className="text-sm text-[var(--foreground-muted)] mt-1">
-                  {t("file_download.size")}: {formatFileSize(fileInfo.fileSize)}
+                  {formatBytes(fileInfo.fileSize, useGiB)}
                 </p>
-              )}
-            </div>
-            {fileInfo?.requiresPassword && (
-              <p className="mt-2 text-center text-sm text-[var(--foreground-muted)]">
-                {t("file_download.password_protected")}
-              </p>
-            )}
-          </div>
-
-          {fileInfo?.requiresPassword && !passwordSubmitted ? (
-            <form className="mt-8 space-y-6" onSubmit={handlePasswordSubmit}>
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-[var(--foreground)] mb-2"
-                >
-                  {t("file_download.password")}
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 border border-[var(--border)] placeholder-[var(--foreground-muted)] text-[var(--foreground)] bg-[var(--surface)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--secondary)] focus:border-[var(--secondary)] focus:z-10 sm:text-sm transition-colors"
-                  placeholder={t("file_download.password_placeholder")}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-
-              {error && (
-                <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">
-                  <div className="flex items-center justify-center">
-                    <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {error}
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    {t("file_download.verifying")}
-                  </div>
-                ) : (
-                  <>
-                    <svg
-                      className="h-5 w-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                      />
-                    </svg>
-                    {t("file_download.verify_password")}
-                  </>
-                )}
-              </button>
-            </form>
-          ) : (
-            <div className="mt-8 space-y-6">
-              {fileInfo?.isBulk && fileInfo?.files && fileInfo.files.length > 0 && (
-                <div className="bg-[var(--surface)] rounded-lg p-4 border border-[var(--border)]">
-                  <h3 className="text-sm font-medium text-[var(--foreground)] mb-3">
-                    {t("file_download.files_in_share", "Files in this share")}:
-                  </h3>
-                  <ul
-                    className="max-h-64 overflow-y-auto space-y-2"
-                    role="list"
-                    aria-label={t(
-                      "file_download.files_list_aria",
-                      "Files in this share, {{count}} items",
-                      { count: fileInfo.files.length }
-                    )}
-                  >
-                    {fileInfo.files.map((file, index) => (
-                      <li
-                        key={index}
-                        className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)] hover:bg-[var(--surface)] cursor-pointer transition-colors"
-                        aria-label={`${file.path}, ${formatFileSize(file.size)}`}
-                        onClick={() => handleFileClick(file)}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className="text-sm truncate text-[var(--foreground)]"
-                            title={file.path}
-                          >
-                            {file.path}
-                          </p>
-                          <p className="text-xs text-[var(--foreground-muted)]">
-                            {formatFileSize(file.size)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                          <svg
-                            className="h-5 w-5 text-[var(--primary)]"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {error && (
-                <div className="text-red-400 text-sm text-center bg-red-900/20 border border-red-800 rounded-md p-3">
-                  <div className="flex items-center justify-center">
-                    <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {error}
-                  </div>
-                </div>
-              )}
-
-              {!fileInfo?.isBulk && (
-                <button
-                  onClick={handleSingleFilePreview}
-                  className="group relative w-full flex justify-center py-3 px-4 border border-[var(--border)] text-sm font-medium rounded-md text-[var(--foreground)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary)] transition-colors"
-                >
-                  <svg
-                    className="h-5 w-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                  {t("file_download.preview", "Preview")}
-                </button>
-              )}
-
-              {downloadAbortController ? (
-                <div className="space-y-3">
-                  <div className="bg-[var(--surface)] rounded-lg p-4 border border-[var(--border)]">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-[var(--foreground)]">
-                        {totalBytes > 0
-                          ? t("file_download.download_progress", "Downloading: {{percent}}%", {
-                              percent: Math.min(
-                                99,
-                                Math.round((downloadedBytes / totalBytes) * 100)
-                              ),
-                            })
-                          : t("file_download.downloading")}
-                      </span>
-                      <span className="text-xs text-[var(--foreground-muted)]">
-                        {formatFileSize(downloadedBytes)}
-                        {totalBytes > 0 ? ` / ~${formatFileSize(totalBytes)}` : ""}
-                      </span>
-                    </div>
-                    <div className="w-full bg-[var(--background)] rounded-full h-2">
-                      <div
-                        className="bg-[var(--secondary)] h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width:
-                            totalBytes > 0
-                              ? `${Math.min(99, Math.round((downloadedBytes / totalBytes) * 100))}%`
-                              : "100%",
-                          animation:
-                            totalBytes === 0 ? "pulse 1.5s ease-in-out infinite" : undefined,
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleCancelDownload}
-                    className="group relative w-full flex justify-center py-3 px-4 border border-red-700 text-sm font-medium rounded-md text-red-400 bg-red-900/20 hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 transition-colors"
-                  >
-                    <svg
-                      className="h-5 w-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                    {t("file_download.cancel_download", "Cancel download")}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleDownload()}
-                  disabled={loading}
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--secondary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      {t("file_download.downloading")}
-                    </div>
-                  ) : (
-                    <>
-                      <svg
-                        className="h-5 w-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 10v6m0 0l-3-3m3 3l3-3M4 7h16"
-                        />
-                      </svg>
-                      {t("file_download.download")}
-                    </>
-                  )}
-                </button>
               )}
             </div>
           )}
 
-          <div className="mt-6 text-center text-xs text-[var(--foreground-muted)]">
-            <p>{t("file_download.disclaimer")}</p>
-          </div>
+          {/* Password gate */}
+          {fileInfo?.requiresPassword && !passwordSubmitted && (
+            <FilePasswordGate
+              onSubmit={handlePasswordSubmit}
+              password={password}
+              setPassword={setPassword}
+              loading={loading}
+              error={error}
+              t={t}
+            />
+          )}
+
+          {/* Download area */}
+          {fileInfo && (!fileInfo.requiresPassword || passwordSubmitted) && (
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4">
+              {/* Error message inside download area */}
+              {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
+
+              {fileInfo.isBulk && fileInfo.files && fileInfo.files.length > 0 ? (
+                <BulkFileList
+                  files={fileInfo.files}
+                  formatFileSize={formatFileSize}
+                  onFileClick={handleFileClick}
+                  t={t}
+                />
+              ) : (
+                <>
+                  {/* Single file preview button */}
+                  {!fileInfo.isBulk && (
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={handleSingleFilePreview}
+                    >
+                      {t("file_download.preview", "Preview")}
+                    </Button>
+                  )}
+
+                  {/* Download progress bar */}
+                  {downloadedBytes > 0 && totalBytes > 0 && (
+                    <div className="space-y-1">
+                      <div className="h-1.5 rounded-full bg-[var(--border)] overflow-hidden">
+                        <div
+                          className="h-full bg-[var(--primary)] transition-all"
+                          style={{ width: `${Math.round((downloadedBytes / totalBytes) * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-[var(--foreground-muted)] text-right">
+                        {formatBytes(downloadedBytes, useGiB)} / {formatBytes(totalBytes, useGiB)}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      onClick={() => handleDownload()}
+                      isLoading={loading && !downloadAbortController}
+                      className="flex-1"
+                    >
+                      {t("file_download.download")}
+                    </Button>
+                    {downloadAbortController && (
+                      <Button variant="danger" onClick={handleCancelDownload}>
+                        {t("file_download.cancel_download", "Cancel")}
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Disclaimer */}
+              <p className="text-xs text-[var(--foreground-muted)] text-center">
+                {t("file_download.disclaimer")}
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
       <Footer />
 
-      {/* File Preview Modal */}
+      {/* File preview modal */}
       {previewFile && (
         <FilePreviewModal
           isOpen={!!previewFile}

@@ -2,7 +2,6 @@
 
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 import en from "./locales/en.json";
 import fr from "./locales/fr.json";
 import es from "./locales/es.json";
@@ -35,20 +34,16 @@ const resources = Object.fromEntries(
   ])
 );
 
-const supportedLngs = languages.map((lang) => lang.code);
+export const supportedLngs = languages.map((lang) => lang.code);
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: "fr",
-    supportedLngs,
-    interpolation: { escapeValue: false },
-    detection: {
-      order: ["querystring", "localStorage", "cookie", "navigator"],
-      caches: ["localStorage", "cookie"],
-    },
-  });
+// Initialize with a fixed language so SSR and the initial client render match.
+// Language detection runs client-side after hydration (see NextAuthProvider).
+i18n.use(initReactI18next).init({
+  resources,
+  lng: "fr",
+  fallbackLng: "fr",
+  supportedLngs,
+  interpolation: { escapeValue: false },
+});
 
 export default i18n;

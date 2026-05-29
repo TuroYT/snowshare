@@ -148,16 +148,20 @@
     "password_incorrect": "Mot de passe incorrect",
     "download_progress": "Téléchargement : {{percent}}%",
     "cancel_download": "Annuler le téléchargement",
-    "download_cancelled": "Téléchargement annulé"
+    "download_cancelled": "Téléchargement annulé",
+    "badge": "Fichier",
+    "preview": "Aperçu",
+    "files_list_aria": "Fichiers dans ce partage, {{count}} éléments"
   },
   "home": {
     "title": "Bienvenue sur SnowShare",
-    "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité."
+    "description": "Partagez vos fichiers, vos codes et vos URLs en toute sécurité et simplicité.",
+    "eyebrow": "Partage sécurisé"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Lien",
+    "pasteshare": "Texte",
+    "fileshare": "Fichier"
   },
   "linkshare": {
     "title": "Partager un lien",
@@ -211,6 +215,7 @@
     "github": "GitHub",
     "license": "License",
     "rights": "Tous droits réservés.",
+    "powered_by": "Propulsé par",
     "terms_of_use": "Conditions d'utilisation"
   },
   "auth": {
@@ -251,12 +256,17 @@
     "verify_email_success_title": "Email vérifié !",
     "verify_email_success_message": "Votre email a été vérifié. Vous pouvez maintenant vous connecter.",
     "verify_email_error_title": "Échec de la vérification",
-    "verify_email_error_generic": "Une erreur s'est produite lors de la vérification"
+    "verify_email_error_generic": "Une erreur s'est produite lors de la vérification",
+    "have_account": "Déjà un compte ?",
+    "signin_link": "Se connecter",
+    "signup_link": "S'inscrire",
+    "signin_with": "Se connecter avec"
   },
   "profile": {
     "title": "Mon Profil",
     "subtitle": "Gérez vos informations personnelles et vos partages",
     "loading": "Chargement...",
+    "tab_profile": "Profil",
     "tab_info": "Informations personnelles",
     "tab_shares": "Mes partages",
     "tab_accounts": "Comptes connectés",
@@ -641,7 +651,9 @@
       "background_image_preview": "Aperçu de l'arrière-plan",
       "section_typography": "Typographie",
       "font_family": "Police d'écriture",
-      "font_family_hint": "La police utilisée globalement dans toute l'application"
+      "font_family_hint": "La police utilisée globalement dans toute l'application",
+      "accent_colors_label": "Couleurs d'accent",
+      "accent_colors_hint": "Utilisées pour les boutons, liens et états de focus. Sélectionner un preset remplace ces valeurs."
     },
     "email_templates": {
       "title": "Modèles d'e-mail",
@@ -664,6 +676,10 @@
       "test_sent": "E-mail de test envoyé à votre adresse.",
       "test_error": "Échec de l'envoi de l'e-mail de test.",
       "error_load": "Impossible de charger les modèles d'e-mail."
+    },
+    "theme": {
+      "presets_label": "Préréglages",
+      "preset_helper": "Cliquer un préréglage pré-remplit les champs de couleur. Vous pouvez les personnaliser ensuite."
     },
     "update": {
       "title": "Mise à jour disponible",
@@ -705,7 +721,8 @@
     "disclaimer": "En accédant à ce lien, vous acceptez que celui-ci soit décrypté et que vous soyez redirigé vers sa destination.",
     "error_generic": "Une erreur est survenue",
     "error_url_not_found": "URL introuvable",
-    "error_connection": "Erreur de connexion"
+    "error_connection": "Erreur de connexion",
+    "badge": "Lien protégé"
   },
   "api": {
     "errors": {

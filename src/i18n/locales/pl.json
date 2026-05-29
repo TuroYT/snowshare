@@ -152,16 +152,20 @@
     "password_incorrect": "Nieprawidłowe hasło",
     "download_progress": "Pobieranie: {{percent}}%",
     "cancel_download": "Anuluj pobieranie",
-    "download_cancelled": "Pobieranie anulowane"
+    "download_cancelled": "Pobieranie anulowane",
+    "badge": "Plik",
+    "preview": "Podgląd",
+    "files_list_aria": "Pliki w tym udostępnieniu, {{count}} elementów"
   },
   "home": {
     "title": "Witamy w SnowShare",
-    "description": "Udostępniaj pliki, kod i linki - łatwo i bezpiecznie."
+    "description": "Udostępniaj pliki, kod i linki - łatwo i bezpiecznie.",
+    "eyebrow": "Bezpieczne udostępnianie"
   },
   "tabs": {
-    "linkshare": "Udostępnianie linków",
-    "pasteshare": "Udostępnianie kodu",
-    "fileshare": "Udostępnianie plików"
+    "linkshare": "Link",
+    "pasteshare": "Tekst",
+    "fileshare": "Plik"
   },
   "linkshare": {
     "title": "Udostępnij link",
@@ -215,6 +219,7 @@
     "github": "GitHub",
     "license": "Licencja",
     "rights": "Wszelkie prawa zastrzeżone.",
+    "powered_by": "Napędzane przez",
     "terms_of_use": "Warunki użytkowania"
   },
   "auth": {
@@ -255,12 +260,17 @@
     "verify_email_success_title": "E-mail zweryfikowany!",
     "verify_email_success_message": "Twój e-mail został zweryfikowany. Możesz się teraz zalogować.",
     "verify_email_error_title": "Weryfikacja nie powiodła się",
-    "verify_email_error_generic": "Wystąpił błąd podczas weryfikacji"
+    "verify_email_error_generic": "Wystąpił błąd podczas weryfikacji",
+    "have_account": "Masz już konto?",
+    "signin_link": "Zaloguj się",
+    "signup_link": "Zarejestruj się",
+    "signin_with": "Zaloguj się przez"
   },
   "profile": {
     "title": "Mój profil",
     "subtitle": "Zarządzaj danymi osobowymi i udostępnieniami",
     "loading": "Ładowanie...",
+    "tab_profile": "Profil",
     "tab_info": "Dane osobowe",
     "tab_shares": "Moje udostępnienia",
     "info_title": "Dane osobowe",
@@ -641,7 +651,9 @@
       "background_image_preview": "Podgląd tła",
       "section_typography": "Typografia",
       "font_family": "Czcionka",
-      "font_family_hint": "Czcionka używana globalnie w całej aplikacji"
+      "font_family_hint": "Czcionka używana globalnie w całej aplikacji",
+      "accent_colors_label": "Kolory akcentu",
+      "accent_colors_hint": "Używane dla przycisków, linków i stanów fokusa. Wybór presetu nadpisuje te wartości."
     },
     "email_templates": {
       "title": "Szablony e-mail",
@@ -664,6 +676,10 @@
       "test_sent": "Testowy e-mail wysłany na Twój adres.",
       "test_error": "Nie udało się wysłać testowego e-maila.",
       "error_load": "Nie udało się załadować szablonów e-mail."
+    },
+    "theme": {
+      "presets_label": "Presety",
+      "preset_helper": "Kliknij preset, aby wstępnie wypełnić pola kolorów. Możesz je dostosować później."
     },
     "update": {
       "title": "Dostępna aktualizacja",
@@ -705,7 +721,8 @@
     "disclaimer": "Uzyskując dostęp do tego linku zgadzasz się, że zostanie on odszyfrowany i zostaniesz przekierowany do jego lokalizacji.",
     "error_generic": "Wystąpił błąd",
     "error_url_not_found": "URL nie znaleziony",
-    "error_connection": "Błąd połączenia"
+    "error_connection": "Błąd połączenia",
+    "badge": "Chroniony link"
   },
   "api": {
     "errors": {

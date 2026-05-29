@@ -144,16 +144,20 @@
     "password_incorrect": "Contraseña incorrecta",
     "download_progress": "Descargando: {{percent}}%",
     "cancel_download": "Cancelar descarga",
-    "download_cancelled": "Descarga cancelada"
+    "download_cancelled": "Descarga cancelada",
+    "badge": "Archivo",
+    "preview": "Vista previa",
+    "files_list_aria": "Archivos en este recurso compartido, {{count}} elementos"
   },
   "home": {
     "title": "Bienvenido a SnowShare",
-    "description": "Comparte tus archivos, código y URLs de forma segura y fácil."
+    "description": "Comparte tus archivos, código y URLs de forma segura y fácil.",
+    "eyebrow": "Compartir seguro"
   },
   "tabs": {
-    "linkshare": "LinkShare",
-    "pasteshare": "PasteShare",
-    "fileshare": "FileShare"
+    "linkshare": "Enlace",
+    "pasteshare": "Texto",
+    "fileshare": "Archivo"
   },
   "linkshare": {
     "title": "Compartir un enlace",
@@ -207,6 +211,7 @@
     "github": "GitHub",
     "license": "Licencia",
     "rights": "Todos los derechos reservados.",
+    "powered_by": "Desarrollado por",
     "terms_of_use": "Términos de uso"
   },
   "auth": {
@@ -247,12 +252,17 @@
     "verify_email_success_title": "¡Email verificado!",
     "verify_email_success_message": "Tu email ha sido verificado. Ahora puedes iniciar sesión.",
     "verify_email_error_title": "Error de verificación",
-    "verify_email_error_generic": "Ocurrió un error durante la verificación"
+    "verify_email_error_generic": "Ocurrió un error durante la verificación",
+    "have_account": "¿Ya tienes cuenta?",
+    "signin_link": "Iniciar sesión",
+    "signup_link": "Registrarse",
+    "signin_with": "Iniciar sesión con"
   },
   "profile": {
     "title": "Mi Perfil",
     "subtitle": "Gestiona tu información personal y tus compartidos",
     "loading": "Cargando...",
+    "tab_profile": "Perfil",
     "tab_info": "Información personal",
     "tab_shares": "Mis compartidos",
     "tab_accounts": "Cuentas conectadas",
@@ -637,7 +647,9 @@
       "background_image_preview": "Vista previa del fondo",
       "section_typography": "Tipografía",
       "font_family": "Fuente",
-      "font_family_hint": "La fuente utilizada globalmente en toda la aplicación"
+      "font_family_hint": "La fuente utilizada globalmente en toda la aplicación",
+      "accent_colors_label": "Colores de acento",
+      "accent_colors_hint": "Usados para botones, enlaces y estados de foco. Seleccionar un preset anula estos valores."
     },
     "email_templates": {
       "title": "Plantillas de correo",
@@ -667,6 +679,10 @@
       "view_release": "Ver notas de la versión",
       "upgrade_guide": "Guía de actualización",
       "dismiss": "Descartar"
+    },
+    "theme": {
+      "presets_label": "Preajustes",
+      "preset_helper": "Haga clic en un preajuste para rellenar los campos de color. Puede personalizarlos después."
     }
   },
   "paste_view": {
@@ -701,7 +717,8 @@
     "disclaimer": "Al acceder a este enlace, acepta que será descifrado y será redirigido a su destino.",
     "error_generic": "Ha ocurrido un error",
     "error_url_not_found": "URL no encontrada",
-    "error_connection": "Error de conexión"
+    "error_connection": "Error de conexión",
+    "badge": "Enlace protegido"
   },
   "api": {
     "errors": {
