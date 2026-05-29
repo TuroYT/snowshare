@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
@@ -35,6 +35,9 @@ export default function OAuthProvidersTab() {
     enabled: false,
   });
   const [origin, setOrigin] = useState("");
+  const dialogId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const fetchProviders = async () => {
     try {
@@ -54,6 +57,54 @@ export default function OAuthProvidersTab() {
     fetchProviders();
     setOrigin(window.location.origin);
   }, []);
+
+  useEffect(() => {
+    if (!editingProvider) return;
+
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
+    const focusableSelectors =
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    const trap = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setEditingProvider(null);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelectors)).filter(
+        (el) => !el.hasAttribute("disabled")
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    const dialog = dialogRef.current;
+    if (dialog) {
+      const focusable = dialog.querySelector<HTMLElement>(focusableSelectors);
+      focusable?.focus();
+    }
+
+    document.addEventListener("keydown", trap);
+    return () => {
+      document.removeEventListener("keydown", trap);
+      previousFocusRef.current?.focus();
+    };
+  }, [editingProvider]);
 
   const handleEdit = (providerName: string) => {
     const provider = providers.find((p) => p.name === providerName);
@@ -203,10 +254,16 @@ export default function OAuthProvidersTab() {
               if (e.target === e.currentTarget) setEditingProvider(null);
             }}
           >
-            <div className="relative w-full max-w-lg bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden">
+            <div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={dialogId}
+              className="relative w-full max-w-lg bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
+            >
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
-                <h3 className="font-semibold text-[var(--foreground)]">
+                <h3 id={dialogId} className="font-semibold text-[var(--foreground)]">
                   {t("admin.oauth.configure_provider", "Configurer {{provider}}", {
                     provider: availableProviders.find((p) => p.id === editingProvider)?.name,
                   })}

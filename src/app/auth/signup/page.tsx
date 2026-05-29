@@ -151,7 +151,6 @@ export default function SignUp() {
   }
 
   if (disableCredentialsLogin) {
-    router.push("/auth/signin");
     return null;
   }
   if (!allowSignup) {
