@@ -36,6 +36,7 @@ const resources = Object.fromEntries(
 
 export const supportedLngs = languages.map((lang) => lang.code);
 
+// NEXT_PUBLIC_* vars are inlined at build time — changing this requires a rebuild.
 const _envLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? "en";
 const defaultLocale = supportedLngs.includes(_envLocale) ? _envLocale : "en";
 
