@@ -2,6 +2,7 @@
 
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { resolveDefaultLocale } from "@/i18n/locale-utils";
 import en from "./locales/en.json";
 import fr from "./locales/fr.json";
 import es from "./locales/es.json";
@@ -36,9 +37,7 @@ const resources = Object.fromEntries(
 
 export const supportedLngs = languages.map((lang) => lang.code);
 
-// NEXT_PUBLIC_* vars are inlined at build time — changing this requires a rebuild.
-const _envLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? "en";
-const defaultLocale = supportedLngs.includes(_envLocale) ? _envLocale : "en";
+const defaultLocale = resolveDefaultLocale(supportedLngs);
 
 // Initialize with a fixed language so SSR and the initial client render match.
 // Language detection runs client-side after hydration (see NextAuthProvider).
