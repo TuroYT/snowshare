@@ -36,12 +36,15 @@ const resources = Object.fromEntries(
 
 export const supportedLngs = languages.map((lang) => lang.code);
 
+const _envLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? "en";
+const defaultLocale = supportedLngs.includes(_envLocale) ? _envLocale : "en";
+
 // Initialize with a fixed language so SSR and the initial client render match.
 // Language detection runs client-side after hydration (see NextAuthProvider).
 i18n.use(initReactI18next).init({
   resources,
-  lng: "fr",
-  fallbackLng: "fr",
+  lng: defaultLocale,
+  fallbackLng: defaultLocale,
   supportedLngs,
   interpolation: { escapeValue: false },
 });

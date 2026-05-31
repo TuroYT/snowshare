@@ -14,7 +14,10 @@ import nl from "@/i18n/locales/nl.json";
 export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "pl", "nl"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
-const DEFAULT_LOCALE: SupportedLocale = "en";
+const _envLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? "en";
+const DEFAULT_LOCALE: SupportedLocale = SUPPORTED_LOCALES.includes(_envLocale as SupportedLocale)
+  ? (_envLocale as SupportedLocale)
+  : "en";
 
 const translations: Record<string, Record<string, unknown>> = {
   en,
