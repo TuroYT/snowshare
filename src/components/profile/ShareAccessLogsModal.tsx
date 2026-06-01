@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@/components/ui";
-import AccessLogTable, { type AccessLog } from "./AccessLogTable";
+import { useAccessLogs } from "@/hooks/useAccessLogs";
+import AccessLogTable from "./AccessLogTable";
 
 type ShareAccessLogsModalProps = {
   shareId: string;
@@ -19,38 +20,12 @@ export default function ShareAccessLogsModal({
   onClose,
 }: ShareAccessLogsModalProps) {
   const { t } = useTranslation();
-  const [logs, setLogs] = useState<AccessLog[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const { logs, total, page, setPage, loading, totalPages } = useAccessLogs({ shareId });
 
-  const fetchLogs = useCallback(
-    async (p: number) => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/user/access-logs?shareId=${shareId}&page=${p}`);
-        if (res.ok) {
-          const data = await res.json();
-          setLogs(data.logs);
-          setTotal(data.total);
-        }
-      } finally {
-        setLoading(false);
-      }
-    },
-    [shareId]
-  );
-
-  // Reset to first page each time the modal opens for a share.
+  // Reset to first page each time the modal opens.
   useEffect(() => {
     if (isOpen) setPage(1);
-  }, [isOpen, shareId]);
-
-  useEffect(() => {
-    if (isOpen) fetchLogs(page);
-  }, [isOpen, page, fetchLogs]);
-
-  const totalPages = Math.ceil(total / 50);
+  }, [isOpen, shareId, setPage]);
 
   return (
     <Modal

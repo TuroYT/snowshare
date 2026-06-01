@@ -362,9 +362,14 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
             </label>
             <input
               type="datetime-local"
-              value={
-                editForm.expiresAt ? new Date(editForm.expiresAt).toISOString().slice(0, 16) : ""
-              }
+              value={(() => {
+                if (!editForm.expiresAt) return "";
+                const d = new Date(editForm.expiresAt);
+                if (isNaN(d.getTime())) return "";
+                return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+                  .toISOString()
+                  .slice(0, 16);
+              })()}
               onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
               className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
             />

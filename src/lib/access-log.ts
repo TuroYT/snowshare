@@ -11,7 +11,7 @@ export async function logShareAccess(request: NextRequest, shareId: string) {
       data: { shareId, ip, userAgent },
     });
     lookupIpGeolocation(ip);
-  } catch {
-    // Non-blocking: logging errors must not break share access
+  } catch (error) {
+    console.error("Failed to log share access:", error);
   }
 }
