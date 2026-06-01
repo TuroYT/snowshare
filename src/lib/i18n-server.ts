@@ -4,6 +4,7 @@
  */
 
 import { NextRequest } from "next/server";
+import { resolveDefaultLocale } from "@/i18n/locale-utils";
 import en from "@/i18n/locales/en.json";
 import fr from "@/i18n/locales/fr.json";
 import es from "@/i18n/locales/es.json";
@@ -14,7 +15,7 @@ import nl from "@/i18n/locales/nl.json";
 export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "pl", "nl"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
-const DEFAULT_LOCALE: SupportedLocale = "en";
+const DEFAULT_LOCALE = resolveDefaultLocale(SUPPORTED_LOCALES) as SupportedLocale;
 
 const translations: Record<string, Record<string, unknown>> = {
   en,
