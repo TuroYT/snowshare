@@ -64,7 +64,9 @@
     "view_limit_desc": "De paste verloopt na een ingesteld aantal weergaves",
     "views": "weergaves",
     "view_limit_info": "Deze paste verloopt na {{count}} weergave(s)",
-    "password_placeholder": "Optioneel - leeg laten voor vrije toegang"
+    "password_placeholder": "Optioneel - leeg laten voor vrije toegang",
+    "shortcut": "Tip:",
+    "shortcut_tail": "om snel aan te maken"
   },
   "fileshare": {
     "title": "FileShare",

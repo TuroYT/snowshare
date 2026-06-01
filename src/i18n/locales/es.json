@@ -60,7 +60,9 @@
     "view_limit_desc": "El paste expirará después de un número definido de vistas",
     "views": "vistas",
     "view_limit_info": "Este paste expirará después de {{count}} vista(s)",
-    "password_placeholder": "Opcional - déjalo vacío para acceso libre"
+    "password_placeholder": "Opcional - déjalo vacío para acceso libre",
+    "shortcut": "Consejo:",
+    "shortcut_tail": "para crear rápidamente"
   },
   "fileshare": {
     "title": "FileShare",

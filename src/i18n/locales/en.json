@@ -60,7 +60,9 @@
     "view_limit_desc": "The paste will expire after a set number of views",
     "views": "views",
     "view_limit_info": "This paste will expire after {{count}} view(s)",
-    "password_placeholder": "Optional - leave empty for free access"
+    "password_placeholder": "Optional - leave empty for free access",
+    "shortcut": "Tip:",
+    "shortcut_tail": "to create quickly"
   },
   "fileshare": {
     "title": "FileShare",

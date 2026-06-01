@@ -13,6 +13,8 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
+  const [pasteInitialCode, setPasteInitialCode] = useState<string | undefined>(undefined);
+  const [fileInitialFiles, setFileInitialFiles] = useState<File[] | undefined>(undefined);
   const { t } = useTranslation();
   const { branding } = useTheme();
   const { status } = useSession();
@@ -20,6 +22,74 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("defaultTab");
     if (saved) setActiveTab(saved);
+  }, []);
+
+  useEffect(() => {
+    const isInputFocused = () => {
+      const el = document.activeElement;
+      if (!el) return false;
+      const tag = el.tagName.toLowerCase();
+      return (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        (el as HTMLElement).isContentEditable
+      );
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Alt+1/2/3 → switch tabs
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        if (e.key === "1") {
+          e.preventDefault();
+          setActiveTab("linkshare");
+          return;
+        }
+        if (e.key === "2") {
+          e.preventDefault();
+          setActiveTab("pasteshare");
+          return;
+        }
+        if (e.key === "3") {
+          e.preventDefault();
+          setActiveTab("fileshare");
+          return;
+        }
+      }
+    };
+
+    // Ctrl+V (or Cmd+V) → the browser fires a "paste" event carrying the
+    // clipboard contents. Files go to FileShare, plain text to PasteShare.
+    const handlePaste = (e: ClipboardEvent) => {
+      const clipboard = e.clipboardData;
+      if (!clipboard) return;
+
+      // Files take priority — pasting an image/file into a text field is a no-op
+      // anyway, so we hijack it regardless of what is focused.
+      const files = Array.from(clipboard.files);
+      if (files.length > 0) {
+        e.preventDefault();
+        setFileInitialFiles(files);
+        setActiveTab("fileshare");
+        return;
+      }
+
+      // Plain text → PasteShare, but only when not editing an input/textarea so
+      // normal pasting into form fields keeps working.
+      if (isInputFocused()) return;
+      const text = clipboard.getData("text");
+      if (!text.trim()) return;
+      e.preventDefault();
+      setPasteInitialCode(text);
+      setActiveTab("pasteshare");
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("paste", handlePaste);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("paste", handlePaste);
+    };
   }, []);
 
   useEffect(() => {
@@ -62,8 +132,18 @@ export default function Home() {
         {/* Content */}
         <div key={activeTab} className="animate-fade-in-up">
           {activeTab === "linkshare" && <LinkShare />}
-          {activeTab === "pasteshare" && <PasteShare />}
-          {activeTab === "fileshare" && <FileShare />}
+          {activeTab === "pasteshare" && (
+            <PasteShare
+              initialCode={pasteInitialCode}
+              onInitialCodeConsumed={() => setPasteInitialCode(undefined)}
+            />
+          )}
+          {activeTab === "fileshare" && (
+            <FileShare
+              initialFiles={fileInitialFiles}
+              onInitialFilesConsumed={() => setFileInitialFiles(undefined)}
+            />
+          )}
         </div>
       </main>
       <Footer />
