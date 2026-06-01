@@ -74,8 +74,8 @@ export default function SmtpSection({ settings, onChange }: Props) {
               placeholder="noreply@example.com"
               hint={t("admin.settings.smtp_from_hint") as string}
             />
-            <div className="flex items-center justify-between mt-6">
-              <div>
+            <div className="flex items-center justify-between gap-4 mt-6">
+              <div className="flex-1 min-w-0">
                 <label className="text-sm font-medium text-[var(--foreground)]">
                   {t("admin.settings.smtp_secure")}
                 </label>
@@ -91,8 +91,8 @@ export default function SmtpSection({ settings, onChange }: Props) {
           </div>
 
           <div className="pt-2 border-t border-[var(--border)]/30">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
                 <label className="text-[var(--foreground)] font-medium">
                   {t("admin.settings.email_verification_required")}
                 </label>

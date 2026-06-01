@@ -166,7 +166,7 @@ const ProfilePage = () => {
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10">
         {/* Tab navigation */}
         <div className="mb-8 border-b border-[var(--border)]">
-          <nav className="flex gap-0 -mb-px">
+          <nav className="flex gap-0 -mb-px overflow-x-auto scrollbar-hide">
             {[
               { key: "profile", label: t("profile.tab_profile", "Profile") },
               { key: "shares", label: t("profile.tab_shares", "Shares") },
@@ -178,7 +178,7 @@ const ProfilePage = () => {
                 key={key}
                 onClick={() => setActiveTab(key as typeof activeTab)}
                 className={[
-                  "px-4 py-2.5 text-sm border-b-2 transition-colors",
+                  "px-4 py-2.5 text-sm border-b-2 transition-colors whitespace-nowrap shrink-0",
                   activeTab === key
                     ? "border-[var(--primary)] text-[var(--foreground)] font-medium"
                     : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]",

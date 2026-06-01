@@ -160,7 +160,7 @@ export default function UsersTab() {
         )}
 
         {/* Search and Create Button */}
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             placeholder={t("admin.users.search_placeholder")}
@@ -170,7 +170,7 @@ export default function UsersTab() {
           />
           <button
             onClick={() => setShowCreateDialog(true)}
-            className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] rounded-lg text-white font-medium transition-colors whitespace-nowrap"
+            className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] rounded-lg text-white font-medium transition-colors whitespace-nowrap sm:shrink-0"
           >
             {t("admin.users.add_user")}
           </button>
