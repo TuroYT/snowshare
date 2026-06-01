@@ -313,6 +313,8 @@
     "label_expiration": "Expiration",
     "expires_on": "Expires on",
     "protected": "Protected",
+    "access_count": "{{count}} accesses",
+    "view_logs": "View access logs",
     "view_limit_reached": "View Limit Reached",
     "views": "views",
     "accounts": {
@@ -345,7 +347,8 @@
       "col_date": "Date",
       "prev": "Previous",
       "next": "Next",
-      "page": "Page {{page}} / {{total}}"
+      "page": "Page {{page}} / {{total}}",
+      "share_title": "Accesses to /{{slug}}"
     },
     "default_tab": "Default tab",
     "default_tab_desc": "Tab shown by default on the home page",

@@ -309,6 +309,8 @@
     "label_expiration": "Expiración",
     "expires_on": "Expira el",
     "protected": "Protegido",
+    "access_count": "{{count}} accesos",
+    "view_logs": "Ver registros de acceso",
     "view_limit_reached": "Límite de vistas alcanzado",
     "views": "vistas",
     "accounts": {
@@ -341,7 +343,8 @@
       "col_date": "Fecha",
       "prev": "Anterior",
       "next": "Siguiente",
-      "page": "Página {{page}} / {{total}}"
+      "page": "Página {{page}} / {{total}}",
+      "share_title": "Accesos a /{{slug}}"
     },
     "default_tab": "Pestaña predeterminada",
     "default_tab_desc": "Pestaña mostrada por defecto en la página de inicio",

@@ -17,6 +17,7 @@ type Share = {
   expiresAt?: string;
   maxViews?: number | null;
   viewCount: number;
+  accessCount?: number;
 };
 
 type SharesListProps = {
@@ -59,8 +60,8 @@ export default function SharesList({ shares, onDelete, onUpdate }: SharesListPro
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-semibold text-[var(--foreground)]">
           {t("profile.shares_count", { count: shares.length })}
         </h3>

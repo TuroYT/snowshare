@@ -309,6 +309,8 @@
     "label_expiration": "Ablauf",
     "expires_on": "Läuft ab am",
     "protected": "Geschützt",
+    "access_count": "{{count}} Zugriffe",
+    "view_logs": "Zugriffsprotokolle anzeigen",
     "view_limit_reached": "Ansichtslimit erreicht",
     "views": "Ansichten",
     "accounts": {
@@ -341,7 +343,8 @@
       "col_date": "Datum",
       "prev": "Zurück",
       "next": "Weiter",
-      "page": "Seite {{page}} / {{total}}"
+      "page": "Seite {{page}} / {{total}}",
+      "share_title": "Zugriffe auf /{{slug}}"
     },
     "default_tab": "Standard-Tab",
     "default_tab_desc": "Standardmäßig angezeigter Tab auf der Startseite",

@@ -26,6 +26,7 @@ type Share = {
   expiresAt?: string;
   maxViews?: number | null;
   viewCount: number;
+  accessCount?: number;
 };
 
 type User = {
@@ -42,9 +43,9 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts" | "apikeys" | "accesslogs">(
-    "profile"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "shares" | "accounts" | "apikeys" | "accesslogs"
+  >("profile");
 
   useEffect(() => {
     if (status === "unauthenticated") {

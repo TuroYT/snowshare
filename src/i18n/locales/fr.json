@@ -313,6 +313,8 @@
     "label_expiration": "Expiration",
     "expires_on": "Expire le",
     "protected": "Protégé",
+    "access_count": "{{count}} accès",
+    "view_logs": "Voir les journaux d'accès",
     "view_limit_reached": "Limite de vues atteinte",
     "views": "vues",
     "accounts": {
@@ -345,7 +347,8 @@
       "col_date": "Date",
       "prev": "Précédent",
       "next": "Suivant",
-      "page": "Page {{page}} / {{total}}"
+      "page": "Page {{page}} / {{total}}",
+      "share_title": "Accès à /{{slug}}"
     },
     "default_tab": "Onglet par défaut",
     "default_tab_desc": "Onglet affiché par défaut sur la page d'accueil",

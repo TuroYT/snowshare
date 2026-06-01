@@ -316,6 +316,8 @@
     "label_expiration": "Vervaldatum",
     "expires_on": "Verloopt op",
     "protected": "Beveiligd",
+    "access_count": "{{count}} toegangen",
+    "view_logs": "Toegangslogboeken bekijken",
     "view_limit_reached": "Weergavelimiet bereikt",
     "views": "weergaves",
     "tab_accounts": "Verbonden accounts",
@@ -349,7 +351,8 @@
       "col_date": "Datum",
       "prev": "Vorige",
       "next": "Volgende",
-      "page": "Pagina {{page}} / {{total}}"
+      "page": "Pagina {{page}} / {{total}}",
+      "share_title": "Toegangen tot /{{slug}}"
     },
     "default_tab": "Standaard tabblad",
     "default_tab_desc": "Tabblad dat standaard wordt weergegeven op de startpagina",
