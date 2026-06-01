@@ -340,7 +340,12 @@
     "default_tab_desc": "Tabblad dat standaard wordt weergegeven op de startpagina",
     "default_tab_linkshare": "LinkShare",
     "default_tab_pasteshare": "PasteShare",
-    "default_tab_fileshare": "FileShare"
+    "default_tab_fileshare": "FileShare",
+    "export_title": "Mijn gegevens exporteren",
+    "export_desc": "Download een kopie van al je persoonlijke gegevens (profiel, delingen, API-sleutels, gekoppelde accounts) in JSON-formaat.",
+    "export_button": "Mijn gegevens downloaden",
+    "export_downloading": "Downloaden…",
+    "export_error": "Export mislukt. Probeer het opnieuw."
   },
   "apikeys": {
     "title": "API-sleutels",

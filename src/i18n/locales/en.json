@@ -336,7 +336,12 @@
     "default_tab_desc": "Tab shown by default on the home page",
     "default_tab_linkshare": "LinkShare",
     "default_tab_pasteshare": "PasteShare",
-    "default_tab_fileshare": "FileShare"
+    "default_tab_fileshare": "FileShare",
+    "export_title": "Export my data",
+    "export_desc": "Download a copy of all your personal data (profile, shares, API keys, linked accounts) in JSON format.",
+    "export_button": "Download my data",
+    "export_downloading": "Downloading…",
+    "export_error": "Export failed. Please try again."
   },
   "apikeys": {
     "title": "API Keys",

@@ -340,7 +340,12 @@
     "default_tab_desc": "Zakładka wyświetlana domyślnie na stronie głównej",
     "default_tab_linkshare": "LinkShare",
     "default_tab_pasteshare": "PasteShare",
-    "default_tab_fileshare": "FileShare"
+    "default_tab_fileshare": "FileShare",
+    "export_title": "Eksportuj moje dane",
+    "export_desc": "Pobierz kopię wszystkich swoich danych osobowych (profil, udostępnienia, klucze API, połączone konta) w formacie JSON.",
+    "export_button": "Pobierz moje dane",
+    "export_downloading": "Pobieranie…",
+    "export_error": "Eksport nie powiódł się. Spróbuj ponownie."
   },
   "apikeys": {
     "title": "Klucze API",

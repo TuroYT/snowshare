@@ -332,7 +332,12 @@
     "default_tab_desc": "Pestaña mostrada por defecto en la página de inicio",
     "default_tab_linkshare": "LinkShare",
     "default_tab_pasteshare": "PasteShare",
-    "default_tab_fileshare": "FileShare"
+    "default_tab_fileshare": "FileShare",
+    "export_title": "Exportar mis datos",
+    "export_desc": "Descarga una copia de todos tus datos personales (perfil, compartidos, claves API, cuentas vinculadas) en formato JSON.",
+    "export_button": "Descargar mis datos",
+    "export_downloading": "Descargando…",
+    "export_error": "Error al exportar. Por favor, inténtalo de nuevo."
   },
   "apikeys": {
     "title": "Claves API",

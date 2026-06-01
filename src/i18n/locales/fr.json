@@ -336,7 +336,12 @@
     "default_tab_desc": "Onglet affiché par défaut sur la page d'accueil",
     "default_tab_linkshare": "LinkShare",
     "default_tab_pasteshare": "PasteShare",
-    "default_tab_fileshare": "FileShare"
+    "default_tab_fileshare": "FileShare",
+    "export_title": "Exporter mes données",
+    "export_desc": "Téléchargez une copie de toutes vos données personnelles (profil, partages, clés API, comptes liés) au format JSON.",
+    "export_button": "Télécharger mes données",
+    "export_downloading": "Téléchargement…",
+    "export_error": "Erreur lors de l'export. Veuillez réessayer."
   },
   "apikeys": {
     "title": "Clés API",
