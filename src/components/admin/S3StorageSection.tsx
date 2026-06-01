@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FieldInput, Toggle } from "./settings/primitives";
+import { FieldInput, ToggleRow } from "./settings/primitives";
 
 export interface S3SectionSettings {
   s3Enabled: boolean;
@@ -57,20 +57,12 @@ export default function S3StorageSection({ settings, onChange }: Props) {
         {t("admin.settings.section_s3")}
       </h3>
 
-      <div className="flex items-center justify-between gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-        <div className="flex-1 min-w-0">
-          <label className="text-[var(--foreground)] font-medium">
-            {t("admin.settings.s3_enabled")}
-          </label>
-          <p className="text-sm text-[var(--foreground-muted)] mt-1">
-            {t("admin.settings.s3_enabled_desc")}
-          </p>
-        </div>
-        <Toggle
-          checked={settings.s3Enabled}
-          onChange={() => onChange({ s3Enabled: !settings.s3Enabled })}
-        />
-      </div>
+      <ToggleRow
+        label={t("admin.settings.s3_enabled")}
+        description={t("admin.settings.s3_enabled_desc")}
+        checked={settings.s3Enabled}
+        onChange={() => onChange({ s3Enabled: !settings.s3Enabled })}
+      />
 
       {settings.s3Enabled && (
         <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
