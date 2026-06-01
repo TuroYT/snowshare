@@ -107,6 +107,7 @@ describe("GET /api/user/shares", () => {
         expiresAt: null,
         maxViews: null,
         viewCount: 0,
+        _count: { accessLogs: 0 },
       },
     ];
     mockShareFindMany.mockResolvedValue(shares);
