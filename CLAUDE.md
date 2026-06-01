@@ -103,3 +103,4 @@ PostgreSQL via Prisma. Schema at `prisma/schema.prisma`, generated client at `sr
 - **State**: Simple `useState`, no external state libraries
 - **Slug validation**: `/^[a-zA-Z0-9_-]{3,30}$/`
 - **Passwords**: bcryptjs with cost 12
+- **Error handling in non-blocking paths**: Never use empty `catch {}` blocks. Always log with `console.error("context:", error)` even in fire-and-forget paths (e.g. `logShareAccess`) so failures are observable.

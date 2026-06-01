@@ -99,6 +99,7 @@ model Share {
   maxViews      Int?
   viewCount     Int        @default(0)
   files         ShareFile[]
+  accessLogs    ShareAccessLog[]
 
   @@index([ipSource])
   @@index([ownerId])
@@ -246,6 +247,18 @@ enum pasteType {
   SQL
   JSON
   MARKDOWN
+}
+
+model ShareAccessLog {
+  id          String   @id @default(cuid())
+  shareId     String
+  share       Share    @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  ip          String?
+  userAgent   String?
+  accessedAt  DateTime @default(now())
+
+  @@index([shareId])
+  @@index([accessedAt])
 }
 
 model OAuthProvider {

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
+import { logShareAccess } from "@/lib/access-log";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -74,6 +75,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       where: { id: share.id },
       data: { viewCount: { increment: 1 } },
     });
+
+    void logShareAccess(request, share.id);
 
     return jsonResponse({
       success: true,
@@ -164,6 +167,8 @@ export async function POST(
       where: { id: share.id },
       data: { viewCount: { increment: 1 } },
     });
+
+    void logShareAccess(request, share.id);
 
     return jsonResponse({
       success: true,

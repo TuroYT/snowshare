@@ -311,6 +311,8 @@
     "label_expiration": "Ablauf",
     "expires_on": "Läuft ab am",
     "protected": "Geschützt",
+    "access_count": "{{count}} Zugriffe",
+    "view_logs": "Zugriffsprotokolle anzeigen",
     "view_limit_reached": "Ansichtslimit erreicht",
     "views": "Ansichten",
     "accounts": {
@@ -330,6 +332,22 @@
       "unlink_success": "Konto erfolgreich getrennt"
     },
     "tab_apikeys": "API-Schlüssel",
+    "tab_accesslogs": "Zugriffsprotokolle",
+    "access_logs": {
+      "title": "Zugriffsprotokolle",
+      "description": "Jeder Zugriff auf Ihre Freigaben wird hier erfasst.",
+      "total": "{{count}} Zugriffe",
+      "empty": "Noch keine Zugriffe aufgezeichnet.",
+      "col_share": "Freigabe",
+      "col_ip": "IP",
+      "col_location": "Standort",
+      "col_user_agent": "User Agent",
+      "col_date": "Datum",
+      "prev": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {{page}} / {{total}}",
+      "share_title": "Zugriffe auf /{{slug}}"
+    },
     "default_tab": "Standard-Tab",
     "default_tab_desc": "Standardmäßig angezeigter Tab auf der Startseite",
     "default_tab_linkshare": "LinkShare",

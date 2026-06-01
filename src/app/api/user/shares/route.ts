@@ -30,13 +30,21 @@ export async function GET(request: NextRequest) {
         expiresAt: true,
         maxViews: true,
         viewCount: true,
+        _count: {
+          select: { accessLogs: true },
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return NextResponse.json({ shares });
+    const sharesWithCount = shares.map(({ _count, ...share }) => ({
+      ...share,
+      accessCount: _count.accessLogs,
+    }));
+
+    return NextResponse.json({ shares: sharesWithCount });
   } catch (error) {
     console.error("Error fetching user shares:", error);
     return internalError(request);

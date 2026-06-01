@@ -9,6 +9,7 @@ import SharesList from "@/components/profile/SharesList";
 import ProfileStats from "@/components/profile/ProfileStats";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import ApiKeysSection from "@/components/ApiKeysSection";
+import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 
@@ -25,6 +26,7 @@ type Share = {
   expiresAt?: string;
   maxViews?: number | null;
   viewCount: number;
+  accessCount?: number;
 };
 
 type User = {
@@ -41,9 +43,9 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<Share[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"profile" | "shares" | "accounts" | "apikeys">(
-    "profile"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "shares" | "accounts" | "apikeys" | "accesslogs"
+  >("profile");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -170,6 +172,7 @@ const ProfilePage = () => {
               { key: "shares", label: t("profile.tab_shares", "Shares") },
               { key: "accounts", label: t("profile.tab_accounts", "Linked accounts") },
               { key: "apikeys", label: t("profile.tab_apikeys", "API Keys") },
+              { key: "accesslogs", label: t("profile.tab_accesslogs", "Access Logs") },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -204,6 +207,8 @@ const ProfilePage = () => {
           {activeTab === "accounts" && <ConnectedAccounts />}
 
           {activeTab === "apikeys" && <ApiKeysSection />}
+
+          {activeTab === "accesslogs" && <AccessLogs />}
         </div>
       </main>
       <Footer />
