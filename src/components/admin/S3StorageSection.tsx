@@ -57,8 +57,8 @@ export default function S3StorageSection({ settings, onChange }: Props) {
         {t("admin.settings.section_s3")}
       </h3>
 
-      <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-        <div>
+      <div className="flex items-center justify-between gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+        <div className="flex-1 min-w-0">
           <label className="text-[var(--foreground)] font-medium">
             {t("admin.settings.s3_enabled")}
           </label>

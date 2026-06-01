@@ -107,7 +107,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-[var(--foreground)] mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold text-[var(--foreground)] mb-2">
               {t("admin.title")} - v{versionInfo?.currentVersion ?? "loading..."}
             </h1>
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
@@ -117,12 +117,12 @@ export default function AdminPage() {
           <UpdateNotification versionInfo={versionInfo} setVersionInfo={setVersionInfo} />
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto">
+          <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto scrollbar-hide">
             {(["users", "settings", "branding", "oauth", "email", "logs"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 font-medium transition-all whitespace-nowrap border-b-2 ${
+                className={`px-4 py-3 font-medium transition-all whitespace-nowrap shrink-0 border-b-2 ${
                   activeTab === tab
                     ? "border-blue-500 text-[var(--primary)]"
                     : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"

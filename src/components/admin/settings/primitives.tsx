@@ -19,7 +19,7 @@ export function Toggle({
     <button
       disabled={disabled}
       onClick={onChange}
-      className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+      className={`relative inline-flex shrink-0 h-8 w-14 items-center rounded-full transition-colors ${
         checked ? activeColor : "bg-[var(--border-hover)]"
       }${disabled ? " opacity-50 cursor-not-allowed" : " cursor-pointer"}`}
     >
@@ -52,8 +52,8 @@ export function ToggleRow({
   activeColor,
 }: ToggleRowProps) {
   return (
-    <div className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-      <div>
+    <div className="flex items-center justify-between gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+      <div className="flex-1 min-w-0">
         <label className="text-[var(--foreground)] font-medium">{label}</label>
         {description && (
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{description}</p>

@@ -21,7 +21,13 @@ export function Tabs({
 }) {
   return (
     <Ctx.Provider value={{ active: value, onChange: onValueChange }}>
-      <div role="tablist" className={cn("flex border-b border-[var(--border)]", className)}>
+      <div
+        role="tablist"
+        className={cn(
+          "flex border-b border-[var(--border)] overflow-x-auto scrollbar-hide",
+          className
+        )}
+      >
         {children}
       </div>
     </Ctx.Provider>
