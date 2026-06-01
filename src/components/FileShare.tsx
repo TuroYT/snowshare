@@ -22,7 +22,12 @@ interface FileWithPath {
   relativePath: string;
 }
 
-const FileShare: React.FC = () => {
+interface FileShareProps {
+  initialFiles?: File[];
+  onInitialFilesConsumed?: () => void;
+}
+
+const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsumed }) => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation();
 
@@ -31,6 +36,16 @@ const FileShare: React.FC = () => {
 
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [dragOver, setDragOver] = useState(false);
+
+  // Load files pasted from the clipboard (Ctrl+V on the home page)
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      setFiles(initialFiles.map((file) => ({ file, relativePath: file.name })));
+      setError(null);
+      onInitialFilesConsumed?.();
+    }
+  }, [initialFiles, onInitialFilesConsumed]);
+
   const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");

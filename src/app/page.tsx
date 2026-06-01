@@ -9,12 +9,12 @@ import FileShare from "@/components/FileShare";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("linkshare");
   const [pasteInitialCode, setPasteInitialCode] = useState<string | undefined>(undefined);
-  const pasteInitialCodeRef = useRef<string | undefined>(undefined);
+  const [fileInitialFiles, setFileInitialFiles] = useState<File[] | undefined>(undefined);
   const { t } = useTranslation();
   const { branding } = useTheme();
   const { status } = useSession();
@@ -40,26 +40,56 @@ export default function Home() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Alt+1/2/3 → switch tabs
       if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        if (e.key === "1") { e.preventDefault(); setActiveTab("linkshare"); return; }
-        if (e.key === "2") { e.preventDefault(); setActiveTab("pasteshare"); return; }
-        if (e.key === "3") { e.preventDefault(); setActiveTab("fileshare"); return; }
-      }
-
-      // Ctrl+V (or Cmd+V) when not in an input → paste clipboard text into PasteShare
-      if ((e.ctrlKey || e.metaKey) && e.key === "v" && !isInputFocused()) {
-        if (!navigator?.clipboard?.readText) return;
-        e.preventDefault();
-        navigator.clipboard.readText().then((text) => {
-          if (!text.trim()) return;
-          pasteInitialCodeRef.current = text;
-          setPasteInitialCode(text);
+        if (e.key === "1") {
+          e.preventDefault();
+          setActiveTab("linkshare");
+          return;
+        }
+        if (e.key === "2") {
+          e.preventDefault();
           setActiveTab("pasteshare");
-        }).catch((err) => { console.error("Failed to read clipboard:", err); });
+          return;
+        }
+        if (e.key === "3") {
+          e.preventDefault();
+          setActiveTab("fileshare");
+          return;
+        }
       }
     };
 
+    // Ctrl+V (or Cmd+V) → the browser fires a "paste" event carrying the
+    // clipboard contents. Files go to FileShare, plain text to PasteShare.
+    const handlePaste = (e: ClipboardEvent) => {
+      const clipboard = e.clipboardData;
+      if (!clipboard) return;
+
+      // Files take priority — pasting an image/file into a text field is a no-op
+      // anyway, so we hijack it regardless of what is focused.
+      const files = Array.from(clipboard.files);
+      if (files.length > 0) {
+        e.preventDefault();
+        setFileInitialFiles(files);
+        setActiveTab("fileshare");
+        return;
+      }
+
+      // Plain text → PasteShare, but only when not editing an input/textarea so
+      // normal pasting into form fields keeps working.
+      if (isInputFocused()) return;
+      const text = clipboard.getData("text");
+      if (!text.trim()) return;
+      e.preventDefault();
+      setPasteInitialCode(text);
+      setActiveTab("pasteshare");
+    };
+
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("paste", handlePaste);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("paste", handlePaste);
+    };
   }, []);
 
   useEffect(() => {
@@ -105,13 +135,15 @@ export default function Home() {
           {activeTab === "pasteshare" && (
             <PasteShare
               initialCode={pasteInitialCode}
-              onInitialCodeConsumed={() => {
-                setPasteInitialCode(undefined);
-                pasteInitialCodeRef.current = undefined;
-              }}
+              onInitialCodeConsumed={() => setPasteInitialCode(undefined)}
             />
           )}
-          {activeTab === "fileshare" && <FileShare />}
+          {activeTab === "fileshare" && (
+            <FileShare
+              initialFiles={fileInitialFiles}
+              onInitialFilesConsumed={() => setFileInitialFiles(undefined)}
+            />
+          )}
         </div>
       </main>
       <Footer />
