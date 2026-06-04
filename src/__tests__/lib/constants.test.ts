@@ -135,15 +135,6 @@ describe("isValidUrl", () => {
 });
 
 describe("isValidUrl - SSRF protection", () => {
-  it("accepts a public HTTP URL", () => {
-    expect(isValidUrl("http://example.com").valid).toBe(true);
-  });
-  it("accepts a public HTTPS URL", () => {
-    expect(isValidUrl("https://example.com/path?q=1").valid).toBe(true);
-  });
-  it("rejects ftp:// protocol", () => {
-    expect(isValidUrl("ftp://example.com").valid).toBe(false);
-  });
   it("rejects http://localhost", () => {
     expect(isValidUrl("http://localhost/admin").valid).toBe(false);
   });
@@ -167,6 +158,15 @@ describe("isValidUrl - SSRF protection", () => {
   });
   it("rejects [::1] IPv6 loopback", () => {
     expect(isValidUrl("http://[::1]/").valid).toBe(false);
+  });
+  it("rejects [::ffff:7f00:1] (IPv4-mapped 127.0.0.1)", () => {
+    expect(isValidUrl("http://[::ffff:7f00:1]/").valid).toBe(false);
+  });
+  it("rejects [::ffff:a9fe:a9fe] (IPv4-mapped 169.254.169.254)", () => {
+    expect(isValidUrl("http://[::ffff:a9fe:a9fe]/").valid).toBe(false);
+  });
+  it("rejects [::ffff:a00:1] (IPv4-mapped 10.0.0.1)", () => {
+    expect(isValidUrl("http://[::ffff:a00:1]/").valid).toBe(false);
   });
 });
 

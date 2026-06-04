@@ -91,8 +91,10 @@ export function isValidUrl(url: string): { valid: boolean; error?: string } {
     /^192\.168\./,
     /^172\.(1[6-9]|2\d|3[01])\./,
     /^169\.254\./, // link-local / AWS metadata
-    /^fc[0-9a-f]{2}:/i, // IPv6 fc00::/7
-    /^fd[0-9a-f]{2}:/i, // IPv6 fd00::/8
+    /^::ffff:/i, // IPv4-mapped IPv6 (::ffff:7f00:1 = 127.0.0.1, etc.)
+    // IPv6 Unique Local Address (ULA) fc00::/7 — covers fc** and fd** prefixes
+    /^fc[0-9a-f]{2}:/i,
+    /^fd[0-9a-f]{2}:/i,
     /^::1$/, // IPv6 loopback
     /^fe80:/i, // IPv6 link-local
   ];
