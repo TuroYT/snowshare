@@ -57,27 +57,53 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Validate URL format and restrict to safe protocols
+ * Validate URL format, restrict to safe protocols, and block private/internal
+ * addresses to prevent Server-Side Request Forgery (SSRF) attacks.
  */
 export function isValidUrl(url: string): { valid: boolean; error?: string } {
   if (!url || typeof url !== "string") {
-    return { valid: false, error: "URL invalide" };
+    return { valid: false, error: "Invalid URL" };
   }
 
   if (url.length > MAX_URL_LENGTH) {
-    return { valid: false, error: "URL trop longue" };
+    return { valid: false, error: "URL too long" };
   }
 
+  let parsed: URL;
   try {
-    const parsed = new URL(url);
-    // Only allow http and https protocols
-    if (!["http:", "https:"].includes(parsed.protocol)) {
-      return { valid: false, error: "Seuls les protocoles HTTP et HTTPS sont autorisés" };
-    }
-    return { valid: true };
+    parsed = new URL(url);
   } catch {
-    return { valid: false, error: "Format URL invalide" };
+    return { valid: false, error: "Invalid URL format" };
   }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    return { valid: false, error: "Only HTTP and HTTPS protocols are allowed" };
+  }
+
+  // Block private/internal addresses (SSRF protection)
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, ""); // strip IPv6 brackets
+
+  const privatePatterns = [
+    /^localhost$/,
+    /^0\.0\.0\.0$/,
+    /^127\./,
+    /^10\./,
+    /^192\.168\./,
+    /^172\.(1[6-9]|2\d|3[01])\./,
+    /^169\.254\./, // link-local / AWS metadata
+    /^fc[0-9a-f]{2}:/i, // IPv6 fc00::/7
+    /^fd[0-9a-f]{2}:/i, // IPv6 fd00::/8
+    /^::1$/, // IPv6 loopback
+    /^fe80:/i, // IPv6 link-local
+  ];
+
+  for (const pattern of privatePatterns) {
+    if (pattern.test(hostname)) {
+      return { valid: false, error: "Private and internal addresses are not allowed" };
+    }
+  }
+
+  return { valid: true };
 }
 
 /**

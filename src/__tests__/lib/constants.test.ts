@@ -91,14 +91,6 @@ describe("isValidUrl", () => {
     it("should accept a URL with a port", () => {
       expect(isValidUrl("http://example.com:8080").valid).toBe(true);
     });
-
-    it("should accept localhost", () => {
-      expect(isValidUrl("http://localhost:3000").valid).toBe(true);
-    });
-
-    it("should accept an IP address URL", () => {
-      expect(isValidUrl("http://192.168.1.1:8080/path").valid).toBe(true);
-    });
   });
 
   describe("invalid URLs", () => {
@@ -139,6 +131,42 @@ describe("isValidUrl", () => {
       const result = isValidUrl(longUrl);
       expect(result.valid).toBe(false);
     });
+  });
+});
+
+describe("isValidUrl - SSRF protection", () => {
+  it("accepts a public HTTP URL", () => {
+    expect(isValidUrl("http://example.com").valid).toBe(true);
+  });
+  it("accepts a public HTTPS URL", () => {
+    expect(isValidUrl("https://example.com/path?q=1").valid).toBe(true);
+  });
+  it("rejects ftp:// protocol", () => {
+    expect(isValidUrl("ftp://example.com").valid).toBe(false);
+  });
+  it("rejects http://localhost", () => {
+    expect(isValidUrl("http://localhost/admin").valid).toBe(false);
+  });
+  it("rejects http://127.0.0.1", () => {
+    expect(isValidUrl("http://127.0.0.1:5432").valid).toBe(false);
+  });
+  it("rejects http://0.0.0.0", () => {
+    expect(isValidUrl("http://0.0.0.0").valid).toBe(false);
+  });
+  it("rejects 10.x.x.x", () => {
+    expect(isValidUrl("http://10.0.0.1").valid).toBe(false);
+  });
+  it("rejects 192.168.x.x", () => {
+    expect(isValidUrl("http://192.168.1.1").valid).toBe(false);
+  });
+  it("rejects 172.16.x.x", () => {
+    expect(isValidUrl("http://172.16.0.1").valid).toBe(false);
+  });
+  it("rejects 169.254.x.x (AWS metadata)", () => {
+    expect(isValidUrl("http://169.254.169.254/latest/meta-data/").valid).toBe(false);
+  });
+  it("rejects [::1] IPv6 loopback", () => {
+    expect(isValidUrl("http://[::1]/").valid).toBe(false);
   });
 });
 
