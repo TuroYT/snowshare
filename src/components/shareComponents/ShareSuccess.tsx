@@ -141,6 +141,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
           </div>
           <div className="flex-shrink-0 flex items-start gap-2">
             <button
+              type="button"
               onClick={() => copyToClipboard(url)}
               className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)] rounded-[var(--radius)] transition-colors"
               title={t(`${translationPrefix}.copy_title`, "Copier le lien")}
