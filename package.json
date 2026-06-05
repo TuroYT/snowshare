@@ -34,7 +34,7 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@scalar/api-reference": "^1.52.3",
-    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/typography": "^0.5.19",
     "@tus/file-store": "^2.0.0",
     "@tus/server": "^2.4.1",
     "@types/archiver": "^7.0.0",
