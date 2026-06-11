@@ -90,7 +90,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/prismjs": "^1.26.5",
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@types/sanitize-html": "^2.16.1",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
@@ -121,7 +121,7 @@
     ]
   },
   "overrides": {
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "test-exclude": "^7.0.0",
     "hono": ">=4.11.7",
