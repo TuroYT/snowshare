@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { encryptSecret } from "@/lib/crypto-link";
 import type { Settings } from "@/generated/prisma";
 
 type SettingsInput = Record<string, unknown>;
@@ -32,6 +33,24 @@ function maskedSecret<K extends keyof Settings>(
 ): Settings[K] {
   const val = data[key];
   if (val !== undefined && val !== "••••••••") return ((val as string) || null) as Settings[K];
+  return current[key];
+}
+
+/** Like maskedSecret but encrypts the new value with AES-256-GCM when NEXTAUTH_SECRET is available. */
+function encryptedSecret<K extends keyof Settings>(
+  data: SettingsInput,
+  current: Settings,
+  key: K
+): Settings[K] {
+  const val = data[key];
+  if (val !== undefined && val !== "••••••••") {
+    const raw = ((val as string) || null) as Settings[K];
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (raw && secret) {
+      return encryptSecret(raw as string, secret) as Settings[K];
+    }
+    return raw;
+  }
   return current[key];
 }
 
@@ -141,12 +160,12 @@ function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
     captchaEnabled: field(data, current, "captchaEnabled"),
     captchaProvider: field(data, current, "captchaProvider"),
     captchaSiteKey: field(data, current, "captchaSiteKey"),
-    captchaSecretKey: maskedSecret(data, current, "captchaSecretKey"),
+    captchaSecretKey: encryptedSecret(data, current, "captchaSecretKey"),
     smtpEnabled: field(data, current, "smtpEnabled"),
     smtpHost: nullableString(data, current, "smtpHost"),
     smtpPort: field(data, current, "smtpPort"),
     smtpUser: nullableString(data, current, "smtpUser"),
-    smtpPassword: maskedSecret(data, current, "smtpPassword"),
+    smtpPassword: encryptedSecret(data, current, "smtpPassword"),
     smtpFrom: nullableString(data, current, "smtpFrom"),
     smtpSecure: field(data, current, "smtpSecure"),
     emailVerificationRequired: field(data, current, "emailVerificationRequired"),
@@ -156,7 +175,7 @@ function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
     s3Region: nullableString(data, current, "s3Region"),
     s3Bucket: nullableString(data, current, "s3Bucket"),
     s3AccessKeyId: nullableString(data, current, "s3AccessKeyId"),
-    s3SecretAccessKey: maskedSecret(data, current, "s3SecretAccessKey"),
+    s3SecretAccessKey: encryptedSecret(data, current, "s3SecretAccessKey"),
   };
 }
 

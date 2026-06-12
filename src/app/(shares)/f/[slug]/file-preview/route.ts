@@ -13,6 +13,8 @@ type ShareAccess = {
   password: string | null;
   expiresAt: Date | null;
   isBulk: boolean;
+  maxViews: number | null;
+  viewCount: number;
 } | null;
 
 async function validateShareAccess(
@@ -24,6 +26,9 @@ async function validateShareAccess(
     return apiError(request, ErrorCode.SHARE_NOT_FOUND);
   }
   if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
+    return apiError(request, ErrorCode.SHARE_EXPIRED);
+  }
+  if (share.maxViews !== null && share.viewCount >= share.maxViews) {
     return apiError(request, ErrorCode.SHARE_EXPIRED);
   }
   if (share.password) {
@@ -81,7 +86,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const share = await prisma.share.findUnique({
       where: { slug },
-      select: { id: true, type: true, password: true, expiresAt: true, isBulk: true },
+      select: { id: true, type: true, password: true, expiresAt: true, isBulk: true, maxViews: true, viewCount: true },
     });
 
     const accessError = await validateShareAccess(request, share, password);

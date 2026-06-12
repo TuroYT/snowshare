@@ -830,7 +830,8 @@
       "email_not_verified": "Please verify your email address before signing in",
       "recipients_required": "At least one recipient is required",
       "email_not_configured": "Email sending is not configured",
-      "email_send_failed": "Failed to send email. Please try again later."
+      "email_send_failed": "Failed to send email. Please try again later.",
+      "rate_limit_exceeded": "Too many attempts. Please try again later."
     },
     "file_protected": "Protected file"
   },

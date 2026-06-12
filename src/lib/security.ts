@@ -78,10 +78,12 @@ export async function generateRandomSlug(
 }
 
 /**
- * Hash an API key using bcrypt.
+ * Hash an API key with SHA-256 (deterministic — safe because the key itself has 128 bits of entropy).
+ * Never use bcrypt here: bcrypt is randomised so the same key would produce a different hash on
+ * every call, making DB lookups by hash impossible.
  */
 export function hashApiKey(rawKey: string): string {
-  return bcrypt.hashSync(rawKey, BCRYPT_COST);
+  return crypto.createHash("sha256").update(rawKey).digest("hex");
 }
 
 /**

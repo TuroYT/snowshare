@@ -40,6 +40,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return jsonResponse({ error: "This share has expired" }, 410);
     }
 
+    if (share.maxViews !== null && share.viewCount >= share.maxViews) {
+      return jsonResponse({ error: "This share has reached its view limit" }, 410);
+    }
+
     if (share.password) {
       if (!password) {
         return jsonResponse({ error: "Password required", requiresPassword: true }, 403);

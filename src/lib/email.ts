@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
+import { decryptSecret } from "@/lib/crypto-link";
 
 async function getSmtpConfig() {
   const settings = await prisma.settings.findFirst({
@@ -30,14 +31,17 @@ async function getSmtpConfig() {
 }
 
 function createSmtpTransporter(config: NonNullable<Awaited<ReturnType<typeof getSmtpConfig>>>) {
+  const secret = process.env.NEXTAUTH_SECRET;
+  const smtpPass =
+    config.smtpPassword && secret
+      ? decryptSecret(config.smtpPassword, secret)
+      : config.smtpPassword ?? undefined;
+
   return nodemailer.createTransport({
     host: config.smtpHost!,
     port: config.smtpPort ?? 587,
     secure: config.smtpSecure,
-    auth:
-      config.smtpUser && config.smtpPassword
-        ? { user: config.smtpUser, pass: config.smtpPassword }
-        : undefined,
+    auth: config.smtpUser && smtpPass ? { user: config.smtpUser, pass: smtpPass } : undefined,
   });
 }
 

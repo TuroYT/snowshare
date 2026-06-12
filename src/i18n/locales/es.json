@@ -826,7 +826,8 @@
       "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión",
       "recipients_required": "Se requiere al menos un destinatario",
       "email_not_configured": "El envío de correos no está configurado",
-      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde."
+      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde.",
+      "rate_limit_exceeded": "Demasiados intentos. Por favor, inténtelo más tarde."
     },
     "file_protected": "Archivo protegido"
   },

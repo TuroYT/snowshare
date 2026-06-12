@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/security";
+import { isValidEmail } from "@/lib/constants";
+import { isValidDisplayName } from "@/lib/validation";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // GET - Get User informations
@@ -62,12 +64,18 @@ export async function PATCH(request: NextRequest) {
     const updateData: {
       name?: string;
       email?: string;
+      emailVerified?: Date | null;
       password?: string;
       defaultTab?: "linkshare" | "pasteshare" | "fileshare";
     } = {};
 
     if (name !== undefined) {
-      updateData.name = name;
+      if (typeof name !== "string") {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
+      const { valid } = isValidDisplayName(name, 100);
+      if (!valid) return apiError(request, ErrorCode.INVALID_REQUEST);
+      updateData.name = name.trim();
     }
 
     if (defaultTab !== undefined) {
@@ -79,15 +87,18 @@ export async function PATCH(request: NextRequest) {
 
     // Mise à jour de l'email
     if (email !== undefined && email !== user.email) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-      });
+      if (typeof email !== "string" || !isValidEmail(email)) {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
 
+      const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
         return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
       }
 
       updateData.email = email;
+      // Require re-verification when email changes
+      updateData.emailVerified = null;
     }
 
     // Mise à jour du mot de passe

@@ -11,6 +11,7 @@ import { Readable } from "stream";
 import path from "path";
 import { getUploadDir } from "./constants";
 import { prisma } from "./prisma";
+import { decryptSecret } from "./crypto-link";
 
 interface S3Config {
   bucket: string;
@@ -47,12 +48,17 @@ async function getS3Config(): Promise<S3Config | null> {
 
     if (!settings?.s3Enabled || !settings.s3Bucket) return null;
 
+    const secret = process.env.NEXTAUTH_SECRET;
+    const rawS3Secret = settings.s3SecretAccessKey ?? undefined;
+    const secretAccessKey =
+      rawS3Secret && secret ? decryptSecret(rawS3Secret, secret) : rawS3Secret;
+
     return {
       bucket: settings.s3Bucket,
       region: settings.s3Region || "us-east-1",
       endpoint: settings.s3Endpoint ?? undefined,
       accessKeyId: settings.s3AccessKeyId ?? undefined,
-      secretAccessKey: settings.s3SecretAccessKey ?? undefined,
+      secretAccessKey,
     };
   } catch {
     return null;

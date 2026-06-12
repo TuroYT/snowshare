@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { logShareAccess } from "@/lib/access-log";
+import { isRateLimited } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/getClientIp";
 import { NextRequest } from "next/server";
 
 function jsonResponse(body: unknown, status = 200) {
@@ -74,6 +76,12 @@ export async function POST(request: NextRequest) {
   if (!slug || typeof slug !== "string") return apiError(request, ErrorCode.MISSING_DATA);
   if (!password || typeof password !== "string")
     return apiError(request, ErrorCode.PASSWORD_REQUIRED);
+
+  // Rate-limit password attempts: 10 per IP+slug per 15 minutes
+  const ip = getClientIp(request);
+  if (isRateLimited(`pwd:link:${slug}:${ip}`, 10, 15 * 60 * 1000)) {
+    return apiError(request, ErrorCode.RATE_LIMIT_EXCEEDED);
+  }
 
   const share = await prisma.share.findUnique({ where: { slug } });
   if (!share) return apiError(request, ErrorCode.SHARE_NOT_FOUND);

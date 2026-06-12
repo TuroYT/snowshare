@@ -5,6 +5,53 @@ import { NextRequest, NextResponse } from "next/server";
 import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { S3ServiceException } from "@aws-sdk/client-s3";
 import { apiError, ErrorCode } from "@/lib/api-errors";
+import { decryptSecret } from "@/lib/crypto-link";
+import dns from "dns/promises";
+import net from "net";
+
+function isPrivateIp(ip: string): boolean {
+  const addr = ip.startsWith("::ffff:") ? ip.slice(7) : ip;
+  if (net.isIPv4(addr)) {
+    const parts = addr.split(".").map(Number);
+    const [a, b] = parts;
+    return (
+      a === 127 ||
+      a === 10 ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 169 && b === 254) ||
+      addr === "0.0.0.0"
+    );
+  }
+  const lo = ip.toLowerCase();
+  return lo === "::1" || lo === "::" || lo.startsWith("fe80:") || lo.startsWith("fc") || lo.startsWith("fd");
+}
+
+async function validateEndpointHost(endpoint: string): Promise<void> {
+  let hostname: string;
+  try {
+    const url = new URL(endpoint);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      throw new Error("Only http:// and https:// endpoints are allowed");
+    }
+    hostname = url.hostname;
+  } catch {
+    throw new Error("Invalid S3 endpoint URL");
+  }
+
+  if (net.isIP(hostname)) {
+    if (isPrivateIp(hostname)) {
+      throw new Error("S3 endpoint must not point to a private or internal IP address");
+    }
+  } else {
+    const addresses = await dns.lookup(hostname, { all: true });
+    for (const { address } of addresses) {
+      if (isPrivateIp(address)) {
+        throw new Error("S3 endpoint resolves to a private or internal IP address");
+      }
+    }
+  }
+}
 
 // HTTP status codes that prove the S3 server is reachable and understands the request.
 // 200 = bucket accessible, 301 = wrong region (bucket exists), 403 = auth/ACL issue (server reached),
@@ -14,7 +61,10 @@ const REACHABLE_STATUS_CODES = new Set([200, 301, 400, 403, 404]);
 async function resolveS3TestSecret(fromBody: string | undefined): Promise<string | undefined> {
   if (fromBody) return fromBody;
   const settings = await prisma.settings.findFirst({ select: { s3SecretAccessKey: true } });
-  return settings?.s3SecretAccessKey ?? undefined;
+  const raw = settings?.s3SecretAccessKey ?? undefined;
+  if (!raw) return undefined;
+  const secret = process.env.NEXTAUTH_SECRET;
+  return secret ? decryptSecret(raw, secret) : raw;
 }
 
 function buildS3TestClient(
@@ -73,13 +123,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (endpoint) {
+      try {
+        await validateEndpointHost(endpoint);
+      } catch (e) {
+        return NextResponse.json(
+          { success: false, error: e instanceof Error ? e.message : "Invalid endpoint" },
+          { status: 400 }
+        );
+      }
+    }
+
     const resolvedSecret = await resolveS3TestSecret(secretFromBody);
     const s3 = buildS3TestClient(region, endpoint, accessKeyId, resolvedSecret);
     const result = await testS3Connectivity(s3, bucket);
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Connection failed";
     console.error("S3 test error:", error);
-    return NextResponse.json({ success: false, error: message });
+    return NextResponse.json({ success: false, error: "Connection failed" });
   }
 }

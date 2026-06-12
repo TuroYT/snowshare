@@ -10,6 +10,7 @@ import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { hashPassword } from "@/lib/security";
 import { verifyCaptcha } from "@/lib/captcha";
 import { sendVerificationEmail } from "@/lib/email";
+import { decryptSecret } from "@/lib/crypto-link";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
@@ -46,7 +47,12 @@ export async function POST(request: NextRequest) {
       disableCredentialsLogin = settings.disableCredentialsLogin;
       captchaEnabled = settings.captchaEnabled;
       captchaProvider = settings.captchaProvider;
-      captchaSecretKey = settings.captchaSecretKey;
+      const rawCaptchaKey = settings.captchaSecretKey;
+      const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+      captchaSecretKey =
+        rawCaptchaKey && nextAuthSecret
+          ? decryptSecret(rawCaptchaKey, nextAuthSecret)
+          : rawCaptchaKey;
       emailVerificationRequired = settings.emailVerificationRequired;
       smtpEnabled = settings.smtpEnabled;
     }

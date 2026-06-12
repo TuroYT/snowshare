@@ -64,6 +64,12 @@ export const DEFAULT_VERIFY_TEXT = `Verify your email for {{appName}}:\n\n{{veri
 
 // ─── Renderer ─────────────────────────────────────────────────────────────────
 
+/** Strip CR, LF, and other ASCII control characters from values injected into email subjects and plain-text bodies. */
+function sanitizeEmailVar(str: string): string {
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/[\r\n\x00-\x1F\x7F]/g, " ").trim();
+}
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -151,9 +157,9 @@ export function renderShareEmail(
   }
 ): { subject: string; html: string; text: string } {
   const varMap: Record<string, string> = {
-    appName: vars.appName,
-    shareTitle: vars.shareTitle,
-    shareUrl: vars.shareUrl,
+    appName: sanitizeEmailVar(vars.appName),
+    shareTitle: sanitizeEmailVar(vars.shareTitle),
+    shareUrl: sanitizeEmailVar(vars.shareUrl),
   };
 
   const subjectTpl = templates?.subject || DEFAULT_SHARE_SUBJECT;
@@ -177,8 +183,8 @@ export function renderVerifyEmail(
   }
 ): { subject: string; html: string; text: string } {
   const varMap: Record<string, string> = {
-    appName: vars.appName,
-    verifyUrl: vars.verifyUrl,
+    appName: sanitizeEmailVar(vars.appName),
+    verifyUrl: sanitizeEmailVar(vars.verifyUrl),
   };
 
   const subjectTpl = templates?.subject || DEFAULT_VERIFY_SUBJECT;

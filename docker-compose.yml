@@ -34,8 +34,9 @@ services:
       DATABASE_URL: postgres://postgres:postgres@db:5432/snowshare
       PRISMA_CLIENT_ENGINE_TYPE: library
       ALLOW_SIGNUP: true
-      NEXTAUTH_URL: http://localhost:3000
-      NEXTAUTH_SECRET: changeme-in-prod
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      # Required — generate with: openssl rand -base64 32
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required. Generate one with: openssl rand -base64 32}
       NODE_ENV: production
     ports:
       - "3000:3000"

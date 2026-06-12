@@ -6,6 +6,8 @@ import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/m
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { prisma } from "@/lib/prisma";
 import { logShareAccess } from "@/lib/access-log";
+import { isRateLimited } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/getClientIp";
 import path from "path";
 
 // Handle POST requests for file info and download actions
@@ -87,6 +89,14 @@ export async function POST(
     }
 
     if (action === "download") {
+      // Rate-limit password attempts: 10 per IP+slug per 15 minutes
+      if (password) {
+        const ip = getClientIp(request);
+        if (isRateLimited(`pwd:file:${slug}:${ip}`, 10, 15 * 60 * 1000)) {
+          return apiError(request, ErrorCode.RATE_LIMIT_EXCEEDED);
+        }
+      }
+
       const result = await getFileShare(slug, password);
 
       if (result.errorCode) {

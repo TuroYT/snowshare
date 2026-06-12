@@ -44,8 +44,19 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
           tenantId: config.tenantId!,
         }),
 
-      oidc: (config: ProviderConfig) =>
-        ({
+      oidc: (config: ProviderConfig) => {
+        if (config.issuer) {
+          let issuerUrl: URL;
+          try {
+            issuerUrl = new URL(config.issuer);
+          } catch {
+            throw new Error(`Invalid OIDC issuer URL: ${config.issuer}`);
+          }
+          if (issuerUrl.protocol !== "https:") {
+            throw new Error(`OIDC issuer must use HTTPS (got: ${issuerUrl.protocol})`);
+          }
+        }
+        return ({
           id: "oidc",
           name: "OpenID Connect",
           type: "oauth",
@@ -71,7 +82,8 @@ export const providerMap: Record<string, (config: ProviderConfig) => Provider> =
               image: profile.picture,
             };
           },
-        }) as unknown as OAuthConfig<Record<string, unknown>>,
+        }) as unknown as OAuthConfig<Record<string, unknown>>;
+      },
     }
   : {};
 
