@@ -218,15 +218,13 @@ describe("resolveAnonExpiry", () => {
 });
 
 describe("hashApiKey", () => {
-  it("returns a bcrypt hash string", () => {
+  it("returns a 64-char hex SHA-256 digest", () => {
     const hash = hashApiKey("sk_abc123");
-    expect(hash.startsWith("hashed:sk_abc123:12")).toBe(true);
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it("can be verified with bcrypt.compare", async () => {
-    const raw = "sk_abc123";
-    const hash = hashApiKey(raw);
-    await expect(bcrypt.compare(raw, hash)).resolves.toBe(true);
+  it("is deterministic (same input → same hash, required for DB lookup)", () => {
+    expect(hashApiKey("sk_abc123")).toBe(hashApiKey("sk_abc123"));
   });
 
   it("produces different hashes for different keys", () => {
@@ -240,9 +238,9 @@ describe("generateApiKey", () => {
     expect(raw).toMatch(/^sk_[0-9a-f]{32}$/);
   });
 
-  it("returns a hash that verifies against the raw key", async () => {
+  it("returns a hash that matches hashApiKey(raw)", () => {
     const { raw, hash } = generateApiKey();
-    await expect(bcrypt.compare(raw, hash)).resolves.toBe(true);
+    expect(hash).toBe(hashApiKey(raw));
   });
 
   it("returns a prefix that is the first 11 characters of the raw key", () => {
