@@ -830,7 +830,8 @@
       "email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem",
       "recipients_required": "Wymagany jest co najmniej jeden odbiorca",
       "email_not_configured": "Wysyłanie e-maili nie jest skonfigurowane",
-      "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później."
+      "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później.",
+      "rate_limit_exceeded": "Zbyt wiele żądań. Proszę poczekać chwilę i spróbować ponownie."
     },
     "file_protected": "Chroniony plik"
   },

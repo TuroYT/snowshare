@@ -833,7 +833,8 @@
       "email_not_verified": "Verifieer uw e-mailadres voordat u inlogt",
       "recipients_required": "Minstens één ontvanger is vereist",
       "email_not_configured": "E-mailverzending is niet geconfigureerd",
-      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw."
+      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw.",
+      "rate_limit_exceeded": "Te veel verzoeken. Wacht even en probeer het opnieuw."
     },
     "file_protected": "Beveiligd bestand"
   },

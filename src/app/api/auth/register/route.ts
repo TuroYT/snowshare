@@ -10,10 +10,17 @@ import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { hashPassword } from "@/lib/security";
 import { verifyCaptcha } from "@/lib/captcha";
 import { sendVerificationEmail } from "@/lib/email";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/getClientIp";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(`register:${clientIp}`, 10, 15 * 60_000)) {
+      return apiError(request, ErrorCode.RATE_LIMIT_EXCEEDED);
+    }
+
     const { email, password, isFirstUser, captchaToken } = await request.json();
 
     // Check if this is the first user setup

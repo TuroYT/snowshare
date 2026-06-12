@@ -44,6 +44,11 @@ jest.mock("crypto", () => ({
   randomBytes: jest.fn(() => ({ toString: () => "test-token-hex" })),
 }));
 
+jest.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: jest.fn(() => true),
+  resetRateLimit: jest.fn(),
+}));
+
 import { POST } from "@/app/api/auth/register/route";
 import { prisma } from "@/lib/prisma";
 import { verifyCaptcha } from "@/lib/captcha";
