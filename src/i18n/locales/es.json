@@ -827,7 +827,8 @@
       "recipients_required": "Se requiere al menos un destinatario",
       "email_not_configured": "El envío de correos no está configurado",
       "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde.",
-      "rate_limit_exceeded": "Demasiadas solicitudes. Por favor, espera un momento."
+      "rate_limit_exceeded": "Demasiadas solicitudes. Por favor, espera un momento.",
+      "download_token_invalid": "El enlace de descarga ha expirado. Por favor, actualiza la página e inténtalo de nuevo."
     },
     "file_protected": "Archivo protegido"
   },

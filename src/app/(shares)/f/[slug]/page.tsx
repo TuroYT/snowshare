@@ -327,10 +327,27 @@ export default function FileSharePage() {
     return formatBytes(bytes, useGiB);
   };
 
+  const getPreviewToken = async (): Promise<string | null> => {
+    if (!password) return null;
+    try {
+      const res = await fetch(`/f/${slug}/api`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "preview-token", password }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.token ?? null;
+    } catch {
+      return null;
+    }
+  };
+
   const handleFileClick = async (file: FileListItem) => {
-    // Build the preview URL with absolute path (required by reactjs-file-preview)
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const previewUrl = `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
+    const token = await getPreviewToken();
+    const tokenParam = token ? `&token=${token}` : "";
+    const previewUrl = `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${tokenParam}`;
 
     setPreviewFile({
       url: previewUrl,
@@ -338,10 +355,11 @@ export default function FileSharePage() {
     });
   };
 
-  const handleSingleFilePreview = () => {
-    // For single files (non-bulk), use the download route
+  const handleSingleFilePreview = async () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const previewUrl = `${origin}/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
+    const token = await getPreviewToken();
+    const tokenParam = token ? `?token=${token}` : "";
+    const previewUrl = `${origin}/f/${slug}/download${tokenParam}`;
 
     setPreviewFile({
       url: previewUrl,

@@ -6,6 +6,7 @@ import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/m
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { prisma } from "@/lib/prisma";
 import { logShareAccess } from "@/lib/access-log";
+import { issueDownloadToken } from "@/lib/download-token";
 import path from "path";
 
 // Handle POST requests for file info and download actions
@@ -101,8 +102,10 @@ export async function POST(
         void logShareAccess(request, result.share.id);
       }
 
+      const token = issueDownloadToken(result.share!.id);
+
       if (result.isBulk) {
-        const downloadUrl = `/f/${slug}/bulk-download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
+        const downloadUrl = `/f/${slug}/bulk-download?token=${token}`;
         return NextResponse.json({ downloadUrl, isBulk: true });
       }
 
@@ -110,9 +113,20 @@ export async function POST(
         return apiError(request, ErrorCode.FILE_NOT_FOUND);
       }
 
-      const downloadUrl = `/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
+      const downloadUrl = `/f/${slug}/download?token=${token}`;
 
       return NextResponse.json({ downloadUrl, isBulk: false });
+    }
+
+    if (action === "preview-token") {
+      const result = await getFileShare(slug, password);
+
+      if (result.errorCode) {
+        return apiError(request, result.errorCode);
+      }
+
+      const token = issueDownloadToken(result.share!.id);
+      return NextResponse.json({ token });
     }
 
     return apiError(request, ErrorCode.INVALID_REQUEST);

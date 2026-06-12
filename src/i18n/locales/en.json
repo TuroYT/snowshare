@@ -831,7 +831,8 @@
       "recipients_required": "At least one recipient is required",
       "email_not_configured": "Email sending is not configured",
       "email_send_failed": "Failed to send email. Please try again later.",
-      "rate_limit_exceeded": "Too many requests. Please wait a moment and try again."
+      "rate_limit_exceeded": "Too many requests. Please wait a moment and try again.",
+      "download_token_invalid": "Download link has expired. Please refresh the page and try again."
     },
     "file_protected": "Protected file"
   },

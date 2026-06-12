@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { validateDownloadToken } from "@/lib/download-token";
 import path from "path";
 import { getStorageReadStream, getStorageFileSize, storageFileExists } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
@@ -18,7 +18,7 @@ type ShareAccess = {
 async function validateShareAccess(
   request: NextRequest,
   share: ShareAccess,
-  password: string | undefined
+  token: string | undefined
 ): Promise<NextResponse | null> {
   if (!share || share.type !== "FILE" || !share.isBulk) {
     return apiError(request, ErrorCode.SHARE_NOT_FOUND);
@@ -27,9 +27,9 @@ async function validateShareAccess(
     return apiError(request, ErrorCode.SHARE_EXPIRED);
   }
   if (share.password) {
-    if (!password) return apiError(request, ErrorCode.PASSWORD_REQUIRED);
-    const valid = await bcrypt.compare(password, share.password);
-    if (!valid) return apiError(request, ErrorCode.PASSWORD_INCORRECT);
+    if (!token || !validateDownloadToken(token, share.id)) {
+      return apiError(request, ErrorCode.DOWNLOAD_TOKEN_INVALID);
+    }
   }
   return null;
 }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const url = new URL(request.url);
     const relativePath = url.searchParams.get("relativePath");
-    const password = url.searchParams.get("password") || undefined;
+    const token = url.searchParams.get("token") || undefined;
 
     if (!relativePath) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       select: { id: true, type: true, password: true, expiresAt: true, isBulk: true },
     });
 
-    const accessError = await validateShareAccess(request, share, password);
+    const accessError = await validateShareAccess(request, share, token);
     if (accessError) return accessError;
 
     const shareFile = await prisma.shareFile.findFirst({

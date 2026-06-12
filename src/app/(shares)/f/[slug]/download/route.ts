@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { getMimeType, sanitizeFilenameForHeader } from "@/lib/mime-types";
+import { validateDownloadToken } from "@/lib/download-token";
+import { prisma } from "@/lib/prisma";
 import path from "path";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -15,33 +16,55 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const url = new URL(request.url);
-    const password = url.searchParams.get("password") || undefined;
+    const token = url.searchParams.get("token") || undefined;
 
-    const result = await getFileShare(slug, password);
+    const share = await prisma.share.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        type: true,
+        filePath: true,
+        password: true,
+        expiresAt: true,
+        isBulk: true,
+        maxViews: true,
+        viewCount: true,
+      },
+    });
 
-    if (result.errorCode) {
-      return apiError(request, result.errorCode);
+    if (!share || share.type !== "FILE") {
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    if (result.share?.isBulk) {
+    if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
+      return apiError(request, ErrorCode.SHARE_EXPIRED);
+    }
+
+    if (share.maxViews !== null && share.viewCount >= share.maxViews) {
+      return apiError(request, ErrorCode.SHARE_EXPIRED);
+    }
+
+    if (share.isBulk) {
       return NextResponse.json(
-        {
-          error: "This is a bulk share. Use /bulk-download endpoint instead.",
-          isBulk: true,
-        },
+        { error: "This is a bulk share. Use /bulk-download endpoint instead.", isBulk: true },
         { status: 400 }
       );
     }
 
-    const { storageKey, originalFilename } = result;
+    if (share.password) {
+      if (!token || !validateDownloadToken(token, share.id)) {
+        return apiError(request, ErrorCode.DOWNLOAD_TOKEN_INVALID);
+      }
+    }
 
-    if (!storageKey) {
+    if (!share.filePath) {
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const fileSize = await getStorageFileSize(storageKey);
-    const ext = path.extname(storageKey).toLowerCase();
+    const fileSize = await getStorageFileSize(share.filePath);
+    const ext = path.extname(share.filePath).toLowerCase();
     const contentType = getMimeType(ext);
+    const originalFilename = share.filePath.split("_").slice(1).join("_");
     const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
 
     const range = request.headers.get("range");
@@ -58,7 +81,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
       const { start, end } = rangeResult;
       const chunksize = end - start + 1;
-      const fileStream = await getStorageReadStream(storageKey, { start, end });
+      const fileStream = await getStorageReadStream(share.filePath, { start, end });
       const webStream = nodeStreamToWebStream(fileStream);
 
       const headers = new Headers();
@@ -71,13 +94,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       headers.set("Pragma", "no-cache");
       headers.set("Expires", "0");
 
-      return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-        status: 206,
-        headers,
-      });
+      return new NextResponse(webStream as ReadableStream<Uint8Array>, { status: 206, headers });
     }
 
-    const fileStream = await getStorageReadStream(storageKey);
+    const fileStream = await getStorageReadStream(share.filePath);
     const webStream = nodeStreamToWebStream(fileStream);
 
     const headers = new Headers();
@@ -89,10 +109,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");
 
-    return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-      status: 200,
-      headers,
-    });
+    return new NextResponse(webStream as ReadableStream<Uint8Array>, { status: 200, headers });
   } catch (error) {
     console.error("Download error:", error);
     return internalError(request);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { validateDownloadToken } from "@/lib/download-token";
 import { createZipStream } from "@/lib/bulk-upload-utils";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
 
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const url = new URL(request.url);
-    const password = url.searchParams.get("password") || undefined;
+    const token = url.searchParams.get("token") || undefined;
 
     const share = await prisma.share.findUnique({
       where: { slug },
@@ -41,13 +41,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     if (share.password) {
-      if (!password) {
-        return jsonResponse({ error: "Password required", requiresPassword: true }, 403);
-      }
-
-      const passwordValid = await bcrypt.compare(password, share.password);
-      if (!passwordValid) {
-        return jsonResponse({ error: "Incorrect password" }, 403);
+      if (!token || !validateDownloadToken(token, share.id)) {
+        return jsonResponse({ error: "Invalid or expired download token" }, 403);
       }
     }
 
