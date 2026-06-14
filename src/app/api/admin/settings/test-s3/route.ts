@@ -10,7 +10,8 @@ import dns from "dns/promises";
 import net from "net";
 
 function isPrivateIp(ip: string): boolean {
-  const addr = ip.startsWith("::ffff:") ? ip.slice(7) : ip;
+  const normalized = ip.toLowerCase();
+  const addr = normalized.startsWith("::ffff:") ? normalized.slice(7) : normalized;
   if (net.isIPv4(addr)) {
     const parts = addr.split(".").map(Number);
     const [a, b] = parts;
@@ -23,8 +24,13 @@ function isPrivateIp(ip: string): boolean {
       addr === "0.0.0.0"
     );
   }
-  const lo = ip.toLowerCase();
-  return lo === "::1" || lo === "::" || lo.startsWith("fe80:") || lo.startsWith("fc") || lo.startsWith("fd");
+  return (
+    normalized === "::1" ||
+    normalized === "::" ||
+    normalized.startsWith("fe80:") ||
+    normalized.startsWith("fc") ||
+    normalized.startsWith("fd")
+  );
 }
 
 async function validateEndpointHost(endpoint: string): Promise<void> {

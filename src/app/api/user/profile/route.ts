@@ -6,6 +6,8 @@ import { hashPassword, verifyPassword } from "@/lib/security";
 import { isValidEmail } from "@/lib/constants";
 import { isValidDisplayName } from "@/lib/validation";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { sendVerificationEmail } from "@/lib/email";
+import crypto from "crypto";
 
 // GET - Get User informations
 export async function GET(request: NextRequest) {
@@ -68,6 +70,7 @@ export async function PATCH(request: NextRequest) {
       password?: string;
       defaultTab?: "linkshare" | "pasteshare" | "fileshare";
     } = {};
+    let needsEmailVerification: string | null = null;
 
     if (name !== undefined) {
       if (typeof name !== "string") {
@@ -99,6 +102,7 @@ export async function PATCH(request: NextRequest) {
       updateData.email = email;
       // Require re-verification when email changes
       updateData.emailVerified = null;
+      needsEmailVerification = email;
     }
 
     // Mise à jour du mot de passe
@@ -132,6 +136,24 @@ export async function PATCH(request: NextRequest) {
         defaultTab: true,
       },
     });
+
+    if (needsEmailVerification) {
+      const settings = await prisma.settings.findFirst({
+        select: { emailVerificationRequired: true, smtpEnabled: true },
+      });
+      if (settings?.emailVerificationRequired && settings?.smtpEnabled) {
+        const token = crypto.randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await prisma.verificationToken.create({
+          data: { identifier: `email-verify:${needsEmailVerification}`, token, expires },
+        });
+        try {
+          await sendVerificationEmail(needsEmailVerification, token);
+        } catch (emailError) {
+          console.error("Failed to send re-verification email:", emailError);
+        }
+      }
+    }
 
     return NextResponse.json({ user: updatedUser });
   } catch (error) {

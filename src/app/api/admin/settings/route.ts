@@ -44,7 +44,8 @@ function encryptedSecret<K extends keyof Settings>(
 ): Settings[K] {
   const val = data[key];
   if (val !== undefined && val !== "••••••••") {
-    const raw = ((val as string) || null) as Settings[K];
+    if (typeof val !== "string" && val !== null) return current[key];
+    const raw = (val || null) as Settings[K];
     const secret = process.env.NEXTAUTH_SECRET;
     if (raw && secret) {
       return encryptSecret(raw as string, secret) as Settings[K];
