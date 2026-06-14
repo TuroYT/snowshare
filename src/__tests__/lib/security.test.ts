@@ -218,7 +218,7 @@ describe("resolveAnonExpiry", () => {
 });
 
 describe("hashApiKey", () => {
-  it("returns a 64-char hex SHA-256 digest", () => {
+  it("returns a 64-char hex HMAC-SHA256 digest", () => {
     const hash = hashApiKey("sk_abc123");
     expect(hash).toMatch(/^[0-9a-f]{64}$/);
   });

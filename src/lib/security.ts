@@ -78,15 +78,13 @@ export async function generateRandomSlug(
 }
 
 /**
- * Hash an API key with SHA-256 (deterministic — safe because the key itself has 128 bits of entropy).
- * Never use bcrypt here: bcrypt is randomised so the same key would produce a different hash on
- * every call, making DB lookups by hash impossible.
+ * Hash an API key with HMAC-SHA256 keyed by NEXTAUTH_SECRET.
+ * Deterministic for DB lookup while ensuring a DB dump without the server secret is useless.
+ * Never use bcrypt: its random salt makes the same key hash differently each call.
  */
 export function hashApiKey(rawKey: string): string {
-  // SHA-256 is appropriate: API keys are high-entropy random tokens, not passwords.
-  // bcrypt cannot be used here because it is non-deterministic (random salt each call),
-  // making DB lookup by hash impossible. lgtm[js/insufficient-password-hash]
-  return crypto.createHash("sha256").update(rawKey).digest("hex");
+  const secret = process.env.NEXTAUTH_SECRET ?? "";
+  return crypto.createHmac("sha256", secret).update(rawKey).digest("hex");
 }
 
 /**
