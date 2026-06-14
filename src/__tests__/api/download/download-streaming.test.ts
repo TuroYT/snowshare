@@ -30,7 +30,7 @@ import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { Readable } from "stream";
 import { NextRequest } from "next/server";
 
-const mockPrismaShare = prisma.share as { findUnique: jest.Mock };
+const mockPrismaShare = prisma.share as unknown as { findUnique: jest.Mock };
 const mockGetStorageReadStream = getStorageReadStream as jest.Mock;
 const mockGetStorageFileSize = getStorageFileSize as jest.Mock;
 
