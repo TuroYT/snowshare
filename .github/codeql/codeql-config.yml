@@ -1,0 +1,8 @@
+name: "SnowShare CodeQL Config"
+disable-default-queries: false
+query-filters:
+  - exclude:
+      # False positive: hashApiKey uses HMAC-SHA256 which CodeQL flags as
+      # "insufficient for password hashing". API keys are high-entropy random
+      # tokens (128 bits), not passwords — HMAC is correct and intentional here.
+      id: js/insufficient-password-hash

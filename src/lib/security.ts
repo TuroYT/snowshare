@@ -85,7 +85,7 @@ export async function generateRandomSlug(
 export function hashApiKey(rawKey: string): string {
   const secret = process.env.NEXTAUTH_SECRET ?? "";
   const hmac = crypto.createHmac("sha256", secret);
-  return hmac.update(rawKey).digest("hex"); // codeql[js/insufficient-password-hash]
+  return hmac.update(rawKey).digest("hex");
 }
 
 /**
