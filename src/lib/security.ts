@@ -83,6 +83,9 @@ export async function generateRandomSlug(
  * every call, making DB lookups by hash impossible.
  */
 export function hashApiKey(rawKey: string): string {
+  // SHA-256 is appropriate: API keys are high-entropy random tokens, not passwords.
+  // bcrypt cannot be used here because it is non-deterministic (random salt each call),
+  // making DB lookup by hash impossible. lgtm[js/insufficient-password-hash]
   return crypto.createHash("sha256").update(rawKey).digest("hex");
 }
 
