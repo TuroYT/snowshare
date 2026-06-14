@@ -11,60 +11,102 @@ import { hashPassword } from "@/lib/security";
 import { verifyCaptcha } from "@/lib/captcha";
 import { sendVerificationEmail } from "@/lib/email";
 import { decryptSecret } from "@/lib/crypto-link";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/getClientIp";
 import crypto from "crypto";
+
+interface RegistrationSettings {
+  allowSignup: boolean;
+  disableCredentialsLogin: boolean;
+  captchaEnabled: boolean;
+  captchaProvider: string | null;
+  captchaSecretKey: string | null;
+  emailVerificationRequired: boolean;
+  smtpEnabled: boolean;
+}
+
+async function loadRegistrationSettings(): Promise<RegistrationSettings> {
+  const settings = await prisma.settings.findFirst({
+    select: {
+      allowSignin: true,
+      disableCredentialsLogin: true,
+      captchaEnabled: true,
+      captchaProvider: true,
+      captchaSecretKey: true,
+      emailVerificationRequired: true,
+      smtpEnabled: true,
+    },
+  });
+
+  if (!settings) {
+    return {
+      allowSignup: true,
+      disableCredentialsLogin: false,
+      captchaEnabled: false,
+      captchaProvider: null,
+      captchaSecretKey: null,
+      emailVerificationRequired: false,
+      smtpEnabled: false,
+    };
+  }
+
+  const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+  const captchaSecretKey =
+    settings.captchaSecretKey && nextAuthSecret
+      ? decryptSecret(settings.captchaSecretKey, nextAuthSecret)
+      : settings.captchaSecretKey;
+
+  return {
+    allowSignup: settings.allowSignin,
+    disableCredentialsLogin: settings.disableCredentialsLogin,
+    captchaEnabled: settings.captchaEnabled,
+    captchaProvider: settings.captchaProvider,
+    captchaSecretKey,
+    emailVerificationRequired: settings.emailVerificationRequired,
+    smtpEnabled: settings.smtpEnabled,
+  };
+}
+
+async function verifyCaptchaIfRequired(
+  request: NextRequest,
+  settings: RegistrationSettings,
+  isFirstUser: boolean,
+  captchaToken: string | undefined
+): Promise<NextResponse | null> {
+  if (!settings.captchaEnabled || isFirstUser) return null;
+  if (!captchaToken) return apiError(request, ErrorCode.CAPTCHA_REQUIRED);
+  if (!settings.captchaProvider || !settings.captchaSecretKey) {
+    return apiError(request, ErrorCode.CAPTCHA_INVALID);
+  }
+  const valid = await verifyCaptcha(
+    captchaToken,
+    settings.captchaSecretKey,
+    settings.captchaProvider
+  );
+  if (!valid) return apiError(request, ErrorCode.CAPTCHA_INVALID);
+  return null;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(`register:${clientIp}`, 10, 15 * 60_000)) {
+      return apiError(request, ErrorCode.RATE_LIMIT_EXCEEDED);
+    }
+
     const { email, password, isFirstUser, captchaToken } = await request.json();
 
-    // Check if this is the first user setup
     const userCount = await prisma.user.count();
     const isActuallyFirstUser = userCount === 0;
 
-    // Get DB settings
-    let allowSignup = true;
-    let disableCredentialsLogin = false;
-    let captchaEnabled = false;
-    let captchaProvider: string | null = null;
-    let captchaSecretKey: string | null = null;
-    let emailVerificationRequired = false;
-    let smtpEnabled = false;
+    const settings = await loadRegistrationSettings();
 
-    const settings = await prisma.settings.findFirst({
-      select: {
-        allowSignin: true,
-        disableCredentialsLogin: true,
-        captchaEnabled: true,
-        captchaProvider: true,
-        captchaSecretKey: true,
-        emailVerificationRequired: true,
-        smtpEnabled: true,
-      },
-    });
-
-    if (settings) {
-      allowSignup = settings.allowSignin;
-      disableCredentialsLogin = settings.disableCredentialsLogin;
-      captchaEnabled = settings.captchaEnabled;
-      captchaProvider = settings.captchaProvider;
-      const rawCaptchaKey = settings.captchaSecretKey;
-      const nextAuthSecret = process.env.NEXTAUTH_SECRET;
-      captchaSecretKey =
-        rawCaptchaKey && nextAuthSecret
-          ? decryptSecret(rawCaptchaKey, nextAuthSecret)
-          : rawCaptchaKey;
-      emailVerificationRequired = settings.emailVerificationRequired;
-      smtpEnabled = settings.smtpEnabled;
-    }
-
-    // Allow registration if:
-    // 1. Settings allow signup (allowSignin), AND credentials login is NOT disabled
-    // 2. OR This is the first user being created (database is empty)
-    if ((!allowSignup || disableCredentialsLogin) && !isActuallyFirstUser) {
+    // Allow registration if settings allow signup AND credentials login is enabled,
+    // OR this is the first user being created
+    if ((!settings.allowSignup || settings.disableCredentialsLogin) && !isActuallyFirstUser) {
       return apiError(request, ErrorCode.SIGNUP_DISABLED);
     }
 
-    // If claiming to be first user but database has users, reject
     if (isFirstUser && !isActuallyFirstUser) {
       return apiError(request, ErrorCode.USERS_ALREADY_EXIST);
     }
@@ -73,12 +115,10 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
     }
 
-    // Validate email format
     if (!isValidEmail(email)) {
       return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
     }
 
-    // Validate password length
     if (!isValidPassword(password)) {
       return apiError(request, ErrorCode.PASSWORD_LENGTH, {
         min: PASSWORD_MIN_LENGTH,
@@ -86,58 +126,40 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Verify CAPTCHA if enabled (skip for first user setup)
-    if (captchaEnabled && !isActuallyFirstUser) {
-      if (!captchaToken) {
-        return apiError(request, ErrorCode.CAPTCHA_REQUIRED);
-      }
-      if (!captchaProvider || !captchaSecretKey) {
-        return apiError(request, ErrorCode.CAPTCHA_INVALID);
-      }
-      const captchaValid = await verifyCaptcha(captchaToken, captchaSecretKey, captchaProvider);
-      if (!captchaValid) {
-        return apiError(request, ErrorCode.CAPTCHA_INVALID);
-      }
-    }
+    const captchaError = await verifyCaptchaIfRequired(
+      request,
+      settings,
+      isActuallyFirstUser,
+      captchaToken
+    );
+    if (captchaError) return captchaError;
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
     }
 
-    // Hash the password
     const hashedPassword = await hashPassword(password);
 
-    // Determine if email verification is needed
-    // First users are auto-verified (they're admins), skip verification
-    const needsEmailVerification = emailVerificationRequired && smtpEnabled && !isActuallyFirstUser;
+    // First users are auto-verified (they're admins)
+    const needsEmailVerification =
+      settings.emailVerificationRequired && settings.smtpEnabled && !isActuallyFirstUser;
 
-    // Create the user
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         isAdmin: isActuallyFirstUser,
-        // Mark as verified immediately if verification is not required
         emailVerified: needsEmailVerification ? null : new Date(),
       },
     });
 
-    // Send verification email if required
     if (needsEmailVerification) {
       const token = crypto.randomBytes(32).toString("hex");
-      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       await prisma.verificationToken.create({
-        data: {
-          identifier: `email-verify:${email}`,
-          token,
-          expires,
-        },
+        data: { identifier: `email-verify:${email}`, token, expires },
       });
 
       try {

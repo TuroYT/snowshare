@@ -57,6 +57,15 @@ function addSecurityHeaders(
   return response;
 }
 
+interface SetupCheckCache {
+  needsSetup: boolean;
+  allowIframeEmbedding: boolean;
+}
+
+let setupCheckCache: SetupCheckCache | null = null;
+let setupCheckCacheExpiresAt = 0;
+const SETUP_CACHE_TTL_MS = 30_000;
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApiDocs = pathname.startsWith("/api-docs");
@@ -73,25 +82,34 @@ export default async function proxy(request: NextRequest) {
     return addSecurityHeaders(response, isApiDocs, isScalarHtml);
   }
 
-  // Check if setup is needed
+  // Check if setup is needed (cached for 30s to avoid a DB round-trip on every page request)
   let allowIframeEmbedding = false;
   try {
-    const port = process.env.PORT || "3000";
-    const baseUrl = `http://localhost:${port}`;
-    const checkUrl = new URL("/api/setup/check", baseUrl);
-    const response = await fetch(checkUrl.toString());
+    const now = Date.now();
+    if (!setupCheckCache || now > setupCheckCacheExpiresAt) {
+      const port = process.env.PORT || "3000";
+      const baseUrl = `http://localhost:${port}`;
+      const checkUrl = new URL("/api/setup/check", baseUrl);
+      const response = await fetch(checkUrl.toString());
 
-    if (!response.ok) {
-      // If we can't check setup status, fail open to avoid lockout
-      console.error("Setup check failed with status:", response.status);
-      const nextResponse = NextResponse.next();
-      return addSecurityHeaders(nextResponse, isApiDocs, isScalarHtml);
+      if (!response.ok) {
+        // If we can't check setup status, fail open to avoid lockout
+        console.error("Setup check failed with status:", response.status);
+        const nextResponse = NextResponse.next();
+        return addSecurityHeaders(nextResponse, isApiDocs, isScalarHtml);
+      }
+
+      const data = await response.json();
+      setupCheckCache = {
+        needsSetup: data.needsSetup ?? false,
+        allowIframeEmbedding: data.allowIframeEmbedding ?? false,
+      };
+      setupCheckCacheExpiresAt = now + SETUP_CACHE_TTL_MS;
     }
 
-    const data = await response.json();
-    allowIframeEmbedding = data.allowIframeEmbedding ?? false;
+    allowIframeEmbedding = setupCheckCache.allowIframeEmbedding;
 
-    if (data.needsSetup) {
+    if (setupCheckCache.needsSetup) {
       // Redirect to setup page if not already there
       const redirectResponse = NextResponse.redirect(new URL("/setup", request.url));
       return addSecurityHeaders(redirectResponse, isApiDocs, isScalarHtml);

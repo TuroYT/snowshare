@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { logShareAccess } from "@/lib/access-log";
-import { isRateLimited } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/getClientIp";
 
 function jsonResponse(body: unknown, status = 200) {
@@ -123,7 +123,7 @@ export async function POST(
 
     // Rate-limit password attempts: 10 per IP+slug per 15 minutes
     const ip = getClientIp(request);
-    if (isRateLimited(`pwd:paste:${slug}:${ip}`, 10, 15 * 60 * 1000)) {
+    if (!checkRateLimit(`pwd:paste:${slug}:${ip}`, 10, 15 * 60 * 1000)) {
       return apiError(request, ErrorCode.RATE_LIMIT_EXCEEDED);
     }
 

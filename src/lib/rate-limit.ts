@@ -5,35 +5,40 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>();
 
-// Clean up expired entries every 5 minutes to prevent memory growth
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const [key, entry] of store.entries()) {
-      if (entry.resetAt < now) store.delete(key);
-    }
-  },
-  5 * 60 * 1000
-);
+// Cleanup stale entries every 5 minutes to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of store) {
+    if (now > entry.resetAt) store.delete(key);
+  }
+}, 5 * 60_000).unref?.();
 
 /**
- * Returns true when the caller has exceeded the rate limit for the given key.
+ * Returns true if the request is allowed, false if the rate limit is exceeded.
+ * Uses a fixed-window counter keyed by `key`.
  *
- * @param key       Unique string identifying the subject (e.g. "pwd:${slug}:${ip}")
- * @param limit     Maximum number of requests allowed in the window
- * @param windowMs  Window duration in milliseconds
+ * @param key         Unique key (e.g. "register:1.2.3.4")
+ * @param maxRequests Maximum allowed requests per window
+ * @param windowMs    Window duration in milliseconds
  */
-export function isRateLimited(key: string, limit: number, windowMs: number): boolean {
+export function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
   const now = Date.now();
   const entry = store.get(key);
 
-  if (!entry || entry.resetAt < now) {
+  if (!entry || now > entry.resetAt) {
     store.set(key, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+
+  if (entry.count >= maxRequests) {
     return false;
   }
 
-  if (entry.count >= limit) return true;
+  entry.count++;
+  return true;
+}
 
-  entry.count += 1;
-  return false;
+/** Exposed for testing only — removes the entry for a key. */
+export function resetRateLimit(key: string): void {
+  store.delete(key);
 }

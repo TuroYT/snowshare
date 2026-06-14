@@ -831,7 +831,8 @@
       "recipients_required": "Wymagany jest co najmniej jeden odbiorca",
       "email_not_configured": "Wysyłanie e-maili nie jest skonfigurowane",
       "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później.",
-      "rate_limit_exceeded": "Zbyt wiele prób. Spróbuj ponownie później."
+      "rate_limit_exceeded": "Zbyt wiele żądań. Proszę poczekać chwilę i spróbować ponownie.",
+      "download_token_invalid": "Link do pobrania wygasł. Odśwież stronę i spróbuj ponownie."
     },
     "file_protected": "Chroniony plik"
   },

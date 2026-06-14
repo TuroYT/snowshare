@@ -2,13 +2,12 @@
  * @jest-environment node
  */
 
-/**
- * Tests for file download streaming functionality
- */
-
-// Mock external dependencies before imports
-jest.mock("@/app/api/shares/(fileShare)/fileshare", () => ({
-  getFileShare: jest.fn(),
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    share: {
+      findUnique: jest.fn(),
+    },
+  },
 }));
 
 jest.mock("@/lib/storage", () => ({
@@ -22,17 +21,16 @@ jest.mock("@/lib/mime-types", () => ({
   sanitizeFilenameForHeader: jest.fn((name: string) => name),
 }));
 
-jest.mock("@/lib/i18n-server", () => ({
-  detectLocale: jest.fn(() => "en"),
-  translate: jest.fn((_locale: string, key: string) => key),
+jest.mock("@/lib/download-token", () => ({
+  validateDownloadToken: jest.fn(() => true),
 }));
 
-import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
+import { prisma } from "@/lib/prisma";
 import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { Readable } from "stream";
 import { NextRequest } from "next/server";
 
-const mockGetFileShare = getFileShare as jest.Mock;
+const mockPrismaShare = prisma.share as { findUnique: jest.Mock };
 const mockGetStorageReadStream = getStorageReadStream as jest.Mock;
 const mockGetStorageFileSize = getStorageFileSize as jest.Mock;
 
@@ -58,14 +56,24 @@ function makeReadableStream(): Readable {
   });
 }
 
+function makeShare(overrides = {}) {
+  return {
+    id: "share-123",
+    type: "FILE",
+    filePath: "share-123_file.txt",
+    password: null,
+    expiresAt: null,
+    maxViews: null,
+    viewCount: 0,
+    ...overrides,
+  };
+}
+
 describe("File Download Streaming", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetStorageFileSize.mockResolvedValue(1000000);
-    mockGetFileShare.mockResolvedValue({
-      storageKey: "share-123_file.txt",
-      originalFilename: "file.txt",
-    });
+    mockPrismaShare.findUnique.mockResolvedValue(makeShare());
     mockGetStorageReadStream.mockResolvedValue(makeReadableStream());
   });
 
@@ -82,10 +90,7 @@ describe("File Download Streaming", () => {
   it("should support range requests for resumable downloads", async () => {
     const fileSize = 10000000;
     mockGetStorageFileSize.mockResolvedValue(fileSize);
-    mockGetFileShare.mockResolvedValue({
-      storageKey: "share-456_large.bin",
-      originalFilename: "large.bin",
-    });
+    mockPrismaShare.findUnique.mockResolvedValue(makeShare({ filePath: "share-456_large.bin" }));
 
     const { GET } = await import("@/app/api/download/[slug]/route");
     const request = makeRequest({ range: "bytes=0-999999" }, "large-file-slug");
@@ -99,8 +104,7 @@ describe("File Download Streaming", () => {
   });
 
   it("should return 404 when the share does not exist", async () => {
-    const { ErrorCode } = await import("@/lib/api-errors");
-    mockGetFileShare.mockResolvedValue({ errorCode: ErrorCode.SHARE_NOT_FOUND });
+    mockPrismaShare.findUnique.mockResolvedValue(null);
 
     const { GET } = await import("@/app/api/download/[slug]/route");
     const request = makeRequest({}, "missing-slug");

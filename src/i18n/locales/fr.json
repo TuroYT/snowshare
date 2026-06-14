@@ -831,7 +831,8 @@
       "recipients_required": "Au moins un destinataire est requis",
       "email_not_configured": "L'envoi d'e-mails n'est pas configuré",
       "email_send_failed": "Échec de l'envoi de l'e-mail. Veuillez réessayer plus tard.",
-      "rate_limit_exceeded": "Trop de tentatives. Veuillez réessayer plus tard."
+      "rate_limit_exceeded": "Trop de tentatives. Veuillez patienter avant de réessayer.",
+      "download_token_invalid": "Le lien de téléchargement a expiré. Veuillez rafraîchir la page et réessayer."
     },
     "file_protected": "Fichier protégé"
   },

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { logShareAccess } from "@/lib/access-log";
-import { isRateLimited } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/getClientIp";
 import { NextRequest } from "next/server";
 
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
   // Rate-limit password attempts: 10 per IP+slug per 15 minutes
   const ip = getClientIp(request);
-  if (isRateLimited(`pwd:link:${slug}:${ip}`, 10, 15 * 60 * 1000)) {
+  if (!checkRateLimit(`pwd:link:${slug}:${ip}`, 10, 15 * 60 * 1000)) {
     return apiError(request, ErrorCode.RATE_LIMIT_EXCEEDED);
   }
 

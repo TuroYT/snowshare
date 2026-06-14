@@ -101,16 +101,16 @@ describe("createLinkShare", () => {
       expect(result.linkShare).toBeDefined();
     });
 
-    it("should accept localhost URL", async () => {
+    it("should reject localhost URL (SSRF protection)", async () => {
       const result = await createLinkShare("http://localhost:3000", makeRequest());
-      expect(result.errorCode).toBeUndefined();
-      expect(result.linkShare).toBeDefined();
+      expect(result.errorCode).toBeDefined();
+      expect(result.linkShare).toBeUndefined();
     });
 
-    it("should accept IP address URL", async () => {
+    it("should reject private IP address URL (SSRF protection)", async () => {
       const result = await createLinkShare("http://192.168.1.1:8080/path", makeRequest());
-      expect(result.errorCode).toBeUndefined();
-      expect(result.linkShare).toBeDefined();
+      expect(result.errorCode).toBeDefined();
+      expect(result.linkShare).toBeUndefined();
     });
   });
 
