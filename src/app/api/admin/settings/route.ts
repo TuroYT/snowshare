@@ -26,16 +26,6 @@ function nullableString<K extends keyof Settings>(
     : current[key];
 }
 
-function maskedSecret<K extends keyof Settings>(
-  data: SettingsInput,
-  current: Settings,
-  key: K
-): Settings[K] {
-  const val = data[key];
-  if (val !== undefined && val !== "••••••••") return ((val as string) || null) as Settings[K];
-  return current[key];
-}
-
 /** Like maskedSecret but encrypts the new value with AES-256-GCM when NEXTAUTH_SECRET is available. */
 function encryptedSecret<K extends keyof Settings>(
   data: SettingsInput,
