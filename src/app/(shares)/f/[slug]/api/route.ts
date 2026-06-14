@@ -1,15 +1,112 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
+import { getStorageFileSize } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
-import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { prisma } from "@/lib/prisma";
 import { logShareAccess } from "@/lib/access-log";
 import { issueDownloadToken } from "@/lib/download-token";
-import path from "path";
+import { serveFileResponse } from "@/lib/file-response";
 
-// Handle POST requests for file info and download actions
+async function handleInfo(request: NextRequest, slug: string): Promise<NextResponse> {
+  const result = await getFileShare(slug);
+
+  if (result.errorCode && !result.requiresPassword) {
+    return apiError(request, result.errorCode);
+  }
+
+  if (result.requiresPassword) {
+    const locale = detectLocale(request);
+    return NextResponse.json({
+      filename: translate(locale, "api.file_protected"),
+      requiresPassword: true,
+      isBulk: result.isBulk || false,
+    });
+  }
+
+  if (result.isBulk && result.share) {
+    const files = result.share.files || [];
+    const totalSize = files.reduce(
+      (sum: number, file: { size: bigint }) => sum + Number(file.size),
+      0
+    );
+    return NextResponse.json({
+      filename: `${files.length} files`,
+      fileSize: totalSize,
+      requiresPassword: false,
+      isBulk: true,
+      fileCount: files.length,
+      files: files.map((file) => ({
+        name: file.originalName,
+        path: file.relativePath || file.originalName,
+        size: Number(file.size),
+      })),
+    });
+  }
+
+  const { storageKey, originalFilename } = result;
+  if (!storageKey) {
+    return apiError(request, ErrorCode.FILE_NOT_FOUND);
+  }
+
+  const fileSize = await getStorageFileSize(storageKey);
+  return NextResponse.json({
+    filename: originalFilename,
+    fileSize,
+    requiresPassword: false,
+    isBulk: false,
+  });
+}
+
+async function handleDownload(
+  request: NextRequest,
+  slug: string,
+  password: string | undefined
+): Promise<NextResponse> {
+  const result = await getFileShare(slug, password);
+
+  if (result.errorCode) {
+    return apiError(request, result.errorCode);
+  }
+
+  if (result.share) {
+    await prisma.share.update({
+      where: { id: result.share.id },
+      data: { viewCount: { increment: 1 } },
+    });
+    void logShareAccess(request, result.share.id);
+  }
+
+  const token = issueDownloadToken(result.share!.id);
+
+  if (result.isBulk) {
+    return NextResponse.json({
+      downloadUrl: `/f/${slug}/bulk-download?token=${token}`,
+      isBulk: true,
+    });
+  }
+
+  if (!result.storageKey) {
+    return apiError(request, ErrorCode.FILE_NOT_FOUND);
+  }
+
+  return NextResponse.json({ downloadUrl: `/f/${slug}/download?token=${token}`, isBulk: false });
+}
+
+async function handlePreviewToken(
+  request: NextRequest,
+  slug: string,
+  password: string | undefined
+): Promise<NextResponse> {
+  const result = await getFileShare(slug, password);
+
+  if (result.errorCode) {
+    return apiError(request, result.errorCode);
+  }
+
+  return NextResponse.json({ token: issueDownloadToken(result.share!.id) });
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -34,101 +131,9 @@ export async function POST(
   }
 
   try {
-    if (action === "info") {
-      const result = await getFileShare(slug);
-
-      if (result.errorCode && !result.requiresPassword) {
-        return apiError(request, result.errorCode);
-      }
-
-      if (result.requiresPassword) {
-        const locale = detectLocale(request);
-        return NextResponse.json({
-          filename: translate(locale, "api.file_protected"),
-          requiresPassword: true,
-          isBulk: result.isBulk || false,
-        });
-      }
-
-      if (result.isBulk && result.share) {
-        const files = result.share.files || [];
-        const totalSize = files.reduce(
-          (sum: number, file: { size: bigint }) => sum + Number(file.size),
-          0
-        );
-        const fileList = files.map((file) => ({
-          name: file.originalName,
-          path: file.relativePath || file.originalName,
-          size: Number(file.size),
-        }));
-
-        return NextResponse.json({
-          filename: `${files.length} files`,
-          fileSize: totalSize,
-          requiresPassword: false,
-          isBulk: true,
-          fileCount: files.length,
-          files: fileList,
-        });
-      }
-
-      const { storageKey, originalFilename } = result;
-      if (!storageKey) {
-        return apiError(request, ErrorCode.FILE_NOT_FOUND);
-      }
-
-      const fileSize = await getStorageFileSize(storageKey);
-
-      return NextResponse.json({
-        filename: originalFilename,
-        fileSize,
-        requiresPassword: false,
-        isBulk: false,
-      });
-    }
-
-    if (action === "download") {
-      const result = await getFileShare(slug, password);
-
-      if (result.errorCode) {
-        return apiError(request, result.errorCode);
-      }
-
-      if (result.share) {
-        await prisma.share.update({
-          where: { id: result.share.id },
-          data: { viewCount: { increment: 1 } },
-        });
-        void logShareAccess(request, result.share.id);
-      }
-
-      const token = issueDownloadToken(result.share!.id);
-
-      if (result.isBulk) {
-        const downloadUrl = `/f/${slug}/bulk-download?token=${token}`;
-        return NextResponse.json({ downloadUrl, isBulk: true });
-      }
-
-      if (!result.storageKey) {
-        return apiError(request, ErrorCode.FILE_NOT_FOUND);
-      }
-
-      const downloadUrl = `/f/${slug}/download?token=${token}`;
-
-      return NextResponse.json({ downloadUrl, isBulk: false });
-    }
-
-    if (action === "preview-token") {
-      const result = await getFileShare(slug, password);
-
-      if (result.errorCode) {
-        return apiError(request, result.errorCode);
-      }
-
-      const token = issueDownloadToken(result.share!.id);
-      return NextResponse.json({ token });
-    }
-
+    if (action === "info") return handleInfo(request, slug);
+    if (action === "download") return handleDownload(request, slug, password);
+    if (action === "preview-token") return handlePreviewToken(request, slug, password);
     return apiError(request, ErrorCode.INVALID_REQUEST);
   } catch (error) {
     console.error("File share error:", error);
@@ -152,10 +157,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (result.errorCode) {
       if (result.requiresPassword && !password) {
-        const pageUrl = new URL(`/f/${slug}`, url.origin);
-        return Response.redirect(pageUrl.toString(), 302);
+        return Response.redirect(new URL(`/f/${slug}`, url.origin).toString(), 302);
       }
-
       return apiError(request, result.errorCode);
     }
 
@@ -165,68 +168,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const fileSize = await getStorageFileSize(storageKey);
-    const ext = path.extname(storageKey).toLowerCase();
-    const contentType = getMimeType(ext);
-    const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
-
-    const { nodeStreamToWebStream, parseRangeHeader } = await import("@/lib/stream-utils");
-    const range = request.headers.get("range");
-
-    if (range) {
-      const rangeResult = parseRangeHeader(range, fileSize);
-
-      if (!rangeResult) {
-        return new Response(null, {
-          status: 416,
-          headers: { "Content-Range": `bytes */${fileSize}` },
-        });
-      }
-
-      const { start, end } = rangeResult;
-      const chunksize = end - start + 1;
-      const fileStream = await getStorageReadStream(storageKey, { start, end });
-      const webStream = nodeStreamToWebStream(fileStream);
-
-      const headers = new Headers();
-      headers.set("Content-Range", `bytes ${start}-${end}/${fileSize}`);
-      headers.set("Accept-Ranges", "bytes");
-      headers.set("Content-Length", chunksize.toString());
-      headers.set("Content-Type", contentType);
-      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
-      headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-      headers.set("Pragma", "no-cache");
-      headers.set("Expires", "0");
-
-      return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-        status: 206,
-        headers,
-      });
-    }
-
-    const fileStream = await getStorageReadStream(storageKey);
-    const webStream = nodeStreamToWebStream(fileStream);
-
-    const headers = new Headers();
-    headers.set("Content-Length", fileSize.toString());
-    headers.set("Content-Type", contentType);
-    headers.set("Accept-Ranges", "bytes");
-    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-    headers.set("Pragma", "no-cache");
-    headers.set("Expires", "0");
-
-    if (isSafeForInline(contentType)) {
-      const disposition = request.headers.get("accept")?.includes("text/html")
-        ? "inline"
-        : "attachment";
-      headers.set("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
-    } else {
-      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
-    }
-
-    return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-      status: 200,
-      headers,
+    return serveFileResponse(request, storageKey, originalFilename || "download", {
+      allowInline: true,
     });
   } catch (error) {
     console.error("Download error:", error);
