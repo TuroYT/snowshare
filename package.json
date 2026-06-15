@@ -97,7 +97,7 @@
     "@typescript-eslint/parser": "^8.42.0",
     "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9",
-    "eslint-config-next": "^15.0.4",
+    "eslint-config-next": "^16.2.9",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
