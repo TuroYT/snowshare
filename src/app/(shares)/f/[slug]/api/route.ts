@@ -34,7 +34,7 @@ export async function POST(
 
   try {
     if (action === "info") {
-      const result = await getFileShare(slug);
+      const result = await getFileShare(slug, password);
 
       if (result.errorCode && !result.requiresPassword) {
         return apiError(request, result.errorCode);

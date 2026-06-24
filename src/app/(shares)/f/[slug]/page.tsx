@@ -64,11 +64,15 @@ function FilePasswordGate({
 
 function BulkFileList({
   files,
+  slug,
+  password,
   formatFileSize,
   onFileClick,
   t,
 }: {
   files: FileListItem[];
+  slug: string;
+  password: string;
   formatFileSize: (bytes?: number) => string;
   onFileClick: (f: FileListItem) => void;
   t: TFunction;
@@ -93,7 +97,9 @@ function BulkFileList({
             <p className="text-xs text-[var(--foreground-muted)]">{formatFileSize(f.size)}</p>
           </div>
           <a
-            href={`/api/shares/fileShare/download?path=${encodeURIComponent(f.path)}`}
+            href={`/f/${slug}/file-preview?relativePath=${encodeURIComponent(f.path)}&download=1${
+              password ? `&password=${encodeURIComponent(password)}` : ""
+            }`}
             className="shrink-0 text-xs text-[var(--primary)] hover:underline"
             download
             onClick={(e) => e.stopPropagation()}
@@ -421,57 +427,56 @@ export default function FileSharePage() {
               {/* Error message inside download area */}
               {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
 
-              {fileInfo.isBulk && fileInfo.files && fileInfo.files.length > 0 ? (
+              {/* Bulk: list of files (each downloadable individually) */}
+              {fileInfo.isBulk && fileInfo.files && fileInfo.files.length > 0 && (
                 <BulkFileList
                   files={fileInfo.files}
+                  slug={slug}
+                  password={password}
                   formatFileSize={formatFileSize}
                   onFileClick={handleFileClick}
                   t={t}
                 />
-              ) : (
-                <>
-                  {/* Single file preview button */}
-                  {!fileInfo.isBulk && (
-                    <Button
-                      variant="secondary"
-                      className="w-full"
-                      onClick={handleSingleFilePreview}
-                    >
-                      {t("file_download.preview", "Preview")}
-                    </Button>
-                  )}
-
-                  {/* Download progress bar */}
-                  {downloadedBytes > 0 && totalBytes > 0 && (
-                    <div className="space-y-1">
-                      <div className="h-1.5 rounded-full bg-[var(--border)] overflow-hidden">
-                        <div
-                          className="h-full bg-[var(--primary)] transition-all"
-                          style={{ width: `${Math.round((downloadedBytes / totalBytes) * 100)}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-[var(--foreground-muted)] text-right">
-                        {formatBytes(downloadedBytes, useGiB)} / {formatBytes(totalBytes, useGiB)}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      onClick={() => handleDownload()}
-                      isLoading={loading && !downloadAbortController}
-                      className="flex-1"
-                    >
-                      {t("file_download.download")}
-                    </Button>
-                    {downloadAbortController && (
-                      <Button variant="danger" onClick={handleCancelDownload}>
-                        {t("file_download.cancel_download", "Cancel")}
-                      </Button>
-                    )}
-                  </div>
-                </>
               )}
+
+              {/* Single file preview button */}
+              {!fileInfo.isBulk && (
+                <Button variant="secondary" className="w-full" onClick={handleSingleFilePreview}>
+                  {t("file_download.preview", "Preview")}
+                </Button>
+              )}
+
+              {/* Download progress bar */}
+              {downloadedBytes > 0 && totalBytes > 0 && (
+                <div className="space-y-1">
+                  <div className="h-1.5 rounded-full bg-[var(--border)] overflow-hidden">
+                    <div
+                      className="h-full bg-[var(--primary)] transition-all"
+                      style={{ width: `${Math.round((downloadedBytes / totalBytes) * 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[var(--foreground-muted)] text-right">
+                    {formatBytes(downloadedBytes, useGiB)} / {formatBytes(totalBytes, useGiB)}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  onClick={() => handleDownload()}
+                  isLoading={loading && !downloadAbortController}
+                  className="flex-1"
+                >
+                  {fileInfo.isBulk
+                    ? t("file_download.download_all_zip", "Download all as ZIP")
+                    : t("file_download.download")}
+                </Button>
+                {downloadAbortController && (
+                  <Button variant="danger" onClick={handleCancelDownload}>
+                    {t("file_download.cancel_download", "Cancel")}
+                  </Button>
+                )}
+              </div>
 
               {/* Disclaimer */}
               <p className="text-xs text-[var(--foreground-muted)] text-center">
