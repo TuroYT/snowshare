@@ -36,7 +36,8 @@ async function validateShareAccess(
 
 async function buildFileResponse(
   shareFile: { filePath: string; originalName: string | null; mimeType: string | null },
-  fileSize: number
+  fileSize: number,
+  forceDownload = false
 ): Promise<NextResponse> {
   let contentType = shareFile.mimeType || "application/octet-stream";
   if (!shareFile.mimeType) {
@@ -46,15 +47,14 @@ async function buildFileResponse(
   const fileStream = await getStorageReadStream(shareFile.filePath);
   const webStream = nodeStreamToWebStream(fileStream);
 
+  const disposition = !forceDownload && isSafeForInline(contentType) ? "inline" : "attachment";
+
   const headers = new Headers();
   headers.set("Content-Length", fileSize.toString());
   headers.set("Content-Type", contentType);
   headers.set("Accept-Ranges", "bytes");
   headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-  headers.set(
-    "Content-Disposition",
-    `${isSafeForInline(contentType) ? "inline" : "attachment"}; filename="${safeFilename}"`
-  );
+  headers.set("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
 
   return new NextResponse(webStream as ReadableStream<Uint8Array>, { status: 200, headers });
 }
@@ -70,6 +70,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const url = new URL(request.url);
     const relativePath = url.searchParams.get("relativePath");
     const password = url.searchParams.get("password") || undefined;
+    const forceDownload = url.searchParams.get("download") === "1";
 
     if (!relativePath) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
@@ -97,7 +98,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const fileSize = await getStorageFileSize(shareFile.filePath);
-    return buildFileResponse(shareFile, fileSize);
+    return buildFileResponse(shareFile, fileSize, forceDownload);
   } catch (error) {
     console.error("File preview error:", error);
     return internalError(request);

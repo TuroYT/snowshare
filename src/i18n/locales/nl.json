@@ -146,6 +146,7 @@
     "password_placeholder": "Voer wachtwoord in",
     "downloading": "Downloaden...",
     "download": "Downloaden",
+    "download_all_zip": "Alles downloaden als ZIP",
     "disclaimer": "Door dit bestand te downloaden erken je dat het afkomstig is van een externe bron.",
     "file_count": "{{count}} bestanden",
     "verify_password": "Wachtwoord verifiëren",

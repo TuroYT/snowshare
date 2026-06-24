@@ -142,6 +142,7 @@
     "password_placeholder": "Entrez le mot de passe",
     "downloading": "Téléchargement...",
     "download": "Télécharger",
+    "download_all_zip": "Tout télécharger en ZIP",
     "disclaimer": "En téléchargeant ce fichier, vous acceptez qu'il provient d'une source tierce.",
     "file_count": "{{count}} fichiers",
     "verify_password": "Vérifier le mot de passe",

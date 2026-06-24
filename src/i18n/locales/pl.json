@@ -146,6 +146,7 @@
     "password_placeholder": "Wprowadź hasło",
     "downloading": "Pobieranie...",
     "download": "Pobierz",
+    "download_all_zip": "Pobierz wszystko jako ZIP",
     "disclaimer": "Pobierając plik, potwierdzasz, że pochodzi od podmiotu trzeciego.",
     "file_count": "{{count}} plików",
     "verify_password": "Zweryfikuj hasło",
