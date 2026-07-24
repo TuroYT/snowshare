@@ -92,6 +92,7 @@ model Share {
   urlOriginal   String?
   slug          String     @unique
   password      String?
+  note          String?
   createdAt     DateTime   @default(now())
   expiresAt     DateTime?
   ipSource      String?

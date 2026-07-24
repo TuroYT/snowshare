@@ -20,6 +20,7 @@ import cron from "node-cron";
 const BCRYPT_COST = 12;
 const SLUG_REGEX = /^[a-zA-Z0-9_-]{3,30}$/;
 const MAX_ANON_EXPIRY_DAYS = 7;
+const MAX_NOTE_LENGTH = 2000;
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
@@ -252,7 +253,7 @@ async function validateUploadSlug(prisma, slug, isBulkSubsequent) {
 
 async function resolveUploadShare(
   prisma,
-  { isBulk, bulkShareId, fileIndex, slug, password, expiresAt, maxViews },
+  { isBulk, bulkShareId, fileIndex, slug, password, expiresAt, maxViews, note },
   { clientIp, userId, isAuthenticated }
 ) {
   if (isBulk && bulkShareId) {
@@ -286,6 +287,7 @@ async function resolveUploadShare(
         ownerId: userId || null,
         isBulk: true,
         maxViews,
+        note,
       },
     });
     console.log(`Created bulk share: ${share.slug}`);
@@ -303,6 +305,7 @@ async function resolveUploadShare(
       ownerId: userId || null,
       isBulk: false,
       maxViews,
+      note,
     },
   });
 }
@@ -482,6 +485,7 @@ const tusServer = new TusServer({
       const expiresAt = metadata.expiresAt || "";
       const maxViewsRaw = metadata.maxViews ? parseInt(metadata.maxViews) : null;
       const maxViews = maxViewsRaw && maxViewsRaw > 0 ? maxViewsRaw : null;
+      const note = (metadata.note || "").slice(0, MAX_NOTE_LENGTH) || null;
       const isBulk = metadata.isBulk === "true";
       const bulkShareId = metadata.bulkShareId || "";
       const relativePath = metadata.relativePath || filename;
@@ -504,7 +508,7 @@ const tusServer = new TusServer({
 
       const share = await resolveUploadShare(
         prisma,
-        { isBulk, bulkShareId, fileIndex, slug, password, expiresAt, maxViews },
+        { isBulk, bulkShareId, fileIndex, slug, password, expiresAt, maxViews, note },
         { clientIp, userId, isAuthenticated }
       );
 
