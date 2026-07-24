@@ -23,6 +23,7 @@ interface FileInfo {
   isBulk?: boolean;
   fileCount?: number;
   files?: FileListItem[];
+  note?: string | null;
 }
 
 function FilePasswordGate({
@@ -426,6 +427,18 @@ export default function FileSharePage() {
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4">
               {/* Error message inside download area */}
               {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
+
+              {/* Note / description */}
+              {fileInfo.note && (
+                <div className="rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] p-3">
+                  <p className="text-xs font-medium text-[var(--foreground-muted)] mb-1">
+                    {t("file_download.note", "Note")}
+                  </p>
+                  <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap break-words">
+                    {fileInfo.note}
+                  </p>
+                </div>
+              )}
 
               {/* Bulk: list of files (each downloadable individually) */}
               {fileInfo.isBulk && fileInfo.files && fileInfo.files.length > 0 && (

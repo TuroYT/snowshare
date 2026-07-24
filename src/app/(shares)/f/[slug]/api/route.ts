@@ -68,6 +68,7 @@ export async function POST(
           isBulk: true,
           fileCount: files.length,
           files: fileList,
+          note: result.share.note ?? null,
         });
       }
 
@@ -83,6 +84,7 @@ export async function POST(
         fileSize,
         requiresPassword: false,
         isBulk: false,
+        note: result.share?.note ?? null,
       });
     }
 

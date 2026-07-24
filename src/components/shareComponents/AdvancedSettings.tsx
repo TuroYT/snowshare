@@ -14,7 +14,12 @@ interface AdvancedSettingsProps {
   translationPrefix: string;
   /** Override the password label i18n key (defaults to translationPrefix.password_protect) */
   passwordLabelKey?: string;
+  /** Optional note/description. When both note and setNote are provided, a note field is rendered. */
+  note?: string;
+  setNote?: (value: string) => void;
 }
+
+const MAX_NOTE_LENGTH = 2000;
 
 const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
   slug,
@@ -24,6 +29,8 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
   slugPrefix,
   translationPrefix,
   passwordLabelKey,
+  note,
+  setNote,
 }) => {
   const { t } = useTranslation();
   const [origin, setOrigin] = useState("");
@@ -112,6 +119,32 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
             </div>
           </div>
         </div>
+
+        {setNote && (
+          <div>
+            <label
+              htmlFor="note"
+              className="block text-sm font-medium text-[var(--foreground)] mb-2"
+            >
+              {t(`${translationPrefix}.note`, "Note")}
+            </label>
+            <textarea
+              id="note"
+              rows={3}
+              maxLength={MAX_NOTE_LENGTH}
+              placeholder={t(
+                `${translationPrefix}.note_placeholder`,
+                "Optional - add a note or description shown alongside the file"
+              )}
+              value={note ?? ""}
+              onChange={(e) => setNote(e.target.value)}
+              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)] resize-y"
+            />
+            <p className="text-xs text-[var(--foreground-muted)] mt-1 text-right">
+              {note?.length ?? 0}/{MAX_NOTE_LENGTH}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
