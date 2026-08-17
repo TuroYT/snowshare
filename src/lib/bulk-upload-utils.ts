@@ -2,7 +2,7 @@ import { createWriteStream } from "fs";
 import { access, mkdir, stat } from "fs/promises";
 import path from "path";
 import { pipeline } from "stream/promises";
-import archiver from "archiver";
+import { ZipArchive } from "archiver";
 import { Readable } from "stream";
 import crypto from "crypto";
 import { getUploadDir } from "./constants";
@@ -82,7 +82,7 @@ export function getMimeType(filename: string): string {
 export async function createZipStream(
   files: Array<{ filePath: string; originalName: string; relativePath: string }>
 ): Promise<Readable> {
-  const archive = archiver("zip", {
+  const archive = new ZipArchive({
     zlib: { level: 6 },
   });
 
