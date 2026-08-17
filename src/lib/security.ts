@@ -84,7 +84,11 @@ export async function generateRandomSlug(
  */
 export function hashApiKey(rawKey: string): string {
   const secret = process.env.NEXTAUTH_SECRET ?? "";
-  const hmac = crypto.createHmac("sha256", secret);
+  // rawKey is a 128-bit cryptographically random API key, not a user-chosen password —
+  // brute-forcing it is infeasible regardless of hash speed. HMAC-SHA256 keyed by a
+  // server secret keeps DB lookups O(1); bcrypt's per-call random salt would make
+  // exact-match lookup by hash impossible.
+  const hmac = crypto.createHmac("sha256", secret); // codeql[js/insufficient-password-hash]
   return hmac.update(rawKey).digest("hex");
 }
 
