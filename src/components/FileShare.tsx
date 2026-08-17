@@ -16,6 +16,7 @@ import SubmitButton from "./shareComponents/SubmitButton";
 
 const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
+const MAX_NOTE_LENGTH = 2000;
 
 interface FileWithPath {
   file: File;
@@ -50,6 +51,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
+  const [note, setNote] = useState("");
   const [hasViewLimit, setHasViewLimit] = useState(false);
   const [maxViews, setMaxViews] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -294,6 +296,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
       if (slug.trim()) baseMetadata.slug = slug.trim();
       if (password.trim()) baseMetadata.password = password.trim();
+      if (note.trim()) baseMetadata.note = note.trim().slice(0, MAX_NOTE_LENGTH);
       if (hasViewLimit) baseMetadata.maxViews = maxViews.toString();
 
       if (files.length === 1) {
@@ -776,6 +779,8 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
           setPassword={setPassword}
           slugPrefix="/f/"
           translationPrefix="fileshare"
+          note={note}
+          setNote={setNote}
         />
 
         <SubmitButton

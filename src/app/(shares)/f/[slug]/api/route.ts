@@ -43,6 +43,7 @@ async function handleInfo(request: NextRequest, slug: string): Promise<NextRespo
         path: file.relativePath || file.originalName,
         size: Number(file.size),
       })),
+      note: result.share.note ?? null,
     });
   }
 
@@ -57,6 +58,7 @@ async function handleInfo(request: NextRequest, slug: string): Promise<NextRespo
     fileSize,
     requiresPassword: false,
     isBulk: false,
+    note: result.share?.note ?? null,
   });
 }
 

@@ -83,7 +83,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // Check if setup is needed (cached for 30s to avoid a DB round-trip on every page request)
-  let allowIframeEmbedding = false;
+  let allowIframeEmbedding: boolean;
   try {
     const now = Date.now();
     if (!setupCheckCache || now > setupCheckCacheExpiresAt) {

@@ -12,6 +12,7 @@ export const getFileShare = async (slug: string, password?: string) => {
       type: true,
       filePath: true,
       password: true,
+      note: true,
       expiresAt: true,
       isBulk: true,
       maxViews: true,

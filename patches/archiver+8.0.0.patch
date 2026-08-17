@@ -1,0 +1,20 @@
+diff --git a/node_modules/archiver/lib/core.js b/node_modules/archiver/lib/core.js
+index 1bcf33a..33d2f9b 100644
+--- a/node_modules/archiver/lib/core.js
++++ b/node_modules/archiver/lib/core.js
+@@ -1,6 +1,6 @@
+ import { createReadStream, lstat, readlinkSync, Stats } from "fs";
+ import { isStream } from "is-stream";
+-import readdirGlob from "readdir-glob";
++import { readdirGlob, ReaddirGlob } from "readdir-glob";
+ import { Readable } from "lazystream";
+ import { queue } from "async";
+ import {
+@@ -16,7 +16,6 @@ import {
+   sanitizePath,
+   trailingSlashIt,
+ } from "./utils.js";
+-const { ReaddirGlob } = readdirGlob;
+ const win32 = process.platform === "win32";
+ 
+ export default class Archiver extends Transform {

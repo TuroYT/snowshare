@@ -31,8 +31,15 @@ jobs:
             -e GITHUB_REF \
             -e GITHUB_SHA \
             -e GITHUB_EVENT_NAME \
+            -e GITHUB_EVENT_PATH \
+            -e GITHUB_HEAD_REF \
+            -e GITHUB_BASE_REF \
+            -e GITHUB_RUN_ID \
+            -e GITHUB_API_URL \
+            -e GITHUB_SERVER_URL \
             -e GITHUB_ACTIONS=true \
             -v "$GITHUB_WORKSPACE":/src \
+            -v "$GITHUB_EVENT_PATH":"$GITHUB_EVENT_PATH":ro \
             -w /src \
             returntocorp/semgrep \
             semgrep ci --timeout 60 --timeout-threshold 3 --max-memory 5000 --oss-only
