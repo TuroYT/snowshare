@@ -354,7 +354,7 @@ async function finalizeUploadFile(
       if (!s3Active) await unlink(finalFilePath).catch(() => {});
       if (error?.code === "P2003") {
         console.error(`[Upload] FK constraint when linking bulk file to share ${share.id}:`, error);
-        throw new Error("Bulk share reference missing during file finalize");
+        throw new Error("Bulk share reference missing during file finalize", { cause: error });
       }
       throw error;
     }

@@ -74,7 +74,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // Check if setup is needed
-  let allowIframeEmbedding = false;
+  let allowIframeEmbedding: boolean;
   try {
     const port = process.env.PORT || "3000";
     const baseUrl = `http://localhost:${port}`;
