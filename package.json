@@ -37,7 +37,7 @@
     "@scalar/api-reference": "^1.52.3",
     "@tailwindcss/typography": "^0.5.20",
     "@tus/file-store": "^2.1.0",
-    "@tus/server": "^2.4.3",
+    "@tus/server": "^2.4.4",
     "@types/archiver": "^8.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/marked": "^5.0.2",
