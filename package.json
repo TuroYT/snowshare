@@ -54,7 +54,7 @@
     "clsx": "^2.1.1",
     "geist": "^1.7.0",
     "i18next": "^23.0.0",
-    "i18next-browser-languagedetector": "^7.0.1",
+    "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^1.16.0",
     "marked": "^18.0.9",
     "next": "16.3.1",
