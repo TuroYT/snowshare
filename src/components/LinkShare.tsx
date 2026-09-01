@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useShareSettings } from "@/hooks/useShareSettings";
+import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
@@ -18,10 +19,9 @@ const MAX_DAYS_ANON = 7;
 const MAX_DAYS_AUTH = 365;
 
 const LinkShare: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
-  const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +32,18 @@ const LinkShare: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [successSlug, setSuccessSlug] = useState<string>("");
   const [urlError, setUrlError] = useState<string | null>(null);
-  const { allowAnonLinkShare, loading: settingsLoading } = useShareSettings();
+  const {
+    allowAnonLinkShare,
+    defaultExpirationDays,
+    loading: settingsLoading,
+  } = useShareSettings();
+  const [expiresDays, setExpiresDays] = useDefaultExpirationDays(
+    isAuthenticated,
+    authLoading,
+    defaultExpirationDays,
+    settingsLoading,
+    MAX_DAYS_ANON
+  );
 
   function isValidUrl(value: string) {
     try {

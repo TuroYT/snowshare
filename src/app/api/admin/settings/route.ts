@@ -72,6 +72,18 @@ function d<T>(val: unknown, fallback: T): T {
   return val !== undefined ? (val as T) : fallback;
 }
 
+const MIN_DEFAULT_EXPIRATION_DAYS = 1;
+const MAX_DEFAULT_EXPIRATION_DAYS = 365;
+
+function clampDefaultExpirationDays(val: unknown, fallback: number): number {
+  const num = Number(val);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.min(
+    MAX_DEFAULT_EXPIRATION_DAYS,
+    Math.max(MIN_DEFAULT_EXPIRATION_DAYS, Math.round(num))
+  );
+}
+
 function buildFirstRunSettingsCreate(data: SettingsInput) {
   return {
     allowSignin: d(data.allowSignin, true),
@@ -83,6 +95,7 @@ function buildFirstRunSettingsCreate(data: SettingsInput) {
     authMaxUpload: (data.authMaxUpload as number) || 51200,
     anoIpQuota: (data.anoIpQuota as number) || 4096,
     authIpQuota: (data.authIpQuota as number) || 102400,
+    defaultExpirationDays: clampDefaultExpirationDays(data.defaultExpirationDays, 30),
     useGiBForAnon: d(data.useGiBForAnon, false),
     useGiBForAuth: d(data.useGiBForAuth, false),
     appName: (data.appName as string) || "SnowShare",
@@ -118,6 +131,10 @@ function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
     authMaxUpload: (data.authMaxUpload as number) || current.authMaxUpload,
     anoIpQuota: (data.anoIpQuota as number) || current.anoIpQuota,
     authIpQuota: (data.authIpQuota as number) || current.authIpQuota,
+    defaultExpirationDays: clampDefaultExpirationDays(
+      data.defaultExpirationDays,
+      current.defaultExpirationDays
+    ),
     useGiBForAnon: field(data, current, "useGiBForAnon"),
     useGiBForAuth: field(data, current, "useGiBForAuth"),
     appName: field(data, current, "appName"),

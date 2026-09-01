@@ -582,6 +582,13 @@
       "saving": "Opslaan...",
       "save": "Wijzigingen opslaan"
     },
+    "expiration": {
+      "title": "Standaard vervaldatum",
+      "default_days": "Standaard geldigheidsduur",
+      "default_days_hint": "Vooraf ingevulde geldigheidsduur (in dagen) wanneer een gebruiker een nieuwe share aanmaakt zonder er een te kiezen",
+      "days_unit": "dagen",
+      "current_value": "Huidig: {{value}} dagen"
+    },
     "logs": {
       "title": "Logs voor share-aanmaak",
       "delete": "Verwijderen",

@@ -18,6 +18,7 @@ export async function GET() {
           authMaxUpload: 51200,
           anoIpQuota: 4096,
           authIpQuota: 102400,
+          defaultExpirationDays: 30,
           appName: "SnowShare",
           appDescription: "Share your files, pastes, and URLs securely",
           primaryColor: "#3B82F6",
@@ -48,6 +49,7 @@ export async function GET() {
           authMaxUpload: settings.authMaxUpload,
           anoIpQuota: settings.anoIpQuota,
           authIpQuota: settings.authIpQuota,
+          defaultExpirationDays: settings.defaultExpirationDays,
           useGiBForAnon: settings.useGiBForAnon,
           useGiBForAuth: settings.useGiBForAuth,
           appName: settings.appName,
@@ -72,7 +74,7 @@ export async function GET() {
       },
       {
         headers: {
-          "Cache-Control": "public, max-age=300, stale-while-revalidate=60",
+          "Cache-Control": "no-store",
         },
       }
     );

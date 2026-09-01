@@ -11,6 +11,7 @@ import GeneralSection from "./GeneralSection";
 import CaptchaSection from "./CaptchaSection";
 import SmtpSection from "./SmtpSection";
 import QuotasSection from "./QuotasSection";
+import ExpirationSection from "./ExpirationSection";
 import S3StorageSection from "./S3StorageSection";
 
 interface Settings {
@@ -24,6 +25,7 @@ interface Settings {
   authMaxUpload: number;
   anoIpQuota: number;
   authIpQuota: number;
+  defaultExpirationDays: number;
   useGiBForAnon: boolean;
   useGiBForAuth: boolean;
   termsOfUses: string;
@@ -56,6 +58,7 @@ function mapSettingsWithDefaults(data: Settings): Settings {
     allowAnonFileShare: data.allowAnonFileShare ?? true,
     allowAnonLinkShare: data.allowAnonLinkShare ?? true,
     allowAnonPasteShare: data.allowAnonPasteShare ?? true,
+    defaultExpirationDays: data.defaultExpirationDays ?? 30,
     allowIframeEmbedding: data.allowIframeEmbedding ?? false,
     captchaEnabled: data.captchaEnabled ?? false,
     captchaProvider: data.captchaProvider ?? null,
@@ -189,6 +192,8 @@ export default function SettingsTab() {
           />
 
           <QuotasSection settings={settings} onChange={patchSettings} />
+
+          <ExpirationSection settings={settings} onChange={patchSettings} />
 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">

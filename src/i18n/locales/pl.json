@@ -579,6 +579,13 @@
       "saving": "Zapisywanie...",
       "save": "Zapisz zmiany"
     },
+    "expiration": {
+      "title": "Domyślne wygaśnięcie",
+      "default_days": "Domyślny okres ważności",
+      "default_days_hint": "Wstępnie wypełniony okres ważności (w dniach), gdy użytkownik tworzy nowe udostępnienie bez jego wyboru",
+      "days_unit": "dni",
+      "current_value": "Aktualnie: {{value}} dni"
+    },
     "logs": {
       "title": "Logi tworzenia udostępnień",
       "delete": "Usuń",
