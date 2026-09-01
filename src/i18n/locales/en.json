@@ -578,6 +578,13 @@
       "saving": "Saving...",
       "save": "Save Changes"
     },
+    "expiration": {
+      "title": "Default Expiration",
+      "default_days": "Default validity period",
+      "default_days_hint": "Pre-filled validity period (in days) when a user creates a new share without choosing one",
+      "days_unit": "days",
+      "current_value": "Current: {{value}} days"
+    },
     "logs": {
       "title": "Share Creation Logs",
       "total_shares": "{{count}} shares total",

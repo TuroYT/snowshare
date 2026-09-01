@@ -10,6 +10,7 @@ interface ApiSettingsResponse {
     allowAnonPasteShare?: boolean;
     anoMaxUpload?: number;
     authMaxUpload?: number;
+    defaultExpirationDays?: number;
     useGiBForAnon?: boolean;
     useGiBForAuth?: boolean;
   };
@@ -23,6 +24,8 @@ export interface ShareSettings {
   anoMaxUploadBytes: number;
   /** Max upload size for authenticated users, in bytes */
   authMaxUploadBytes: number;
+  /** Default share validity period, in days, pre-filled when creating a share */
+  defaultExpirationDays: number;
   useGiBForAnon: boolean;
   useGiBForAuth: boolean;
   loading: boolean;
@@ -36,6 +39,7 @@ const DEFAULTS: Omit<ShareSettings, "loading"> = {
   allowAnonPasteShare: true,
   anoMaxUploadBytes: 50 * MB,
   authMaxUploadBytes: 500 * MB,
+  defaultExpirationDays: 30,
   useGiBForAnon: false,
   useGiBForAuth: false,
 };
@@ -54,6 +58,7 @@ export function useShareSettings(): ShareSettings {
       anoMaxUploadBytes: s.anoMaxUpload != null ? s.anoMaxUpload * MB : DEFAULTS.anoMaxUploadBytes,
       authMaxUploadBytes:
         s.authMaxUpload != null ? s.authMaxUpload * MB : DEFAULTS.authMaxUploadBytes,
+      defaultExpirationDays: s.defaultExpirationDays ?? DEFAULTS.defaultExpirationDays,
       useGiBForAnon: s.useGiBForAnon ?? false,
       useGiBForAuth: s.useGiBForAuth ?? false,
       loading,

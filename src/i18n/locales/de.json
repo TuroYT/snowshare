@@ -574,6 +574,13 @@
       "saving": "Wird gespeichert...",
       "save": "Änderungen Speichern"
     },
+    "expiration": {
+      "title": "Standardablauf",
+      "default_days": "Standard-Gültigkeitsdauer",
+      "default_days_hint": "Vorausgefüllte Gültigkeitsdauer (in Tagen), wenn ein Nutzer eine neue Freigabe erstellt, ohne eine auszuwählen",
+      "days_unit": "Tage",
+      "current_value": "Aktuell: {{value}} Tage"
+    },
     "logs": {
       "title": "Freigabe-Erstellungsprotokolle",
       "total_shares": "{{count}} Freigaben insgesamt",

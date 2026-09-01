@@ -574,6 +574,13 @@
       "saving": "Guardando...",
       "save": "Guardar Cambios"
     },
+    "expiration": {
+      "title": "Expiración Predeterminada",
+      "default_days": "Período de validez predeterminado",
+      "default_days_hint": "Período de validez (en días) precargado cuando un usuario crea un nuevo recurso compartido sin elegir uno",
+      "days_unit": "días",
+      "current_value": "Actual: {{value}} días"
+    },
     "logs": {
       "title": "Registros de Creación de Compartidos",
       "total_shares": "{{count}} compartidos en total",

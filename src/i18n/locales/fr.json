@@ -578,6 +578,13 @@
       "saving": "Enregistrement...",
       "save": "Enregistrer les modifications"
     },
+    "expiration": {
+      "title": "Expiration par défaut",
+      "default_days": "Durée de validité par défaut",
+      "default_days_hint": "Durée de validité (en jours) préremplie lorsqu'un utilisateur crée un partage sans en choisir une",
+      "days_unit": "jours",
+      "current_value": "Actuel : {{value}} jours"
+    },
     "logs": {
       "title": "Logs de création de partages",
       "total_shares": "{{count}} partages au total",

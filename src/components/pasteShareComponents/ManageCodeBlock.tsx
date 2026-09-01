@@ -2,13 +2,17 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
+import { useShareSettings } from "@/hooks/useShareSettings";
+import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
 import ExpirationSettings from "../shareComponents/ExpirationSettings";
 import AdvancedSettings from "../shareComponents/AdvancedSettings";
 import ViewLimitSettings from "../shareComponents/ViewLimitSettings";
 import ShareSuccess from "../shareComponents/ShareSuccess";
 import ShareError from "../shareComponents/ShareError";
 import SubmitButton from "../shareComponents/SubmitButton";
+
+const MAX_DAYS_ANON = 7;
 
 const LANGUAGES = [
   { value: "plaintext", label: "Plain" },
@@ -33,11 +37,18 @@ const ManageCodeBlock: React.FC<{
   onLanguageChange: (lang: string) => void;
 }> = ({ code, language, onLanguageChange }) => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { defaultExpirationDays, loading: settingsLoading } = useShareSettings();
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const [slug, setSlug] = React.useState("");
-  const [expiresDays, setExpiresDays] = React.useState<number>(isAuthenticated ? 30 : 7);
+  const [expiresDays, setExpiresDays] = useDefaultExpirationDays(
+    isAuthenticated,
+    authLoading,
+    defaultExpirationDays,
+    settingsLoading,
+    MAX_DAYS_ANON
+  );
   const [neverExpires, setNeverExpires] = React.useState(false);
   const [password, setPassword] = React.useState("");
   const [hasViewLimit, setHasViewLimit] = React.useState(false);

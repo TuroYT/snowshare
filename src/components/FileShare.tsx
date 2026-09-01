@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useShareSettings } from "@/hooks/useShareSettings";
+import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
 import * as tus from "tus-js-client";
 import { formatBytes, convertFromMB } from "@/lib/formatSize";
 import LockedShare from "./shareComponents/LockedShare";
@@ -29,7 +30,7 @@ interface FileShareProps {
 }
 
 const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsumed }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +48,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     }
   }, [initialFiles, onInitialFilesConsumed]);
 
-  const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : MAX_DAYS_ANON);
   const [neverExpires, setNeverExpires] = useState(false);
   const [slug, setSlug] = useState("");
   const [password, setPassword] = useState("");
@@ -63,10 +63,18 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     allowAnonFileShare,
     anoMaxUploadBytes: maxFileSizeAnon,
     authMaxUploadBytes: maxFileSizeAuth,
+    defaultExpirationDays,
     useGiBForAnon,
     useGiBForAuth,
     loading: settingsLoading,
   } = useShareSettings();
+  const [expiresDays, setExpiresDays] = useDefaultExpirationDays(
+    isAuthenticated,
+    authLoading,
+    defaultExpirationDays,
+    settingsLoading,
+    MAX_DAYS_ANON
+  );
 
   const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
   const useGiB = isAuthenticated ? useGiBForAuth : useGiBForAnon;
