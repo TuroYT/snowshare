@@ -2,11 +2,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { prisma } from "@/lib/prisma";
-import { deleteFromStorage, storageFileExists } from "@/lib/storage";
-
-function getUploadDir(): string {
-  return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
-}
+import { deleteShareFiles } from "@/lib/storage";
+import { getUploadDir } from "@/lib/constants";
 
 function getTusTempDir(): string {
   return path.join(getUploadDir(), ".tus-temp");
@@ -20,60 +17,55 @@ const TUS_TEMP_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 // their database row.
 const ORPHAN_GRACE_MS = 60 * 60 * 1000; // 1 hour
 
+const EXPIRED_BATCH_SIZE = 100;
+
 async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedFiles: number }> {
   console.log("🧹 Cleaning expired shares...");
 
   const now = new Date();
-
-  const expiredShares = await prisma.share.findMany({
-    where: { expiresAt: { lt: now } },
-    select: {
-      id: true,
-      type: true,
-      filePath: true,
-      slug: true,
-      isBulk: true,
-      files: { select: { filePath: true } },
-    },
-  });
-
-  console.log(`📊 ${expiredShares.length} expired share(s) found`);
-
-  if (expiredShares.length === 0) {
-    return { deletedShares: 0, deletedFiles: 0 };
-  }
-
+  let deletedShares = 0;
   let deletedFiles = 0;
+  // Shares whose files could not be deleted are kept (retried next run) and skipped here
+  const failedIds: string[] = [];
 
-  const deleteFileIfExists = async (relativePath: string, shareSlug: string): Promise<void> => {
-    if (!(await storageFileExists(relativePath))) return;
-    try {
-      await deleteFromStorage(relativePath);
-      deletedFiles++;
-      console.log(`🗑️  File deleted: ${relativePath} (share: ${shareSlug})`);
-    } catch (error) {
-      console.error(`❌ Error deleting file ${relativePath}:`, error);
+  // Process in batches so memory stays flat however many shares expired
+  for (;;) {
+    const batch = await prisma.share.findMany({
+      where: { expiresAt: { lt: now }, id: { notIn: failedIds } },
+      select: {
+        id: true,
+        slug: true,
+        filePath: true,
+        files: { select: { filePath: true } },
+      },
+      take: EXPIRED_BATCH_SIZE,
+    });
+    if (batch.length === 0) break;
+
+    const deletableIds: string[] = [];
+    for (const share of batch) {
+      const fileCount = (share.filePath ? 1 : 0) + share.files.length;
+      const failed = await deleteShareFiles(share);
+      deletedFiles += fileCount - failed.length;
+      if (failed.length > 0) {
+        console.error(
+          `❌ Share ${share.slug}: ${failed.length} file(s) not deleted, kept for retry`
+        );
+        failedIds.push(share.id);
+      } else {
+        deletableIds.push(share.id);
+      }
     }
-  };
 
-  for (const share of expiredShares) {
-    if (share.type !== "FILE") continue;
-    if (share.isBulk && share.files.length > 0) {
-      await Promise.all(share.files.map((file) => deleteFileIfExists(file.filePath, share.slug)));
-    } else if (share.filePath) {
-      await deleteFileIfExists(share.filePath, share.slug);
+    if (deletableIds.length > 0) {
+      const result = await prisma.share.deleteMany({ where: { id: { in: deletableIds } } });
+      deletedShares += result.count;
     }
   }
 
-  const deleteResult = await prisma.share.deleteMany({
-    where: { expiresAt: { lt: now } },
-  });
+  console.log(`✅ Expired shares: ${deletedShares} DB record(s), ${deletedFiles} file(s) deleted`);
 
-  console.log(
-    `✅ Expired shares: ${deleteResult.count} DB record(s), ${deletedFiles} file(s) deleted`
-  );
-
-  return { deletedShares: deleteResult.count, deletedFiles };
+  return { deletedShares, deletedFiles };
 }
 
 async function cleanupAbandonedTusUploads(

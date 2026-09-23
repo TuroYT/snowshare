@@ -30,6 +30,7 @@ import { authenticateApiRequest } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextRequest } from "next/server";
+import { createHash } from "crypto";
 
 const mockApikeyFindUnique = prisma.apiKey.findUnique as jest.Mock;
 const mockApikeyUpdate = prisma.apiKey.update as jest.Mock;
@@ -62,6 +63,19 @@ describe("authenticateApiRequest — API key auth", () => {
 
     expect(result.authMethod).toBe("apikey");
     expect(result.user).toEqual(MOCK_USER);
+  });
+
+  it("looks up the key by its deterministic SHA-256 hash", async () => {
+    mockApikeyFindUnique.mockResolvedValue(null);
+    const expectedHash = createHash("sha256").update(VALID_KEY).digest("hex");
+
+    await authenticateApiRequest(makeRequest(`Bearer ${VALID_KEY}`));
+    await authenticateApiRequest(makeRequest(`Bearer ${VALID_KEY}`));
+
+    expect(mockApikeyFindUnique).toHaveBeenCalledTimes(2);
+    for (const call of mockApikeyFindUnique.mock.calls) {
+      expect(call[0].where).toEqual({ keyHash: expectedHash });
+    }
   });
 
   it("returns null for an expired API key", async () => {

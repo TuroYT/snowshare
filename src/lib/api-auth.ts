@@ -8,6 +8,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashApiKey } from "@/lib/security";
+import { getClientIp } from "@/lib/getClientIp";
+import { getRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
 
 export type AuthMethod = "apikey" | "session" | null;
 
@@ -31,6 +33,12 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
   if (authHeader?.startsWith("Bearer ")) {
     const rawKey = authHeader.slice(7).trim();
     if (rawKey.startsWith("sk_")) {
+      // Clients that keep presenting invalid keys are treated as anonymous without a lookup
+      const clientIp = getClientIp(request);
+      if (getRetryAfter("apiKey", clientIp) > 0) {
+        return { user: null, authMethod: null };
+      }
+
       const keyHash = hashApiKey(rawKey);
       const apiKey = await prisma.apiKey.findUnique({
         where: { keyHash },
@@ -56,6 +64,8 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
 
         return { user: apiKey.user, authMethod: "apikey" };
       }
+
+      recordRateLimitHit("apiKey", clientIp);
     }
   }
 

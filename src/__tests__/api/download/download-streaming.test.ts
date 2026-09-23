@@ -22,6 +22,19 @@ jest.mock("@/lib/mime-types", () => ({
   sanitizeFilenameForHeader: jest.fn((name: string) => name),
 }));
 
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    share: {
+      updateMany: jest.fn(),
+      fields: { maxViews: "maxViews" },
+    },
+  },
+}));
+
+jest.mock("@/lib/access-log", () => ({
+  logShareAccess: jest.fn(),
+}));
+
 jest.mock("@/lib/i18n-server", () => ({
   detectLocale: jest.fn(() => "en"),
   translate: jest.fn((_locale: string, key: string) => key),
@@ -29,12 +42,15 @@ jest.mock("@/lib/i18n-server", () => ({
 
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
+import { prisma } from "@/lib/prisma";
 import { Readable } from "stream";
 import { NextRequest } from "next/server";
 
 const mockGetFileShare = getFileShare as jest.Mock;
 const mockGetStorageReadStream = getStorageReadStream as jest.Mock;
 const mockGetStorageFileSize = getStorageFileSize as jest.Mock;
+const mockUpdateMany = prisma.share.updateMany as jest.Mock;
+const SHARE = { id: "share-123", isBulk: false };
 
 function makeRequest(headers: Record<string, string> = {}, slug = "test-slug"): NextRequest {
   return {
@@ -63,10 +79,12 @@ describe("File Download Streaming", () => {
     jest.clearAllMocks();
     mockGetStorageFileSize.mockResolvedValue(1000000);
     mockGetFileShare.mockResolvedValue({
+      share: SHARE,
       storageKey: "share-123_file.txt",
       originalFilename: "file.txt",
     });
     mockGetStorageReadStream.mockResolvedValue(makeReadableStream());
+    mockUpdateMany.mockResolvedValue({ count: 1 });
   });
 
   it("should use streaming (getStorageReadStream) instead of loading the entire file into memory", async () => {
@@ -83,6 +101,7 @@ describe("File Download Streaming", () => {
     const fileSize = 10000000;
     mockGetStorageFileSize.mockResolvedValue(fileSize);
     mockGetFileShare.mockResolvedValue({
+      share: SHARE,
       storageKey: "share-456_large.bin",
       originalFilename: "large.bin",
     });
@@ -125,5 +144,56 @@ describe("File Download Streaming", () => {
   it("should confirm getStorageReadStream is available as a streaming API", () => {
     expect(mockGetStorageReadStream).toBeDefined();
     expect(typeof mockGetStorageReadStream).toBe("function");
+  });
+
+  it("should count a view atomically for a direct download", async () => {
+    const { GET } = await import("@/app/api/download/[slug]/route");
+    const response = await GET(makeRequest({}, "test-slug"), {
+      params: Promise.resolve({ slug: "test-slug" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(mockUpdateMany).toHaveBeenCalledTimes(1);
+    expect(mockUpdateMany.mock.calls[0][0].where.id).toBe("share-123");
+  });
+
+  it("should refuse the download when the last view was already consumed", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 });
+
+    const { GET } = await import("@/app/api/download/[slug]/route");
+    const response = await GET(makeRequest({}, "test-slug"), {
+      params: Promise.resolve({ slug: "test-slug" }),
+    });
+
+    expect(response.status).toBe(410);
+    expect(mockGetStorageReadStream).not.toHaveBeenCalled();
+  });
+
+  it("should not count a view again when a download token was used", async () => {
+    mockGetFileShare.mockResolvedValue({
+      share: SHARE,
+      tokenPurpose: "download",
+      storageKey: "share-123_file.txt",
+      originalFilename: "file.txt",
+    });
+
+    const { GET } = await import("@/app/api/download/[slug]/route");
+    const response = await GET(makeRequest({}, "test-slug"), {
+      params: Promise.resolve({ slug: "test-slug" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(mockUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("should not count a view for a resumed range request", async () => {
+    mockGetStorageFileSize.mockResolvedValue(10000);
+
+    const { GET } = await import("@/app/api/download/[slug]/route");
+    await GET(makeRequest({ range: "bytes=5000-" }, "test-slug"), {
+      params: Promise.resolve({ slug: "test-slug" }),
+    });
+
+    expect(mockUpdateMany).not.toHaveBeenCalled();
   });
 });

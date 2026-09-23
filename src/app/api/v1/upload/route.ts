@@ -10,126 +10,99 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir, rename, unlink } from "fs/promises";
-import { existsSync, createWriteStream } from "fs";
-import { Readable } from "stream";
-import path from "path";
-
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+import { mkdir } from "fs/promises";
 import { authenticateApiRequest } from "@/lib/api-auth";
 import { createFileShare } from "@/lib/shares";
 import { generateSafeFilename } from "@/lib/files";
 import { getClientIp } from "@/lib/getClientIp";
 import { getUploadDir } from "@/lib/constants";
 import { getUploadLimits } from "@/lib/quota-shared";
-import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { prisma } from "@/lib/prisma";
+import { apiError, ErrorCode } from "@/lib/api-errors";
+import {
+  MultipartError,
+  receiveMultipart,
+  removeTempFiles,
+  type ReceivedFile,
+} from "@/lib/multipart-upload";
+import { moveToStorage, rollbackShare, uploadErrorResponse } from "@/lib/upload-share";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  const { user } = await authenticateApiRequest(request);
+  const ip = getClientIp(request);
+  const isAuthenticated = user != null;
+
+  const context = {
+    userId: user?.id ?? null,
+    isAuthenticated,
+    ip,
+  };
+
+  const limits = await getUploadLimits(ip, isAuthenticated);
+  if (limits.remainingQuotaBytes <= 0) {
+    return apiError(request, ErrorCode.IP_QUOTA_EXCEEDED, { quota: limits.ipQuotaMB });
+  }
+
+  let files: ReceivedFile[] = [];
   try {
-    const { user } = await authenticateApiRequest(request);
-    const ip = getClientIp(request);
-    const isAuthenticated = user != null;
-
-    const context = {
-      userId: user?.id ?? null,
-      isAuthenticated,
-      ip,
-    };
-
-    let formData: FormData;
-    try {
-      formData = await request.formData();
-    } catch {
-      return apiError(request, ErrorCode.INVALID_REQUEST);
-    }
-
-    const file = formData.get("file") as File | null;
-    if (!file) return apiError(request, ErrorCode.FILE_REQUIRED);
-    if (file.name.length > 255) return apiError(request, ErrorCode.INVALID_REQUEST);
-
-    const slug = (formData.get("slug") as string) || undefined;
-    const password = (formData.get("password") as string) || undefined;
-    const expiresAtRaw = formData.get("expiresAt") as string | null;
-    const maxViewsRaw = formData.get("maxViews") as string | null;
-
-    const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : undefined;
-    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
-      return apiError(request, ErrorCode.INVALID_REQUEST);
-    }
-    const maxViews = maxViewsRaw ? parseInt(maxViewsRaw, 10) : undefined;
-
-    // Check quota / size limits
-    const limits = await getUploadLimits(ip, isAuthenticated);
-    const fileSizeBytes = file.size;
-
-    if (fileSizeBytes > limits.maxFileSizeBytes) {
-      return apiError(request, ErrorCode.FILE_TOO_LARGE);
-    }
-    if (fileSizeBytes > limits.remainingQuotaBytes) {
-      return apiError(request, ErrorCode.IP_QUOTA_EXCEEDED);
-    }
-
-    // Ensure uploads directory exists
     const uploadsDir = getUploadDir();
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
+    await mkdir(uploadsDir, { recursive: true });
 
-    // Write file to disk via streaming (avoids loading entire file into memory)
-    const tmpName = `tmp_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const tmpPath = path.join(uploadsDir, tmpName);
-    await new Promise<void>((resolve, reject) => {
-      const ws = createWriteStream(tmpPath);
-      const nodeStream = Readable.fromWeb(file.stream() as import("stream/web").ReadableStream);
-      nodeStream.pipe(ws);
-      ws.on("finish", resolve);
-      ws.on("error", reject);
-      nodeStream.on("error", reject);
+    // Stream the file to disk while enforcing size limits (the body is never buffered)
+    const received = await receiveMultipart(request, {
+      tempDir: uploadsDir,
+      maxFileBytes: limits.maxFileSizeBytes,
+      maxTotalBytes: limits.remainingQuotaBytes,
+      maxFiles: 1,
+      acceptFile: (fieldName) => fieldName === "file",
     });
+    files = received.files;
+    const { fields } = received;
+
+    const file = files[0];
+    if (!file) return apiError(request, ErrorCode.FILE_REQUIRED);
+
+    const expiresAt = fields.expiresAt ? new Date(fields.expiresAt) : undefined;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      await removeTempFiles(files);
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
+    const maxViews = fields.maxViews ? parseInt(fields.maxViews, 10) : undefined;
 
     // Create share record with the temporary path first
+    const tempKey = file.tempPath.slice(uploadsDir.length + 1);
     const result = await createFileShare({
-      filename: file.name,
-      filePath: tmpName,
+      filename: file.filename,
+      filePath: tempKey,
+      size: file.size,
       context,
       expiresAt,
-      slug,
-      password,
+      slug: fields.slug || undefined,
+      password: fields.password || undefined,
       maxViews,
     });
 
-    if (result.errorCode) {
-      unlink(tmpPath).catch(() => {});
-      return apiError(request, result.errorCode as ErrorCode);
+    if (result.errorCode || !result.share) {
+      await removeTempFiles(files);
+      return apiError(request, result.errorCode as ErrorCode, result.params);
     }
 
-    const share = result.share!;
+    const share = result.share;
 
-    // Rename to canonical name: {shareId}_{originalName}
-    const safeFilename = generateSafeFilename(file.name, share.id);
-    const finalPath = path.join(uploadsDir, safeFilename);
-
-    const { prisma } = await import("@/lib/prisma");
-    const { isS3Enabled, uploadToStorage } = await import("@/lib/storage");
-    const s3Active = await isS3Enabled();
+    // Move to canonical name: {shareId}_{originalName}
+    const safeFilename = generateSafeFilename(file.filename, share.id);
     try {
-      if (s3Active) {
-        await uploadToStorage(tmpPath, safeFilename);
-        unlink(tmpPath).catch(() => {});
-      } else {
-        await rename(tmpPath, finalPath);
-      }
+      await moveToStorage(file.tempPath, safeFilename);
       await prisma.share.update({
         where: { id: share.id },
         data: { filePath: safeFilename },
       });
-    } catch (fsErr) {
-      // Roll back: delete share record and temp file
-      await prisma.share.delete({ where: { id: share.id } }).catch(() => {});
-      unlink(tmpPath).catch(() => {});
-      if (!s3Active) unlink(finalPath).catch(() => {});
-      throw fsErr;
+    } catch (error) {
+      await rollbackShare(share.id);
+      throw error;
     }
 
     return NextResponse.json(
@@ -143,7 +116,14 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("[POST /api/v1/upload]", error);
-    return internalError(request);
+    await removeTempFiles(files);
+    // Keep this endpoint's documented status codes (default ErrorCode mapping)
+    if (error instanceof MultipartError && error.kind === "FILE_TOO_LARGE") {
+      return apiError(request, ErrorCode.FILE_TOO_LARGE, { maxSizeMB: limits.maxFileSizeMB });
+    }
+    if (error instanceof MultipartError && error.kind === "TOTAL_TOO_LARGE") {
+      return apiError(request, ErrorCode.IP_QUOTA_EXCEEDED, { quota: limits.ipQuotaMB });
+    }
+    return uploadErrorResponse(request, error, limits);
   }
 }

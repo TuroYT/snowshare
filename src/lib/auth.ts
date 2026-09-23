@@ -6,7 +6,24 @@ import { prisma } from "@/lib/prisma";
 import { gravatarUrl } from "@/lib/gravatar";
 import bcrypt from "bcryptjs";
 import { Provider } from "next-auth/providers/index";
-import { providerMap } from "./providers";
+import { providerMap } from "@/lib/providers";
+import { cookies } from "next/headers";
+import { resolveClientIp } from "@/lib/getClientIp";
+import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
+
+/** httpOnly cookie binding an account-link request to the browser that initiated it. */
+export const LINK_TOKEN_COOKIE = "__snowshare-link-token";
+
+async function readLinkTokenCookie(): Promise<string | null> {
+  try {
+    const store = await cookies();
+    return store.get(LINK_TOKEN_COOKIE)?.value ?? null;
+  } catch (error) {
+    // cookies() throws when called outside a request scope
+    console.error("Account link: unable to read link token cookie:", error);
+    return null;
+  }
+}
 
 declare module "next-auth" {
   interface User {
@@ -63,26 +80,45 @@ export async function getDynamicProviders() {
           email: { label: "Email", type: "email" },
           password: { label: "Password", type: "password" },
         },
-        async authorize(credentials) {
+        async authorize(credentials, req) {
           if (!credentials?.email || !credentials?.password) {
             return null;
+          }
+
+          // Throttle failed logins per client IP + email to slow down brute force
+          const header = (name: string): string | undefined => {
+            const value = req?.headers?.[name];
+            return Array.isArray(value) ? value.join(",") : value;
+          };
+          const clientIp = resolveClientIp({
+            forwardedFor: header("x-forwarded-for"),
+            realIp: header("x-real-ip"),
+          });
+          const limitKey = `${clientIp}:${credentials.email.toLowerCase()}`;
+          if (getRetryAfter("login", limitKey) > 0) {
+            throw new Error("TooManyAttempts");
           }
 
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email,
             },
+            select: { id: true, email: true, name: true, password: true, emailVerified: true },
           });
 
           if (!user || !user.password) {
+            recordRateLimitHit("login", limitKey);
             return null;
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
+            recordRateLimitHit("login", limitKey);
             return null;
           }
+
+          resetRateLimit("login", limitKey);
 
           // Check email verification if required
           const verificationSettings = await prisma.settings.findFirst({
@@ -175,7 +211,9 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         if (existingUser) {
           // Account already linked — allow sign in
           const accountExists = existingUser.accounts.find(
-            (acc: { provider: string }) => acc.provider === account.provider
+            (acc: { provider: string; providerAccountId: string }) =>
+              acc.provider === account.provider &&
+              acc.providerAccountId === account.providerAccountId
           );
           if (accountExists) return true;
 
@@ -243,11 +281,17 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
             }
           }
 
-          // Explicit link token flow (existing behaviour)
+          // Explicit link token flow: the token must match the httpOnly cookie set by
+          // POST /api/user/accounts/link, so only the browser that requested the link
+          // can complete it.
+          const cookieToken = await readLinkTokenCookie();
+          if (!cookieToken) return false;
+
           const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
           const linkToken = await prisma.verificationToken.findFirst({
             where: {
               identifier: linkTokenIdentifier,
+              token: cookieToken,
               expires: { gt: new Date() },
             },
           });
@@ -255,28 +299,30 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           if (!linkToken) return false;
 
           try {
-            await prisma.account.create({
-              data: {
-                userId: existingUser.id,
-                type: account.type,
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                refresh_token: account.refresh_token,
-                access_token: account.access_token,
-                expires_at: account.expires_at,
-                token_type: account.token_type,
-                scope: account.scope,
-                id_token: account.id_token,
-                session_state: account.session_state as string | null,
-              },
-            });
-            await prisma.verificationToken.delete({
-              where: {
-                identifier_token: {
-                  identifier: linkTokenIdentifier,
-                  token: linkToken.token,
+            await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+              await tx.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  refresh_token: account.refresh_token,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state as string | null,
                 },
-              },
+              });
+              await tx.verificationToken.delete({
+                where: {
+                  identifier_token: {
+                    identifier: linkTokenIdentifier,
+                    token: linkToken.token,
+                  },
+                },
+              });
             });
             console.log(`✅ Account linked successfully`);
             return true;

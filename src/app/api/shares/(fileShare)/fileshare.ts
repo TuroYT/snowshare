@@ -1,9 +1,50 @@
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { storageFileExists } from "@/lib/storage";
 import { ErrorCode } from "@/lib/api-errors";
+import {
+  checkShareAvailability,
+  verifyDownloadToken,
+  verifySharePassword,
+  type DownloadTokenPurpose,
+} from "@/lib/share-access";
 
-export const getFileShare = async (slug: string, password?: string) => {
+export interface GetFileShareOptions {
+  /** Incoming request, used to rate limit wrong passwords per client IP */
+  request?: NextRequest;
+  /** Signed token from createDownloadToken(); replaces the password when valid */
+  token?: string | null;
+}
+
+export interface FileShareResult {
+  errorCode?: ErrorCode;
+  requiresPassword?: boolean;
+  retryAfter?: number;
+  share?: {
+    id: string;
+    slug: string;
+    type: string;
+    filePath: string | null;
+    password: string | null;
+    note: string | null;
+    expiresAt: Date | null;
+    isBulk: boolean;
+    maxViews: number | null;
+    viewCount: number;
+    files?: { originalName: string; relativePath: string | null; size: bigint }[];
+  };
+  isBulk?: boolean;
+  /** Purpose of a valid download token passed in options, if any */
+  tokenPurpose?: DownloadTokenPurpose | null;
+  storageKey?: string;
+  originalFilename?: string;
+}
+
+export const getFileShare = async (
+  slug: string,
+  password?: string,
+  { request, token }: GetFileShareOptions = {}
+): Promise<FileShareResult> => {
   const share = await prisma.share.findUnique({
     where: { slug },
     select: {
@@ -24,23 +65,17 @@ export const getFileShare = async (slug: string, password?: string) => {
     return { errorCode: ErrorCode.SHARE_NOT_FOUND };
   }
 
-  if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-    return { errorCode: ErrorCode.SHARE_EXPIRED };
-  }
+  const tokenPurpose: DownloadTokenPurpose | null = verifyDownloadToken(token, share.id);
 
-  if (share.maxViews !== null && share.viewCount >= share.maxViews) {
-    return { errorCode: ErrorCode.SHARE_EXPIRED };
-  }
+  // A "download" token is issued after the view was counted, so the view limit is already settled
+  const unavailable = checkShareAvailability(share, {
+    ignoreViewLimit: tokenPurpose === "download",
+  });
+  if (unavailable) return unavailable;
 
-  if (share.password) {
-    if (!password) {
-      return { errorCode: ErrorCode.PASSWORD_REQUIRED, requiresPassword: true };
-    }
-
-    const passwordValid = await bcrypt.compare(password, share.password);
-    if (!passwordValid) {
-      return { errorCode: ErrorCode.PASSWORD_INCORRECT };
-    }
+  if (!tokenPurpose) {
+    const denied = await verifySharePassword(request, share, password);
+    if (denied) return denied;
   }
 
   if (share.isBulk) {
@@ -56,6 +91,7 @@ export const getFileShare = async (slug: string, password?: string) => {
     return {
       share: { ...share, files },
       isBulk: true,
+      tokenPurpose,
     };
   }
 
@@ -69,6 +105,7 @@ export const getFileShare = async (slug: string, password?: string) => {
 
   return {
     share,
+    tokenPurpose,
     // storageKey is the relative filename used by storage.ts (local or S3)
     storageKey: share.filePath,
     originalFilename: share.filePath.split("_").slice(1).join("_"),

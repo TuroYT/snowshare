@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { MAX_ANON_EXPIRY_DAYS } from "@/lib/share-constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useShareSettings } from "@/hooks/useShareSettings";
 import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
@@ -12,7 +13,7 @@ import ShareSuccess from "../shareComponents/ShareSuccess";
 import ShareError from "../shareComponents/ShareError";
 import SubmitButton from "../shareComponents/SubmitButton";
 
-const MAX_DAYS_ANON = 7;
+const MAX_DAYS_ANON = MAX_ANON_EXPIRY_DAYS;
 
 const LANGUAGES = [
   { value: "plaintext", label: "Plain" },

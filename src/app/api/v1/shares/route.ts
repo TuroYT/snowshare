@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiRequest } from "@/lib/api-auth";
-import { createLinkShare, createPasteShare } from "@/lib/shares";
+import { createLinkShare, createPasteShare, toPublicShare } from "@/lib/shares";
 import { getClientIp } from "@/lib/getClientIp";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         maxViews: typeof maxViews === "number" ? maxViews : undefined,
       });
       if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
-      return NextResponse.json({ share: result.share }, { status: 201 });
+      return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
     }
 
     // PASTE
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       maxViews: typeof maxViews === "number" ? maxViews : undefined,
     });
     if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
-    return NextResponse.json({ share: result.share }, { status: 201 });
+    return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/v1/shares]", error);
     return internalError(request);

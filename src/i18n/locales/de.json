@@ -262,7 +262,8 @@
     "have_account": "Schon ein Konto?",
     "signin_link": "Anmelden",
     "signup_link": "Registrieren",
-    "signin_with": "Anmelden mit"
+    "signin_with": "Anmelden mit",
+    "error_too_many_attempts": "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es später erneut."
   },
   "profile": {
     "title": "Mein Profil",
@@ -361,7 +362,11 @@
     "export_desc": "Lade eine Kopie aller deiner persönlichen Daten (Profil, Freigaben, API-Schlüssel, verknüpfte Konten) im JSON-Format herunter.",
     "export_button": "Meine Daten herunterladen",
     "export_downloading": "Wird heruntergeladen…",
-    "export_error": "Export fehlgeschlagen. Bitte versuche es erneut."
+    "export_error": "Export fehlgeschlagen. Bitte versuche es erneut.",
+    "success_update_verify_email": "Profil aktualisiert. Bitte prüfe deine neue E-Mail-Adresse, um sie zu bestätigen.",
+    "placeholder_protected_url": "Geschützter Link: URL erneut eingeben, um sie zu ändern",
+    "placeholder_password_keep": "Leer lassen, um das aktuelle Passwort beizubehalten",
+    "remove_password": "Passwort entfernen"
   },
   "apikeys": {
     "title": "API-Schlüssel",
@@ -837,9 +842,21 @@
       "email_not_verified": "Bitte verifizieren Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden",
       "recipients_required": "Mindestens ein Empfänger ist erforderlich",
       "email_not_configured": "E-Mail-Versand ist nicht konfiguriert",
-      "email_send_failed": "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."
+      "email_send_failed": "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
+      "too_many_requests": "Zu viele Versuche. Bitte versuche es in {{seconds}} Sekunden erneut.",
+      "bulk_share_use_bulk_download": "Dies ist eine Mehrfachfreigabe. Verwende stattdessen /bulk-download.",
+      "too_many_recipients": "Zu viele Empfänger (maximal {{max}}).",
+      "link_url_required_for_password_change": "Gib die Ziel-URL erneut ein, um das Passwort eines geschützten Links zu ändern oder zu entfernen.",
+      "link_password_required_for_url_change": "Gib ein Passwort (aktuell oder neu) ein, um das Ziel eines geschützten Links zu ändern.",
+      "too_many_files": "Zu viele Dateien in einem einzigen Upload."
     },
-    "file_protected": "Geschützte Datei"
+    "file_protected": "Geschützte Datei",
+    "file_count": "{{count}} Dateien",
+    "messages": {
+      "account_created_verify_email": "Konto erstellt. Bitte prüfe deine E-Mails, um dein Konto zu bestätigen.",
+      "user_created": "Benutzer erfolgreich erstellt",
+      "email_sent": "E-Mail erfolgreich gesendet"
+    }
   },
   "share_email": {
     "section_title": "Per E-Mail senden",

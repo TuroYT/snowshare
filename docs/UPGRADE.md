@@ -171,6 +171,13 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+## Behaviour Changes by Release
+
+### Security & performance audit
+
+- **Client IP resolution**: SnowShare now uses the **last** `X-Forwarded-For` entry (the one appended by your reverse proxy) instead of the first one, which clients could forge to bypass quotas. With a single reverse proxy nothing changes. If several proxies are chained (e.g. Cloudflare → nginx → SnowShare), set `TRUSTED_PROXY_COUNT` to their number.
+- **API keys**: keys are hashed with SHA-256 again. Keys created with a recent release could not authenticate; recreate them from your profile if needed.
+
 ## Version History
 
 Check the [GitHub Releases](https://github.com/TuroYT/snowshare/releases) page for:

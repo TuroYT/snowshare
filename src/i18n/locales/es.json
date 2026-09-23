@@ -262,7 +262,8 @@
     "have_account": "¿Ya tienes cuenta?",
     "signin_link": "Iniciar sesión",
     "signup_link": "Registrarse",
-    "signin_with": "Iniciar sesión con"
+    "signin_with": "Iniciar sesión con",
+    "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde."
   },
   "profile": {
     "title": "Mi Perfil",
@@ -361,7 +362,11 @@
     "export_desc": "Descarga una copia de todos tus datos personales (perfil, compartidos, claves API, cuentas vinculadas) en formato JSON.",
     "export_button": "Descargar mis datos",
     "export_downloading": "Descargando…",
-    "export_error": "Error al exportar. Por favor, inténtalo de nuevo."
+    "export_error": "Error al exportar. Por favor, inténtalo de nuevo.",
+    "success_update_verify_email": "Perfil actualizado. Revisa tu nueva dirección de correo para verificarla.",
+    "placeholder_protected_url": "Enlace protegido: vuelve a introducir la URL para cambiarla",
+    "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
+    "remove_password": "Quitar la contraseña"
   },
   "apikeys": {
     "title": "Claves API",
@@ -837,9 +842,21 @@
       "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión",
       "recipients_required": "Se requiere al menos un destinatario",
       "email_not_configured": "El envío de correos no está configurado",
-      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde."
+      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde.",
+      "too_many_requests": "Demasiados intentos. Inténtalo de nuevo en {{seconds}} segundos.",
+      "bulk_share_use_bulk_download": "Este es un recurso compartido múltiple. Usa /bulk-download en su lugar.",
+      "too_many_recipients": "Demasiados destinatarios (máximo {{max}}).",
+      "link_url_required_for_password_change": "Vuelve a introducir la URL de destino para cambiar o quitar la contraseña de un enlace protegido.",
+      "link_password_required_for_url_change": "Introduce una contraseña (actual o nueva) para cambiar el destino de un enlace protegido.",
+      "too_many_files": "Demasiados archivos en una sola subida."
     },
-    "file_protected": "Archivo protegido"
+    "file_protected": "Archivo protegido",
+    "file_count": "{{count}} archivos",
+    "messages": {
+      "account_created_verify_email": "Cuenta creada. Revisa tu correo para verificar tu cuenta.",
+      "user_created": "Usuario creado correctamente",
+      "email_sent": "Correo enviado correctamente"
+    }
   },
   "share_email": {
     "section_title": "Enviar por correo",

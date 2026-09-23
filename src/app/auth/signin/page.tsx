@@ -73,6 +73,13 @@ export default function SignIn() {
 
       if (result?.error === "EmailNotVerified") {
         setError(t("auth.error_email_not_verified"));
+      } else if (result?.error === "TooManyAttempts") {
+        setError(
+          t(
+            "auth.error_too_many_attempts",
+            "Too many failed sign-in attempts. Please try again later."
+          )
+        );
       } else if (result?.error) {
         setError(t("auth.error_invalid_credentials"));
       } else {

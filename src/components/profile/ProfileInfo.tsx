@@ -56,8 +56,11 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         defaultTab?: string;
       } = { name, email, defaultTab };
 
-      if (newPassword) {
+      // Changing the email or the password requires the current password (credentials accounts)
+      if (currentPassword) {
         updateData.currentPassword = currentPassword;
+      }
+      if (newPassword) {
         updateData.newPassword = newPassword;
       }
 
@@ -70,7 +73,14 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage(t("profile.success_update"));
+        setMessage(
+          data.requiresVerification
+            ? t(
+                "profile.success_update_verify_email",
+                "Profile updated. Please check your new email address to verify it."
+              )
+            : t("profile.success_update")
+        );
         onUpdate(data.user);
         localStorage.setItem("defaultTab", defaultTab);
         setCurrentPassword("");

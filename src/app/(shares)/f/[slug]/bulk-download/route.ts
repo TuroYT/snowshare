@@ -1,58 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { createZipStream } from "@/lib/bulk-upload-utils";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
+import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { logShareAccess } from "@/lib/access-log";
+import { isInitialDownloadRequest } from "@/lib/file-response";
+import {
+  accessDeniedResponse,
+  checkShareAvailability,
+  consumeView,
+  verifyDownloadToken,
+  verifySharePassword,
+} from "@/lib/share-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   if (!slug) {
-    return jsonResponse({ error: "Slug required" }, 400);
+    return apiError(request, ErrorCode.MISSING_DATA);
   }
 
   try {
     const url = new URL(request.url);
     const password = url.searchParams.get("password") || undefined;
+    const token = url.searchParams.get("token");
 
     const share = await prisma.share.findUnique({
       where: { slug },
-      include: {
-        files: true,
+      select: {
+        id: true,
+        type: true,
+        password: true,
+        expiresAt: true,
+        maxViews: true,
+        viewCount: true,
+        isBulk: true,
+        files: {
+          select: { filePath: true, originalName: true, relativePath: true, size: true },
+        },
       },
     });
 
     if (!share || share.type !== "FILE") {
-      return jsonResponse({ error: "Share not found" }, 404);
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-      return jsonResponse({ error: "This share has expired" }, 410);
+    const tokenPurpose = verifyDownloadToken(token, share.id);
+
+    const unavailable = checkShareAvailability(share, {
+      ignoreViewLimit: tokenPurpose === "download",
+    });
+    if (unavailable) return accessDeniedResponse(request, unavailable);
+
+    if (!tokenPurpose) {
+      const denied = await verifySharePassword(request, share, password);
+      if (denied) return accessDeniedResponse(request, denied);
     }
 
-    if (share.password) {
-      if (!password) {
-        return jsonResponse({ error: "Password required", requiresPassword: true }, 403);
+    if (!share.isBulk || share.files.length === 0) {
+      return apiError(request, ErrorCode.FILE_NOT_FOUND);
+    }
+
+    // Direct downloads without a pre-counted "download" token count as a view
+    if (tokenPurpose !== "download" && isInitialDownloadRequest(request)) {
+      if (!(await consumeView(share.id))) {
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
       }
-
-      const passwordValid = await bcrypt.compare(password, share.password);
-      if (!passwordValid) {
-        return jsonResponse({ error: "Incorrect password" }, 403);
-      }
-    }
-
-    if (!share.isBulk || !share.files || share.files.length === 0) {
-      return jsonResponse({ error: "No files found for bulk download" }, 404);
+      void logShareAccess(request, share.id);
     }
 
     const filesForZip = share.files.map((file) => ({
@@ -80,6 +97,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
   } catch (error) {
     console.error("Bulk download error:", error);
-    return jsonResponse({ error: "Error during download" }, 500);
+    return internalError(request);
   }
 }

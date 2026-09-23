@@ -266,7 +266,8 @@
     "have_account": "Déjà un compte ?",
     "signin_link": "Se connecter",
     "signup_link": "S'inscrire",
-    "signin_with": "Se connecter avec"
+    "signin_with": "Se connecter avec",
+    "error_too_many_attempts": "Trop de tentatives de connexion échouées. Réessayez plus tard."
   },
   "profile": {
     "title": "Mon Profil",
@@ -365,7 +366,11 @@
     "export_desc": "Téléchargez une copie de toutes vos données personnelles (profil, partages, clés API, comptes liés) au format JSON.",
     "export_button": "Télécharger mes données",
     "export_downloading": "Téléchargement…",
-    "export_error": "Erreur lors de l'export. Veuillez réessayer."
+    "export_error": "Erreur lors de l'export. Veuillez réessayer.",
+    "success_update_verify_email": "Profil mis à jour. Consultez votre nouvelle adresse e-mail pour la vérifier.",
+    "placeholder_protected_url": "Lien protégé : saisissez à nouveau l'URL pour la modifier",
+    "placeholder_password_keep": "Laissez vide pour conserver le mot de passe actuel",
+    "remove_password": "Retirer le mot de passe"
   },
   "apikeys": {
     "title": "Clés API",
@@ -841,9 +846,21 @@
       "email_not_verified": "Veuillez vérifier votre adresse email avant de vous connecter",
       "recipients_required": "Au moins un destinataire est requis",
       "email_not_configured": "L'envoi d'e-mails n'est pas configuré",
-      "email_send_failed": "Échec de l'envoi de l'e-mail. Veuillez réessayer plus tard."
+      "email_send_failed": "Échec de l'envoi de l'e-mail. Veuillez réessayer plus tard.",
+      "too_many_requests": "Trop de tentatives. Réessayez dans {{seconds}} secondes.",
+      "bulk_share_use_bulk_download": "Ce partage contient plusieurs fichiers. Utilisez plutôt /bulk-download.",
+      "too_many_recipients": "Trop de destinataires (maximum {{max}}).",
+      "link_url_required_for_password_change": "Saisissez à nouveau l'URL de destination pour modifier ou retirer le mot de passe d'un lien protégé.",
+      "link_password_required_for_url_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier la destination d'un lien protégé.",
+      "too_many_files": "Trop de fichiers dans un seul envoi."
     },
-    "file_protected": "Fichier protégé"
+    "file_protected": "Fichier protégé",
+    "file_count": "{{count}} fichiers",
+    "messages": {
+      "account_created_verify_email": "Compte créé. Consultez vos e-mails pour vérifier votre compte.",
+      "user_created": "Utilisateur créé avec succès",
+      "email_sent": "E-mail envoyé avec succès"
+    }
   },
   "share_email": {
     "section_title": "Envoyer par email",

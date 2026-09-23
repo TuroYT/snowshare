@@ -1,41 +1,48 @@
 /**
  * Centralized IP quota calculation.
- * Used by: upload/route.ts, upload/bulk/route.ts, quota.ts, and server.js (via dynamic import).
+ * Used by the upload routes, /api/quota and server.js (tus, via tsx).
  */
 
 import { prisma } from "@/lib/prisma";
 import { getStorageFileSize } from "@/lib/storage";
+import { getSettingsCached } from "@/lib/settings";
 
 /**
- * Calculate total upload size in bytes for an IP address.
- * Bulk uploads use sizes stored in DB; single-file uploads stat the local file or query S3.
+ * Calculate total upload size in bytes for an IP address, over shares that have not expired.
+ *
+ * Sizes come from the database (Share.size for single files, ShareFile.size for bulk
+ * uploads) so the whole computation is two aggregate queries. Single-file shares created
+ * before Share.size existed are measured once from storage and backfilled.
  */
 export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<number> {
-  const shares = await prisma.share.findMany({
-    where: {
-      ipSource: ipAddress,
-      type: "FILE",
-    },
-    select: {
-      filePath: true,
-      isBulk: true,
-      files: { select: { size: true } },
-    },
-  });
+  const notExpired = { OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] };
+  const shareWhere = { ipSource: ipAddress, type: "FILE" as const, ...notExpired };
 
-  let totalSize = 0;
+  const [singleFiles, bulkFiles, legacyShares] = await Promise.all([
+    prisma.share.aggregate({
+      where: { ...shareWhere, isBulk: false },
+      _sum: { size: true },
+    }),
+    prisma.shareFile.aggregate({
+      where: { share: shareWhere },
+      _sum: { size: true },
+    }),
+    prisma.share.findMany({
+      where: { ...shareWhere, isBulk: false, size: null, filePath: { not: null } },
+      select: { id: true, filePath: true },
+    }),
+  ]);
 
-  for (const share of shares) {
-    if (share.isBulk && share.files?.length > 0) {
-      for (const file of share.files) {
-        totalSize += Number(file.size);
-      }
-    } else if (share.filePath) {
-      try {
-        totalSize += await getStorageFileSize(share.filePath);
-      } catch {
-        // File missing — skip
-      }
+  let totalSize = Number(singleFiles._sum.size ?? 0) + Number(bulkFiles._sum.size ?? 0);
+
+  for (const share of legacyShares) {
+    if (!share.filePath) continue;
+    try {
+      const size = await getStorageFileSize(share.filePath);
+      totalSize += size;
+      await prisma.share.update({ where: { id: share.id }, data: { size: BigInt(size) } });
+    } catch (error) {
+      console.error(`Quota: cannot measure legacy share ${share.id}, not counted:`, error);
     }
   }
 
@@ -63,7 +70,7 @@ export async function getUploadLimits(
   ipAddress: string,
   isAuthenticated: boolean
 ): Promise<UploadLimits> {
-  const settings = await prisma.settings.findFirst();
+  const settings = await getSettingsCached();
 
   const maxFileSizeMB = isAuthenticated
     ? settings?.authMaxUpload || 51200

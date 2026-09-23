@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
-import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
-import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
-import { getMimeType, sanitizeFilenameForHeader } from "@/lib/mime-types";
-import path from "path";
+import { detectLocale, translate } from "@/lib/i18n-server";
+import { logShareAccess } from "@/lib/access-log";
+import { accessDeniedResponse, consumeView } from "@/lib/share-access";
+import { isInitialDownloadRequest, streamStoredFile } from "@/lib/file-response";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -16,17 +16,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const url = new URL(request.url);
     const password = url.searchParams.get("password") || undefined;
+    const token = url.searchParams.get("token");
 
-    const result = await getFileShare(slug, password);
+    const result = await getFileShare(slug, password, { request, token });
 
     if (result.errorCode) {
-      return apiError(request, result.errorCode);
+      return accessDeniedResponse(request, {
+        errorCode: result.errorCode,
+        retryAfter: result.retryAfter,
+      });
     }
 
     if (result.share?.isBulk) {
       return NextResponse.json(
         {
-          error: "This is a bulk share. Use /bulk-download endpoint instead.",
+          error: translate(detectLocale(request), "api.errors.bulk_share_use_bulk_download"),
           isBulk: true,
         },
         { status: 400 }
@@ -35,63 +39,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { storageKey, originalFilename } = result;
 
-    if (!storageKey) {
+    if (!storageKey || !result.share) {
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const fileSize = await getStorageFileSize(storageKey);
-    const ext = path.extname(storageKey).toLowerCase();
-    const contentType = getMimeType(ext);
-    const safeFilename = sanitizeFilenameForHeader(originalFilename || "download");
-
-    const range = request.headers.get("range");
-
-    if (range) {
-      const rangeResult = parseRangeHeader(range, fileSize);
-
-      if (!rangeResult) {
-        return new Response(null, {
-          status: 416,
-          headers: { "Content-Range": `bytes */${fileSize}` },
-        });
+    // Downloads without a pre-counted "download" token count as a view
+    if (result.tokenPurpose !== "download" && isInitialDownloadRequest(request)) {
+      if (!(await consumeView(result.share.id))) {
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
       }
-
-      const { start, end } = rangeResult;
-      const chunksize = end - start + 1;
-      const fileStream = await getStorageReadStream(storageKey, { start, end });
-      const webStream = nodeStreamToWebStream(fileStream);
-
-      const headers = new Headers();
-      headers.set("Content-Range", `bytes ${start}-${end}/${fileSize}`);
-      headers.set("Accept-Ranges", "bytes");
-      headers.set("Content-Length", chunksize.toString());
-      headers.set("Content-Type", contentType);
-      headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
-      headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-      headers.set("Pragma", "no-cache");
-      headers.set("Expires", "0");
-
-      return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-        status: 206,
-        headers,
-      });
+      void logShareAccess(request, result.share.id);
     }
 
-    const fileStream = await getStorageReadStream(storageKey);
-    const webStream = nodeStreamToWebStream(fileStream);
-
-    const headers = new Headers();
-    headers.set("Content-Length", fileSize.toString());
-    headers.set("Content-Type", contentType);
-    headers.set("Content-Disposition", `attachment; filename="${safeFilename}"`);
-    headers.set("Accept-Ranges", "bytes");
-    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-    headers.set("Pragma", "no-cache");
-    headers.set("Expires", "0");
-
-    return new NextResponse(webStream as ReadableStream<Uint8Array>, {
-      status: 200,
-      headers,
+    return streamStoredFile(request, {
+      key: storageKey,
+      filename: originalFilename || "download",
+      disposition: "attachment",
     });
   } catch (error) {
     console.error("Download error:", error);

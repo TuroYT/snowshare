@@ -1,4 +1,60 @@
 import { prisma } from "@/lib/prisma";
+import type { Settings } from "@/generated/prisma";
+
+// ---------------------------------------------------------------------------
+// Settings cache
+// ---------------------------------------------------------------------------
+
+const SETTINGS_CACHE_TTL_MS = 30 * 1000;
+
+interface SettingsCacheEntry {
+  value: Settings | null;
+  expiresAt: number;
+  pending?: Promise<Settings | null>;
+}
+
+// Kept on globalThis so the Next.js bundle and server.js (tsx) share one cache per process
+const globalForSettings = globalThis as unknown as {
+  __snowshareSettingsCache?: SettingsCacheEntry;
+};
+
+/**
+ * Returns the Settings row, cached in memory for a short TTL.
+ * Hot paths (downloads, uploads, auth, quotas) read settings on every request;
+ * call invalidateSettingsCache() after any write to the Settings table.
+ */
+export async function getSettingsCached(): Promise<Settings | null> {
+  const now = Date.now();
+  const cached = globalForSettings.__snowshareSettingsCache;
+  if (cached && cached.expiresAt > now) return cached.value;
+  if (cached?.pending) return cached.pending;
+
+  const pending = prisma.settings
+    .findFirst()
+    .then((value) => {
+      globalForSettings.__snowshareSettingsCache = {
+        value,
+        expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS,
+      };
+      return value;
+    })
+    .catch((error) => {
+      globalForSettings.__snowshareSettingsCache = undefined;
+      throw error;
+    });
+
+  globalForSettings.__snowshareSettingsCache = {
+    value: cached?.value ?? null,
+    expiresAt: 0,
+    pending,
+  };
+  return pending;
+}
+
+/** Drops the cached settings so the next read hits the database. */
+export function invalidateSettingsCache(): void {
+  globalForSettings.__snowshareSettingsCache = undefined;
+}
 
 const DEFAULTS = {
   appName: "SnowShare",

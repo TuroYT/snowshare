@@ -270,7 +270,8 @@
     "have_account": "Masz już konto?",
     "signin_link": "Zaloguj się",
     "signup_link": "Zarejestruj się",
-    "signin_with": "Zaloguj się przez"
+    "signin_with": "Zaloguj się przez",
+    "error_too_many_attempts": "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie później."
   },
   "profile": {
     "title": "Mój profil",
@@ -369,7 +370,11 @@
     "export_desc": "Pobierz kopię wszystkich swoich danych osobowych (profil, udostępnienia, klucze API, połączone konta) w formacie JSON.",
     "export_button": "Pobierz moje dane",
     "export_downloading": "Pobieranie…",
-    "export_error": "Eksport nie powiódł się. Spróbuj ponownie."
+    "export_error": "Eksport nie powiódł się. Spróbuj ponownie.",
+    "success_update_verify_email": "Profil zaktualizowany. Sprawdź nowy adres e-mail, aby go zweryfikować.",
+    "placeholder_protected_url": "Chroniony link: wpisz ponownie URL, aby go zmienić",
+    "placeholder_password_keep": "Pozostaw puste, aby zachować obecne hasło",
+    "remove_password": "Usuń hasło"
   },
   "apikeys": {
     "title": "Klucze API",
@@ -841,9 +846,21 @@
       "email_not_verified": "Proszę zweryfikować adres e-mail przed zalogowaniem",
       "recipients_required": "Wymagany jest co najmniej jeden odbiorca",
       "email_not_configured": "Wysyłanie e-maili nie jest skonfigurowane",
-      "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później."
+      "email_send_failed": "Nie udało się wysłać e-maila. Spróbuj ponownie później.",
+      "too_many_requests": "Zbyt wiele prób. Spróbuj ponownie za {{seconds}} s.",
+      "bulk_share_use_bulk_download": "To udostępnienie wielu plików. Użyj zamiast tego /bulk-download.",
+      "too_many_recipients": "Zbyt wielu odbiorców (maksymalnie {{max}}).",
+      "link_url_required_for_password_change": "Wpisz ponownie docelowy adres URL, aby zmienić lub usunąć hasło chronionego linku.",
+      "link_password_required_for_url_change": "Podaj hasło (obecne lub nowe), aby zmienić cel chronionego linku.",
+      "too_many_files": "Zbyt wiele plików w jednym przesłaniu."
     },
-    "file_protected": "Chroniony plik"
+    "file_protected": "Chroniony plik",
+    "file_count": "Pliki: {{count}}",
+    "messages": {
+      "account_created_verify_email": "Konto utworzone. Sprawdź e-mail, aby zweryfikować konto.",
+      "user_created": "Użytkownik został utworzony",
+      "email_sent": "E-mail został wysłany"
+    }
   },
   "share_email": {
     "section_title": "Wyślij e-mailem",

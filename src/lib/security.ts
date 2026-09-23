@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { MAX_ANON_EXPIRY_DAYS } from "@/lib/share-constants";
 
 /**
  * Bcrypt cost factor — standardized across the entire application.
@@ -32,10 +33,7 @@ export function isValidSlug(slug: string): boolean {
   return SLUG_REGEX.test(slug);
 }
 
-/**
- * Maximum expiry in days for anonymous users.
- */
-export const MAX_ANON_EXPIRY_DAYS = 7;
+export { MAX_ANON_EXPIRY_DAYS };
 
 /**
  * Compute the maximum expiry Date for an anonymous user (now + MAX_ANON_EXPIRY_DAYS).
@@ -78,10 +76,15 @@ export async function generateRandomSlug(
 }
 
 /**
- * Hash an API key using bcrypt.
+ * Hash an API key with SHA-256.
+ *
+ * API keys are 128-bit random tokens (not user-chosen passwords), so a fast,
+ * deterministic hash is the correct choice: it allows an indexed lookup by hash
+ * and is not brute-forceable. A salted slow hash (bcrypt) would make lookups
+ * impossible and turn every Bearer request into a CPU-bound operation.
  */
 export function hashApiKey(rawKey: string): string {
-  return bcrypt.hashSync(rawKey, BCRYPT_COST);
+  return crypto.createHash("sha256").update(rawKey).digest("hex");
 }
 
 /**

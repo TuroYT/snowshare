@@ -1,262 +1,141 @@
 import { NextRequest, NextResponse } from "next/server";
-import Busboy from "busboy";
-import { Readable } from "node:stream";
+import { mkdir } from "fs/promises";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/getClientIp";
-import { lookupIpGeolocation } from "@/lib/ip-geolocation";
-import crypto from "crypto";
-import { hashPassword, isValidSlug, resolveAnonExpiry } from "@/lib/security";
+import { getUploadDir } from "@/lib/constants";
+import { apiErrorWithStatus, ErrorCode } from "@/lib/api-errors";
 import { getUploadLimits } from "@/lib/quota-shared";
+import { generateSafeFilename } from "@/lib/files";
+import { getMimeType } from "@/lib/mime-types";
+import { deleteShareFiles } from "@/lib/storage";
+import { normalizeRelativePath, validateFilePath } from "@/lib/bulk-upload-utils";
+import { receiveMultipart, removeTempFiles, type ReceivedFile } from "@/lib/multipart-upload";
 import {
-  saveBulkFile,
-  validateFilePath,
-  normalizeRelativePath,
-  ensureUploadDirectory,
-  UploadedFileInfo,
-} from "@/lib/bulk-upload-utils";
+  assertFileUploadAllowed,
+  createFileShareRecord,
+  moveToStorage,
+  resolveUploadOptions,
+  rollbackShare,
+  uploadErrorResponse,
+  UploadError,
+  type UploadContext,
+} from "@/lib/upload-share";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-interface FileData {
-  buffer: Buffer;
-  filename: string;
-  relativePath: string;
-  mimeType: string;
-}
+/** Upper bound on files per bulk request (the tus endpoint has no such limit) */
+const MAX_FILES_PER_REQUEST = 1000;
 
 export async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
-    return NextResponse.json(
-      { error: "Content-Type must be multipart/form-data" },
-      { status: 400 }
-    );
+    return apiErrorWithStatus(req, ErrorCode.INVALID_REQUEST, 400);
   }
 
   if (!req.body) {
-    return NextResponse.json({ error: "Request body is required" }, { status: 400 });
+    return apiErrorWithStatus(req, ErrorCode.MISSING_DATA, 400);
   }
 
   const session = await getServerSession(authOptions);
-  const isAuthenticated = !!session?.user;
-  const clientIp = getClientIp(req);
+  const context: UploadContext = {
+    clientIp: getClientIp(req),
+    userId: session?.user?.id ?? null,
+    isAuthenticated: !!session?.user,
+  };
 
-  const limits = await getUploadLimits(clientIp, isAuthenticated);
+  const limits = await getUploadLimits(context.clientIp, context.isAuthenticated);
 
-  if (limits.remainingQuotaBytes <= 0) {
+  let files: ReceivedFile[] = [];
+  try {
+    await assertFileUploadAllowed(context);
+
+    if (limits.remainingQuotaBytes <= 0) {
+      throw new UploadError(429, ErrorCode.IP_QUOTA_EXCEEDED, {
+        quota: limits.ipQuotaMB,
+      });
+    }
+
+    const uploadsDir = getUploadDir();
+    await mkdir(uploadsDir, { recursive: true });
+
+    // Files are streamed to temporary files on disk, never buffered in memory
+    const received = await receiveMultipart(req, {
+      tempDir: uploadsDir,
+      maxFileBytes: limits.maxFileSizeBytes,
+      maxTotalBytes: limits.remainingQuotaBytes,
+      maxFiles: MAX_FILES_PER_REQUEST,
+    });
+    files = received.files;
+    const { fields } = received;
+
+    if (files.length === 0) {
+      throw new UploadError(400, ErrorCode.FILE_REQUIRED);
+    }
+
+    // Relative paths are sent as "<field>_path" fields
+    const entries = files.map((file) => {
+      const relativePath = normalizeRelativePath(fields[`${file.fieldName}_path`] || file.filename);
+      if (!validateFilePath(relativePath)) {
+        throw new UploadError(400, ErrorCode.FILENAME_INVALID);
+      }
+      return { file, relativePath };
+    });
+
+    const options = await resolveUploadOptions(
+      { slug: fields.slug, password: fields.password, expiresAt: fields.expiresAt },
+      context
+    );
+
+    const share = await createFileShareRecord(options, context, { isBulk: true });
+
+    const stored: { filePath: string }[] = [];
+    try {
+      const rows = [];
+      for (const { file, relativePath } of entries) {
+        const key = generateSafeFilename(file.filename, share.id, { unique: true });
+        await moveToStorage(file.tempPath, key);
+        stored.push({ filePath: key });
+        rows.push({
+          shareId: share.id,
+          filePath: key,
+          originalName: file.filename,
+          relativePath,
+          size: BigInt(file.size),
+          mimeType:
+            file.mimeType !== "application/octet-stream"
+              ? file.mimeType
+              : getMimeType(file.filename),
+        });
+      }
+      await prisma.shareFile.createMany({ data: rows });
+    } catch (error) {
+      // Leave nothing behind: stored files, then the share row
+      await deleteShareFiles({ files: stored });
+      await rollbackShare(share.id);
+      throw error;
+    }
+
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+
     return NextResponse.json(
       {
-        error: isAuthenticated
-          ? "IP quota exceeded"
-          : "IP quota exceeded. Sign in for higher limits.",
+        share: {
+          slug: share.slug,
+          type: share.type,
+          isBulk: true,
+          fileCount: files.length,
+          totalSize,
+          expiresAt: share.expiresAt,
+          hasPassword: !!share.password,
+        },
       },
-      { status: 429 }
+      { status: 201 }
     );
+  } catch (error) {
+    await removeTempFiles(files);
+    return uploadErrorResponse(req, error, limits);
   }
-
-  await ensureUploadDirectory();
-
-  return new Promise<NextResponse>((resolve) => {
-    const fields: Record<string, string> = {};
-    const filesData: FileData[] = [];
-    let totalSize = 0;
-    let aborted = false;
-
-    const sendError = (status: number, message: string) => {
-      resolve(NextResponse.json({ error: message }, { status }));
-    };
-
-    const sendSuccess = (data: object) => {
-      resolve(NextResponse.json(data, { status: 201 }));
-    };
-
-    const headers = Object.fromEntries(req.headers);
-    const busboy = Busboy({
-      headers,
-      limits: {
-        fileSize: limits.maxFileSizeBytes * 2,
-      },
-    });
-
-    busboy.on("field", (name, value) => {
-      fields[name] = value;
-    });
-
-    busboy.on("file", (name, fileStream, info) => {
-      const { filename, mimeType } = info;
-
-      if (!filename) {
-        fileStream.resume();
-        return;
-      }
-
-      if (filename.includes("..") || filename.includes("\\") || filename.length > 255) {
-        fileStream.resume();
-        aborted = true;
-        sendError(400, "Invalid filename");
-        return;
-      }
-
-      const chunks: Buffer[] = [];
-      const relativePathRaw = fields[`${name}_path`] || filename;
-      const relativePath = normalizeRelativePath(relativePathRaw);
-
-      if (!validateFilePath(relativePath)) {
-        fileStream.resume();
-        aborted = true;
-        sendError(400, "Invalid file path");
-        return;
-      }
-
-      fileStream.on("data", (chunk: Buffer) => {
-        totalSize += chunk.length;
-
-        if (totalSize > limits.remainingQuotaBytes && !aborted) {
-          aborted = true;
-          fileStream.destroy();
-          sendError(429, "IP quota exceeded");
-          return;
-        }
-
-        chunks.push(chunk);
-      });
-
-      fileStream.on("end", () => {
-        if (!aborted) {
-          filesData.push({
-            buffer: Buffer.concat(chunks),
-            filename,
-            relativePath,
-            mimeType: mimeType || "application/octet-stream",
-          });
-        }
-      });
-
-      fileStream.on("error", () => {
-        if (!aborted) {
-          aborted = true;
-          sendError(500, "Error processing file");
-        }
-      });
-    });
-
-    busboy.on("close", async () => {
-      if (aborted) return;
-
-      try {
-        if (filesData.length === 0) {
-          return sendError(400, "No files uploaded");
-        }
-
-        const slug = fields.slug?.trim();
-        const password = fields.password?.trim();
-        const expiresAtStr = fields.expiresAt;
-
-        if (slug && !isValidSlug(slug)) {
-          return sendError(400, "Invalid slug");
-        }
-
-        if (slug) {
-          const existingShare = await prisma.share.findUnique({
-            where: { slug },
-          });
-          if (existingShare) {
-            return sendError(409, "Slug already taken");
-          }
-        }
-
-        let expiresAt: Date | null = null;
-        if (expiresAtStr) {
-          expiresAt = new Date(expiresAtStr);
-          if (isNaN(expiresAt.getTime())) {
-            return sendError(400, "Invalid expiration date");
-          }
-        }
-
-        if (!isAuthenticated) {
-          const anonResult = resolveAnonExpiry(expiresAt);
-          if (anonResult.error) {
-            return sendError(400, anonResult.error);
-          }
-          expiresAt = anonResult.date!;
-        }
-
-        let hashedPassword: string | null = null;
-        if (password) {
-          hashedPassword = await hashPassword(password);
-        }
-
-        const finalSlug = slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
-
-        const share = await prisma.share.create({
-          data: {
-            slug: finalSlug,
-            type: "FILE",
-            password: hashedPassword,
-            expiresAt,
-            ipSource: clientIp,
-            ownerId: session?.user?.id || null,
-            isBulk: true,
-          },
-        });
-
-        lookupIpGeolocation(clientIp);
-
-        const uploadedFiles: UploadedFileInfo[] = [];
-        for (const fileData of filesData) {
-          const uploadedFile = await saveBulkFile(
-            fileData.buffer,
-            fileData.filename,
-            fileData.relativePath,
-            share.id
-          );
-          uploadedFiles.push(uploadedFile);
-
-          await prisma.shareFile.create({
-            data: {
-              shareId: share.id,
-              filePath: uploadedFile.filePath,
-              originalName: uploadedFile.originalName,
-              relativePath: uploadedFile.relativePath,
-              size: BigInt(uploadedFile.size),
-              mimeType: uploadedFile.mimeType,
-            },
-          });
-        }
-
-        sendSuccess({
-          share: {
-            slug: share.slug,
-            type: share.type,
-            isBulk: true,
-            fileCount: uploadedFiles.length,
-            totalSize: totalSize,
-            expiresAt: share.expiresAt,
-            hasPassword: !!share.password,
-          },
-        });
-      } catch (err) {
-        console.error("Error processing bulk upload:", err);
-        sendError(500, "Error processing upload");
-      }
-    });
-
-    busboy.on("error", () => {
-      if (!aborted) {
-        aborted = true;
-        sendError(500, "Error processing upload");
-      }
-    });
-
-    const nodeStream = Readable.fromWeb(req.body as unknown as import("stream/web").ReadableStream);
-
-    nodeStream.on("error", (err) => {
-      console.error("Error reading request stream for bulk upload:", err);
-      busboy.emit("error", err as Error);
-    });
-    nodeStream.pipe(busboy);
-  });
 }

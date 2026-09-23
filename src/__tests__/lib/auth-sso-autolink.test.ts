@@ -28,6 +28,11 @@ jest.mock("@/lib/providers", () => ({
   providerMap: {},
 }));
 
+const mockCookieStore = { get: jest.fn() };
+jest.mock("next/headers", () => ({
+  cookies: jest.fn(async () => mockCookieStore),
+}));
+
 import { prisma } from "@/lib/prisma";
 import { getAuthOptions } from "@/lib/auth";
 
@@ -142,7 +147,7 @@ describe("signIn callback - SSO auto-link", () => {
       id: "u1",
       email: "user@example.com",
       ssoAutoLink: false,
-      accounts: [{ provider: "azure-ad" }],
+      accounts: [{ provider: "azure-ad", providerAccountId: "aad-123" }],
     });
 
     const options = await getAuthOptions();
@@ -227,5 +232,53 @@ describe("signIn callback - SSO auto-link", () => {
     });
 
     expect(result).toBe(false);
+  });
+
+  describe("explicit account link token", () => {
+    const linkToken = { identifier: "account-link:user@example.com:azure-ad", token: "tok-1" };
+
+    beforeEach(() => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: "u1",
+        email: "user@example.com",
+        ssoAutoLink: false,
+        accounts: [],
+      });
+      // Earlier tests override the transaction mock; run callbacks against the mock client
+      (prisma.$transaction as jest.Mock).mockImplementation(
+        (fn: (tx: MockPrisma) => Promise<unknown>) => fn(mockPrisma)
+      );
+    });
+
+    async function runSignIn() {
+      const options = await getAuthOptions();
+      return options.callbacks!.signIn!({
+        user: mockUser,
+        account: mockAccount,
+        profile: undefined,
+        email: undefined,
+        credentials: undefined,
+      });
+    }
+
+    it("refuses to link when the browser has no link cookie", async () => {
+      mockCookieStore.get.mockReturnValue(undefined);
+      (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(linkToken);
+
+      expect(await runSignIn()).toBe(false);
+      expect(prisma.account.create).not.toHaveBeenCalled();
+    });
+
+    it("looks the token up by the cookie value and links the account", async () => {
+      mockCookieStore.get.mockReturnValue({ value: "tok-1" });
+      (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(linkToken);
+
+      expect(await runSignIn()).toBe(true);
+      expect((prisma.verificationToken.findFirst as jest.Mock).mock.calls[0][0].where.token).toBe(
+        "tok-1"
+      );
+      expect(prisma.account.create).toHaveBeenCalled();
+      expect(prisma.verificationToken.delete).toHaveBeenCalled();
+    });
   });
 });

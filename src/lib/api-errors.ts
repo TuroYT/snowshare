@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { detectLocale, translate } from "./i18n-server";
+import { detectLocale, translate } from "@/lib/i18n-server";
 
 /**
  * API Error Codes
@@ -100,6 +100,8 @@ export enum ErrorCode {
   LINK_NAME_REQUIRED = "LINK_NAME_REQUIRED",
   LINK_URL_REQUIRED = "LINK_URL_REQUIRED",
   LINK_URL_INVALID = "LINK_URL_INVALID",
+  LINK_URL_REQUIRED_FOR_PASSWORD_CHANGE = "LINK_URL_REQUIRED_FOR_PASSWORD_CHANGE",
+  LINK_PASSWORD_REQUIRED_FOR_URL_CHANGE = "LINK_PASSWORD_REQUIRED_FOR_URL_CHANGE",
 
   // Account management (400, 404)
   ACCOUNT_NOT_FOUND = "ACCOUNT_NOT_FOUND",
@@ -126,8 +128,13 @@ export enum ErrorCode {
 
   // Email sending (400, 502, 503)
   RECIPIENTS_REQUIRED = "RECIPIENTS_REQUIRED",
+  TOO_MANY_RECIPIENTS = "TOO_MANY_RECIPIENTS",
+  TOO_MANY_FILES = "TOO_MANY_FILES",
   EMAIL_NOT_CONFIGURED = "EMAIL_NOT_CONFIGURED",
   EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED",
+
+  // Rate limiting
+  TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS",
 }
 
 /**
@@ -229,6 +236,13 @@ const ERROR_STATUS_MAP: Record<ErrorCode, number> = {
   [ErrorCode.RECIPIENTS_REQUIRED]: 400,
   [ErrorCode.EMAIL_NOT_CONFIGURED]: 503,
   [ErrorCode.EMAIL_SEND_FAILED]: 502,
+  [ErrorCode.TOO_MANY_RECIPIENTS]: 400,
+  [ErrorCode.TOO_MANY_FILES]: 400,
+  [ErrorCode.LINK_URL_REQUIRED_FOR_PASSWORD_CHANGE]: 400,
+  [ErrorCode.LINK_PASSWORD_REQUIRED_FOR_URL_CHANGE]: 400,
+
+  // 429 errors (Too Many Requests)
+  [ErrorCode.TOO_MANY_REQUESTS]: 429,
 };
 
 /**
@@ -286,6 +300,20 @@ export function apiError(
     },
     { status }
   );
+}
+
+/**
+ * Same as apiError() but with an explicit HTTP status, for endpoints whose historical
+ * status code differs from the default mapping (kept for backward compatibility).
+ */
+export function apiErrorWithStatus(
+  request: NextRequest,
+  code: ErrorCode,
+  status: number,
+  params?: ErrorParams
+): NextResponse<ApiErrorResponse> {
+  const message = translate(detectLocale(request), getTranslationKey(code), params);
+  return NextResponse.json({ error: message, code }, { status });
 }
 
 /**

@@ -266,7 +266,8 @@
     "have_account": "Already have an account?",
     "signin_link": "Sign in",
     "signup_link": "Sign up",
-    "signin_with": "Sign in with"
+    "signin_with": "Sign in with",
+    "error_too_many_attempts": "Too many failed sign-in attempts. Please try again later."
   },
   "profile": {
     "title": "My Profile",
@@ -365,7 +366,11 @@
     "export_desc": "Download a copy of all your personal data (profile, shares, API keys, linked accounts) in JSON format.",
     "export_button": "Download my data",
     "export_downloading": "Downloading…",
-    "export_error": "Export failed. Please try again."
+    "export_error": "Export failed. Please try again.",
+    "success_update_verify_email": "Profile updated. Please check your new email address to verify it.",
+    "placeholder_protected_url": "Protected link: re-enter the URL to change it",
+    "placeholder_password_keep": "Leave empty to keep the current password",
+    "remove_password": "Remove password"
   },
   "apikeys": {
     "title": "API Keys",
@@ -841,9 +846,21 @@
       "email_not_verified": "Please verify your email address before signing in",
       "recipients_required": "At least one recipient is required",
       "email_not_configured": "Email sending is not configured",
-      "email_send_failed": "Failed to send email. Please try again later."
+      "email_send_failed": "Failed to send email. Please try again later.",
+      "too_many_requests": "Too many attempts. Please try again in {{seconds}} seconds.",
+      "bulk_share_use_bulk_download": "This is a bulk share. Use the /bulk-download endpoint instead.",
+      "too_many_recipients": "Too many recipients (maximum {{max}}).",
+      "link_url_required_for_password_change": "Re-enter the destination URL to change or remove the password of a protected link.",
+      "link_password_required_for_url_change": "Enter a password (current or new) to change the destination of a protected link.",
+      "too_many_files": "Too many files in a single upload."
     },
-    "file_protected": "Protected file"
+    "file_protected": "Protected file",
+    "file_count": "{{count}} files",
+    "messages": {
+      "account_created_verify_email": "Account created. Please check your email to verify your account.",
+      "user_created": "User created successfully",
+      "email_sent": "Email sent successfully"
+    }
   },
   "share_email": {
     "section_title": "Send by email",

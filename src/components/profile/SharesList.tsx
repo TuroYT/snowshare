@@ -1,29 +1,14 @@
 "use client";
 
 import React from "react";
-import ShareItem from "./ShareItem";
+import ShareItem from "@/components/profile/ShareItem";
+import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 import { useTranslation } from "react-i18next";
 
-type Share = {
-  id: string;
-  type: "FILE" | "PASTE" | "URL";
-  slug: string;
-  filePath?: string;
-  paste?: string;
-  pastelanguage?: string;
-  urlOriginal?: string;
-  password?: string;
-  createdAt: string;
-  expiresAt?: string;
-  maxViews?: number | null;
-  viewCount: number;
-  accessCount?: number;
-};
-
 type SharesListProps = {
-  shares: Share[];
+  shares: UserShare[];
   onDelete: (id: string) => void;
-  onUpdate: (id: string, data: Partial<Share>) => void;
+  onUpdate: (id: string, data: UserShareUpdate) => void;
 };
 
 export default function SharesList({ shares, onDelete, onUpdate }: SharesListProps) {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { MAX_ANON_EXPIRY_DAYS, MAX_AUTH_EXPIRY_DAYS } from "@/lib/share-constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useShareSettings } from "@/hooks/useShareSettings";
 import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
@@ -15,8 +16,8 @@ import SubmitButton from "./shareComponents/SubmitButton";
 import ShareFormSkeleton from "./ShareFormSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 
-const MAX_DAYS_ANON = 7;
-const MAX_DAYS_AUTH = 365;
+const MAX_DAYS_ANON = MAX_ANON_EXPIRY_DAYS;
+const MAX_DAYS_AUTH = MAX_AUTH_EXPIRY_DAYS;
 
 const LinkShare: React.FC = () => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();

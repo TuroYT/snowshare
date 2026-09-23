@@ -60,6 +60,7 @@ function makeRequest(
   headers: Record<string, string> = {}
 ): NextRequest {
   return {
+    url: "http://localhost:3000/api/user/shares",
     json: jest.fn().mockResolvedValue(body ?? {}),
     headers: {
       get: (name: string) => headers[name.toLowerCase()] ?? null,
@@ -250,7 +251,12 @@ describe("PATCH /api/user/shares/[id]", () => {
     jest.clearAllMocks();
     mockGetServerSession.mockResolvedValue({ user: { id: "user-1" } });
     mockShareFindUnique.mockResolvedValue(existingPasteShare);
-    mockShareUpdate.mockResolvedValue({ ...existingPasteShare, paste: "updated" });
+    mockShareUpdate.mockResolvedValue({
+      ...existingPasteShare,
+      paste: "updated",
+      password: "$2a$12$hash",
+      _count: { accessLogs: 0 },
+    });
   });
 
   it("should return 401 when not authenticated", async () => {
@@ -378,6 +384,87 @@ describe("PATCH /api/user/shares/[id]", () => {
     );
     expect(response.status).toBe(400);
     expect(mockShareUpdate).not.toHaveBeenCalled();
+  });
+
+  it("should never return the password hash", async () => {
+    const response = await PATCH(makeRequest({ paste: "new content" }), makeParams(shareId));
+    const data = await response.json();
+
+    expect(data.share.password).toBeUndefined();
+    expect(data.share.hasPassword).toBe(true);
+  });
+
+  it("should keep the current password when none is provided", async () => {
+    await PATCH(makeRequest({ paste: "new content" }), makeParams(shareId));
+
+    expect(mockShareUpdate.mock.calls[0][0].data).not.toHaveProperty("password");
+  });
+
+  it("should reject an invalid expiration date", async () => {
+    const response = await PATCH(makeRequest({ expiresAt: "not-a-date" }), makeParams(shareId));
+    expect(response.status).toBe(400);
+    expect(mockShareUpdate).not.toHaveBeenCalled();
+  });
+
+  it("should encrypt the URL when a password is set on a link", async () => {
+    mockShareFindUnique.mockResolvedValue({
+      ...existingUrlShare,
+      password: null,
+      urlOriginal: "https://old.com",
+    });
+
+    await PATCH(makeRequest({ password: "secret123" }), makeParams(shareId));
+
+    const data = mockShareUpdate.mock.calls[0][0].data;
+    expect(data.password).toBe("hashed:secret123");
+    expect(data.urlOriginal).not.toBe("https://old.com");
+    expect(data.urlOriginal.split(":")).toHaveLength(3);
+  });
+
+  it("should require the URL to change the password of a protected link", async () => {
+    mockShareFindUnique.mockResolvedValue({
+      ...existingUrlShare,
+      password: "$2a$12$hash",
+      urlOriginal: "salt:iv:cipher",
+    });
+
+    const response = await PATCH(makeRequest({ password: null }), makeParams(shareId));
+
+    expect(response.status).toBe(400);
+    expect(mockShareUpdate).not.toHaveBeenCalled();
+  });
+
+  it("should require a password to change the URL of a protected link", async () => {
+    mockShareFindUnique.mockResolvedValue({
+      ...existingUrlShare,
+      password: "$2a$12$hash",
+      urlOriginal: "salt:iv:cipher",
+    });
+
+    const response = await PATCH(
+      makeRequest({ urlOriginal: "https://new.com" }),
+      makeParams(shareId)
+    );
+
+    expect(response.status).toBe(400);
+    expect(mockShareUpdate).not.toHaveBeenCalled();
+  });
+
+  it("should store the plain URL when removing the password of a protected link", async () => {
+    mockShareFindUnique.mockResolvedValue({
+      ...existingUrlShare,
+      password: "$2a$12$hash",
+      urlOriginal: "salt:iv:cipher",
+    });
+
+    await PATCH(
+      makeRequest({ urlOriginal: "https://new.com", password: null }),
+      makeParams(shareId)
+    );
+
+    const data = mockShareUpdate.mock.calls[0][0].data;
+    expect(data.password).toBeNull();
+    expect(data.urlOriginal).toBe("https://new.com");
   });
 
   it("should return 500 on unexpected database error", async () => {

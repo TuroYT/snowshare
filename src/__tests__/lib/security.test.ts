@@ -10,6 +10,7 @@ jest.mock("bcryptjs", () => ({
   ),
 }));
 
+import { createHash } from "crypto";
 import {
   hashPassword,
   verifyPassword,
@@ -218,15 +219,13 @@ describe("resolveAnonExpiry", () => {
 });
 
 describe("hashApiKey", () => {
-  it("returns a bcrypt hash string", () => {
-    const hash = hashApiKey("sk_abc123");
-    expect(hash.startsWith("hashed:sk_abc123:12")).toBe(true);
+  it("returns the hex SHA-256 digest of the key", () => {
+    const expected = createHash("sha256").update("sk_abc123").digest("hex");
+    expect(hashApiKey("sk_abc123")).toBe(expected);
   });
 
-  it("can be verified with bcrypt.compare", async () => {
-    const raw = "sk_abc123";
-    const hash = hashApiKey(raw);
-    await expect(bcrypt.compare(raw, hash)).resolves.toBe(true);
+  it("is deterministic so keys can be looked up by hash", () => {
+    expect(hashApiKey("sk_abc123")).toBe(hashApiKey("sk_abc123"));
   });
 
   it("produces different hashes for different keys", () => {
@@ -240,9 +239,9 @@ describe("generateApiKey", () => {
     expect(raw).toMatch(/^sk_[0-9a-f]{32}$/);
   });
 
-  it("returns a hash that verifies against the raw key", async () => {
+  it("returns the lookup hash of the raw key", () => {
     const { raw, hash } = generateApiKey();
-    await expect(bcrypt.compare(raw, hash)).resolves.toBe(true);
+    expect(hash).toBe(hashApiKey(raw));
   });
 
   it("returns a prefix that is the first 11 characters of the raw key", () => {

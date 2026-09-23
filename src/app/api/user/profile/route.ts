@@ -4,6 +4,16 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/security";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import {
+  isValidEmail,
+  isValidPassword,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+} from "@/lib/constants";
+import { sendVerificationEmail } from "@/lib/email";
+import crypto from "crypto";
+
+const MAX_NAME_LENGTH = 100;
 
 // GET - Get User informations
 export async function GET(request: NextRequest) {
@@ -38,7 +48,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH - Modifier les informations de l'utilisateur
+// PATCH - Update the current user's profile
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -62,11 +72,18 @@ export async function PATCH(request: NextRequest) {
     const updateData: {
       name?: string;
       email?: string;
+      emailVerified?: Date | null;
       password?: string;
       defaultTab?: "linkshare" | "pasteshare" | "fileshare";
     } = {};
 
     if (name !== undefined) {
+      if (name !== null && typeof name !== "string") {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
+      if (typeof name === "string" && name.length > MAX_NAME_LENGTH) {
+        return apiError(request, ErrorCode.DISPLAY_NAME_TOO_LONG);
+      }
       updateData.name = name;
     }
 
@@ -77,33 +94,56 @@ export async function PATCH(request: NextRequest) {
       updateData.defaultTab = defaultTab;
     }
 
-    // Mise à jour de l'email
-    if (email !== undefined && email !== user.email) {
+    // Password-based accounts must re-authenticate before changing email or password
+    const emailChanged = email !== undefined && email !== user.email;
+    if ((emailChanged || newPassword) && user.password) {
+      if (!currentPassword) {
+        return apiError(request, ErrorCode.CURRENT_PASSWORD_REQUIRED);
+      }
+      const isPasswordValid = await verifyPassword(currentPassword, user.password);
+      if (!isPasswordValid) {
+        return apiError(request, ErrorCode.INCORRECT_CURRENT_PASSWORD);
+      }
+    }
+
+    let needsEmailVerification = false;
+
+    // Email update
+    if (emailChanged) {
+      if (typeof email !== "string" || !isValidEmail(email)) {
+        return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
+      }
+
       const existingUser = await prisma.user.findUnique({
         where: { email },
+        select: { id: true },
       });
 
       if (existingUser) {
         return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
       }
 
+      const settings = await prisma.settings.findFirst({
+        select: { emailVerificationRequired: true, smtpEnabled: true },
+      });
+      needsEmailVerification = !!(settings?.emailVerificationRequired && settings.smtpEnabled);
+
       updateData.email = email;
+      // A new address is unverified until proven otherwise
+      updateData.emailVerified = needsEmailVerification ? null : new Date();
     }
 
-    // Mise à jour du mot de passe
+    // Password update
     if (newPassword) {
-      if (!currentPassword) {
-        return apiError(request, ErrorCode.CURRENT_PASSWORD_REQUIRED);
-      }
-
       if (!user.password) {
         return apiError(request, ErrorCode.FORBIDDEN);
       }
 
-      const isPasswordValid = await verifyPassword(currentPassword, user.password);
-
-      if (!isPasswordValid) {
-        return apiError(request, ErrorCode.INCORRECT_CURRENT_PASSWORD);
+      if (typeof newPassword !== "string" || !isValidPassword(newPassword)) {
+        return apiError(request, ErrorCode.PASSWORD_LENGTH, {
+          min: PASSWORD_MIN_LENGTH,
+          max: PASSWORD_MAX_LENGTH,
+        });
       }
 
       updateData.password = await hashPassword(newPassword);
@@ -122,7 +162,26 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ user: updatedUser });
+    if (needsEmailVerification && updateData.email) {
+      const token = crypto.randomBytes(32).toString("hex");
+      await prisma.verificationToken.create({
+        data: {
+          identifier: `email-verify:${updateData.email}`,
+          token,
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+      try {
+        await sendVerificationEmail(updateData.email, token);
+      } catch (emailError) {
+        console.error("Failed to send verification email after email change:", emailError);
+      }
+    }
+
+    return NextResponse.json({
+      user: updatedUser,
+      ...(needsEmailVerification && { requiresVerification: true }),
+    });
   } catch (error) {
     console.error("Error updating user profile:", error);
     return internalError(request);

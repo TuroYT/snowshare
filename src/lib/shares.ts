@@ -42,6 +42,17 @@ function getContextFromRequest(request: NextRequest, overrideUserId?: string | n
   };
 }
 
+/**
+ * Strips server-only fields (password hash, uploader IP, storage key) from a share
+ * before it is sent to a client, exposing `hasPassword` instead.
+ */
+export function toPublicShare<
+  T extends { password?: string | null; ipSource?: string | null; filePath?: string | null },
+>(share: T): Omit<T, "password" | "ipSource" | "filePath"> & { hasPassword: boolean } {
+  const { password, ipSource: _ipSource, filePath: _filePath, ...rest } = share;
+  return { ...rest, hasPassword: !!password };
+}
+
 // ---------------------------------------------------------------------------
 // Link share
 // ---------------------------------------------------------------------------
@@ -266,6 +277,8 @@ export async function createPasteShare(params: CreatePasteShareParams) {
 export interface CreateFileShareParams {
   filename: string;
   filePath: string;
+  /** File size in bytes (used for quota accounting) */
+  size?: number;
   context: ShareContext;
   expiresAt?: Date;
   slug?: string;
@@ -342,6 +355,7 @@ export async function createFileShare(params: CreateFileShareParams) {
   const share = await prisma.share.create({
     data: {
       filePath,
+      size: params.size != null ? BigInt(params.size) : null,
       slug,
       type: "FILE",
       password: password || null,

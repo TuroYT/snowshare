@@ -8,26 +8,11 @@ import ProfileInfo from "@/components/profile/ProfileInfo";
 import SharesList from "@/components/profile/SharesList";
 import ProfileStats from "@/components/profile/ProfileStats";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
+import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 import ApiKeysSection from "@/components/ApiKeysSection";
 import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
-
-type Share = {
-  id: string;
-  type: "FILE" | "PASTE" | "URL";
-  slug: string;
-  filePath?: string;
-  paste?: string;
-  pastelanguage?: string;
-  urlOriginal?: string;
-  password?: string;
-  createdAt: string;
-  expiresAt?: string;
-  maxViews?: number | null;
-  viewCount: number;
-  accessCount?: number;
-};
 
 type User = {
   id: string;
@@ -41,7 +26,7 @@ const ProfilePage = () => {
   const { status } = useSession();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [shares, setShares] = useState<Share[]>([]);
+  const [shares, setShares] = useState<UserShare[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "profile" | "shares" | "accounts" | "apikeys" | "accesslogs"
@@ -103,7 +88,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handleUpdateShare = async (id: string, updateData: Partial<Share>) => {
+  const handleUpdateShare = async (id: string, updateData: UserShareUpdate) => {
     try {
       const res = await fetch(`/api/user/shares/${id}`, {
         method: "PATCH",

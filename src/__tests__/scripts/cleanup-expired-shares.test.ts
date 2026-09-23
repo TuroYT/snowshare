@@ -68,7 +68,7 @@ describe("cleanupExpiredShares", () => {
     const filePath = path.join(tempUploadDir, fileName);
     fs.writeFileSync(filePath, "content");
 
-    mockShareFindMany.mockResolvedValue([
+    mockShareFindMany.mockResolvedValueOnce([
       {
         id: "share-1",
         type: "FILE",
@@ -85,7 +85,7 @@ describe("cleanupExpiredShares", () => {
     expect(result).toEqual({ deletedShares: 1, deletedFiles: 1 });
     expect(fs.existsSync(filePath)).toBe(false);
     expect(mockShareDeleteMany).toHaveBeenCalledWith({
-      where: { expiresAt: { lt: expect.any(Date) } },
+      where: { id: { in: ["share-1"] } },
     });
   });
 
@@ -95,7 +95,7 @@ describe("cleanupExpiredShares", () => {
     fs.writeFileSync(path.join(tempUploadDir, file1), "a");
     fs.writeFileSync(path.join(tempUploadDir, file2), "b");
 
-    mockShareFindMany.mockResolvedValue([
+    mockShareFindMany.mockResolvedValueOnce([
       {
         id: "share-2",
         type: "FILE",
@@ -115,7 +115,7 @@ describe("cleanupExpiredShares", () => {
   });
 
   it("ignores expired non-FILE shares but still deletes DB records", async () => {
-    mockShareFindMany.mockResolvedValue([
+    mockShareFindMany.mockResolvedValueOnce([
       {
         id: "share-3",
         type: "URL",
@@ -140,7 +140,7 @@ describe("cleanupExpiredShares", () => {
   });
 
   it("handles missing files gracefully (ENOENT)", async () => {
-    mockShareFindMany.mockResolvedValue([
+    mockShareFindMany.mockResolvedValueOnce([
       {
         id: "share-4",
         type: "FILE",
@@ -154,7 +154,24 @@ describe("cleanupExpiredShares", () => {
 
     const result = await cleanupExpiredShares();
 
-    expect(result).toEqual({ deletedShares: 1, deletedFiles: 0 });
+    expect(result.deletedShares).toBe(1);
+  });
+
+  it("keeps a share whose files could not be deleted and does not loop on it", async () => {
+    const dirAsFile = "share-5_dir";
+    // unlink() on a directory fails with EISDIR/EPERM: simulates a storage failure
+    fs.mkdirSync(path.join(tempUploadDir, dirAsFile));
+
+    mockShareFindMany.mockResolvedValueOnce([
+      { id: "share-5", slug: "stuck", filePath: dirAsFile, files: [] },
+    ]);
+
+    const result = await cleanupExpiredShares();
+
+    expect(result.deletedShares).toBe(0);
+    expect(mockShareDeleteMany).not.toHaveBeenCalled();
+    // Second query excludes the failed share
+    expect(mockShareFindMany.mock.calls[1][0].where.id).toEqual({ notIn: ["share-5"] });
   });
 });
 

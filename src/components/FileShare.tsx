@@ -2,6 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  MAX_ANON_EXPIRY_DAYS,
+  MAX_AUTH_EXPIRY_DAYS,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from "@/lib/share-constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useShareSettings } from "@/hooks/useShareSettings";
 import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
@@ -15,8 +21,8 @@ import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
 
-const MAX_DAYS_ANON = 7;
-const MAX_DAYS_AUTH = 365;
+const MAX_DAYS_ANON = MAX_ANON_EXPIRY_DAYS;
+const MAX_DAYS_AUTH = MAX_AUTH_EXPIRY_DAYS;
 const MAX_NOTE_LENGTH = 2000;
 
 interface FileWithPath {
@@ -31,7 +37,7 @@ interface FileShareProps {
 
 const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsumed }) => {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dirInputRef = useRef<HTMLInputElement>(null);
@@ -250,7 +256,12 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
   };
 
   const translateErrorCode = (code: string): string => {
-    return errorCodeMap[code] || code;
+    if (errorCodeMap[code]) return errorCodeMap[code];
+    // Any other server error code has a generic translation under api.errors.*
+    const key = `api.errors.${code.toLowerCase()}`;
+    return i18n.exists(key)
+      ? t(key, { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH, days: MAX_DAYS_ANON })
+      : code;
   };
 
   // Handle form submission with tus resumable upload

@@ -3,14 +3,14 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
-  PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { createReadStream, existsSync } from "fs";
 import { stat, unlink } from "fs/promises";
 import { Readable } from "stream";
 import path from "path";
-import { getUploadDir } from "./constants";
-import { prisma } from "./prisma";
+import { getUploadDir } from "@/lib/constants";
+import { getSettingsCached } from "@/lib/settings";
 
 interface S3Config {
   bucket: string;
@@ -32,19 +32,9 @@ async function getS3Config(): Promise<S3Config | null> {
     };
   }
 
-  // Fall back to DB settings
+  // Fall back to DB settings (cached)
   try {
-    const settings = await prisma.settings.findFirst({
-      select: {
-        s3Enabled: true,
-        s3Bucket: true,
-        s3Region: true,
-        s3Endpoint: true,
-        s3AccessKeyId: true,
-        s3SecretAccessKey: true,
-      },
-    });
-
+    const settings = await getSettingsCached();
     if (!settings?.s3Enabled || !settings.s3Bucket) return null;
 
     return {
@@ -54,13 +44,24 @@ async function getS3Config(): Promise<S3Config | null> {
       accessKeyId: settings.s3AccessKeyId ?? undefined,
       secretAccessKey: settings.s3SecretAccessKey ?? undefined,
     };
-  } catch {
+  } catch (error) {
+    console.error("Storage: failed to read S3 settings, falling back to local storage:", error);
     return null;
   }
 }
 
-function buildS3Client(config: S3Config): S3Client {
-  return new S3Client({
+// One S3 client per configuration, reused across requests (keeps HTTP connections alive)
+const globalForS3 = globalThis as unknown as {
+  __snowshareS3Client?: { fingerprint: string; client: S3Client };
+};
+
+function getS3Client(config: S3Config): S3Client {
+  const fingerprint = JSON.stringify(config);
+  const cached = globalForS3.__snowshareS3Client;
+  if (cached && cached.fingerprint === fingerprint) return cached.client;
+
+  cached?.client.destroy();
+  const client = new S3Client({
     region: config.region,
     ...(config.endpoint && { endpoint: config.endpoint }),
     ...(config.accessKeyId &&
@@ -72,24 +73,37 @@ function buildS3Client(config: S3Config): S3Client {
       }),
     forcePathStyle: !!config.endpoint,
   });
+  globalForS3.__snowshareS3Client = { fingerprint, client };
+  return client;
+}
+
+function isS3NotFound(error: unknown): boolean {
+  const err = error as { name?: string; $metadata?: { httpStatusCode?: number } };
+  return (
+    err?.name === "NotFound" || err?.name === "NoSuchKey" || err?.$metadata?.httpStatusCode === 404
+  );
 }
 
 export async function isS3Enabled(): Promise<boolean> {
   return (await getS3Config()) !== null;
 }
 
-/** Upload a local file to S3 under the given key. No-op when S3 is disabled. */
+/**
+ * Upload a local file to S3 under the given key. No-op when S3 is disabled.
+ * Uses multipart upload, so files larger than the 5 GB single-PUT limit work.
+ */
 export async function uploadToStorage(localPath: string, key: string): Promise<void> {
   const config = await getS3Config();
   if (!config) return;
-  const s3 = buildS3Client(config);
-  await s3.send(
-    new PutObjectCommand({
+  const upload = new Upload({
+    client: getS3Client(config),
+    params: {
       Bucket: config.bucket,
       Key: key,
       Body: createReadStream(localPath),
-    })
-  );
+    },
+  });
+  await upload.done();
 }
 
 /** Returns true if the file exists (locally or in S3). */
@@ -97,10 +111,12 @@ export async function storageFileExists(key: string): Promise<boolean> {
   const config = await getS3Config();
   if (!config) return existsSync(path.join(getUploadDir(), key));
   try {
-    const s3 = buildS3Client(config);
-    await s3.send(new HeadObjectCommand({ Bucket: config.bucket, Key: key }));
+    await getS3Client(config).send(new HeadObjectCommand({ Bucket: config.bucket, Key: key }));
     return true;
-  } catch {
+  } catch (error) {
+    if (!isS3NotFound(error)) {
+      console.error(`Storage: HEAD failed for ${key}:`, error);
+    }
     return false;
   }
 }
@@ -112,8 +128,9 @@ export async function getStorageFileSize(key: string): Promise<number> {
     const stats = await stat(path.join(getUploadDir(), key));
     return stats.size;
   }
-  const s3 = buildS3Client(config);
-  const res = await s3.send(new HeadObjectCommand({ Bucket: config.bucket, Key: key }));
+  const res = await getS3Client(config).send(
+    new HeadObjectCommand({ Bucket: config.bucket, Key: key })
+  );
   return res.ContentLength ?? 0;
 }
 
@@ -126,8 +143,7 @@ export async function getStorageReadStream(
   if (!config) {
     return createReadStream(path.join(getUploadDir(), key), range);
   }
-  const s3 = buildS3Client(config);
-  const res = await s3.send(
+  const res = await getS3Client(config).send(
     new GetObjectCommand({
       Bucket: config.bucket,
       Key: key,
@@ -148,6 +164,31 @@ export async function deleteFromStorage(key: string): Promise<void> {
     }
     return;
   }
-  const s3 = buildS3Client(config);
-  await s3.send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
+  await getS3Client(config).send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
+}
+
+/**
+ * Deletes every stored file of a share: the single file (filePath) and all bulk files.
+ * Returns the keys that could not be deleted (errors are logged).
+ */
+export async function deleteShareFiles(share: {
+  filePath?: string | null;
+  files?: { filePath: string }[];
+}): Promise<string[]> {
+  const keys = [
+    ...(share.filePath ? [share.filePath] : []),
+    ...(share.files ?? []).map((file) => file.filePath),
+  ];
+  const failed: string[] = [];
+
+  // Sequential on purpose: bulk shares can hold thousands of files
+  for (const key of keys) {
+    try {
+      await deleteFromStorage(key);
+    } catch (error) {
+      console.error(`Storage: failed to delete ${key}:`, error);
+      failed.push(key);
+    }
+  }
+  return failed;
 }

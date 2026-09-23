@@ -10,10 +10,23 @@ import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { hashPassword } from "@/lib/security";
 import { verifyCaptcha } from "@/lib/captcha";
 import { sendVerificationEmail } from "@/lib/email";
+import { detectLocale, translate } from "@/lib/i18n-server";
+import { getClientIp } from "@/lib/getClientIp";
+import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { Prisma } from "@/generated/prisma";
 import crypto from "crypto";
+
+function isPrismaError(error: unknown, code: string): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const retryAfter = consumeRateLimit("register", getClientIp(request));
+    if (retryAfter > 0) {
+      return rateLimitResponse(request, retryAfter);
+    }
+
     const { email, password, isFirstUser, captchaToken } = await request.json();
 
     // Check if this is the first user setup
@@ -110,16 +123,36 @@ export async function POST(request: NextRequest) {
     // First users are auto-verified (they're admins), skip verification
     const needsEmailVerification = emailVerificationRequired && smtpEnabled && !isActuallyFirstUser;
 
-    // Create the user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        isAdmin: isActuallyFirstUser,
-        // Mark as verified immediately if verification is not required
-        emailVerified: needsEmailVerification ? null : new Date(),
-      },
-    });
+    const userData = {
+      email,
+      password: hashedPassword,
+      // Mark as verified immediately if verification is not required
+      emailVerified: needsEmailVerification ? null : new Date(),
+    };
+
+    // Create the user. The first user becomes admin: re-check the count inside a
+    // serializable transaction so two concurrent setup requests cannot both get admin.
+    let user;
+    try {
+      user = isActuallyFirstUser
+        ? await prisma.$transaction(
+            async (tx) => {
+              const isStillFirst = (await tx.user.count()) === 0;
+              return tx.user.create({ data: { ...userData, isAdmin: isStillFirst } });
+            },
+            { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+          )
+        : await prisma.user.create({ data: { ...userData, isAdmin: false } });
+    } catch (error) {
+      if (isPrismaError(error, "P2002")) {
+        return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
+      }
+      if (isPrismaError(error, "P2034")) {
+        // Serialization conflict: another first user was created concurrently
+        return apiError(request, ErrorCode.USERS_ALREADY_EXIST);
+      }
+      throw error;
+    }
 
     // Send verification email if required
     if (needsEmailVerification) {
@@ -142,14 +175,14 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({
-        message: "Account created. Please check your email to verify your account.",
+        message: translate(detectLocale(request), "api.messages.account_created_verify_email"),
         requiresVerification: true,
         user: { id: user.id, email: user.email },
       });
     }
 
     return NextResponse.json({
-      message: "User created successfully",
+      message: translate(detectLocale(request), "api.messages.user_created"),
       requiresVerification: false,
       user: { id: user.id, email: user.email },
     });

@@ -270,7 +270,8 @@
     "have_account": "Al een account?",
     "signin_link": "Inloggen",
     "signup_link": "Registreren",
-    "signin_with": "Inloggen met"
+    "signin_with": "Inloggen met",
+    "error_too_many_attempts": "Te veel mislukte aanmeldpogingen. Probeer het later opnieuw."
   },
   "profile": {
     "title": "Mijn profiel",
@@ -369,7 +370,11 @@
     "export_desc": "Download een kopie van al je persoonlijke gegevens (profiel, delingen, API-sleutels, gekoppelde accounts) in JSON-formaat.",
     "export_button": "Mijn gegevens downloaden",
     "export_downloading": "Downloaden…",
-    "export_error": "Export mislukt. Probeer het opnieuw."
+    "export_error": "Export mislukt. Probeer het opnieuw.",
+    "success_update_verify_email": "Profiel bijgewerkt. Controleer je nieuwe e-mailadres om het te verifiëren.",
+    "placeholder_protected_url": "Beveiligde link: voer de URL opnieuw in om deze te wijzigen",
+    "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
+    "remove_password": "Wachtwoord verwijderen"
   },
   "apikeys": {
     "title": "API-sleutels",
@@ -844,9 +849,21 @@
       "email_not_verified": "Verifieer uw e-mailadres voordat u inlogt",
       "recipients_required": "Minstens één ontvanger is vereist",
       "email_not_configured": "E-mailverzending is niet geconfigureerd",
-      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw."
+      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw.",
+      "too_many_requests": "Te veel pogingen. Probeer het over {{seconds}} seconden opnieuw.",
+      "bulk_share_use_bulk_download": "Dit is een bulkdeling. Gebruik in plaats daarvan /bulk-download.",
+      "too_many_recipients": "Te veel ontvangers (maximaal {{max}}).",
+      "link_url_required_for_password_change": "Voer de doel-URL opnieuw in om het wachtwoord van een beveiligde link te wijzigen of te verwijderen.",
+      "link_password_required_for_url_change": "Voer een wachtwoord (huidig of nieuw) in om de bestemming van een beveiligde link te wijzigen.",
+      "too_many_files": "Te veel bestanden in één upload."
     },
-    "file_protected": "Beveiligd bestand"
+    "file_protected": "Beveiligd bestand",
+    "file_count": "{{count}} bestanden",
+    "messages": {
+      "account_created_verify_email": "Account aangemaakt. Controleer je e-mail om je account te verifiëren.",
+      "user_created": "Gebruiker succesvol aangemaakt",
+      "email_sent": "E-mail succesvol verzonden"
+    }
   },
   "share_email": {
     "section_title": "Verstuur per e-mail",

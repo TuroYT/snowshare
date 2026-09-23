@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createLinkShare } from "./(linkShare)/linkshare";
 import { createPasteShare } from "./(pasteShare)/pasteshareshare";
 import { apiError, ErrorCode } from "@/lib/api-errors";
+import { toPublicShare } from "@/lib/shares";
 
 async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
@@ -28,7 +29,10 @@ async function POST(req: NextRequest) {
         if (result?.errorCode) {
           return apiError(req, result.errorCode, result.params);
         }
-        return NextResponse.json({ share: result }, { status: 201 });
+        return NextResponse.json(
+          { share: { linkShare: toPublicShare(result.linkShare) } },
+          { status: 201 }
+        );
       }
       case "PASTE": {
         const { paste, pastelanguage, expiresAt, slug, password, maxViews } = data;
@@ -46,7 +50,10 @@ async function POST(req: NextRequest) {
         if (result?.errorCode) {
           return apiError(req, result.errorCode, result.params);
         }
-        return NextResponse.json({ share: result }, { status: 201 });
+        return NextResponse.json(
+          { share: { pasteShare: toPublicShare(result.pasteShare) } },
+          { status: 201 }
+        );
       }
       default:
         return apiError(req, ErrorCode.SHARE_TYPE_INVALID);

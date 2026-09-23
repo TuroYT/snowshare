@@ -3,8 +3,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { toUserShare, USER_SHARE_SELECT } from "@/lib/user-shares";
 
-// GET - Récupérer tous les partages de l'utilisateur
+const MAX_LIMIT = 1000;
+
+// GET - List the current user's shares (newest first)
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,38 +16,27 @@ export async function GET(request: NextRequest) {
       return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
+    // Optional pagination (?limit=&offset=); without it every share is returned, as before
+    const { searchParams } = new URL(request.url);
+    const limitParam = parseInt(searchParams.get("limit") || "", 10);
+    const offsetParam = parseInt(searchParams.get("offset") || "", 10);
+    const take =
+      Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, MAX_LIMIT) : undefined;
+    const skip = Number.isFinite(offsetParam) && offsetParam > 0 ? offsetParam : undefined;
+
     const shares = await prisma.share.findMany({
       where: {
         ownerId: session.user.id,
       },
-      select: {
-        id: true,
-        type: true,
-        slug: true,
-        filePath: true,
-        paste: true,
-        pastelanguage: true,
-        urlOriginal: true,
-        password: true,
-        createdAt: true,
-        expiresAt: true,
-        maxViews: true,
-        viewCount: true,
-        _count: {
-          select: { accessLogs: true },
-        },
-      },
+      select: USER_SHARE_SELECT,
       orderBy: {
         createdAt: "desc",
       },
+      take,
+      skip,
     });
 
-    const sharesWithCount = shares.map(({ _count, ...share }) => ({
-      ...share,
-      accessCount: _count.accessLogs,
-    }));
-
-    return NextResponse.json({ shares: sharesWithCount });
+    return NextResponse.json({ shares: shares.map(toUserShare) });
   } catch (error) {
     console.error("Error fetching user shares:", error);
     return internalError(request);

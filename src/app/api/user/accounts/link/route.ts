@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { getAuthOptions } from "@/lib/auth";
+import { getAuthOptions, LINK_TOKEN_COOKIE } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Set the httpOnly cookie with the token
-    response.cookies.set("__snowshare-link-token", linkToken, {
+    response.cookies.set(LINK_TOKEN_COOKIE, linkToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

@@ -7,7 +7,7 @@ type Share = {
   id: string;
   type: "FILE" | "PASTE" | "URL";
   createdAt: string;
-  expiresAt?: string;
+  expiresAt?: string | null;
 };
 
 type ProfileStatsProps = {
