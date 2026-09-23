@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSettingsCached } from "@/lib/settings";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -123,9 +124,7 @@ export async function PATCH(request: NextRequest) {
         return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
       }
 
-      const settings = await prisma.settings.findFirst({
-        select: { emailVerificationRequired: true, smtpEnabled: true },
-      });
+      const settings = await getSettingsCached();
       needsEmailVerification = !!(settings?.emailVerificationRequired && settings.smtpEnabled);
 
       updateData.email = email;

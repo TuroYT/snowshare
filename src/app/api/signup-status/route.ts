@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getSettingsCached } from "@/lib/settings";
 
 export async function GET() {
   try {
     // Get settings from database
     let allowSignup = true; // Default value
-    const settings = await prisma.settings.findFirst({
-      select: {
-        allowSignin: true,
-      },
-    });
+    const settings = await getSettingsCached();
 
     if (settings) {
       allowSignup = settings.allowSignin;

@@ -1,30 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { getSettingsCached } from "@/lib/settings";
 import { NextResponse } from "next/server";
 
 // Public endpoint to get branding settings (no auth required)
 export async function GET() {
   try {
-    const settings = await prisma.settings.findFirst({
-      select: {
-        appName: true,
-        appDescription: true,
-        logoUrl: true,
-        faviconUrl: true,
-        primaryColor: true,
-        primaryHover: true,
-        primaryDark: true,
-        secondaryColor: true,
-        secondaryHover: true,
-        secondaryDark: true,
-        backgroundColor: true,
-        backgroundImageUrl: true,
-        surfaceColor: true,
-        textColor: true,
-        textMuted: true,
-        borderColor: true,
-        fontFamily: true,
-      },
-    });
+    const settings = await getSettingsCached();
 
     // Return default values if no settings exist
     if (!settings) {

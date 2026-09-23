@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { invalidateSettingsCache } from "@/lib/settings";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import type { Settings } from "@/generated/prisma";
@@ -202,6 +203,7 @@ export async function GET(request: NextRequest) {
 
     if (!settings) {
       settings = await prisma.settings.create({ data: buildFirstRunSettingsCreate({}) });
+      invalidateSettingsCache();
     }
 
     // Never expose secret keys to the client
@@ -258,6 +260,7 @@ export async function PATCH(request: NextRequest) {
         data: buildSettingsUpdateData(data, settings),
       });
     }
+    invalidateSettingsCache();
 
     const safeUpdated = {
       ...settings,

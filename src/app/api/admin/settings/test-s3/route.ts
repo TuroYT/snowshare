@@ -5,16 +5,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { S3ServiceException } from "@aws-sdk/client-s3";
 import { apiError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 
 // HTTP status codes that prove the S3 server is reachable and understands the request.
 // 200 = bucket accessible, 301 = wrong region (bucket exists), 403 = auth/ACL issue (server reached),
 // 404 = bucket not found (server reached), 301/400 = various redirect/config issues — all mean connectivity works.
 const REACHABLE_STATUS_CODES = new Set([200, 301, 400, 403, 404]);
 
-async function resolveS3TestSecret(fromBody: string | undefined): Promise<string | undefined> {
+/**
+ * The stored secret is only reused against the stored endpoint and access key, so it is
+ * never sent (signed) to a different server than the one it was configured for.
+ */
+async function resolveS3TestSecret(
+  fromBody: string | undefined,
+  endpoint: string | undefined,
+  accessKeyId: string | undefined
+): Promise<string | undefined> {
   if (fromBody) return fromBody;
-  const settings = await prisma.settings.findFirst({ select: { s3SecretAccessKey: true } });
-  return settings?.s3SecretAccessKey ?? undefined;
+  const settings = await prisma.settings.findFirst({
+    select: { s3SecretAccessKey: true, s3Endpoint: true, s3AccessKeyId: true },
+  });
+  const sameTarget =
+    (settings?.s3Endpoint || undefined) === endpoint &&
+    (settings?.s3AccessKeyId || undefined) === accessKeyId;
+  return sameTarget ? (settings?.s3SecretAccessKey ?? undefined) : undefined;
 }
 
 function buildS3TestClient(
@@ -68,12 +82,15 @@ export async function POST(request: NextRequest) {
 
     if (!bucket) {
       return NextResponse.json(
-        { success: false, error: "Bucket name is required" },
+        {
+          success: false,
+          error: translate(detectLocale(request), "api.errors.s3_bucket_required"),
+        },
         { status: 400 }
       );
     }
 
-    const resolvedSecret = await resolveS3TestSecret(secretFromBody);
+    const resolvedSecret = await resolveS3TestSecret(secretFromBody, endpoint, accessKeyId);
     const s3 = buildS3TestClient(region, endpoint, accessKeyId, resolvedSecret);
     const result = await testS3Connectivity(s3, bucket);
     return NextResponse.json(result);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSettingsCached } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 import {
   isValidEmail,
@@ -42,17 +43,7 @@ export async function POST(request: NextRequest) {
     let emailVerificationRequired = false;
     let smtpEnabled = false;
 
-    const settings = await prisma.settings.findFirst({
-      select: {
-        allowSignin: true,
-        disableCredentialsLogin: true,
-        captchaEnabled: true,
-        captchaProvider: true,
-        captchaSecretKey: true,
-        emailVerificationRequired: true,
-        smtpEnabled: true,
-      },
-    });
+    const settings = await getSettingsCached();
 
     if (settings) {
       allowSignup = settings.allowSignin;

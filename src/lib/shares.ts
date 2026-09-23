@@ -4,6 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { getSettingsCached } from "@/lib/settings";
 import { encrypt } from "@/lib/crypto-link";
 import {
   isValidUrl as validateUrl,
@@ -110,7 +111,7 @@ export async function createLinkShare(params: CreateLinkShareParams) {
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonLinkShare) {
       return { errorCode: ErrorCode.ANON_LINK_SHARE_DISABLED };
     }
@@ -224,7 +225,7 @@ export async function createPasteShare(params: CreatePasteShareParams) {
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonPasteShare) {
       return { errorCode: ErrorCode.ANON_PASTE_SHARE_DISABLED };
     }
@@ -322,7 +323,7 @@ export async function createFileShare(params: CreateFileShareParams) {
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonFileShare) {
       return { errorCode: ErrorCode.ANON_FILE_SHARE_DISABLED };
     }

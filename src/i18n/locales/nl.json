@@ -855,7 +855,8 @@
       "too_many_recipients": "Te veel ontvangers (maximaal {{max}}).",
       "link_url_required_for_password_change": "Voer de doel-URL opnieuw in om het wachtwoord van een beveiligde link te wijzigen of te verwijderen.",
       "link_password_required_for_url_change": "Voer een wachtwoord (huidig of nieuw) in om de bestemming van een beveiligde link te wijzigen.",
-      "too_many_files": "Te veel bestanden in één upload."
+      "too_many_files": "Te veel bestanden in één upload.",
+      "s3_bucket_required": "De bucketnaam is verplicht"
     },
     "file_protected": "Beveiligd bestand",
     "file_count": "{{count}} bestanden",

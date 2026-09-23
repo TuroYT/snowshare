@@ -1,41 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { getOrCreateSettings } from "@/lib/settings";
 import { NextResponse } from "next/server";
 
 // Public endpoint to get public settings (no authentication required)
 export async function GET() {
   try {
-    let settings = await prisma.settings.findFirst();
-
-    // Create default settings if not exist
-    if (!settings) {
-      settings = await prisma.settings.create({
-        data: {
-          allowSignin: true,
-          allowAnonFileShare: true,
-          allowAnonLinkShare: true,
-          allowAnonPasteShare: true,
-          anoMaxUpload: 2048,
-          authMaxUpload: 51200,
-          anoIpQuota: 4096,
-          authIpQuota: 102400,
-          defaultExpirationDays: 30,
-          appName: "SnowShare",
-          appDescription: "Share your files, pastes, and URLs securely",
-          primaryColor: "#3B82F6",
-          primaryHover: "#2563EB",
-          primaryDark: "#1E40AF",
-          secondaryColor: "#8B5CF6",
-          secondaryHover: "#7C3AED",
-          secondaryDark: "#6D28D9",
-          backgroundColor: "#111827",
-          backgroundImageUrl: null,
-          surfaceColor: "#1F2937",
-          textColor: "#F9FAFB",
-          textMuted: "#D1D5DB",
-          borderColor: "#374151",
-        },
-      });
-    }
+    const settings = await getOrCreateSettings();
 
     // Return public settings including theme colors
     return NextResponse.json(

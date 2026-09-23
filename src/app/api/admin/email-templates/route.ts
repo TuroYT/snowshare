@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { invalidateSettingsCache } from "@/lib/settings";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import {
@@ -130,6 +131,7 @@ export async function PATCH(request: NextRequest) {
           data: pickProvided(data),
         })
       : await prisma.settings.create({ data: buildCreateData(data) });
+    invalidateSettingsCache();
 
     return NextResponse.json({ templates: pickTemplates(settings) });
   } catch (error) {

@@ -852,7 +852,8 @@
       "too_many_recipients": "Zbyt wielu odbiorców (maksymalnie {{max}}).",
       "link_url_required_for_password_change": "Wpisz ponownie docelowy adres URL, aby zmienić lub usunąć hasło chronionego linku.",
       "link_password_required_for_url_change": "Podaj hasło (obecne lub nowe), aby zmienić cel chronionego linku.",
-      "too_many_files": "Zbyt wiele plików w jednym przesłaniu."
+      "too_many_files": "Zbyt wiele plików w jednym przesłaniu.",
+      "s3_bucket_required": "Nazwa bucketu jest wymagana"
     },
     "file_protected": "Chroniony plik",
     "file_count": "Pliki: {{count}}",

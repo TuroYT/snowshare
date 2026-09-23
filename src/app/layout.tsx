@@ -10,9 +10,12 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense } from "react";
 import "@/i18n/client";
 import { getPublicSettings } from "@/lib/settings";
+import { resolveDefaultLocale } from "@/i18n/locale-utils";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export const revalidate = 0; // Disable caching for metadata
+
+const SUPPORTED_LOCALES = ["en", "fr", "es", "de", "pl", "nl"];
 
 const geistSans = GeistSans;
 const geistMono = GeistMono;
@@ -23,8 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: settings?.appName || "SnowShare",
-    description:
-      settings?.appDescription || "Partagez vos fichiers, pastes et URLs en toute sécurité",
+    description: settings?.appDescription || "Share your files, pastes, and URLs securely",
     icons: settings?.faviconUrl
       ? {
           icon: [{ url: settings.faviconUrl }],
@@ -45,7 +47,7 @@ export default function RootLayout({
   const plausibleHost = process.env.PLAUSIBLE_HOST || "https://stats.sheephost.fr";
 
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang={resolveDefaultLocale(SUPPORTED_LOCALES)} suppressHydrationWarning>
       <head>
         {/* Privacy-friendly analytics by Plausible - no cookies, GDPR compliant */}
         {/* Disable with TELEMETRY=false in .env */}

@@ -848,7 +848,8 @@
       "too_many_recipients": "Zu viele Empfänger (maximal {{max}}).",
       "link_url_required_for_password_change": "Gib die Ziel-URL erneut ein, um das Passwort eines geschützten Links zu ändern oder zu entfernen.",
       "link_password_required_for_url_change": "Gib ein Passwort (aktuell oder neu) ein, um das Ziel eines geschützten Links zu ändern.",
-      "too_many_files": "Zu viele Dateien in einem einzigen Upload."
+      "too_many_files": "Zu viele Dateien in einem einzigen Upload.",
+      "s3_bucket_required": "Der Bucket-Name ist erforderlich"
     },
     "file_protected": "Geschützte Datei",
     "file_count": "{{count}} Dateien",

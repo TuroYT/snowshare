@@ -852,7 +852,8 @@
       "too_many_recipients": "Trop de destinataires (maximum {{max}}).",
       "link_url_required_for_password_change": "Saisissez à nouveau l'URL de destination pour modifier ou retirer le mot de passe d'un lien protégé.",
       "link_password_required_for_url_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier la destination d'un lien protégé.",
-      "too_many_files": "Trop de fichiers dans un seul envoi."
+      "too_many_files": "Trop de fichiers dans un seul envoi.",
+      "s3_bucket_required": "Le nom du bucket est requis"
     },
     "file_protected": "Fichier protégé",
     "file_count": "{{count}} fichiers",

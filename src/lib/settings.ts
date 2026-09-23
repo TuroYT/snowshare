@@ -29,14 +29,14 @@ export async function getSettingsCached(): Promise<Settings | null> {
   if (cached && cached.expiresAt > now) return cached.value;
   if (cached?.pending) return cached.pending;
 
-  const pending = prisma.settings
-    .findFirst()
+  const pending = Promise.resolve(prisma.settings.findFirst())
     .then((value) => {
+      const settings = value ?? null;
       globalForSettings.__snowshareSettingsCache = {
-        value,
+        value: settings,
         expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS,
       };
-      return value;
+      return settings;
     })
     .catch((error) => {
       globalForSettings.__snowshareSettingsCache = undefined;
@@ -56,9 +56,21 @@ export function invalidateSettingsCache(): void {
   globalForSettings.__snowshareSettingsCache = undefined;
 }
 
+/**
+ * Returns the (cached) Settings row, creating it on first run.
+ * Every column has a database default, so the row is created empty.
+ */
+export async function getOrCreateSettings(): Promise<Settings> {
+  const existing = await getSettingsCached();
+  if (existing) return existing;
+  const created = await prisma.settings.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
+  invalidateSettingsCache();
+  return created;
+}
+
 const DEFAULTS = {
   appName: "SnowShare",
-  appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
+  appDescription: "Share your files, pastes, and URLs securely",
   primaryColor: "#3B82F6",
   primaryHover: "#2563EB",
   primaryDark: "#1E40AF",
@@ -129,20 +141,7 @@ export async function getPublicSettings() {
   }
 
   try {
-    let s = await prisma.settings.findFirst();
-    if (!s) {
-      s = await prisma.settings.create({
-        data: {
-          allowSignin: true,
-          allowAnonFileShare: true,
-          anoMaxUpload: 2048,
-          authMaxUpload: 51200,
-          anoIpQuota: 4096,
-          authIpQuota: 102400,
-          ...DEFAULTS,
-        },
-      });
-    }
+    const s = await getOrCreateSettings();
 
     return {
       settings: {
@@ -183,26 +182,25 @@ export async function getBrandingSettings() {
     return defaultBranding;
   }
   try {
-    const s = await prisma.settings.findFirst({
-      select: {
-        appName: true,
-        appDescription: true,
-        logoUrl: true,
-        faviconUrl: true,
-        primaryColor: true,
-        primaryHover: true,
-        primaryDark: true,
-        secondaryColor: true,
-        secondaryHover: true,
-        secondaryDark: true,
-        backgroundColor: true,
-        surfaceColor: true,
-        textColor: true,
-        textMuted: true,
-        borderColor: true,
-        fontFamily: true,
-      },
-    });
+    const settings = await getSettingsCached();
+    const s = settings && {
+      appName: settings.appName,
+      appDescription: settings.appDescription,
+      logoUrl: settings.logoUrl,
+      faviconUrl: settings.faviconUrl,
+      primaryColor: settings.primaryColor,
+      primaryHover: settings.primaryHover,
+      primaryDark: settings.primaryDark,
+      secondaryColor: settings.secondaryColor,
+      secondaryHover: settings.secondaryHover,
+      secondaryDark: settings.secondaryDark,
+      backgroundColor: settings.backgroundColor,
+      surfaceColor: settings.surfaceColor,
+      textColor: settings.textColor,
+      textMuted: settings.textMuted,
+      borderColor: settings.borderColor,
+      fontFamily: settings.fontFamily,
+    };
 
     return {
       branding: s ?? {

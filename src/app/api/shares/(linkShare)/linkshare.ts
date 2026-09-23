@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth/next";
+import { getSettingsCached } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { encrypt } from "@/lib/crypto-link";
@@ -59,7 +60,7 @@ export const createLinkShare = async (
 
   if (!session) {
     // Check if anonymous link sharing is allowed
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonLinkShare) {
       return { errorCode: ErrorCode.ANON_LINK_SHARE_DISABLED };
     }

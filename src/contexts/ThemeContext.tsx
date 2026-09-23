@@ -2,6 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
+/** Escapes a value for use inside a double-quoted CSS string (e.g. url("...")). */
+function escapeCssString(value: string): string {
+  return value.replace(/["\\\n\r]/g, (char) => `\\${char.charCodeAt(0).toString(16)} `);
+}
+
 export interface ThemeColors {
   primaryColor: string;
   primaryHover: string;
@@ -291,7 +296,7 @@ function applyThemeToDOM(colors: ThemeColors, _isDark = false) {
     const img = new Image();
     const url = colors.backgroundImageUrl;
     img.onload = () => {
-      document.body.style.backgroundImage = `url('${url}')`;
+      document.body.style.backgroundImage = `url("${escapeCssString(url)}")`;
       document.body.style.backgroundSize = "cover";
       document.body.style.backgroundPosition = "center";
       document.body.style.backgroundAttachment = "fixed";

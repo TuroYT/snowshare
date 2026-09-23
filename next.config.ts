@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Extra origins allowed to reach the dev server (comma-separated), e.g. a remote IDE proxy
+  allowedDevOrigins: (process.env.ALLOWED_DEV_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   // Enable output as standalone to reduce runtime dependencies in Docker
-  allowedDevOrigins: ["3000.code.romain-pinsolle.fr"],
   output: "standalone",
   compress: true,
   serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "pg"],

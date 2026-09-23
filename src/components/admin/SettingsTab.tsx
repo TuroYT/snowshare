@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import MDEditor from "@uiw/react-md-editor";
+import rehypeSanitize from "rehype-sanitize";
 import { toast } from "@/components/ui/Toast";
 import WarningModal from "./WarningModal";
 import GeneralSection from "./GeneralSection";
@@ -203,6 +204,8 @@ export default function SettingsTab() {
               value={settings?.termsOfUses || ""}
               onChange={handleMarkdownChange}
               height={300}
+              // The preview renders raw HTML: sanitize it like any stored user content
+              previewOptions={{ rehypePlugins: [[rehypeSanitize]] }}
             />
           </div>
 

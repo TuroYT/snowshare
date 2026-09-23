@@ -848,7 +848,8 @@
       "too_many_recipients": "Demasiados destinatarios (máximo {{max}}).",
       "link_url_required_for_password_change": "Vuelve a introducir la URL de destino para cambiar o quitar la contraseña de un enlace protegido.",
       "link_password_required_for_url_change": "Introduce una contraseña (actual o nueva) para cambiar el destino de un enlace protegido.",
-      "too_many_files": "Demasiados archivos en una sola subida."
+      "too_many_files": "Demasiados archivos en una sola subida.",
+      "s3_bucket_required": "El nombre del bucket es obligatorio"
     },
     "file_protected": "Archivo protegido",
     "file_count": "{{count}} archivos",

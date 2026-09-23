@@ -1,4 +1,5 @@
 import { NextAuthOptions } from "next-auth";
+import { getSettingsCached } from "@/lib/settings";
 import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -66,9 +67,7 @@ export async function getDynamicProviders() {
   });
 
   // Check if credentials login is disabled
-  const settings = await prisma.settings.findFirst({
-    select: { disableCredentialsLogin: true },
-  });
+  const settings = await getSettingsCached();
 
   const providers: Provider[] = [];
 
@@ -121,9 +120,7 @@ export async function getDynamicProviders() {
           resetRateLimit("login", limitKey);
 
           // Check email verification if required
-          const verificationSettings = await prisma.settings.findFirst({
-            select: { emailVerificationRequired: true, smtpEnabled: true },
-          });
+          const verificationSettings = await getSettingsCached();
           if (
             verificationSettings?.emailVerificationRequired &&
             verificationSettings.smtpEnabled &&
@@ -161,9 +158,7 @@ export async function getDynamicProviders() {
 export async function getAuthOptions(): Promise<NextAuthOptions> {
   const providers = await getDynamicProviders();
 
-  const settings = await prisma.settings.findFirst({
-    select: { allowIframeEmbedding: true },
-  });
+  const settings = await getSettingsCached();
   const allowIframeEmbedding = settings?.allowIframeEmbedding ?? false;
 
   // When embedded in a cross-origin iframe, cookies must be SameSite=None; Secure
@@ -201,7 +196,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           return "/auth/signin?error=OAuthNoEmail";
         }
 
-        const settings = await prisma.settings.findFirst();
+        const settings = await getSettingsCached();
 
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },

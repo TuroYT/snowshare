@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth/next";
+import { getSettingsCached } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
@@ -72,7 +73,7 @@ export const createPasteShare = async (
 
   if (!session) {
     // Check if anonymous paste sharing is allowed
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonPasteShare) {
       return { errorCode: ErrorCode.ANON_PASTE_SHARE_DISABLED };
     }
