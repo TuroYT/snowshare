@@ -25,7 +25,8 @@ export async function verifyCaptcha(
     }
 
     return false;
-  } catch {
+  } catch (error) {
+    console.error("verifyCaptcha: request to CAPTCHA provider failed:", error);
     return false;
   }
 }

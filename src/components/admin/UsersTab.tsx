@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import CreateUserDialog from "./CreateUserDialog";
+import WarningModal from "./WarningModal";
 
 interface User {
   id: string;
@@ -25,6 +26,10 @@ export default function UsersTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{
+    userId: string;
+    action: "promote" | "demote" | "delete";
+  } | null>(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -46,19 +51,20 @@ export default function UsersTab() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleAction = async (userId: string, action: "promote" | "demote" | "delete") => {
-    let confirmKey = "admin.users.confirm_delete";
-    if (action === "promote") {
-      confirmKey = "admin.users.confirm_make_admin";
-    } else if (action === "demote") {
-      confirmKey = "admin.users.confirm_remove_admin";
-    }
+  const requestAction = (userId: string, action: "promote" | "demote" | "delete") => {
+    setPendingAction({ userId, action });
+  };
 
-    if (
-      !window.confirm(t(confirmKey, { email: users.find((u) => u.id === userId)?.email || "user" }))
-    ) {
-      return;
-    }
+  const confirmKeyFor = (action: "promote" | "demote" | "delete") => {
+    if (action === "promote") return "admin.users.confirm_make_admin";
+    if (action === "demote") return "admin.users.confirm_remove_admin";
+    return "admin.users.confirm_delete";
+  };
+
+  const handleAction = async () => {
+    if (!pendingAction) return;
+    const { userId, action } = pendingAction;
+    setPendingAction(null);
 
     try {
       setActionLoading(userId);
@@ -75,7 +81,7 @@ export default function UsersTab() {
       setError(null);
     } catch (err) {
       setError(t("admin.error_load_data"));
-      console.error(err);
+      console.error("Failed to update user:", err);
     } finally {
       setActionLoading(null);
     }
@@ -125,6 +131,20 @@ export default function UsersTab() {
   return (
     <SkeletonTransition loading={loading} skeleton={skeleton}>
       <div className="space-y-6">
+        <WarningModal
+          open={pendingAction !== null}
+          title={t("admin.users.table_headers.actions")}
+          message={
+            pendingAction
+              ? t(confirmKeyFor(pendingAction.action), {
+                  email: users.find((u) => u.id === pendingAction.userId)?.email || "user",
+                })
+              : ""
+          }
+          onConfirm={handleAction}
+          onCancel={() => setPendingAction(null)}
+        />
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div
@@ -236,7 +256,7 @@ export default function UsersTab() {
                       <div className="flex gap-2">
                         {!user.isAdmin ? (
                           <button
-                            onClick={() => handleAction(user.id, "promote")}
+                            onClick={() => requestAction(user.id, "promote")}
                             disabled={actionLoading === user.id}
                             className="px-2 py-1 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-700/50 rounded text-xs text-yellow-400 transition-colors disabled:opacity-50"
                           >
@@ -244,7 +264,7 @@ export default function UsersTab() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleAction(user.id, "demote")}
+                            onClick={() => requestAction(user.id, "demote")}
                             disabled={actionLoading === user.id}
                             className="px-2 py-1 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-700/50 rounded text-xs text-orange-400 transition-colors disabled:opacity-50"
                           >
@@ -254,7 +274,7 @@ export default function UsersTab() {
                           </button>
                         )}
                         <button
-                          onClick={() => handleAction(user.id, "delete")}
+                          onClick={() => requestAction(user.id, "delete")}
                           disabled={actionLoading === user.id}
                           className="px-2 py-1 bg-red-600/20 hover:bg-red-600/30 border border-red-700/50 rounded text-xs text-red-400 transition-colors disabled:opacity-50"
                         >

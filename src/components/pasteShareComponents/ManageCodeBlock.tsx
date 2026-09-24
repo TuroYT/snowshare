@@ -2,18 +2,13 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { MAX_ANON_EXPIRY_DAYS } from "@/lib/share-constants";
-import { useAuth } from "@/hooks/useAuth";
-import { useShareSettings } from "@/hooks/useShareSettings";
-import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
+import { useShareForm } from "@/hooks/useShareForm";
 import ExpirationSettings from "../shareComponents/ExpirationSettings";
 import AdvancedSettings from "../shareComponents/AdvancedSettings";
 import ViewLimitSettings from "../shareComponents/ViewLimitSettings";
 import ShareSuccess from "../shareComponents/ShareSuccess";
 import ShareError from "../shareComponents/ShareError";
 import SubmitButton from "../shareComponents/SubmitButton";
-
-const MAX_DAYS_ANON = MAX_ANON_EXPIRY_DAYS;
 
 const LANGUAGES = [
   { value: "plaintext", label: "Plain" },
@@ -33,54 +28,43 @@ const LANGUAGES = [
 
 const ManageCodeBlock: React.FC<{
   code: string;
-  onCodeChange?: (v: string) => void;
   language: string;
   onLanguageChange: (lang: string) => void;
 }> = ({ code, language, onLanguageChange }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { defaultExpirationDays, loading: settingsLoading } = useShareSettings();
-  const formRef = React.useRef<HTMLFormElement>(null);
 
-  const [slug, setSlug] = React.useState("");
-  const [expiresDays, setExpiresDays] = useDefaultExpirationDays(
-    isAuthenticated,
-    authLoading,
-    defaultExpirationDays,
-    settingsLoading,
-    MAX_DAYS_ANON
-  );
-  const [neverExpires, setNeverExpires] = React.useState(false);
-  const [password, setPassword] = React.useState("");
-  const [hasViewLimit, setHasViewLimit] = React.useState(false);
-  const [maxViews, setMaxViews] = React.useState(1);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState<string | null>(null);
-  const [successSlug, setSuccessSlug] = React.useState<string>("");
-
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !loading && code.trim()) {
-        e.preventDefault();
-        if (formRef.current) formRef.current.requestSubmit();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [loading, code]);
+  const {
+    formRef,
+    slug,
+    setSlug,
+    expiresDays,
+    setExpiresDays,
+    neverExpires,
+    setNeverExpires,
+    password,
+    setPassword,
+    hasViewLimit,
+    setHasViewLimit,
+    maxViews,
+    setMaxViews,
+    loading,
+    setLoading,
+    error,
+    setError,
+    success,
+    setSuccess,
+    successSlug,
+    setSuccessSlug,
+    computeExpiresAt,
+    resetAfterSuccess,
+  } = useShareForm({ canSubmit: () => !!code.trim() });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
-    let expiresAt: Date | undefined = undefined;
-    if (!neverExpires) {
-      const now = new Date();
-      now.setDate(now.getDate() + expiresDays);
-      expiresAt = now;
-    }
+    const expiresAt = computeExpiresAt();
     try {
       const res = await fetch("/api/shares", {
         method: "POST",
@@ -105,8 +89,10 @@ const ManageCodeBlock: React.FC<{
           setSuccessSlug(pasteShare.slug);
         } else if (pasteShare?.id) setSuccess(`${window.location.origin}/p/${pasteShare.id}`);
         else setSuccess(t("pasteshare_ui.created", "Share created"));
+        resetAfterSuccess();
       }
-    } catch {
+    } catch (error) {
+      console.error("ManageCodeBlock error:", error);
       setError(t("pasteshare_ui.network_error", "Network error — could not create share"));
     } finally {
       setLoading(false);

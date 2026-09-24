@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 
 /**
  * GET /api/user/accounts
@@ -70,8 +71,9 @@ export async function DELETE(request: NextRequest) {
     // Verify if it's the only authentication method
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
-        accounts: true,
+      select: {
+        password: true,
+        _count: { select: { accounts: true } },
       },
     });
 
@@ -79,7 +81,7 @@ export async function DELETE(request: NextRequest) {
       return apiError(request, ErrorCode.USER_NOT_FOUND);
     }
 
-    if (!user.password && user.accounts.length <= 1) {
+    if (!user.password && user._count.accounts <= 1) {
       return apiError(request, ErrorCode.CANNOT_UNLINK_LAST_ACCOUNT);
     }
 
@@ -89,7 +91,9 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ message: "Account unlinked successfully" });
+    return NextResponse.json({
+      message: translate(detectLocale(request), "api.messages.account_unlinked"),
+    });
   } catch (error) {
     console.error("Error unlinking account:", error);
     return internalError(request);

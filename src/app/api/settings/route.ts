@@ -1,8 +1,9 @@
 import { getOrCreateSettings } from "@/lib/settings";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { apiError, ErrorCode } from "@/lib/api-errors";
 
 // Public endpoint to get public settings (no authentication required)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const settings = await getOrCreateSettings();
 
@@ -49,6 +50,6 @@ export async function GET() {
     );
   } catch (error) {
     console.error("Error fetching public settings:", error);
-    return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
+    return apiError(request, ErrorCode.INTERNAL_SERVER_ERROR);
   }
 }

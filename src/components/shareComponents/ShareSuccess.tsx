@@ -1,10 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { QRCodeSVG } from "qrcode.react";
+import dynamic from "next/dynamic";
 import { useFetch } from "@/hooks/useFetch";
 import { useSession } from "next-auth/react";
+
+// qrcode.react is only needed once a share was successfully created, so load
+// it on demand instead of bundling it with the share forms.
+const QRCodeSVG = dynamic(() => import("qrcode.react").then((m) => m.QRCodeSVG), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="bg-[var(--surface)] rounded animate-pulse"
+      style={{ width: "100%", height: "100%" }}
+    />
+  ),
+});
 
 interface ShareSuccessProps {
   url: string;
@@ -43,11 +55,20 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
   const emailEnabled = !!settingsData?.settings?.emailEnabled;
   const isAuthenticated = !!session?.user?.id;
 
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    };
+  }, []);
+
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Error copying to clipboard:", err);
     }
@@ -121,7 +142,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          {t(`${translationPrefix}.success_title`, "Partage créé avec succès !")}
+          {t(`${translationPrefix}.success_title`, "Share created successfully!")}
         </h4>
         <div className="bg-[var(--surface-hover)] border border-[var(--border)] rounded-[var(--radius)] p-3 flex flex-col sm:flex-row sm:items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -135,7 +156,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
             </a>
             {copied && (
               <p className="text-xs text-[var(--success)] mt-2">
-                {t(`${translationPrefix}.copied`, "✓ Copié dans le presse-papiers")}
+                {t(`${translationPrefix}.copied`, "✓ Copied to clipboard")}
               </p>
             )}
           </div>
@@ -144,7 +165,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
               type="button"
               onClick={() => copyToClipboard(url)}
               className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)] rounded-[var(--radius)] transition-colors"
-              title={t(`${translationPrefix}.copy_title`, "Copier le lien")}
+              title={t(`${translationPrefix}.copy_title`, "Copy link")}
             >
               {copied ? (
                 <svg
@@ -256,7 +277,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
         <div className="mt-4 flex justify-center">
           <div className="flex flex-col items-center bg-[var(--surface-hover)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
             <p className="text-sm text-[var(--foreground-muted)] mb-2 text-center">
-              {t(`${translationPrefix}.qr_info`, "Scanner ce QR code pour accéder au partage")}
+              {t(`${translationPrefix}.qr_info`, "Scan this QR code to access the share")}
             </p>
             <div className="bg-white rounded p-2" style={{ width: qrSize, height: qrSize }}>
               <QRCodeSVG value={url} size={qrSize - 16} className="block" />

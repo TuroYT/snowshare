@@ -4,7 +4,8 @@
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
-    "confirm": "Bestätigen"
+    "confirm": "Bestätigen",
+    "remove": "Entfernen"
   },
   "nav": {
     "hello": "Hallo, {{email}}",
@@ -16,7 +17,10 @@
     "profile_desc": "Meine Infos verwalten",
     "signout_desc": "Abmelden",
     "admin": "Admin",
-    "admin_desc": "Admin-Bereich"
+    "admin_desc": "Admin-Bereich",
+    "theme_dark": "Dunkler Modus",
+    "theme_light": "Heller Modus",
+    "theme_system": "Automatisch"
   },
   "loading": "Lädt...",
   "pasteshare": {
@@ -123,7 +127,10 @@
     "view_limit": "Ansichts-/Downloadlimit",
     "view_limit_desc": "Die Freigabe läuft nach einer festgelegten Anzahl von Ansichten oder Downloads ab",
     "views": "Ansichten",
-    "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en)/Download(s) ab"
+    "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en)/Download(s) ab",
+    "total_size_too_large": "Die Gesamtgröße überschreitet das Limit (max. {{max}} {{unit}})",
+    "file": "Datei",
+    "or_click": "oder zum Auswählen klicken"
   },
   "file_download": {
     "loading_error": "Fehler beim Laden der Informationen",
@@ -389,7 +396,8 @@
     "error_create": "Fehler beim Erstellen des API-Schlüssels",
     "docs_title": "API-Dokumentation",
     "docs_description": "Durchsuche die interaktive API-Dokumentation.",
-    "docs_link": "Docs öffnen"
+    "docs_link": "Docs öffnen",
+    "error_revoke": "Der API-Schlüssel konnte nicht widerrufen werden."
   },
   "setup": {
     "title": "Ersteinrichtung",
@@ -690,7 +698,8 @@
       "font_family": "Schriftart",
       "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird",
       "accent_colors_label": "Akzentfarben",
-      "accent_colors_hint": "Für Schaltflächen, Links und Fokuszustände. Ein Preset überschreibt diese Werte."
+      "accent_colors_hint": "Für Schaltflächen, Links und Fokuszustände. Ein Preset überschreibt diese Werte.",
+      "background_image_error": "Bild konnte nicht geladen werden. Stellen Sie sicher, dass die URL auf ein gültiges Bild verweist."
     },
     "email_templates": {
       "title": "E-Mail-Vorlagen",
@@ -849,14 +858,20 @@
       "link_url_required_for_password_change": "Gib die Ziel-URL erneut ein, um das Passwort eines geschützten Links zu ändern oder zu entfernen.",
       "link_password_required_for_url_change": "Gib ein Passwort (aktuell oder neu) ein, um das Ziel eines geschützten Links zu ändern.",
       "too_many_files": "Zu viele Dateien in einem einzigen Upload.",
-      "s3_bucket_required": "Der Bucket-Name ist erforderlich"
+      "s3_bucket_required": "Der Bucket-Name ist erforderlich",
+      "email_required": "E-Mail-Adresse ist erforderlich"
     },
     "file_protected": "Geschützte Datei",
     "file_count": "{{count}} Dateien",
     "messages": {
       "account_created_verify_email": "Konto erstellt. Bitte prüfe deine E-Mails, um dein Konto zu bestätigen.",
       "user_created": "Benutzer erfolgreich erstellt",
-      "email_sent": "E-Mail erfolgreich gesendet"
+      "email_sent": "E-Mail erfolgreich gesendet",
+      "link_deleted": "Link erfolgreich gelöscht",
+      "account_unlinked": "Konto erfolgreich getrennt",
+      "account_linked": "Konto erfolgreich verknüpft",
+      "test_email_sent": "Test-E-Mail erfolgreich gesendet",
+      "no_releases_found": "Keine Versionen gefunden"
     }
   },
   "share_email": {
@@ -868,5 +883,10 @@
     "success": "E-Mail erfolgreich gesendet!",
     "error_invalid": "Bitte geben Sie mindestens eine gültige E-Mail-Adresse ein.",
     "error_send": "Senden fehlgeschlagen. Bitte versuchen Sie es erneut."
+  },
+  "terms_of_use": {
+    "loading": "Nutzungsbedingungen werden geladen...",
+    "error_load": "Nutzungsbedingungen konnten nicht geladen werden.",
+    "error_generic": "Beim Laden der Nutzungsbedingungen ist ein Fehler aufgetreten."
   }
 }

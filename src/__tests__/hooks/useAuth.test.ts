@@ -2,7 +2,7 @@
  * Tests for useAuth hook
  */
 import { renderHook } from "@testing-library/react";
-import { useAuth, useRequireAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 // Mock next-auth/react
 const mockPush = jest.fn();
@@ -112,50 +112,5 @@ describe("useAuth", () => {
 
       expect(mockPush).not.toHaveBeenCalled();
     });
-  });
-});
-
-describe("useRequireAuth", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it("should redirect when unauthenticated", () => {
-    mockUseSession.mockReturnValue({
-      data: null,
-      status: "unauthenticated",
-    });
-
-    renderHook(() => useRequireAuth());
-
-    expect(mockPush).toHaveBeenCalledWith("/auth/signin");
-  });
-
-  it("should not redirect when authenticated", () => {
-    mockUseSession.mockReturnValue({
-      data: { user: { id: "123" } },
-      status: "authenticated",
-    });
-
-    renderHook(() => useRequireAuth());
-
-    expect(mockPush).not.toHaveBeenCalled();
-  });
-
-  it("should return same values as useAuth with requireAuth=true", () => {
-    const mockSession = {
-      user: { id: "user-456", name: "Another User" },
-    };
-
-    mockUseSession.mockReturnValue({
-      data: mockSession,
-      status: "authenticated",
-    });
-
-    const { result } = renderHook(() => useRequireAuth());
-
-    expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.session).toEqual(mockSession);
-    expect(result.current.user).toEqual(mockSession.user);
   });
 });

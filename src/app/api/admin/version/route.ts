@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 import fs from "fs";
 import path from "path";
 
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
           currentVersion: CURRENT_VERSION,
           latestVersion: null,
           updateAvailable: false,
-          message: "No releases found",
+          message: translate(detectLocale(request), "api.messages.no_releases_found"),
         });
       }
       throw new Error(`GitHub API error: ${response.status}`);

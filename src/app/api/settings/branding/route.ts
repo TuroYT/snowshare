@@ -38,7 +38,7 @@ export async function GET() {
       {
         branding: {
           appName: "SnowShare",
-          appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
+          appDescription: "Share your files, pastes, and URLs securely",
           logoUrl: null,
           faviconUrl: null,
           primaryColor: "#3B82F6",

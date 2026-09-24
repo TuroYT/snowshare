@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
@@ -46,6 +46,31 @@ export default function ConnectedAccounts() {
 
   const displayError = error ?? accountsError;
 
+  const validateLinkToken = useCallback(
+    async (token: string) => {
+      try {
+        const res = await fetch("/api/user/accounts/validate-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+
+        if (res.ok) {
+          setSuccess(t("profile.accounts.unlink_success"));
+          refetchAccounts();
+        } else {
+          const data = await res.json();
+          setError(data.error || t("profile.accounts.error_link"));
+        }
+      } catch (_err) {
+        setError(t("profile.accounts.error_link"));
+      } finally {
+        window.history.replaceState({}, "", window.location.pathname + "?tab=accounts");
+      }
+    },
+    [refetchAccounts, t]
+  );
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const linkToken = params.get("linkToken");
@@ -57,30 +82,7 @@ export default function ConnectedAccounts() {
     } else if (linkToken) {
       validateLinkToken(linkToken);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const validateLinkToken = async (token: string) => {
-    try {
-      const res = await fetch("/api/user/accounts/validate-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
-
-      if (res.ok) {
-        setSuccess(t("profile.accounts.unlink_success"));
-        refetchAccounts();
-      } else {
-        const data = await res.json();
-        setError(data.error || t("profile.accounts.error_link"));
-      }
-    } catch (_err) {
-      setError(t("profile.accounts.error_link"));
-    } finally {
-      window.history.replaceState({}, "", window.location.pathname + "?tab=accounts");
-    }
-  };
+  }, [t, validateLinkToken]);
 
   const handleLinkAccount = async (provider: string) => {
     try {

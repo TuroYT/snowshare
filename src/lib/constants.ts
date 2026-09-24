@@ -61,22 +61,22 @@ export function isValidEmail(email: string): boolean {
  */
 export function isValidUrl(url: string): { valid: boolean; error?: string } {
   if (!url || typeof url !== "string") {
-    return { valid: false, error: "URL invalide" };
+    return { valid: false, error: "Invalid URL" };
   }
 
   if (url.length > MAX_URL_LENGTH) {
-    return { valid: false, error: "URL trop longue" };
+    return { valid: false, error: "URL too long" };
   }
 
   try {
     const parsed = new URL(url);
     // Only allow http and https protocols
     if (!["http:", "https:"].includes(parsed.protocol)) {
-      return { valid: false, error: "Seuls les protocoles HTTP et HTTPS sont autorisés" };
+      return { valid: false, error: "Only HTTP and HTTPS protocols are allowed" };
     }
     return { valid: true };
   } catch {
-    return { valid: false, error: "Format URL invalide" };
+    return { valid: false, error: "Invalid URL format" };
   }
 }
 

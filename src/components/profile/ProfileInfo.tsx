@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
+import { toast } from "@/components/ui/Toast";
 
 type User = {
   id: string;
@@ -89,7 +90,8 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
       } else {
         setError(data.error || t("profile.error_update"));
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to update profile:", err);
       setError(t("profile.error_update"));
     } finally {
       setSaving(false);
@@ -334,8 +336,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
                 "snowshare-export.json";
               a.click();
               URL.revokeObjectURL(url);
-            } catch {
-              alert(t("profile.export_error"));
+            } catch (err) {
+              console.error("Failed to export profile data:", err);
+              toast.error(t("profile.export_error"));
             } finally {
               setExporting(false);
             }

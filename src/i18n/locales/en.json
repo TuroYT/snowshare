@@ -4,7 +4,8 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "remove": "Remove"
   },
   "nav": {
     "hello": "Hello, {{email}}",
@@ -16,7 +17,10 @@
     "profile_desc": "Manage my info",
     "signout_desc": "Sign out",
     "admin": "Admin",
-    "admin_desc": "Administration panel"
+    "admin_desc": "Administration panel",
+    "theme_dark": "Dark mode",
+    "theme_light": "Light mode",
+    "theme_system": "System"
   },
   "loading": "Loading...",
   "pasteshare": {
@@ -127,7 +131,10 @@
     "view_limit": "View/download limit",
     "view_limit_desc": "The share will expire after a set number of views or downloads",
     "views": "views",
-    "view_limit_info": "This share will expire after {{count}} view(s)/download(s)"
+    "view_limit_info": "This share will expire after {{count}} view(s)/download(s)",
+    "total_size_too_large": "Total size exceeds limit (max {{max}} {{unit}})",
+    "file": "File",
+    "or_click": "or click to select"
   },
   "file_download": {
     "loading_error": "Error loading information",
@@ -393,7 +400,8 @@
     "error_create": "Error creating API key",
     "docs_title": "API Documentation",
     "docs_description": "Browse the interactive API docs to explore all endpoints.",
-    "docs_link": "Open docs"
+    "docs_link": "Open docs",
+    "error_revoke": "Failed to revoke the API key."
   },
   "setup": {
     "title": "Initial Setup",
@@ -694,7 +702,8 @@
       "font_family": "Font Family",
       "font_family_hint": "The font used globally across the entire application",
       "accent_colors_label": "Accent colors",
-      "accent_colors_hint": "Used for buttons, links, and focus states. Selecting a preset above overrides these."
+      "accent_colors_hint": "Used for buttons, links, and focus states. Selecting a preset above overrides these.",
+      "background_image_error": "Unable to load image. Check that the URL points to a valid image."
     },
     "email_templates": {
       "title": "Email Templates",
@@ -853,14 +862,20 @@
       "link_url_required_for_password_change": "Re-enter the destination URL to change or remove the password of a protected link.",
       "link_password_required_for_url_change": "Enter a password (current or new) to change the destination of a protected link.",
       "too_many_files": "Too many files in a single upload.",
-      "s3_bucket_required": "Bucket name is required"
+      "s3_bucket_required": "Bucket name is required",
+      "email_required": "Email is required"
     },
     "file_protected": "Protected file",
     "file_count": "{{count}} files",
     "messages": {
       "account_created_verify_email": "Account created. Please check your email to verify your account.",
       "user_created": "User created successfully",
-      "email_sent": "Email sent successfully"
+      "email_sent": "Email sent successfully",
+      "link_deleted": "Link deleted successfully",
+      "account_unlinked": "Account unlinked successfully",
+      "account_linked": "Account linked successfully",
+      "test_email_sent": "Test email sent successfully",
+      "no_releases_found": "No releases found"
     }
   },
   "share_email": {
@@ -872,5 +887,10 @@
     "success": "Email sent successfully!",
     "error_invalid": "Please enter at least one valid email address.",
     "error_send": "Failed to send email. Please try again."
+  },
+  "terms_of_use": {
+    "loading": "Loading terms of use...",
+    "error_load": "Failed to load terms of use.",
+    "error_generic": "An error occurred while loading the terms of use."
   }
 }

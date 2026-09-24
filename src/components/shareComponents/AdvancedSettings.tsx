@@ -50,13 +50,13 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
             d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
           />
         </svg>
-        {t(`${translationPrefix}.advanced`, "Paramètres avancés (optionnel)")}
+        {t(`${translationPrefix}.advanced`, "Advanced settings (optional)")}
       </h3>
 
       <div className="space-y-3">
         <div>
           <label htmlFor="slug" className="block text-sm font-medium text-[var(--foreground)] mb-2">
-            {t(`${translationPrefix}.custom_slug`, "Lien personnalisé")}
+            {t(`${translationPrefix}.custom_slug`, "Custom link")}
           </label>
           <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2">
             <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">
@@ -65,7 +65,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
             <input
               id="slug"
               type="text"
-              placeholder={t(`${translationPrefix}.placeholder_slug`, "mon-lien-custom")}
+              placeholder={t(`${translationPrefix}.placeholder_slug`, "my-custom-link")}
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
               pattern="[a-zA-Z0-9-_]+"
@@ -73,10 +73,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
             />
           </div>
           <p className="text-xs text-[var(--foreground-muted)] mt-1">
-            {t(
-              `${translationPrefix}.slug_hint`,
-              "Lettres, chiffres, tirets et underscores uniquement"
-            )}
+            {t(`${translationPrefix}.slug_hint`, "Letters, numbers, dashes and underscores only")}
           </p>
         </div>
 
@@ -85,10 +82,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
             htmlFor="password"
             className="block text-sm font-medium text-[var(--foreground)] mb-2"
           >
-            {t(
-              passwordLabelKey || `${translationPrefix}.password_protect`,
-              "Protection par mot de passe"
-            )}
+            {t(passwordLabelKey || `${translationPrefix}.password_protect`, "Password protection")}
           </label>
           <div className="relative">
             <input
@@ -96,7 +90,7 @@ const AdvancedSettings: React.FC<AdvancedSettingsProps> = ({
               type="password"
               placeholder={t(
                 `${translationPrefix}.password_placeholder`,
-                "Optionnel - laissez vide pour un accès libre"
+                "Optional - leave empty for open access"
               )}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

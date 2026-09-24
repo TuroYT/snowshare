@@ -84,7 +84,7 @@ export async function createLinkShare(params: CreateLinkShareParams) {
 
   // Check slug uniqueness
   if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug } });
+    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
     if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
   }
 
@@ -135,7 +135,7 @@ export async function createLinkShare(params: CreateLinkShareParams) {
   // Generate slug if not provided
   if (!slug) {
     slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
     );
   }
 
@@ -198,7 +198,7 @@ export async function createPasteShare(params: CreatePasteShareParams) {
     return { errorCode: ErrorCode.SLUG_INVALID };
   }
   if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug } });
+    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
     if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
   }
 
@@ -247,7 +247,7 @@ export async function createPasteShare(params: CreatePasteShareParams) {
   // Generate slug
   if (!slug) {
     slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
     );
   }
 
@@ -296,7 +296,7 @@ export async function createFileShare(params: CreateFileShareParams) {
     return { errorCode: ErrorCode.SLUG_INVALID };
   }
   if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug } });
+    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
     if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
   }
 
@@ -347,7 +347,7 @@ export async function createFileShare(params: CreateFileShareParams) {
   // Generate slug
   if (!slug) {
     slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
     );
   }
 

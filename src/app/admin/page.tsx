@@ -4,17 +4,40 @@ import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import dynamic from "next/dynamic";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import UsersTab from "@/components/admin/UsersTab";
-import SettingsTab from "@/components/admin/SettingsTab";
-import LogsTab from "@/components/admin/LogsTab";
-import BrandingTab from "@/components/admin/BrandingTab";
-import OAuthProvidersTab from "@/components/admin/OAuthProvidersTab";
-import EmailTemplatesTab from "@/components/admin/EmailTemplatesTab";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import UpdateNotification, { VersionInfo } from "@/components/admin/UpdateNotification";
 
 type Tab = "users" | "settings" | "branding" | "logs" | "oauth" | "email";
+
+const TabLoadingFallback = () => (
+  <div className="space-y-4 w-full">
+    <WaveSkeleton variant="text" width={200} height={28} />
+    <WaveSkeleton variant="rounded" height={120} />
+    <WaveSkeleton variant="rounded" height={120} />
+  </div>
+);
+
+const UsersTab = dynamic(() => import("@/components/admin/UsersTab"), {
+  loading: TabLoadingFallback,
+});
+const SettingsTab = dynamic(() => import("@/components/admin/SettingsTab"), {
+  loading: TabLoadingFallback,
+});
+const LogsTab = dynamic(() => import("@/components/admin/LogsTab"), {
+  loading: TabLoadingFallback,
+});
+const BrandingTab = dynamic(() => import("@/components/admin/BrandingTab"), {
+  loading: TabLoadingFallback,
+});
+const OAuthProvidersTab = dynamic(() => import("@/components/admin/OAuthProvidersTab"), {
+  loading: TabLoadingFallback,
+});
+const EmailTemplatesTab = dynamic(() => import("@/components/admin/EmailTemplatesTab"), {
+  loading: TabLoadingFallback,
+});
 
 export default function AdminPage() {
   const { status } = useSession();

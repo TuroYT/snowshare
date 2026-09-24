@@ -2,10 +2,11 @@
  * File uploads are handled by /pages/api/upload.ts for true streaming */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createLinkShare } from "./(linkShare)/linkshare";
-import { createPasteShare } from "./(pasteShare)/pasteshareshare";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { createLinkShare, createPasteShare, toPublicShare } from "@/lib/shares";
+import { getClientIp } from "@/lib/getClientIp";
 import { apiError, ErrorCode } from "@/lib/api-errors";
-import { toPublicShare } from "@/lib/shares";
 
 async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
@@ -22,15 +23,29 @@ async function POST(req: NextRequest) {
       return apiError(req, ErrorCode.SHARE_TYPE_REQUIRED);
     }
 
+    const session = await getServerSession(authOptions);
+    const context = {
+      userId: session?.user?.id ?? null,
+      isAuthenticated: !!session,
+      ip: getClientIp(req),
+    };
+
     switch (data.type) {
       case "URL": {
         const { urlOriginal, expiresAt, slug, password, maxViews } = data;
-        const result = await createLinkShare(urlOriginal, req, expiresAt, slug, password, maxViews);
+        const result = await createLinkShare({
+          urlOriginal,
+          context,
+          expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+          slug,
+          password,
+          maxViews,
+        });
         if (result?.errorCode) {
           return apiError(req, result.errorCode, result.params);
         }
         return NextResponse.json(
-          { share: { linkShare: toPublicShare(result.linkShare) } },
+          { share: { linkShare: toPublicShare(result.share!) } },
           { status: 201 }
         );
       }
@@ -38,20 +53,20 @@ async function POST(req: NextRequest) {
         const { paste, pastelanguage, expiresAt, slug, password, maxViews } = data;
         // Convert expiresAt string to Date if provided
         const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
-        const result = await createPasteShare(
+        const result = await createPasteShare({
           paste,
           pastelanguage,
-          req,
-          expiresAtDate,
+          context,
+          expiresAt: expiresAtDate,
           slug,
           password,
-          maxViews
-        );
+          maxViews,
+        });
         if (result?.errorCode) {
           return apiError(req, result.errorCode, result.params);
         }
         return NextResponse.json(
-          { share: { pasteShare: toPublicShare(result.pasteShare) } },
+          { share: { pasteShare: toPublicShare(result.share!) } },
           { status: 201 }
         );
       }

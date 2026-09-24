@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import dynamic from "next/dynamic";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
-import MDEditor from "@uiw/react-md-editor";
 import rehypeSanitize from "rehype-sanitize";
 import { toast } from "@/components/ui/Toast";
+
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
+  ssr: false,
+  loading: () => <WaveSkeleton variant="rounded" height={300} />,
+});
 import WarningModal from "./WarningModal";
 import GeneralSection from "./GeneralSection";
 import CaptchaSection from "./CaptchaSection";

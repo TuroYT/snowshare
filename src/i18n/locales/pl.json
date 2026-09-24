@@ -4,7 +4,8 @@
     "cancel": "Anuluj",
     "edit": "Edytuj",
     "delete": "Usuń",
-    "confirm": "Potwierdź"
+    "confirm": "Potwierdź",
+    "remove": "Usuń"
   },
   "nav": {
     "hello": "Witaj, {{email}}",
@@ -20,7 +21,10 @@
     "save_error": "Błąd podczas zapisywania",
     "validation_required": "Brak wymaganych pól",
     "validation_invalid_color": "Nieprawidłowy kolor (oczekiwany format: #RRGGBB)",
-    "validation_invalid_url": "Nieprawidłowy adres URL"
+    "validation_invalid_url": "Nieprawidłowy adres URL",
+    "theme_dark": "Tryb ciemny",
+    "theme_light": "Tryb jasny",
+    "theme_system": "Automatyczny"
   },
   "loading": "Ładowanie...",
   "pasteshare": {
@@ -131,7 +135,10 @@
     "view_limit": "Limit wyświetleń/pobrań",
     "view_limit_desc": "Udostępnienie wygasa po określonej liczbie wyświetleń lub pobrań",
     "views": "wyświetlenia",
-    "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach lub pobraniu/ach"
+    "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach lub pobraniu/ach",
+    "total_size_too_large": "Łączny rozmiar przekracza limit (maks. {{max}} {{unit}})",
+    "file": "Plik",
+    "or_click": "lub kliknij, aby wybrać"
   },
   "file_download": {
     "loading_error": "Błąd ładowania informacji",
@@ -397,7 +404,8 @@
     "error_create": "Błąd podczas tworzenia klucza API",
     "docs_title": "Dokumentacja API",
     "docs_description": "Przeglądaj interaktywną dokumentację API.",
-    "docs_link": "Otwórz dokumentację"
+    "docs_link": "Otwórz dokumentację",
+    "error_revoke": "Nie udało się unieważnić klucza API."
   },
   "setup": {
     "title": "Konfiguracja początkowa",
@@ -694,7 +702,8 @@
       "font_family": "Czcionka",
       "font_family_hint": "Czcionka używana globalnie w całej aplikacji",
       "accent_colors_label": "Kolory akcentu",
-      "accent_colors_hint": "Używane dla przycisków, linków i stanów fokusa. Wybór presetu nadpisuje te wartości."
+      "accent_colors_hint": "Używane dla przycisków, linków i stanów fokusa. Wybór presetu nadpisuje te wartości.",
+      "background_image_error": "Nie można załadować obrazu. Sprawdź, czy adres URL wskazuje na prawidłowy obraz."
     },
     "email_templates": {
       "title": "Szablony e-mail",
@@ -853,14 +862,20 @@
       "link_url_required_for_password_change": "Wpisz ponownie docelowy adres URL, aby zmienić lub usunąć hasło chronionego linku.",
       "link_password_required_for_url_change": "Podaj hasło (obecne lub nowe), aby zmienić cel chronionego linku.",
       "too_many_files": "Zbyt wiele plików w jednym przesłaniu.",
-      "s3_bucket_required": "Nazwa bucketu jest wymagana"
+      "s3_bucket_required": "Nazwa bucketu jest wymagana",
+      "email_required": "Adres e-mail jest wymagany"
     },
     "file_protected": "Chroniony plik",
     "file_count": "Pliki: {{count}}",
     "messages": {
       "account_created_verify_email": "Konto utworzone. Sprawdź e-mail, aby zweryfikować konto.",
       "user_created": "Użytkownik został utworzony",
-      "email_sent": "E-mail został wysłany"
+      "email_sent": "E-mail został wysłany",
+      "link_deleted": "Link został usunięty",
+      "account_unlinked": "Konto zostało odłączone",
+      "account_linked": "Konto zostało połączone",
+      "test_email_sent": "Testowy e-mail został wysłany",
+      "no_releases_found": "Nie znaleziono wydań"
     }
   },
   "share_email": {
@@ -872,5 +887,10 @@
     "success": "E-mail wysłany pomyślnie!",
     "error_invalid": "Wprowadź co najmniej jeden prawidłowy adres e-mail.",
     "error_send": "Wysyłanie nie powiodło się. Spróbuj ponownie."
+  },
+  "terms_of_use": {
+    "loading": "Ładowanie warunków użytkowania...",
+    "error_load": "Nie udało się załadować warunków użytkowania.",
+    "error_generic": "Wystąpił błąd podczas ładowania warunków użytkowania."
   }
 }

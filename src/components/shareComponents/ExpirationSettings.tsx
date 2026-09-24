@@ -59,7 +59,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
       <label className="block text-sm font-medium text-[var(--foreground)]">
         {t(
           labelOverrides?.validityLabel || `${translationPrefix}.validity_label`,
-          "Durée de validité"
+          "Validity period"
         )}
       </label>
 
@@ -85,13 +85,13 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
               <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
                 {t(
                   labelOverrides?.neverExpires || `${translationPrefix}.never_expires`,
-                  "Aucune expiration"
+                  "No expiration"
                 )}
               </div>
               <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
                 {t(
                   labelOverrides?.neverExpiresDesc || `${translationPrefix}.never_expires_desc`,
-                  "Ce contenu restera disponible indéfiniment"
+                  "This content will remain available indefinitely"
                 )}
               </div>
             </div>
@@ -114,7 +114,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
           />
         </div>
         <span className="text-sm text-[var(--foreground-muted)] min-w-0">
-          {t(`${translationPrefix}.days`, "jours")}
+          {t(`${translationPrefix}.days`, "days")}
         </span>
       </div>
 
@@ -141,7 +141,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
         <p className="text-xs bg-[var(--surface-hover)] border border-[var(--border)] rounded-[var(--radius)] p-2 text-[var(--foreground-muted)]">
           {t(
             `${translationPrefix}.login_for_more`,
-            "Connectez-vous pour des durées plus longues (jusqu'à {{max}} jours) ou sans expiration",
+            "Sign in for longer durations (up to {{max}} days) or no expiration",
             { max: MAX_DAYS_AUTH, ...loginForMoreParams }
           )}
           {extraLoginInfo && ` ${extraLoginInfo}`}

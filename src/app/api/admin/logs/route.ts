@@ -24,8 +24,10 @@ export async function GET(request: NextRequest) {
 
     // Get pagination params
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const parsedPage = parseInt(searchParams.get("page") || "1");
+    const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
+    const parsedLimit = parseInt(searchParams.get("limit") || "20");
+    const limit = Number.isNaN(parsedLimit) ? 20 : Math.min(100, Math.max(1, parsedLimit));
     const type = searchParams.get("type") || "all";
     const search = searchParams.get("search") || "";
 
@@ -57,7 +59,16 @@ export async function GET(request: NextRequest) {
     const [shares, total] = await Promise.all([
       prisma.share.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          type: true,
+          slug: true,
+          createdAt: true,
+          expiresAt: true,
+          ipSource: true,
+          password: true,
+          maxViews: true,
+          viewCount: true,
           owner: {
             select: {
               id: true,

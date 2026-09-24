@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui";
 import ShareAccessLogsModal from "@/components/profile/ShareAccessLogsModal";
+import WarningModal from "@/components/admin/WarningModal";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 
 type ShareItemProps = {
@@ -23,6 +24,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editForm, setEditForm] = useState({
     paste: share.paste ?? "",
     pastelanguage: share.pastelanguage ?? "PLAINTEXT",
@@ -37,9 +39,8 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   const path = `${TYPE_PREFIX[share.type]}${share.slug}`;
 
   const handleDelete = () => {
-    if (confirm(t("profile.confirm_delete"))) {
-      onDelete(share.id);
-    }
+    setShowDeleteConfirm(false);
+    onDelete(share.id);
   };
 
   const handleUpdate = () => {
@@ -130,6 +131,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
         isExpired ? "opacity-70" : ""
       }`}
     >
+      <WarningModal
+        open={showDeleteConfirm}
+        title={t("profile.tab_shares", "Shares")}
+        message={t("profile.confirm_delete")}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
       <div className="flex items-start gap-3 p-4 sm:p-5">
         {/* Type icon */}
         <div
@@ -269,7 +277,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               </button>
             )}
             <button
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10 transition-colors"
               title={t("profile.delete")}
               aria-label={t("profile.delete")}

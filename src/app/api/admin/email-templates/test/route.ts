@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
 import { isEmailEnabled } from "@/lib/email";
 import nodemailer from "nodemailer";
@@ -123,7 +124,9 @@ export async function POST(request: NextRequest) {
       text: rendered.text,
     });
 
-    return NextResponse.json({ message: "Test email sent successfully" });
+    return NextResponse.json({
+      message: translate(detectLocale(request), "api.messages.test_email_sent"),
+    });
   } catch (error) {
     console.error("Error sending test email:", error);
     return internalError(request);

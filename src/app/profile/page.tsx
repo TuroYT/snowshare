@@ -1,7 +1,7 @@
 "use client";
 
 import Navigation from "@/components/Navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ProfileInfo from "@/components/profile/ProfileInfo";
@@ -13,6 +13,7 @@ import ApiKeysSection from "@/components/ApiKeysSection";
 import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
+import { toast } from "@/components/ui/Toast";
 
 type User = {
   id: string;
@@ -38,14 +39,7 @@ const ProfilePage = () => {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchUserData();
-      fetchShares();
-    }
-  }, [status]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       const res = await fetch("/api/user/profile");
       if (res.ok) {
@@ -55,9 +49,9 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
-  };
+  }, []);
 
-  const fetchShares = async () => {
+  const fetchShares = useCallback(async () => {
     try {
       const res = await fetch("/api/user/shares");
       if (res.ok) {
@@ -69,7 +63,14 @@ const ProfilePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchUserData();
+      fetchShares();
+    }
+  }, [status, fetchUserData, fetchShares]);
 
   const handleDeleteShare = async (id: string) => {
     try {
@@ -81,10 +82,11 @@ const ProfilePage = () => {
         setShares(shares.filter((s) => s.id !== id));
       } else {
         const data = await res.json();
-        alert(data.error || t("profile.error_delete"));
+        toast.error(data.error || t("profile.error_delete"));
       }
-    } catch {
-      alert(t("profile.error_delete"));
+    } catch (error) {
+      console.error("Error deleting share:", error);
+      toast.error(t("profile.error_delete"));
     }
   };
 
@@ -101,10 +103,11 @@ const ProfilePage = () => {
         setShares(shares.map((s) => (s.id === id ? data.share : s)));
       } else {
         const data = await res.json();
-        alert(data.error || t("profile.error_update_share"));
+        toast.error(data.error || t("profile.error_update_share"));
       }
-    } catch {
-      alert(t("profile.error_update_share"));
+    } catch (error) {
+      console.error("Error updating share:", error);
+      toast.error(t("profile.error_update_share"));
     }
   };
 

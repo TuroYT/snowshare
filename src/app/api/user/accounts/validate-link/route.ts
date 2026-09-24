@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { getAuthOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 
 /**
  * POST /api/user/accounts/validate-link
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     await prisma.verificationToken.delete({ where: { token } });
 
     return NextResponse.json({
-      message: "Account linked successfully",
+      message: translate(detectLocale(request), "api.messages.account_linked"),
       provider,
     });
   } catch (error) {

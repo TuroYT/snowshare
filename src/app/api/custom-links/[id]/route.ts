@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { detectLocale, translate } from "@/lib/i18n-server";
 
 // DELETE – Remove the link
 export async function DELETE(
@@ -43,7 +44,10 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: "Link deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: translate(detectLocale(request), "api.messages.link_deleted") },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error deleting custom link:", error);
     return internalError(request);
