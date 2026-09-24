@@ -53,4 +53,24 @@ export default defineConfig([
       eqeqeq: ["error", "smart"],
     },
   },
+
+  // Forbid relative parent imports (../) within src — project convention is the @/ alias.
+  // Scoped to components/hooks/lib/app: some src files (e.g. tests under src/__tests__)
+  // legitimately reach outside src/ (no @/ mapping exists for that), so they are excluded.
+  {
+    files: [
+      "src/components/**/*.{js,jsx,ts,tsx}",
+      "src/hooks/**/*.{js,jsx,ts,tsx}",
+      "src/lib/**/*.{js,jsx,ts,tsx}",
+      "src/app/**/*.{js,jsx,ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: ["../*"],
+        },
+      ],
+    },
+  },
 ]);

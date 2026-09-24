@@ -130,7 +130,11 @@
     "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en)/Download(s) ab",
     "total_size_too_large": "Die Gesamtgröße überschreitet das Limit (max. {{max}} {{unit}})",
     "file": "Datei",
-    "or_click": "oder zum Auswählen klicken"
+    "or_click": "oder zum Auswählen klicken",
+    "quota_info": "Kontingent: {{used}} MB / {{total}} MB verwendet",
+    "quota_remaining": "{{remaining}} MB verfügbar",
+    "quota_exceeded": "Kontingent überschritten",
+    "quota_warning": "Warnung: Sie haben {{percent}}% Ihres Kontingents verwendet"
   },
   "file_download": {
     "loading_error": "Fehler beim Laden der Informationen",
@@ -888,5 +892,14 @@
     "loading": "Nutzungsbedingungen werden geladen...",
     "error_load": "Nutzungsbedingungen konnten nicht geladen werden.",
     "error_generic": "Beim Laden der Nutzungsbedingungen ist ein Fehler aufgetreten."
+  },
+  "file_preview": {
+    "unsupported_format": "Dieser Dateityp wird für die Vorschau nicht unterstützt",
+    "preview_unavailable": "Vorschau nicht verfügbar",
+    "supported_formats": "Unterstützte Formate:",
+    "pdf_load_error": "PDF konnte nicht geladen werden",
+    "previous_page": "Vorherige Seite",
+    "page_of": "Seite {{current}} von {{total}}",
+    "next_page": "Nächste Seite"
   }
 }

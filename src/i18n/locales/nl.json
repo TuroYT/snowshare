@@ -18,10 +18,6 @@
     "signout_desc": "Uitloggen",
     "admin": "Beheer",
     "admin_desc": "Beheerpaneel",
-    "save_error": "Fout bij opslaan",
-    "validation_required": "Vereiste velden ontbreken",
-    "validation_invalid_color": "Ongeldige kleur (verwacht formaat: #RRGGBB)",
-    "validation_invalid_url": "Ongeldige URL",
     "theme_dark": "Donkere modus",
     "theme_light": "Lichte modus",
     "theme_system": "Automatisch"
@@ -621,7 +617,8 @@
         "ip": "IP-adres",
         "created": "Aangemaakt",
         "expires": "Verloopt",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Acties"
       },
       "anonymous": "Anoniem",
       "never": "Nooit",
@@ -895,5 +892,14 @@
     "loading": "Gebruiksvoorwaarden laden...",
     "error_load": "Kan gebruiksvoorwaarden niet laden.",
     "error_generic": "Er is een fout opgetreden bij het laden van de gebruiksvoorwaarden."
+  },
+  "file_preview": {
+    "unsupported_format": "Dit bestandstype wordt niet ondersteund voor voorbeeldweergave",
+    "preview_unavailable": "Voorbeeld niet beschikbaar",
+    "supported_formats": "Ondersteunde formaten:",
+    "pdf_load_error": "PDF laden mislukt",
+    "previous_page": "Vorige pagina",
+    "page_of": "Pagina {{current}} van {{total}}",
+    "next_page": "Volgende pagina"
   }
 }

@@ -892,5 +892,14 @@
     "loading": "Chargement des conditions d'utilisation...",
     "error_load": "Échec du chargement des conditions d'utilisation.",
     "error_generic": "Une erreur s'est produite lors du chargement des conditions d'utilisation."
+  },
+  "file_preview": {
+    "unsupported_format": "Ce type de fichier n'est pas pris en charge pour l'aperçu",
+    "preview_unavailable": "Aperçu indisponible",
+    "supported_formats": "Formats pris en charge :",
+    "pdf_load_error": "Échec du chargement du PDF",
+    "previous_page": "Page précédente",
+    "page_of": "Page {{current}} sur {{total}}",
+    "next_page": "Page suivante"
   }
 }

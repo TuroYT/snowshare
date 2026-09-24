@@ -424,7 +424,7 @@ export default function OAuthProvidersTab() {
                     onClick={() => setEditingProvider(null)}
                     className="px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-[var(--foreground-muted)] hover:bg-[var(--surface-hover)] transition-colors"
                   >
-                    {t("common.cancel", "Annuler")}
+                    {t("common.cancel", "Cancel")}
                   </button>
                   <button
                     type="submit"
@@ -437,7 +437,7 @@ export default function OAuthProvidersTab() {
                       e.currentTarget.style.backgroundColor = "var(--primary)";
                     }}
                   >
-                    {t("common.save", "Enregistrer")}
+                    {t("common.save", "Save")}
                   </button>
                 </div>
               </form>

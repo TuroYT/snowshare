@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16-alpine
@@ -35,13 +33,27 @@ services:
       PRISMA_CLIENT_ENGINE_TYPE: library
       ALLOW_SIGNUP: true
       NEXTAUTH_URL: http://localhost:3000
+      # CHANGE ME: generate a real secret before deploying, e.g. `openssl rand -base64 32`
       NEXTAUTH_SECRET: changeme-in-prod
       NODE_ENV: production
     ports:
       - "3000:3000"
     volumes:
       - uploads:/app/uploads
-      - /var/log/snowshare:/var/log # Mount pour les logs de cron
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3000/api/setup/check",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
     networks:
       - snownetwork
 

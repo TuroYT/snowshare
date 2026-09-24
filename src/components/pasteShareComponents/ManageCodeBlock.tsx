@@ -3,12 +3,12 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useShareForm } from "@/hooks/useShareForm";
-import ExpirationSettings from "../shareComponents/ExpirationSettings";
-import AdvancedSettings from "../shareComponents/AdvancedSettings";
-import ViewLimitSettings from "../shareComponents/ViewLimitSettings";
-import ShareSuccess from "../shareComponents/ShareSuccess";
-import ShareError from "../shareComponents/ShareError";
-import SubmitButton from "../shareComponents/SubmitButton";
+import ExpirationSettings from "@/components/shareComponents/ExpirationSettings";
+import AdvancedSettings from "@/components/shareComponents/AdvancedSettings";
+import ViewLimitSettings from "@/components/shareComponents/ViewLimitSettings";
+import ShareSuccess from "@/components/shareComponents/ShareSuccess";
+import ShareError from "@/components/shareComponents/ShareError";
+import SubmitButton from "@/components/shareComponents/SubmitButton";
 
 const LANGUAGES = [
   { value: "plaintext", label: "Plain" },

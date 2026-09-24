@@ -130,7 +130,11 @@
     "view_limit_info": "Este compartido expirará después de {{count}} vista(s)/descarga(s)",
     "total_size_too_large": "El tamaño total supera el límite (máx. {{max}} {{unit}})",
     "file": "Archivo",
-    "or_click": "o haz clic para seleccionar"
+    "or_click": "o haz clic para seleccionar",
+    "quota_info": "Cuota: {{used}} MB / {{total}} MB utilizados",
+    "quota_remaining": "{{remaining}} MB disponibles",
+    "quota_exceeded": "Cuota excedida",
+    "quota_warning": "Advertencia: ha utilizado el {{percent}}% de su cuota"
   },
   "file_download": {
     "loading_error": "Error al cargar la información",
@@ -888,5 +892,14 @@
     "loading": "Cargando los términos de uso...",
     "error_load": "Error al cargar los términos de uso.",
     "error_generic": "Se produjo un error al cargar los términos de uso."
+  },
+  "file_preview": {
+    "unsupported_format": "Este tipo de archivo no es compatible con la vista previa",
+    "preview_unavailable": "Vista previa no disponible",
+    "supported_formats": "Formatos compatibles:",
+    "pdf_load_error": "Error al cargar el PDF",
+    "previous_page": "Página anterior",
+    "page_of": "Página {{current}} de {{total}}",
+    "next_page": "Página siguiente"
   }
 }

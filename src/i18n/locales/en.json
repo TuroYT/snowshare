@@ -892,5 +892,14 @@
     "loading": "Loading terms of use...",
     "error_load": "Failed to load terms of use.",
     "error_generic": "An error occurred while loading the terms of use."
+  },
+  "file_preview": {
+    "unsupported_format": "This file type is not supported for preview",
+    "preview_unavailable": "Preview Unavailable",
+    "supported_formats": "Supported formats:",
+    "pdf_load_error": "Failed to load PDF",
+    "previous_page": "Previous page",
+    "page_of": "Page {{current}} of {{total}}",
+    "next_page": "Next page"
   }
 }

@@ -1,10 +1,10 @@
 import crypto from "crypto";
 
 /**
- * Chiffre une chaîne de texte avec un mot de passe (AES-256-CBC)
- * @param {string} text - Texte à chiffrer
- * @param {string} password - Mot de passe
- * @returns {string} - Chaîne chiffrée sous la forme iv:encrypted
+ * Encrypts a text string with a password (AES-256-CBC)
+ * @param {string} text - Text to encrypt
+ * @param {string} password - Password
+ * @returns {string} - Encrypted string in the form salt:iv:encrypted
  */
 export function encrypt(text: string, password: string): string {
   const salt = crypto.randomBytes(16); // 16 bytes salt
@@ -18,10 +18,10 @@ export function encrypt(text: string, password: string): string {
 }
 
 /**
- * Déchiffre une chaîne chiffrée avec un mot de passe (AES-256-CBC)
- * @param {string} encrypted - Chaîne chiffrée sous la forme iv:encrypted
- * @param {string} password - Mot de passe
- * @returns {string} - Texte déchiffré
+ * Decrypts an encrypted string with a password (AES-256-CBC)
+ * @param {string} encrypted - Encrypted string in the form salt:iv:encrypted
+ * @param {string} password - Password
+ * @returns {string} - Decrypted text
  */
 export function decrypt(encrypted: string, password: string): string {
   const [saltBase64, ivBase64, encryptedText] = encrypted.split(":");

@@ -18,10 +18,6 @@
     "signout_desc": "Wyloguj się",
     "admin": "Administrator",
     "admin_desc": "Panel administracyjny",
-    "save_error": "Błąd podczas zapisywania",
-    "validation_required": "Brak wymaganych pól",
-    "validation_invalid_color": "Nieprawidłowy kolor (oczekiwany format: #RRGGBB)",
-    "validation_invalid_url": "Nieprawidłowy adres URL",
     "theme_dark": "Tryb ciemny",
     "theme_light": "Tryb jasny",
     "theme_system": "Automatyczny"
@@ -425,6 +421,9 @@
     "save_success": "Zmiany zapisane pomyślnie",
     "save_error": "Błąd zapisu zmian",
     "confirm_action": "Czy na pewno?",
+    "validation_required": "Brak wymaganych pól",
+    "validation_invalid_color": "Nieprawidłowy kolor (oczekiwany format: #RRGGBB)",
+    "validation_invalid_url": "Nieprawidłowy adres URL",
     "tabs": {
       "users": "Użytkownicy",
       "settings": "Ustawienia",
@@ -618,7 +617,8 @@
         "ip": "Adres IP",
         "created": "Utworzono",
         "expires": "Wygasa",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Akcje"
       },
       "anonymous": "Anonimowe",
       "never": "Nigdy",
@@ -892,5 +892,14 @@
     "loading": "Ładowanie warunków użytkowania...",
     "error_load": "Nie udało się załadować warunków użytkowania.",
     "error_generic": "Wystąpił błąd podczas ładowania warunków użytkowania."
+  },
+  "file_preview": {
+    "unsupported_format": "Ten typ pliku nie jest obsługiwany w podglądzie",
+    "preview_unavailable": "Podgląd niedostępny",
+    "supported_formats": "Obsługiwane formaty:",
+    "pdf_load_error": "Nie udało się załadować pliku PDF",
+    "previous_page": "Poprzednia strona",
+    "page_of": "Strona {{current}} z {{total}}",
+    "next_page": "Następna strona"
   }
 }
