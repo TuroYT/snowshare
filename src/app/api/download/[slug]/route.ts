@@ -3,7 +3,7 @@ import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { logShareAccess } from "@/lib/access-log";
 import { accessDeniedResponse, consumeView } from "@/lib/share-access";
-import { isInitialDownloadRequest, streamStoredFile } from "@/lib/file-response";
+import { streamStoredFile } from "@/lib/file-response";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -33,7 +33,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Downloads without a pre-counted "download" token count as a view
-    if (result.tokenPurpose !== "download" && isInitialDownloadRequest(request)) {
+    // (Range requests included: resuming without a token is a new view)
+    if (result.tokenPurpose !== "download") {
       if (!(await consumeView(result.share.id))) {
         return apiError(request, ErrorCode.SHARE_EXPIRED);
       }

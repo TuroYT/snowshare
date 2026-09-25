@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { storageFileExists } from "@/lib/storage";
 import { ErrorCode } from "@/lib/api-errors";
+import { getClientIp } from "@/lib/getClientIp";
 import {
   checkShareAvailability,
   verifyDownloadToken,
@@ -65,7 +66,8 @@ export const getFileShare = async (
     return { errorCode: ErrorCode.SHARE_NOT_FOUND };
   }
 
-  const tokenPurpose: DownloadTokenPurpose | null = verifyDownloadToken(token, share.id);
+  const tokenPurpose: DownloadTokenPurpose | null =
+    token && request ? verifyDownloadToken(token, share.id, getClientIp(request)) : null;
 
   // A "download" token is issued after the view was counted, so the view limit is already settled
   const unavailable = checkShareAvailability(share, {

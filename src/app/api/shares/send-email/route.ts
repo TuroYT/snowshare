@@ -6,7 +6,12 @@ import { sendShareEmail, isEmailEnabled } from "@/lib/email";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { isValidEmail } from "@/lib/constants";
 import { detectLocale, translate } from "@/lib/i18n-server";
-import { getRetryAfter, rateLimitResponse, recordRateLimitHit } from "@/lib/rate-limit";
+import {
+  getRemainingEvents,
+  getRetryAfter,
+  rateLimitResponse,
+  recordRateLimitHit,
+} from "@/lib/rate-limit";
 
 /** Maximum recipients per request, to keep the instance SMTP from being used as a relay */
 const MAX_RECIPIENTS = 20;
@@ -44,9 +49,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Each recipient counts toward the per-user hourly quota
-  const retryAfter = getRetryAfter("sendEmail", session.user.id);
-  if (retryAfter > 0) {
-    return rateLimitResponse(request, retryAfter);
+  if (getRemainingEvents("sendEmail", session.user.id) < recipients.length) {
+    return rateLimitResponse(request, Math.max(1, getRetryAfter("sendEmail", session.user.id)));
   }
 
   const invalidEmail = recipients.find((r: unknown) => typeof r !== "string" || !isValidEmail(r));

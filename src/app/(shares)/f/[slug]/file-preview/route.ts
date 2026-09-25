@@ -3,16 +3,20 @@ import { prisma } from "@/lib/prisma";
 import { storageFileExists } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { streamStoredFile } from "@/lib/file-response";
+import { getClientIp } from "@/lib/getClientIp";
+import { logShareAccess } from "@/lib/access-log";
 import {
   accessDeniedResponse,
   checkShareAvailability,
+  consumeView,
   verifyDownloadToken,
   verifySharePassword,
 } from "@/lib/share-access";
 
 /**
  * Serves one file of a bulk share, for preview or individual download.
- * Individual files do not consume a view; exhausted shares are refused.
+ * With a "download" token (issued when a view was counted) files are served freely while it
+ * is valid; without one, every request consumes a view, like any other download.
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -53,7 +57,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    const tokenPurpose = verifyDownloadToken(token, share.id);
+    const tokenPurpose = verifyDownloadToken(token, share.id, getClientIp(request));
 
     const unavailable = checkShareAvailability(share, {
       ignoreViewLimit: tokenPurpose === "download",
@@ -72,6 +76,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!shareFile || !(await storageFileExists(shareFile.filePath))) {
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
+    }
+
+    if (tokenPurpose !== "download") {
+      if (!(await consumeView(share.id))) {
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
+      }
+      void logShareAccess(request, share.id);
     }
 
     return streamStoredFile(request, {

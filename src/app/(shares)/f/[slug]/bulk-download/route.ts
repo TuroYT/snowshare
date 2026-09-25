@@ -4,7 +4,7 @@ import { createZipStream } from "@/lib/bulk-upload-utils";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { logShareAccess } from "@/lib/access-log";
-import { isInitialDownloadRequest } from "@/lib/file-response";
+import { getClientIp } from "@/lib/getClientIp";
 import {
   accessDeniedResponse,
   checkShareAvailability,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    const tokenPurpose = verifyDownloadToken(token, share.id);
+    const tokenPurpose = verifyDownloadToken(token, share.id, getClientIp(request));
 
     const unavailable = checkShareAvailability(share, {
       ignoreViewLimit: tokenPurpose === "download",
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Direct downloads without a pre-counted "download" token count as a view
-    if (tokenPurpose !== "download" && isInitialDownloadRequest(request)) {
+    if (tokenPurpose !== "download") {
       if (!(await consumeView(share.id))) {
         return apiError(request, ErrorCode.SHARE_EXPIRED);
       }

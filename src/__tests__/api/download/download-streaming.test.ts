@@ -186,7 +186,7 @@ describe("File Download Streaming", () => {
     expect(mockUpdateMany).not.toHaveBeenCalled();
   });
 
-  it("should not count a view for a resumed range request", async () => {
+  it("counts a view for a range request without a download token", async () => {
     mockGetStorageFileSize.mockResolvedValue(10000);
 
     const { GET } = await import("@/app/api/download/[slug]/route");
@@ -194,6 +194,7 @@ describe("File Download Streaming", () => {
       params: Promise.resolve({ slug: "test-slug" }),
     });
 
-    expect(mockUpdateMany).not.toHaveBeenCalled();
+    // Otherwise "Range: bytes=1-" would download the file without consuming a view
+    expect(mockUpdateMany).toHaveBeenCalledTimes(1);
   });
 });

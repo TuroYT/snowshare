@@ -4,8 +4,14 @@ import { getStorageFileSize } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { logShareAccess } from "@/lib/access-log";
-import { accessDeniedResponse, consumeView, createDownloadToken } from "@/lib/share-access";
-import { isInitialDownloadRequest, streamStoredFile } from "@/lib/file-response";
+import {
+  accessDeniedResponse,
+  consumeView,
+  createDownloadToken,
+  DOWNLOAD_TOKEN_TTL_SECONDS,
+} from "@/lib/share-access";
+import { streamStoredFile } from "@/lib/file-response";
+import { getClientIp } from "@/lib/getClientIp";
 
 // Handle POST requests for file info and download actions
 export async function POST(
@@ -71,7 +77,7 @@ export async function POST(
           note: result.share.note ?? null,
           // Lets the page link individual files without putting the password in URLs
           accessToken: result.share.password
-            ? createDownloadToken(result.share.id, "access")
+            ? createDownloadToken(result.share.id, "access", getClientIp(request))
             : undefined,
         });
       }
@@ -113,12 +119,19 @@ export async function POST(
       void logShareAccess(request, result.share.id);
 
       // The signed token replaces the password in the URL and proves the view was counted
-      const token = encodeURIComponent(createDownloadToken(result.share.id, "download"));
+      const rawToken = createDownloadToken(result.share.id, "download", getClientIp(request));
+      const token = encodeURIComponent(rawToken);
       const downloadUrl = result.isBulk
         ? `/f/${slug}/bulk-download?token=${token}`
         : `/f/${slug}/download?token=${token}`;
 
-      return NextResponse.json({ downloadUrl, isBulk: !!result.isBulk });
+      // The token also unlocks previews and individual bulk files for its lifetime
+      return NextResponse.json({
+        downloadUrl,
+        isBulk: !!result.isBulk,
+        token: rawToken,
+        tokenExpiresIn: DOWNLOAD_TOKEN_TTL_SECONDS,
+      });
     }
 
     return apiError(request, ErrorCode.INVALID_REQUEST);
@@ -161,8 +174,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    // Direct downloads without a pre-counted token count as a view
-    if (result.tokenPurpose !== "download" && isInitialDownloadRequest(request)) {
+    // Without a pre-counted "download" token every request (Range requests included) is a view
+    if (result.tokenPurpose !== "download") {
       if (!(await consumeView(result.share.id))) {
         return apiError(request, ErrorCode.SHARE_EXPIRED);
       }

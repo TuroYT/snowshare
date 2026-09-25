@@ -100,11 +100,17 @@ export async function receiveMultipart(
 
   const source = Readable.fromWeb(request.body as unknown as import("stream/web").ReadableStream);
 
+  // Settles the parsing promise once a failure is recorded (see the promise below)
+  let settleOnFailure: () => void = () => {};
+
   const fail = (error: MultipartError) => {
     if (!failure) failure = error;
     // Stop reading the request: nothing more will be stored
     source.unpipe(busboy);
     source.resume();
+    // Busboy never emits "close" after a file stream is destroyed. If the body was already
+    // fully read, "end" has fired before the failure was known: settle right away.
+    if (source.readableEnded) settleOnFailure();
   };
 
   busboy.on("field", (name, value) => {
@@ -164,6 +170,7 @@ export async function receiveMultipart(
 
   try {
     await new Promise<void>((resolve, reject) => {
+      settleOnFailure = resolve;
       busboy.on("close", resolve);
       busboy.on("error", (error) => reject(new MultipartError("MALFORMED", { cause: error })));
       source.on("error", (error) => reject(new MultipartError("MALFORMED", { cause: error })));

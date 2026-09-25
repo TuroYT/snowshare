@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiRequest } from "@/lib/api-auth";
+import { rateLimitResponse } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { deleteShareFiles } from "@/lib/storage";
@@ -43,7 +44,9 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { user } = await authenticateApiRequest(request);
+    const auth = await authenticateApiRequest(request);
+    if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+    const { user } = auth;
     if (!user) return apiError(request, ErrorCode.AUTHENTICATION_REQUIRED);
 
     const { slug } = await params;

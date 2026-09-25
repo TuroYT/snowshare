@@ -177,3 +177,44 @@ describe("nodeStreamToWebStream", () => {
     expect(received.join("")).toBe(chunks.join(""));
   });
 });
+
+describe("nodeStreamToWebStream backpressure", () => {
+  it("only reads from the source when the consumer pulls", async () => {
+    let produced = 0;
+    const total = 50;
+    const source = new Readable({
+      highWaterMark: 16,
+      read() {
+        produced++;
+        this.push(produced <= total ? Buffer.alloc(1024, produced) : null);
+      },
+    });
+
+    const reader = nodeStreamToWebStream(source).getReader();
+    const first = await reader.read();
+    expect(first.done).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    // Without a pull-based stream the whole source would have been read already
+    expect(produced).toBeLessThan(total);
+
+    let received = first.value!.byteLength;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      received += value.byteLength;
+    }
+    expect(received).toBe(total * 1024);
+  });
+
+  it("propagates source errors", async () => {
+    const source = new Readable({
+      read() {
+        this.destroy(new Error("disk failure"));
+      },
+    });
+
+    const reader = nodeStreamToWebStream(source).getReader();
+    await expect(reader.read()).rejects.toThrow("disk failure");
+  });
+});

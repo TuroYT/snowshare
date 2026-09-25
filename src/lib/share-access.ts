@@ -117,15 +117,19 @@ export async function consumeView(shareId: string): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 /**
- * - "download": issued after a view was consumed; grants the download itself
+ * - "download": issued after a view was consumed; grants downloads and previews of the share
  *   (bypasses the password and the view limit, since the view is already counted).
- * - "access": issued after a password check; grants previews without re-sending the
- *   password, but the view limit still applies.
+ * - "access": issued after a password check; replaces the password in URLs, but every
+ *   request still consumes a view.
+ *
+ * Tokens are bound to the client IP that requested them, so a leaked URL cannot be
+ * replayed from elsewhere, and expire after DOWNLOAD_TOKEN_TTL_SECONDS.
  */
 export type DownloadTokenPurpose = "download" | "access";
 
-// Long enough for large downloads and video seeking (Range requests reuse the token)
-export const DOWNLOAD_TOKEN_TTL_SECONDS = 60 * 60;
+// Long enough to start large downloads and seek in videos (Range requests reuse the token),
+// short enough to keep "burn after reading" shares meaningful
+export const DOWNLOAD_TOKEN_TTL_SECONDS = 15 * 60;
 
 function getTokenSecret(): string {
   const secret = process.env.NEXTAUTH_SECRET;
@@ -142,11 +146,12 @@ function sign(payload: string): string {
 export function createDownloadToken(
   shareId: string,
   purpose: DownloadTokenPurpose,
+  clientIp: string,
   ttlSeconds = DOWNLOAD_TOKEN_TTL_SECONDS
 ): string {
   const expiresAt = Math.floor(Date.now() / 1000) + ttlSeconds;
   const payload = `${purpose}.${expiresAt}`;
-  return `${payload}.${sign(`${shareId}.${payload}`)}`;
+  return `${payload}.${sign(`${shareId}.${payload}.${clientIp}`)}`;
 }
 
 /**
@@ -154,7 +159,8 @@ export function createDownloadToken(
  */
 export function verifyDownloadToken(
   token: string | null | undefined,
-  shareId: string
+  shareId: string,
+  clientIp: string
 ): DownloadTokenPurpose | null {
   if (!token) return null;
   const parts = token.split(".");
@@ -167,7 +173,7 @@ export function verifyDownloadToken(
 
   let expected: string;
   try {
-    expected = sign(`${shareId}.${purpose}.${expiresAtRaw}`);
+    expected = sign(`${shareId}.${purpose}.${expiresAtRaw}.${clientIp}`);
   } catch (error) {
     console.error("Download token verification failed:", error);
     return null;

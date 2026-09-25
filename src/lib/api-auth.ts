@@ -16,6 +16,8 @@ export type AuthMethod = "apikey" | "session" | null;
 export interface ApiAuthResult {
   user: { id: string; name?: string | null; email: string; isAdmin: boolean } | null;
   authMethod: AuthMethod;
+  /** Set when too many invalid API keys came from this client: callers must answer 429 */
+  retryAfter?: number;
 }
 
 /**
@@ -33,10 +35,11 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
   if (authHeader?.startsWith("Bearer ")) {
     const rawKey = authHeader.slice(7).trim();
     if (rawKey.startsWith("sk_")) {
-      // Clients that keep presenting invalid keys are treated as anonymous without a lookup
+      // Clients that keep presenting invalid keys are refused without a lookup
       const clientIp = getClientIp(request);
-      if (getRetryAfter("apiKey", clientIp) > 0) {
-        return { user: null, authMethod: null };
+      const retryAfter = getRetryAfter("apiKey", clientIp);
+      if (retryAfter > 0) {
+        return { user: null, authMethod: null, retryAfter };
       }
 
       const keyHash = hashApiKey(rawKey);

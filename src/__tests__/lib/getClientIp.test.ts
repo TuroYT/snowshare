@@ -125,4 +125,21 @@ describe("resolveClientIp with TRUSTED_PROXY_COUNT", () => {
   it("should use the socket address when no header is present", () => {
     expect(resolveClientIp({ remoteAddress: "::ffff:192.0.2.10" })).toBe("192.0.2.10");
   });
+
+  it("should ignore forwarding headers when TRUSTED_PROXY_COUNT is 0", () => {
+    process.env.TRUSTED_PROXY_COUNT = "0";
+    expect(
+      resolveClientIp({ forwardedFor: "1.2.3.4", realIp: "5.6.7.8", remoteAddress: "192.0.2.1" })
+    ).toBe("192.0.2.1");
+  });
+});
+
+describe("getClientIp with the custom server header", () => {
+  it("should prefer the IP resolved by server.js", () => {
+    const request = makeRequest({
+      "x-snowshare-client-ip": "192.0.2.50",
+      "x-forwarded-for": "1.2.3.4",
+    });
+    expect(getClientIp(request)).toBe("192.0.2.50");
+  });
 });

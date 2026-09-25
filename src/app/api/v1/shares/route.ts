@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiRequest } from "@/lib/api-auth";
+import { rateLimitResponse } from "@/lib/rate-limit";
 import { createLinkShare, createPasteShare, toPublicShare } from "@/lib/shares";
 import { getClientIp } from "@/lib/getClientIp";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +13,9 @@ import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
-    const { user } = await authenticateApiRequest(request);
+    const auth = await authenticateApiRequest(request);
+    if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+    const { user } = auth;
     if (!user) {
       return apiError(request, ErrorCode.AUTHENTICATION_REQUIRED);
     }
@@ -65,7 +68,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user } = await authenticateApiRequest(request);
+    const auth = await authenticateApiRequest(request);
+    if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+    const { user } = auth;
     const ip = getClientIp(request);
 
     const context = {

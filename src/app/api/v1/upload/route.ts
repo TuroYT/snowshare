@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mkdir } from "fs/promises";
 import { authenticateApiRequest } from "@/lib/api-auth";
+import { rateLimitResponse } from "@/lib/rate-limit";
 import { createFileShare } from "@/lib/shares";
 import { generateSafeFilename } from "@/lib/files";
 import { getClientIp } from "@/lib/getClientIp";
@@ -31,7 +32,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
-  const { user } = await authenticateApiRequest(request);
+  const auth = await authenticateApiRequest(request);
+  if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+  const { user } = auth;
   const ip = getClientIp(request);
   const isAuthenticated = user != null;
 

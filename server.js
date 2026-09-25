@@ -14,7 +14,7 @@ import { unlink } from "fs/promises";
 import path from "path";
 import { getToken } from "next-auth/jwt";
 import cron from "node-cron";
-import { resolveClientIp } from "./src/lib/getClientIp.js";
+import { CLIENT_IP_HEADER, resolveClientIp } from "./src/lib/getClientIp.js";
 
 // Upload metadata keys written by the server (they override any client-supplied value)
 const CTX_IP = "ss_ip";
@@ -73,12 +73,18 @@ function parseCookies(cookieHeader) {
 }
 
 // Authenticate user from HTTP request (supports NextAuth JWT + API key Bearer token)
-async function authenticateFromRequest(req) {
+async function authenticateFromRequest(req, clientIp) {
   // 1. Try API key Bearer token
   const authHeader = req.headers?.authorization || "";
   if (authHeader.startsWith("Bearer ")) {
     const rawKey = authHeader.slice(7).trim();
     if (rawKey.startsWith("sk_")) {
+      // Same invalid-key throttling as the Next.js API routes (shared in-memory store)
+      const { getRetryAfter, recordRateLimitHit } = await import("./src/lib/rate-limit.js");
+      const retryAfter = getRetryAfter("apiKey", clientIp);
+      if (retryAfter > 0) {
+        return { userId: null, isAuthenticated: false, retryAfter };
+      }
       try {
         const { prisma } = await import("./src/lib/prisma.js");
         const { hashApiKey } = await import("./src/lib/security.js");
@@ -94,6 +100,7 @@ async function authenticateFromRequest(req) {
             .catch((err) => console.warn("[Auth] Failed to update lastUsedAt:", err.message));
           return { userId: apiKey.userId, isAuthenticated: true };
         }
+        recordRateLimitHit("apiKey", clientIp);
       } catch (error) {
         console.error("[Auth] API key lookup error:", error.message);
       }
@@ -136,12 +143,14 @@ function loadLibs() {
     import("./src/lib/quota-shared.js"),
     import("./src/lib/files.js"),
     import("./src/lib/storage.js"),
-  ]).then(([prismaLib, uploadShare, quota, files, storage]) => ({
+    import("./src/lib/settings.js"),
+  ]).then(([prismaLib, uploadShare, quota, files, storage, settings]) => ({
     prisma: prismaLib.prisma,
     ...uploadShare,
     ...quota,
     ...files,
     ...storage,
+    ...settings,
   }));
   return libsPromise;
 }
@@ -246,8 +255,17 @@ if (!existsSync(tusTempDir)) {
 const tusServer = new TusServer({
   path: "/api/tus",
   datastore: new FileStore({ directory: tusTempDir }),
-  // Max file size (will be checked per-user in onUploadCreate)
-  maxSize: 1024 * 1024 * 1024 * 1024, // 1TB absolute max
+  // Per-user file size limit, enforced by tus on creation and while bytes are written, so
+  // uploads with Upload-Defer-Length cannot exceed it either
+  async maxSize() {
+    const libs = await loadLibs();
+    const context = requestContext.getStore();
+    const settings = await libs.getSettingsCached();
+    const maxMB = context?.isAuthenticated
+      ? settings?.authMaxUpload || 51200
+      : settings?.anoMaxUpload || 2048;
+    return maxMB * 1024 * 1024;
+  },
   // Expose custom headers to client
   respectForwardedHeaders: true,
   generateUrl(req, { proto: _proto, host: _host, path, id }) {
@@ -400,7 +418,13 @@ const tusServer = new TusServer({
 // Handle tus requests
 async function handleTus(req, res) {
   const clientIp = getClientIpFromHttpReq(req);
-  const { userId, isAuthenticated } = await authenticateFromRequest(req);
+  const { userId, isAuthenticated, retryAfter } = await authenticateFromRequest(req, clientIp);
+
+  if (retryAfter) {
+    res.writeHead(429, { "Content-Type": "application/json", "Retry-After": String(retryAfter) });
+    res.end(JSON.stringify({ error: "TOO_MANY_REQUESTS" }));
+    return;
+  }
 
   const context = {
     clientIp,
@@ -452,6 +476,10 @@ app
           await handleTus(req, res);
           return;
         }
+
+        // Pass the client IP resolved from the socket to Next.js routes. Always overwritten,
+        // so a client cannot forge it.
+        req.headers[CLIENT_IP_HEADER] = getClientIpFromHttpReq(req);
 
         // Let Next.js handle everything else
         await handle(req, res, parsedUrl);

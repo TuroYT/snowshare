@@ -1,15 +1,53 @@
 import { Readable } from "stream";
 
 /**
- * Helper to convert Node.js stream to Web Stream for Next.js
- * This allows streaming files without loading them entirely into memory
+ * Convert a Node.js stream to a Web ReadableStream for Next.js responses.
+ *
+ * Pull-based: a chunk is read from the source only when the consumer asks for one, so a slow
+ * client throttles disk/S3 reads instead of making the server buffer the whole file in memory.
  */
 export function nodeStreamToWebStream(nodeStream: Readable): ReadableStream {
-  return new ReadableStream({
-    start(controller) {
-      nodeStream.on("data", (chunk) => controller.enqueue(chunk));
-      nodeStream.on("end", () => controller.close());
-      nodeStream.on("error", (err) => controller.error(err));
+  let finished = false;
+  let failure: Error | null = null;
+  let wake: (() => void) | null = null;
+
+  const notify = () => {
+    const resolve = wake;
+    wake = null;
+    resolve?.();
+  };
+  nodeStream.on("readable", notify);
+  nodeStream.on("end", () => {
+    finished = true;
+    notify();
+  });
+  nodeStream.on("error", (error) => {
+    failure = error;
+    notify();
+  });
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      for (;;) {
+        if (failure) {
+          controller.error(failure);
+          return;
+        }
+        const chunk = nodeStream.read() as Buffer | string | null;
+        if (chunk !== null) {
+          controller.enqueue(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+          return;
+        }
+        if (finished) {
+          controller.close();
+          return;
+        }
+        // read() may have failed or ended the stream synchronously
+        if (failure) continue;
+        await new Promise<void>((resolve) => {
+          wake = resolve;
+        });
+      }
     },
     cancel() {
       nodeStream.destroy();

@@ -86,11 +86,3 @@ export async function streamStoredFile(
     headers,
   });
 }
-
-/**
- * Whether a request should count as a new download (not a resumed/seeking range request).
- */
-export function isInitialDownloadRequest(request: NextRequest): boolean {
-  const range = request.headers.get("range");
-  return !range || /^bytes=0-/.test(range.trim());
-}

@@ -79,6 +79,14 @@ export function getRetryAfter(scope: RateLimitScope, key: string): number {
 }
 
 /**
+ * Number of events still allowed for the key in the current window.
+ */
+export function getRemainingEvents(scope: RateLimitScope, key: string): number {
+  const bucket = getBucket(scope, key, Date.now());
+  return Math.max(0, RATE_LIMITS[scope].limit - (bucket?.count ?? 0));
+}
+
+/**
  * Counts one event for the key (e.g. a failed password attempt).
  */
 export function recordRateLimitHit(scope: RateLimitScope, key: string): void {
