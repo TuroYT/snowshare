@@ -1,26 +1,9 @@
 import nodemailer from "nodemailer";
-import { prisma } from "@/lib/prisma";
+import { getSettingsCached } from "@/lib/settings";
 import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
 
 async function getSmtpConfig() {
-  const settings = await prisma.settings.findFirst({
-    select: {
-      smtpEnabled: true,
-      smtpHost: true,
-      smtpPort: true,
-      smtpUser: true,
-      smtpPassword: true,
-      smtpFrom: true,
-      smtpSecure: true,
-      appName: true,
-      shareEmailSubject: true,
-      shareEmailHtml: true,
-      shareEmailText: true,
-      verifyEmailSubject: true,
-      verifyEmailHtml: true,
-      verifyEmailText: true,
-    },
-  });
+  const settings = await getSettingsCached();
 
   if (!settings?.smtpEnabled || !settings.smtpHost) {
     return null;

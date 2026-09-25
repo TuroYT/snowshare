@@ -28,6 +28,26 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const limitParam = searchParams.get("limit");
+    const offsetParam = searchParams.get("offset");
+
+    let take: number | undefined;
+    if (limitParam !== null) {
+      const parsedLimit = parseInt(limitParam, 10);
+      if (!Number.isNaN(parsedLimit)) {
+        take = Math.min(100, Math.max(1, parsedLimit));
+      }
+    }
+
+    let skip: number | undefined;
+    if (offsetParam !== null) {
+      const parsedOffset = parseInt(offsetParam, 10);
+      if (!Number.isNaN(parsedOffset) && parsedOffset >= 0) {
+        skip = parsedOffset;
+      }
+    }
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -40,6 +60,8 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: "desc" },
+      ...(take !== undefined ? { take } : {}),
+      ...(skip !== undefined ? { skip } : {}),
     });
 
     return NextResponse.json({ users });

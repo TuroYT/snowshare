@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { apiError, ErrorCode } from "@/lib/api-errors";
 
 /**
  * GET /api/oauth-providers
  * Get the list of enabled OAuth providers
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const providers = await prisma.oAuthProvider.findMany({
       where: {
@@ -25,6 +26,6 @@ export async function GET() {
     return NextResponse.json({ providers });
   } catch (error) {
     console.error("Error fetching OAuth providers:", error);
-    return NextResponse.json({ error: "Failed to fetch providers" }, { status: 500 });
+    return apiError(request, ErrorCode.INTERNAL_SERVER_ERROR);
   }
 }

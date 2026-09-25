@@ -179,6 +179,8 @@ The app will be available at http://localhost:3000.
 
 > **Note:** Change `NEXTAUTH_URL` to your public domain and use a strong `NEXTAUTH_SECRET` (generate one with `openssl rand -base64 32`).
 
+> **Reverse proxy:** the client IP (quotas, rate limiting, access logs) is taken from the last `X-Forwarded-For` entry, i.e. the one appended by your proxy. If several proxies chain in front of SnowShare (e.g. Cloudflare → nginx), set `TRUSTED_PROXY_COUNT` to their number; without any proxy, set it to `0`.
+
 Available tags: `latest`, `1.3.9`, `1.3`
 
 ### Build from source

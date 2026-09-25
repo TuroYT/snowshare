@@ -62,7 +62,7 @@ function ProfileDropdown({
             className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             <User className="w-4 h-4 text-[var(--foreground-muted)]" />
-            {t("nav.profile", "Mon Profil")}
+            {t("nav.profile", "My Profile")}
           </Link>
           {isAdmin && (
             <Link
@@ -80,7 +80,7 @@ function ProfileDropdown({
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--surface-hover)] transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            {t("nav.signout", "Déconnexion")}
+            {t("nav.signout", "Sign out")}
           </button>
         </div>
       )}
@@ -155,7 +155,7 @@ function MobileDrawer({
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
               >
                 <User className="w-4 h-4" />
-                {t("nav.profile", "Mon Profil")}
+                {t("nav.profile", "My Profile")}
               </Link>
               {isAdmin && (
                 <Link
@@ -172,7 +172,7 @@ function MobileDrawer({
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--destructive)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
               >
                 <LogOut className="w-4 h-4" />
-                {t("nav.signout", "Déconnexion")}
+                {t("nav.signout", "Sign out")}
               </button>
             </>
           ) : (
@@ -203,7 +203,11 @@ function MobileDrawer({
           >
             {themeIcon}
             <span>
-              {theme === "dark" ? "Mode sombre" : theme === "light" ? "Mode clair" : "Automatique"}
+              {theme === "dark"
+                ? t("nav.theme_dark", "Dark mode")
+                : theme === "light"
+                  ? t("nav.theme_light", "Light mode")
+                  : t("nav.theme_system", "System")}
             </span>
           </button>
         </div>
@@ -235,11 +239,22 @@ export default function Navigation() {
 
   useEffect(() => {
     if (status !== "authenticated") return;
-    fetch("/api/user/profile")
+    let ignore = false;
+    const controller = new AbortController();
+    fetch("/api/user/profile", { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (d?.user?.isAdmin) setIsAdmin(true);
+        if (!ignore && d?.user?.isAdmin) setIsAdmin(true);
+      })
+      .catch((error) => {
+        if (!ignore && error?.name !== "AbortError") {
+          console.error("Failed to fetch user profile for admin check:", error);
+        }
       });
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
   }, [status]);
 
   useEffect(() => {

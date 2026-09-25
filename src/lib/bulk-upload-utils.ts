@@ -1,82 +1,94 @@
-import { createWriteStream } from "fs";
-import { access, mkdir, stat } from "fs/promises";
 import path from "path";
-import { pipeline } from "stream/promises";
-import { ZipArchive } from "archiver";
 import { Readable } from "stream";
-import crypto from "crypto";
-import { getUploadDir } from "./constants";
-import { getMimeType as getMimeTypeFromLib } from "./mime-types";
-import { getStorageReadStream, storageFileExists } from "./storage";
+import { ZipArchive } from "archiver";
+import { getStorageReadStream } from "@/lib/storage";
 
-export interface FileEntry {
-  file: File;
-  relativePath: string;
+// Formats that are already compressed: storing them avoids burning CPU for no gain
+const ALREADY_COMPRESSED_EXTENSIONS = new Set([
+  ".zip",
+  ".gz",
+  ".tgz",
+  ".bz2",
+  ".xz",
+  ".7z",
+  ".rar",
+  ".zst",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif",
+  ".webp",
+  ".avif",
+  ".heic",
+  ".mp4",
+  ".mkv",
+  ".webm",
+  ".mov",
+  ".avi",
+  ".mp3",
+  ".ogg",
+  ".flac",
+  ".aac",
+  ".m4a",
+  ".pdf",
+  ".docx",
+  ".xlsx",
+  ".pptx",
+  ".odt",
+  ".ods",
+  ".epub",
+  ".jar",
+  ".apk",
+]);
+
+function isAlreadyCompressed(filename: string): boolean {
+  return ALREADY_COMPRESSED_EXTENSIONS.has(path.extname(filename).toLowerCase());
 }
 
-export interface UploadedFileInfo {
-  filePath: string;
-  originalName: string;
-  relativePath: string;
-  size: number;
-  mimeType: string;
-}
+/**
+ * Readable that opens the underlying storage stream only when first read.
+ * The zip archiver consumes entries one at a time, so only one file (local descriptor
+ * or S3 GET) is open at any moment, whatever the number of files in the share.
+ */
+function lazyStorageStream(key: string): Readable {
+  let source: Readable | null = null;
 
-export function generateBulkUploadId(): string {
-  return crypto.randomBytes(16).toString("hex");
-}
+  const lazy = new Readable({
+    read() {
+      if (source) {
+        source.resume();
+        return;
+      }
+      getStorageReadStream(key)
+        .then((stream) => {
+          source = stream;
+          stream.on("data", (chunk) => {
+            if (!lazy.push(chunk)) stream.pause();
+          });
+          stream.on("end", () => lazy.push(null));
+          stream.on("error", (error: NodeJS.ErrnoException) => {
+            if (error.code === "ENOENT") {
+              // Local file missing: same treatment as a failed S3 GET below
+              console.error(`Zip archive: missing file ${key}, adding an empty entry`);
+              lazy.push(null);
+            } else {
+              lazy.destroy(error);
+            }
+          });
+        })
+        .catch((error) => {
+          // A missing file becomes an empty entry instead of breaking the whole archive
+          console.error(`Zip archive: cannot open ${key}, adding an empty entry:`, error);
+          lazy.push(null);
+        });
+    },
+    destroy(error, callback) {
+      source?.destroy();
+      callback(error);
+    },
+  });
 
-export async function ensureUploadDirectory(): Promise<string> {
-  const uploadsDir = getUploadDir();
-  try {
-    await access(uploadsDir);
-  } catch {
-    await mkdir(uploadsDir, { recursive: true });
-  }
-  return uploadsDir;
-}
-
-export async function saveBulkFile(
-  fileBuffer: Buffer,
-  originalName: string,
-  relativePath: string,
-  shareId: string
-): Promise<UploadedFileInfo> {
-  if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
-    throw new Error("Invalid or empty file buffer provided to saveBulkFile");
-  }
-
-  const uploadsDir = await ensureUploadDirectory();
-  const safeFileName = generateSafeFilename(originalName, shareId);
-  const filePath = path.join(uploadsDir, safeFileName);
-
-  await mkdir(path.dirname(filePath), { recursive: true });
-  const writeStream = createWriteStream(filePath);
-  await pipeline(Readable.from(fileBuffer), writeStream);
-
-  const stats = await stat(filePath);
-
-  return {
-    filePath: safeFileName,
-    originalName,
-    relativePath,
-    size: stats.size,
-    mimeType: getMimeType(originalName),
-  };
-}
-
-export function generateSafeFilename(originalName: string, shareId: string): string {
-  const ext = path.extname(originalName);
-  const baseName = path
-    .basename(originalName, ext)
-    .replace(/[^a-zA-Z0-9._-]/g, "_")
-    .substring(0, 100);
-  const uniqueId = crypto.randomBytes(8).toString("hex");
-  return `${shareId}_${uniqueId}_${baseName}${ext}`;
-}
-
-export function getMimeType(filename: string): string {
-  return getMimeTypeFromLib(filename);
+  return lazy;
 }
 
 export async function createZipStream(
@@ -86,17 +98,19 @@ export async function createZipStream(
     zlib: { level: 6 },
   });
 
+  archive.on("warning", (warning) => {
+    console.error("Zip archive warning:", warning);
+  });
+
   for (const file of files) {
-    try {
-      const stream = await getStorageReadStream(file.filePath);
-      const displayPath = file.relativePath || file.originalName;
-      archive.append(stream, { name: displayPath });
-    } catch {
-      // skip missing files
-    }
+    const displayPath = file.relativePath || file.originalName;
+    archive.append(lazyStorageStream(file.filePath), {
+      name: displayPath,
+      store: isAlreadyCompressed(displayPath),
+    });
   }
 
-  archive.finalize();
+  void archive.finalize();
   return archive;
 }
 
@@ -111,5 +125,3 @@ export function validateFilePath(filePath: string): boolean {
 export function normalizeRelativePath(relativePath: string): string {
   return relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\.\.+/g, ".");
 }
-
-export { storageFileExists };

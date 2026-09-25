@@ -33,7 +33,7 @@ const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => 
         </svg>
         <div>
           <h4 className="text-sm font-medium text-[var(--destructive)] mb-1">
-            {t(`${translationPrefix}.error_title`, "Erreur")}
+            {t(`${translationPrefix}.error_title`, "Error")}
           </h4>
           <p className="text-sm text-[var(--foreground-muted)]">{error}</p>
         </div>

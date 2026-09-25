@@ -22,7 +22,3 @@ export function useAuth(requireAuth = false) {
     user: session?.user,
   };
 }
-
-export function useRequireAuth() {
-  return useAuth(true);
-}

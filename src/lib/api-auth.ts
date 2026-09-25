@@ -8,19 +8,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashApiKey } from "@/lib/security";
+import { getClientIp } from "@/lib/getClientIp";
+import { getRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
 
 export type AuthMethod = "apikey" | "session" | null;
 
 export interface ApiAuthResult {
   user: { id: string; name?: string | null; email: string; isAdmin: boolean } | null;
   authMethod: AuthMethod;
+  /** Set when too many invalid API keys came from this client: callers must answer 429 */
+  retryAfter?: number;
 }
 
 /**
  * Authenticate an API request.
  *
  * Resolution order:
- * 1. `Authorization: Bearer sk_...` → SHA-256 hash lookup in ApiKey table
+ * 1. `Authorization: Bearer sk_...` → HMAC-SHA256 hash lookup in ApiKey table
  * 2. NextAuth session cookie
  * 3. Unauthenticated (anonymous)
  */
@@ -31,6 +35,13 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
   if (authHeader?.startsWith("Bearer ")) {
     const rawKey = authHeader.slice(7).trim();
     if (rawKey.startsWith("sk_")) {
+      // Clients that keep presenting invalid keys are refused without a lookup
+      const clientIp = getClientIp(request);
+      const retryAfter = getRetryAfter("apiKey", clientIp);
+      if (retryAfter > 0) {
+        return { user: null, authMethod: null, retryAfter };
+      }
+
       const keyHash = hashApiKey(rawKey);
       const apiKey = await prisma.apiKey.findUnique({
         where: { keyHash },
@@ -56,6 +67,8 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
 
         return { user: apiKey.user, authMethod: "apikey" };
       }
+
+      recordRateLimitHit("apiKey", clientIp);
     }
   }
 

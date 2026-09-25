@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks/useAuth";
-import { useShareSettings } from "@/hooks/useShareSettings";
-import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
+import { useShareForm } from "@/hooks/useShareForm";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
@@ -15,35 +13,10 @@ import SubmitButton from "./shareComponents/SubmitButton";
 import ShareFormSkeleton from "./ShareFormSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 
-const MAX_DAYS_ANON = 7;
-const MAX_DAYS_AUTH = 365;
-
 const LinkShare: React.FC = () => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
-  const [neverExpires, setNeverExpires] = useState(false);
-  const [slug, setSlug] = useState("");
-  const [password, setPassword] = useState("");
-  const [hasViewLimit, setHasViewLimit] = useState(false);
-  const [maxViews, setMaxViews] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [successSlug, setSuccessSlug] = useState<string>("");
   const [urlError, setUrlError] = useState<string | null>(null);
-  const {
-    allowAnonLinkShare,
-    defaultExpirationDays,
-    loading: settingsLoading,
-  } = useShareSettings();
-  const [expiresDays, setExpiresDays] = useDefaultExpirationDays(
-    isAuthenticated,
-    authLoading,
-    defaultExpirationDays,
-    settingsLoading,
-    MAX_DAYS_ANON
-  );
 
   function isValidUrl(value: string) {
     try {
@@ -54,6 +27,34 @@ const LinkShare: React.FC = () => {
     }
   }
 
+  const {
+    isAuthenticated,
+    shareSettings: { allowAnonLinkShare, loading: settingsLoading },
+    formRef,
+    slug,
+    setSlug,
+    password,
+    setPassword,
+    neverExpires,
+    setNeverExpires,
+    expiresDays,
+    setExpiresDays,
+    hasViewLimit,
+    setHasViewLimit,
+    maxViews,
+    setMaxViews,
+    loading,
+    setLoading,
+    error,
+    setError,
+    success,
+    setSuccess,
+    successSlug,
+    setSuccessSlug,
+    computeExpiresAt,
+    resetAfterSuccess,
+  } = useShareForm({ canSubmit: () => !!url.trim() && !urlError });
+
   const handleUrlChange = (value: string) => {
     setUrl(value);
     setUrlError(null);
@@ -61,18 +62,6 @@ const LinkShare: React.FC = () => {
       setUrlError(t("linkshare.url_error", "Invalid URL format"));
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && url.trim() && !urlError && !loading) {
-        e.preventDefault();
-        const form = document.querySelector("form");
-        if (form) form.requestSubmit();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [url, urlError, loading]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,12 +77,7 @@ const LinkShare: React.FC = () => {
       return;
     }
 
-    let expiresAt: string | null = null;
-    if (!isAuthenticated || !neverExpires) {
-      const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-      const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-      expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-    }
+    const expiresAt = computeExpiresAt();
 
     const payload: Record<string, unknown> = {
       type: "URL",
@@ -122,11 +106,7 @@ const LinkShare: React.FC = () => {
         } else if (linkShare?.id) setSuccess(`${window.location.origin}/l/${linkShare.id}`);
         else setSuccess(t("linkshare.created", "Share created"));
         setUrl("");
-        setSlug("");
-        setPassword("");
-        setNeverExpires(false);
-        setHasViewLimit(false);
-        setMaxViews(1);
+        resetAfterSuccess();
         setUrlError(null);
       }
     } catch (error) {
@@ -174,7 +154,7 @@ const LinkShare: React.FC = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           {/* URL input */}
           <div className="space-y-2">
             <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">

@@ -14,45 +14,44 @@ export interface FetchOptions {
   errorMessage?: string;
 }
 
+// Identical concurrent GETs share one request. Shared requests are never aborted by a
+// single consumer (that used to leave the other consumers with no data and no error).
 const inflightRequests = new Map<string, Promise<unknown>>();
+
+function sharedFetch<T>(url: string): Promise<T> {
+  const existing = inflightRequests.get(url) as Promise<T> | undefined;
+  if (existing) return existing;
+
+  const promise = fetch(url)
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json() as Promise<T>;
+    })
+    .finally(() => inflightRequests.delete(url));
+  inflightRequests.set(url, promise);
+  return promise;
+}
 
 export function useFetch<T>(url: string | null, options?: FetchOptions): FetchState<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(url !== null);
   const [error, setError] = useState<string | null>(null);
+  // Incremented on each fetch and on unmount: only the latest fetch may update state
   const counterRef = useRef(0);
   const optionsRef = useRef(options);
   optionsRef.current = options;
-  const abortRef = useRef<AbortController | null>(null);
 
   const fetch_ = useCallback(async () => {
     if (!url) return;
-    abortRef.current?.abort();
     const id = ++counterRef.current;
     setLoading(true);
     setError(null);
     try {
-      const existing = inflightRequests.get(url) as Promise<T> | undefined;
-      let promise: Promise<T>;
-      if (existing) {
-        abortRef.current = null;
-        promise = existing;
-      } else {
-        const controller = new AbortController();
-        abortRef.current = controller;
-        promise = fetch(url, { signal: controller.signal }).then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json() as Promise<T>;
-        });
-        inflightRequests.set(url, promise);
-        promise.finally(() => inflightRequests.delete(url)).catch(() => {});
-      }
-      const json = await promise;
+      const json = await sharedFetch<T>(url);
       if (id === counterRef.current) {
         setData(json);
       }
     } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") return;
       if (id === counterRef.current) {
         setError(
           optionsRef.current?.errorMessage ?? (err instanceof Error ? err.message : "Unknown error")
@@ -66,9 +65,11 @@ export function useFetch<T>(url: string | null, options?: FetchOptions): FetchSt
   }, [url]);
 
   useEffect(() => {
+    const counter = counterRef;
     fetch_();
     return () => {
-      abortRef.current?.abort();
+      // Ignore the response of a request started before unmount / url change
+      counter.current++;
     };
   }, [fetch_]);
 

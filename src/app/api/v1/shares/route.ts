@@ -5,16 +5,39 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiRequest } from "@/lib/api-auth";
-import { createLinkShare, createPasteShare } from "@/lib/shares";
+import { rateLimitResponse } from "@/lib/rate-limit";
+import { createLinkShare, createPasteShare, toPublicShare } from "@/lib/shares";
 import { getClientIp } from "@/lib/getClientIp";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 export async function GET(request: NextRequest) {
   try {
-    const { user } = await authenticateApiRequest(request);
+    const auth = await authenticateApiRequest(request);
+    if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+    const { user } = auth;
     if (!user) {
       return apiError(request, ErrorCode.AUTHENTICATION_REQUIRED);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const limitParam = searchParams.get("limit");
+    const offsetParam = searchParams.get("offset");
+
+    let take: number | undefined;
+    if (limitParam !== null) {
+      const parsedLimit = parseInt(limitParam, 10);
+      if (!Number.isNaN(parsedLimit)) {
+        take = Math.min(100, Math.max(1, parsedLimit));
+      }
+    }
+
+    let skip: number | undefined;
+    if (offsetParam !== null) {
+      const parsedOffset = parseInt(offsetParam, 10);
+      if (!Number.isNaN(parsedOffset) && parsedOffset >= 0) {
+        skip = parsedOffset;
+      }
     }
 
     const shares = await prisma.share.findMany({
@@ -32,6 +55,8 @@ export async function GET(request: NextRequest) {
         urlOriginal: true,
         pastelanguage: true,
       },
+      ...(take !== undefined ? { take } : {}),
+      ...(skip !== undefined ? { skip } : {}),
     });
 
     return NextResponse.json({ data: shares });
@@ -43,7 +68,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { user } = await authenticateApiRequest(request);
+    const auth = await authenticateApiRequest(request);
+    if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+    const { user } = auth;
     const ip = getClientIp(request);
 
     const context = {
@@ -91,7 +118,7 @@ export async function POST(request: NextRequest) {
         maxViews: typeof maxViews === "number" ? maxViews : undefined,
       });
       if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
-      return NextResponse.json({ share: result.share }, { status: 201 });
+      return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
     }
 
     // PASTE
@@ -106,7 +133,7 @@ export async function POST(request: NextRequest) {
       maxViews: typeof maxViews === "number" ? maxViews : undefined,
     });
     if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
-    return NextResponse.json({ share: result.share }, { status: 201 });
+    return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/v1/shares]", error);
     return internalError(request);

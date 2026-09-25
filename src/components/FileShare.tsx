@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks/useAuth";
-import { useShareSettings } from "@/hooks/useShareSettings";
-import { useDefaultExpirationDays } from "@/hooks/useDefaultExpirationDays";
-import * as tus from "tus-js-client";
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  MAX_ANON_EXPIRY_DAYS,
+} from "@/lib/share-constants";
+import { useShareForm } from "@/hooks/useShareForm";
+import { useTusUpload } from "@/hooks/useTusUpload";
 import { formatBytes, convertFromMB } from "@/lib/formatSize";
+import type { FileWithPath } from "@/lib/client/file-drop";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
@@ -14,15 +18,10 @@ import ViewLimitSettings from "./shareComponents/ViewLimitSettings";
 import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
+import FileDropZone from "./shareComponents/FileDropZone";
 
-const MAX_DAYS_ANON = 7;
-const MAX_DAYS_AUTH = 365;
+const MAX_DAYS_ANON = MAX_ANON_EXPIRY_DAYS;
 const MAX_NOTE_LENGTH = 2000;
-
-interface FileWithPath {
-  file: File;
-  relativePath: string;
-}
 
 interface FileShareProps {
   initialFiles?: File[];
@@ -30,14 +29,51 @@ interface FileShareProps {
 }
 
 const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsumed }) => {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dirInputRef = useRef<HTMLInputElement>(null);
 
   const [files, setFiles] = useState<FileWithPath[]>([]);
-  const [dragOver, setDragOver] = useState(false);
+  const [note, setNote] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const {
+    isAuthenticated,
+    shareSettings: {
+      allowAnonFileShare,
+      anoMaxUploadBytes: maxFileSizeAnon,
+      authMaxUploadBytes: maxFileSizeAuth,
+      useGiBForAnon,
+      useGiBForAuth,
+      loading: settingsLoading,
+    },
+    formRef,
+    slug,
+    setSlug,
+    password,
+    setPassword,
+    neverExpires,
+    setNeverExpires,
+    expiresDays,
+    setExpiresDays,
+    hasViewLimit,
+    setHasViewLimit,
+    maxViews,
+    setMaxViews,
+    loading,
+    setLoading,
+    error,
+    setError,
+    success,
+    setSuccess,
+    successSlug,
+    setSuccessSlug,
+    computeExpiresAt,
+    resetAfterSuccess,
+  } = useShareForm({ canSubmit: () => files.length > 0 });
+
+  const { startUpload } = useTusUpload();
 
   // Load files pasted from the clipboard (Ctrl+V on the home page)
   useEffect(() => {
@@ -46,35 +82,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
       setError(null);
       onInitialFilesConsumed?.();
     }
-  }, [initialFiles, onInitialFilesConsumed]);
-
-  const [neverExpires, setNeverExpires] = useState(false);
-  const [slug, setSlug] = useState("");
-  const [password, setPassword] = useState("");
-  const [note, setNote] = useState("");
-  const [hasViewLimit, setHasViewLimit] = useState(false);
-  const [maxViews, setMaxViews] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [successSlug, setSuccessSlug] = useState<string>("");
-  const {
-    allowAnonFileShare,
-    anoMaxUploadBytes: maxFileSizeAnon,
-    authMaxUploadBytes: maxFileSizeAuth,
-    defaultExpirationDays,
-    useGiBForAnon,
-    useGiBForAuth,
-    loading: settingsLoading,
-  } = useShareSettings();
-  const [expiresDays, setExpiresDays] = useDefaultExpirationDays(
-    isAuthenticated,
-    authLoading,
-    defaultExpirationDays,
-    settingsLoading,
-    MAX_DAYS_ANON
-  );
+  }, [initialFiles, onInitialFilesConsumed, setError]);
 
   const maxFileSize = isAuthenticated ? maxFileSizeAuth : maxFileSizeAnon;
   const useGiB = isAuthenticated ? useGiBForAuth : useGiBForAnon;
@@ -97,144 +105,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
   const totalSize = React.useMemo(() => files.reduce((sum, f) => sum + f.file.size, 0), [files]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    if (selectedFiles) {
-      const fileList: FileWithPath[] = Array.from(selectedFiles).map((file) => ({
-        file,
-        relativePath: file.name,
-      }));
-      setFiles(fileList);
-      setError(null);
-    }
-  };
-
-  const handleDirectorySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = e.target.files;
-    if (selectedFiles) {
-      const fileList: FileWithPath[] = Array.from(selectedFiles).map((file) => {
-        const fullPath =
-          (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-        return {
-          file,
-          relativePath: fullPath,
-        };
-      });
-      setFiles(fileList);
-      setError(null);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-
-    const items = e.dataTransfer.items;
-    if (!items) return;
-
-    const filePromises: Promise<FileWithPath[]>[] = [];
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.kind === "file") {
-        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
-        if (!entry) {
-          continue;
-        }
-        filePromises.push(traverseFileTree(entry, ""));
-      }
-    }
-
-    Promise.all(filePromises).then((results) => {
-      const allFiles = results.flat();
-      setFiles(allFiles);
-      setError(null);
-    });
-  };
-
-  const traverseFileTree = async (
-    entry: FileSystemEntry,
-    path: string
-  ): Promise<FileWithPath[]> => {
-    return new Promise((resolve) => {
-      if (entry.isFile) {
-        (entry as FileSystemFileEntry).file((file: File) => {
-          const relativePath = path + file.name;
-          resolve([{ file, relativePath }]);
-        });
-      } else if (entry.isDirectory) {
-        const dirReader = (entry as FileSystemDirectoryEntry).createReader();
-
-        const readAllEntries = async (): Promise<FileSystemEntry[]> => {
-          const allEntries: FileSystemEntry[] = [];
-
-          // According to the FileSystem API spec, readEntries() must be called
-          // repeatedly until it returns an empty array to get all entries.
-          // See: https://www.w3.org/TR/FileAPI/#file-directory-reader
-          // (Behavior implemented by WebKit/Blink as well.)
-          // We use the same reader and keep reading until no more entries.
-
-          while (true) {
-            const batch: FileSystemEntry[] = await new Promise((res) => {
-              dirReader.readEntries((entries: FileSystemEntry[]) => {
-                res(entries);
-              });
-            });
-
-            if (!batch.length) {
-              break;
-            }
-
-            allEntries.push(...batch);
-          }
-
-          return allEntries;
-        };
-
-        (async () => {
-          const entries = await readAllEntries();
-          const results = await Promise.all(
-            entries.map((e) => traverseFileTree(e, path + entry.name + "/"))
-          );
-          resolve(results.flat());
-        })();
-      } else {
-        resolve([]);
-      }
-    });
-  };
-
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // File input change handler (kept for backward compatibility)
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileSelect(e);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-  };
-
-  // Ref to hold the active upload instance
-  const uploadRef = useRef<tus.Upload | null>(null);
-
-  // Cleanup upload on unmount
-  useEffect(() => {
-    return () => {
-      if (uploadRef.current) {
-        uploadRef.current.abort();
-      }
-    };
-  }, []);
-
   // Map server error codes to translated messages
   const errorCodeMap: Record<string, string> = {
     SLUG_ALREADY_TAKEN: t(
@@ -250,7 +120,26 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
   };
 
   const translateErrorCode = (code: string): string => {
-    return errorCodeMap[code] || code;
+    if (errorCodeMap[code]) return errorCodeMap[code];
+    // Any other server error code has a generic translation under api.errors.*
+    const key = `api.errors.${code.toLowerCase()}`;
+    return i18n.exists(key)
+      ? t(key, { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH, days: MAX_DAYS_ANON })
+      : code;
+  };
+
+  const finishAndReset = (shareSlug: string | null, progress: number) => {
+    if (shareSlug) {
+      setSuccess(`${window.location.origin}/f/${shareSlug}`);
+      setSuccessSlug(shareSlug);
+    }
+    setFiles([]);
+    resetAfterSuccess();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    setLoading(false);
+    setUploadProgress(progress);
   };
 
   // Handle form submission with tus resumable upload
@@ -284,23 +173,16 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     setLoading(true);
     setUploadProgress(0);
 
-    if (!tus.isSupported) {
-      setError(
-        t("fileshare.browser_not_supported", "Your browser does not support resumable uploads")
-      );
-      setLoading(false);
-      return;
-    }
+    const networkErrorMessage = t(
+      "fileshare.network_error",
+      "Network error — could not create share"
+    );
 
     try {
       const baseMetadata: Record<string, string> = {};
 
-      if (!isAuthenticated || !neverExpires) {
-        const cap = isAuthenticated ? MAX_DAYS_AUTH : MAX_DAYS_ANON;
-        const days = Math.max(1, Math.min(Number(expiresDays) || 1, cap));
-        const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-        baseMetadata.expiresAt = expiresAt;
-      }
+      const expiresAt = computeExpiresAt();
+      if (expiresAt) baseMetadata.expiresAt = expiresAt;
 
       if (slug.trim()) baseMetadata.slug = slug.trim();
       if (password.trim()) baseMetadata.password = password.trim();
@@ -325,43 +207,11 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
         let shareSlug: string | null = null;
 
-        const upload = new tus.Upload(file, {
-          endpoint: "/api/tus",
-          retryDelays: [0, 1000, 3000, 5000, 10000],
-          chunkSize: 50 * 1024 * 1024,
+        await startUpload({
+          file,
           metadata,
-          removeFingerprintOnSuccess: true,
-          onShouldRetry(err) {
-            const status = err?.originalResponse?.getStatus();
-            if (status && status >= 400 && status < 500) return false;
-            if (status === 409) return false;
-            return true;
-          },
-          onError: (error: unknown) => {
-            console.error("Tus upload error:", error);
-            let errorMessage = t(
-              "fileshare.network_error",
-              "Network error — could not create share"
-            );
-            const tusError = error as {
-              originalResponse?: { getBody?: () => string };
-              message?: string;
-            };
-            const body = tusError?.originalResponse?.getBody?.();
-            if (body) {
-              try {
-                const parsed = JSON.parse(body);
-                if (parsed.error) {
-                  errorMessage = translateErrorCode(parsed.error);
-                }
-              } catch {
-                errorMessage = body;
-              }
-            }
-            setError(errorMessage);
-            setLoading(false);
-            setUploadProgress(0);
-          },
+          translateErrorCode,
+          networkErrorMessage,
           onProgress: (bytesUploaded, bytesTotal) => {
             const total = bytesTotal || file.size;
             if (total > 0) {
@@ -369,81 +219,40 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
               setUploadProgress(percent);
             }
           },
-          onAfterResponse: (_req, res) => {
-            const slugHeader = res.getHeader("X-Share-Slug");
-            if (slugHeader) {
-              shareSlug = slugHeader;
+          onAfterResponse: (headers) => {
+            if (headers.shareSlug) {
+              shareSlug = headers.shareSlug;
             }
           },
           onSuccess: () => {
             if (!shareSlug) {
-              setError(t("fileshare.network_error", "Network error — could not create share"));
+              setError(networkErrorMessage);
               setLoading(false);
               setUploadProgress(0);
               return;
             }
-            setSuccess(`${window.location.origin}/f/${shareSlug}`);
-            setSuccessSlug(shareSlug);
-            setFiles([]);
-            setSlug("");
-            setPassword("");
-            setNeverExpires(false);
-            setHasViewLimit(false);
-            setMaxViews(1);
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
+            finishAndReset(shareSlug, 0);
+          },
+          onError: (message) => {
+            setError(message);
             setLoading(false);
             setUploadProgress(0);
-            uploadRef.current = null;
           },
         });
-
-        uploadRef.current = upload;
-
-        const previousUploads = await upload.findPreviousUploads();
-        if (previousUploads.length > 0) {
-          upload.resumeFromPreviousUpload(previousUploads[0]);
-        }
-
-        upload.start();
       } else {
         let shareSlug: string | null = null;
         let shareId: string | null = null;
-        const uploadNextFile = async (index: number) => {
+
+        const uploadNextFile = async (index: number): Promise<void> => {
           if (index >= files.length) {
-            if (shareSlug) {
-              setSuccess(`${window.location.origin}/f/${shareSlug}`);
-              setSuccessSlug(shareSlug);
-            }
-            setFiles([]);
-            setSlug("");
-            setPassword("");
-            setNeverExpires(false);
-            setHasViewLimit(false);
-            setMaxViews(1);
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-            setLoading(false);
-            setUploadProgress(100);
-            uploadRef.current = null;
+            finishAndReset(shareSlug, 100);
             return;
           }
 
           const fileWithPath = files[index];
           const file = fileWithPath.file;
 
-          const metadata: {
-            filename: string;
-            filetype: string;
-            relativePath: string;
-            isBulk: string;
-            fileIndex: string;
-            totalFiles: string;
-            bulkShareId?: string;
-            [key: string]: string | undefined;
-          } = {
+          const metadata: Record<string, string> = {
             ...baseMetadata,
             filename: file.name,
             filetype: file.type || "application/octet-stream",
@@ -457,96 +266,61 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
             metadata.bulkShareId = shareId;
           }
 
-          // Filter out undefined values to match tus library's metadata type requirement
-          const cleanMetadata = Object.fromEntries(
-            Object.entries(metadata).filter(([, value]) => value !== undefined)
-          ) as Record<string, string>;
-
           let bytesUploadedSoFar = 0;
           for (let i = 0; i < index; i++) {
             bytesUploadedSoFar += files[i].file.size;
           }
 
           let fileProcessed = false;
+          let fileErrored = false;
 
-          const upload = new tus.Upload(file, {
-            endpoint: "/api/tus",
-            retryDelays: [0, 1000, 3000, 5000, 10000],
-            chunkSize: 50 * 1024 * 1024,
-            metadata: cleanMetadata,
-            removeFingerprintOnSuccess: true,
-            onShouldRetry(err) {
-              const status = err?.originalResponse?.getStatus();
-              if (status && status >= 400 && status < 500) return false;
-              if (status === 409) return false;
-              return true;
-            },
-            onError: (error: unknown) => {
-              console.error(`Tus upload error for file ${index + 1}:`, error);
-              let errorMessage = t(
-                "fileshare.network_error",
-                "Network error — could not create share"
-              );
-              const tusError = error as {
-                originalResponse?: { getBody?: () => string };
-                message?: string;
-              };
-              const body = tusError?.originalResponse?.getBody?.();
-              if (body) {
-                try {
-                  const parsed = JSON.parse(body);
-                  if (parsed.error) {
-                    errorMessage = translateErrorCode(parsed.error);
-                  }
-                } catch {
-                  errorMessage = body;
-                }
-              }
-              setError(`${t("fileshare.file", "File")} ${index + 1}: ${errorMessage}`);
-              setLoading(false);
-              setUploadProgress(0);
-            },
-            onProgress: (bytesUploaded, _bytesTotal) => {
-              const currentFileProgress = bytesUploaded;
-              const overallProgress = bytesUploadedSoFar + currentFileProgress;
+          await startUpload({
+            file,
+            metadata,
+            translateErrorCode,
+            networkErrorMessage,
+            onProgress: (bytesUploaded) => {
+              const overallProgress = bytesUploadedSoFar + bytesUploaded;
               const percent = Math.round((overallProgress / totalSize) * 100);
               setUploadProgress(Math.min(percent, 100));
             },
-            onAfterResponse: (_req, res) => {
-              const slugHeader = res.getHeader("X-Share-Slug");
-              const idHeader = res.getHeader("X-Share-Id");
-              if (slugHeader) {
-                shareSlug = slugHeader;
+            onAfterResponse: (headers) => {
+              if (headers.shareSlug) {
+                shareSlug = headers.shareSlug;
                 fileProcessed = true;
               }
-              if (idHeader) {
-                shareId = idHeader;
+              if (headers.shareId) {
+                shareId = headers.shareId;
               }
             },
             onSuccess: () => {
               if (!fileProcessed) {
-                setError(
-                  `${t("fileshare.file", "File")} ${index + 1}: ${t("fileshare.network_error", "Network error — could not create share")}`
-                );
+                setError(`${t("fileshare.file", "File")} ${index + 1}: ${networkErrorMessage}`);
                 setLoading(false);
                 setUploadProgress(0);
-                return;
               }
-              uploadNextFile(index + 1);
+            },
+            onError: (message) => {
+              fileErrored = true;
+              setError(`${t("fileshare.file", "File")} ${index + 1}: ${message}`);
+              setLoading(false);
+              setUploadProgress(0);
             },
           });
 
-          upload.start();
+          if (fileProcessed && !fileErrored) {
+            await uploadNextFile(index + 1);
+          }
         };
 
-        uploadNextFile(0);
+        await uploadNextFile(0);
       }
     } catch (error) {
       console.error("FileShare error:", error);
       if (error instanceof Error && error.message) {
         setError(error.message);
       } else {
-        setError(t("fileshare.network_error", "Network error — could not create share"));
+        setError(networkErrorMessage);
       }
       setLoading(false);
       setUploadProgress(0);
@@ -556,6 +330,16 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
   if (!isAuthenticated && (settingsLoading || !allowAnonFileShare)) {
     return <LockedShare type="file" isLoading={settingsLoading} isLocked={!allowAnonFileShare} />;
   }
+
+  const maxSizeHint = isAuthenticated
+    ? t("fileshare.max_size_auth", "{{max}} {{unit}} maximum for authenticated users", {
+        max: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
+        unit: useGiB ? "GiB" : "MiB",
+      })
+    : t("fileshare.max_size_anon", "{{max}} {{unit}} maximum for anonymous users", {
+        max: convertFromMB(Math.round(maxFileSizeAnon / (1024 * 1024)), useGiB),
+        unit: useGiB ? "GiB" : "MiB",
+      });
 
   return (
     <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
@@ -585,157 +369,17 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* File Upload Area */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[var(--foreground)]">
-            {t("fileshare.file_selected", "File to share")}&nbsp;
-            <span className="text-[var(--destructive)]">*</span>
-          </label>
-
-          {files.length === 0 ? (
-            <div
-              className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center transition-colors duration-200 ${
-                dragOver
-                  ? "border-[var(--secondary)] bg-[var(--surface-hover)]"
-                  : "border-[var(--border)] hover:bg-[var(--surface-hover)]"
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <div className="flex flex-col items-center gap-3">
-                <svg
-                  className="w-12 h-12 text-[var(--foreground-muted)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
-                  />
-                </svg>
-                <div>
-                  <p className="text-[var(--foreground)] font-medium">
-                    {t("fileshare.drag_drop", "Drag & drop files or folders here")}
-                  </p>
-                  <p className="text-[var(--foreground-muted)] text-sm mt-1">
-                    {t("fileshare.or_click", "or click to select")}
-                  </p>
-                </div>
-                <div className="flex gap-2 justify-center flex-wrap">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-md transition-colors text-sm"
-                  >
-                    {t("fileshare.select_files", "Select Files")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      dirInputRef.current?.click();
-                    }}
-                    className="px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] text-white rounded-md transition-colors text-sm"
-                  >
-                    {t("fileshare.select_folder", "Select Folder")}
-                  </button>
-                </div>
-                <p className="text-xs text-[var(--foreground-muted)]">
-                  {isAuthenticated
-                    ? t(
-                        "fileshare.max_size_auth",
-                        "{{max}} {{unit}} maximum for authenticated users",
-                        {
-                          max: convertFromMB(Math.round(maxFileSizeAuth / (1024 * 1024)), useGiB),
-                          unit: useGiB ? "GiB" : "MiB",
-                        }
-                      )
-                    : t("fileshare.max_size_anon", "{{max}} {{unit}} maximum for anonymous users", {
-                        max: convertFromMB(Math.round(maxFileSizeAnon / (1024 * 1024)), useGiB),
-                        unit: useGiB ? "GiB" : "MiB",
-                      })}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-medium text-[var(--foreground)]">
-                  {t("fileshare.selected_files", "Selected Files")} ({files.length})
-                </h3>
-                <p className="text-sm text-[var(--foreground-muted)]">
-                  {t("fileshare.total_size", "Total")}: {formatFileSize(totalSize)}
-                </p>
-              </div>
-              <div className="max-h-48 overflow-y-auto space-y-2">
-                {files.map((fileWithPath, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate text-[var(--foreground)]">
-                        {fileWithPath.relativePath}
-                      </p>
-                      <p className="text-xs text-[var(--foreground-muted)]">
-                        {formatFileSize(fileWithPath.file.size)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="ml-2 text-[var(--destructive)] hover:opacity-80 transition-opacity"
-                      title={t("common.remove", "Remove")}
-                    >
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            onChange={handleFileInputChange}
-            className="hidden"
-            accept="*/*"
-          />
-          <input
-            ref={(node) => {
-              if (node) {
-                dirInputRef.current = node;
-                node.setAttribute("webkitdirectory", "");
-                node.setAttribute("directory", "");
-              }
-            }}
-            type="file"
-            onChange={handleDirectorySelect}
-            className="hidden"
-          />
-        </div>
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+        <FileDropZone
+          files={files}
+          setFiles={setFiles}
+          setError={setError}
+          totalSize={totalSize}
+          formatFileSize={formatFileSize}
+          maxSizeHint={maxSizeHint}
+          fileInputRef={fileInputRef}
+          dirInputRef={dirInputRef}
+        />
 
         {/* Upload Progress */}
         {loading && uploadProgress > 0 && (

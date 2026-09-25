@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Modal from "@/components/ui/Modal";
 import { useTranslation } from "react-i18next";
@@ -36,6 +35,20 @@ interface FilePreviewModalProps {
   fileName: string;
 }
 
+const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
+const VIDEO_EXTENSIONS = ["mp4", "webm", "ogg"];
+
+/**
+ * File type for reactjs-file-preview. Without it the library starts in "unknown" (rendering
+ * its error image) and downloads the whole file once just to read its Content-Type, because
+ * share URLs carry no file extension.
+ */
+function previewFileType(extension: string): "image" | "video" | undefined {
+  if (IMAGE_EXTENSIONS.includes(extension)) return "image";
+  if (VIDEO_EXTENSIONS.includes(extension)) return "video";
+  return undefined;
+}
+
 const SUPPORTED_EXTENSIONS = [
   // Images
   "jpg",
@@ -58,25 +71,13 @@ export default function FilePreviewModal({
   fileName,
 }: FilePreviewModalProps) {
   const { t } = useTranslation();
-  const [error, setError] = useState<string | null>(null);
-  const [isSupported, setIsSupported] = useState(true);
-  const [fileExtension, setFileExtension] = useState<string>("");
+  // Derived during render so the very first render already knows the file type
+  const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
+  const isSupported = SUPPORTED_EXTENSIONS.includes(fileExtension);
 
-  useEffect(() => {
-    if (isOpen) {
-      setError(null);
-      const extension = fileName.split(".").pop()?.toLowerCase() || "";
-      setFileExtension(extension);
-      const supported = SUPPORTED_EXTENSIONS.includes(extension);
-      setIsSupported(supported);
-
-      if (!supported) {
-        setError(
-          t("file_preview.unsupported_format", "This file type is not supported for preview")
-        );
-      }
-    }
-  }, [isOpen, fileName, t]);
+  const error = isSupported
+    ? null
+    : t("file_preview.unsupported_format", "This file type is not supported for preview");
 
   const isPdf = fileExtension === "pdf";
 
@@ -125,6 +126,7 @@ export default function FilePreviewModal({
           <div className="flex-1 bg-[var(--background)] rounded-lg overflow-hidden">
             <FilePreview
               preview={fileUrl}
+              fileType={previewFileType(fileExtension)}
               errorImage="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect fill='%23374151' width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%239ca3af'%3EError loading file%3C/text%3E%3C/svg%3E"
             />
           </div>

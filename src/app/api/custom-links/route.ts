@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isValidUrl } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 // GET – Retrieve all links
@@ -51,10 +52,8 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.LINK_URL_REQUIRED);
     }
 
-    // URL Validation
-    try {
-      new URL(url.trim());
-    } catch {
+    // Only http(s) links: these URLs are rendered as hrefs on every public page
+    if (!isValidUrl(url.trim()).valid) {
       return apiError(request, ErrorCode.LINK_URL_INVALID);
     }
 

@@ -1,14 +1,15 @@
 /**
- * File upload endpoint using App Router with streaming
- * Uses Readable.fromWeb() to convert Web API stream to Node.js stream for busboy
- * This avoids loading files into memory
+ * File upload endpoint (multipart/form-data, optionally chunked).
+ * The web UI uses the tus endpoint (/api/tus); this route is kept for API clients.
+ *
+ * Chunked uploads send X-Upload-Id, X-Chunk-Index and X-Total-Chunks headers; chunks are
+ * appended to a session file until the last one, which creates the share.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import Busboy from "busboy";
-import { Readable } from "node:stream";
-import { createWriteStream, existsSync, statSync } from "fs";
-import { mkdir, rename, unlink } from "fs/promises";
+import { createReadStream, createWriteStream } from "fs";
+import { mkdir, stat, unlink } from "fs/promises";
+import { pipeline } from "stream/promises";
 import path from "path";
 import crypto from "crypto";
 import { getServerSession } from "next-auth/next";
@@ -16,11 +17,20 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUploadDir } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
-import { lookupIpGeolocation } from "@/lib/ip-geolocation";
-import { convertFromMB, getUnitLabel } from "@/lib/formatSize";
-import { apiError, ErrorCode } from "@/lib/api-errors";
-import { hashPassword, isValidSlug, resolveAnonExpiry } from "@/lib/security";
+import { apiErrorWithStatus, ErrorCode } from "@/lib/api-errors";
 import { getUploadLimits } from "@/lib/quota-shared";
+import { generateSafeFilename } from "@/lib/files";
+import { receiveMultipart, removeTempFiles, type ReceivedFile } from "@/lib/multipart-upload";
+import {
+  assertFileUploadAllowed,
+  createFileShareRecord,
+  moveToStorage,
+  resolveUploadOptions,
+  rollbackShare,
+  uploadErrorResponse,
+  UploadError,
+  type UploadContext,
+} from "@/lib/upload-share";
 
 // Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
@@ -29,35 +39,40 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Generate safe filename
+ * Session file for a chunked upload. The name is derived from the client-supplied upload id
+ * AND the uploader identity, so another client reusing the id gets a different file.
  */
-function generateSafeFilename(originalName: string, shareId: string): string {
-  const ext = path.extname(originalName);
-  const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9._-]/g, "_");
-  return `${shareId}_${baseName}${ext}`;
+function chunkSessionPath(uploadsDir: string, uploadId: string, context: UploadContext): string {
+  const owner = context.userId ?? `ip:${context.clientIp}`;
+  const digest = crypto.createHash("sha256").update(`${uploadId}:${owner}`).digest("hex");
+  return path.join(uploadsDir, `temp_upload_${digest.slice(0, 32)}`);
+}
+
+async function fileSizeOrNull(filePath: string): Promise<number | null> {
+  try {
+    return (await stat(filePath)).size;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
 }
 
 export async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
-    return NextResponse.json(
-      { error: "Content-Type must be multipart/form-data" },
-      { status: 400 }
-    );
+    return apiErrorWithStatus(req, ErrorCode.INVALID_REQUEST, 400);
   }
 
-  // Check if body exists
   if (!req.body) {
-    return NextResponse.json({ error: "Request body is required" }, { status: 400 });
+    return apiErrorWithStatus(req, ErrorCode.MISSING_DATA, 400);
   }
 
-  // Get session for auth check
   const session = await getServerSession(authOptions);
-  const isAuthenticated = !!session?.user;
-  const clientIp = getClientIp(req);
-
-  // Get limits BEFORE starting to receive the file
-  const limits = await getUploadLimits(clientIp, isAuthenticated);
+  const context: UploadContext = {
+    clientIp: getClientIp(req),
+    userId: session?.user?.id ?? null,
+    isAuthenticated: !!session?.user,
+  };
 
   // Parse chunk headers
   const chunkIndexHeader = req.headers.get("x-chunk-index");
@@ -68,338 +83,125 @@ export async function POST(req: NextRequest) {
 
   const chunkIndex = isChunked ? parseInt(chunkIndexHeader!, 10) : 0;
   const totalChunks = isChunked ? parseInt(totalChunksHeader!, 10) : 1;
-  const uploadId = isChunked ? uploadIdHeader! : crypto.randomBytes(16).toString("hex");
 
-  // Security: Validate uploadId to prevent directory traversal
-  if (isChunked && !/^[a-zA-Z0-9-]+$/.test(uploadId)) {
-    return apiError(req, ErrorCode.INVALID_REQUEST);
+  if (
+    isChunked &&
+    (!/^[a-zA-Z0-9-]{1,100}$/.test(uploadIdHeader!) ||
+      !Number.isInteger(chunkIndex) ||
+      !Number.isInteger(totalChunks) ||
+      chunkIndex < 0 ||
+      totalChunks < 1 ||
+      chunkIndex >= totalChunks)
+  ) {
+    return apiErrorWithStatus(req, ErrorCode.INVALID_REQUEST, 400);
   }
 
-  // Pre-check: if remaining quota is 0, reject immediately (only for new upload/first chunk)
-  if (chunkIndex === 0 && limits.remainingQuotaBytes <= 0) {
-    const unitLabel = getUnitLabel(limits.useGiB);
-    const currentUsageDisplay = convertFromMB(
-      Math.round(limits.currentUsageBytes / (1024 * 1024)),
-      limits.useGiB
+  const limits = await getUploadLimits(context.clientIp, context.isAuthenticated);
+  const uploadsDir = getUploadDir();
+  const sessionPath = isChunked ? chunkSessionPath(uploadsDir, uploadIdHeader!, context) : null;
+
+  let received: ReceivedFile[] = [];
+  let finalTempPath: string | null = null;
+
+  try {
+    await assertFileUploadAllowed(context);
+
+    // Quota is fully exhausted: reject before receiving anything (new uploads only)
+    if (chunkIndex === 0 && limits.remainingQuotaBytes <= 0) {
+      throw new UploadError(429, ErrorCode.IP_QUOTA_EXCEEDED, { quota: limits.ipQuotaMB });
+    }
+
+    await mkdir(uploadsDir, { recursive: true });
+
+    // Bytes already received for this chunked upload
+    let alreadyReceived = 0;
+    if (sessionPath && chunkIndex > 0) {
+      const size = await fileSizeOrNull(sessionPath);
+      if (size === null) throw new UploadError(400, ErrorCode.INVALID_REQUEST);
+      alreadyReceived = size;
+    }
+
+    const effectiveMaxBytes = Math.min(limits.maxFileSizeBytes, limits.remainingQuotaBytes);
+    const result = await receiveMultipart(req, {
+      tempDir: uploadsDir,
+      maxFileBytes: Math.max(0, limits.maxFileSizeBytes - alreadyReceived),
+      maxTotalBytes: Math.max(0, effectiveMaxBytes - alreadyReceived),
+      maxFiles: 1,
+      acceptFile: (fieldName) => fieldName === "file",
+    });
+    received = result.files;
+    const { fields } = result;
+
+    const file = received[0];
+    if (!file) throw new UploadError(400, ErrorCode.FILE_REQUIRED);
+
+    if (sessionPath) {
+      // Append this chunk to the session file (first chunk truncates any stale content)
+      await pipeline(
+        createReadStream(file.tempPath),
+        createWriteStream(sessionPath, { flags: chunkIndex === 0 ? "w" : "a" })
+      );
+      await removeTempFiles(received);
+      received = [];
+
+      if (chunkIndex < totalChunks - 1) {
+        return NextResponse.json(
+          { status: "chunk_received", index: chunkIndex, nextIndex: chunkIndex + 1 },
+          { status: 201 }
+        );
+      }
+      finalTempPath = sessionPath;
+    } else {
+      finalTempPath = file.tempPath;
+    }
+
+    // --- Finalize (single request or last chunk) ---
+    const totalSize = (await fileSizeOrNull(finalTempPath)) ?? 0;
+
+    const options = await resolveUploadOptions(
+      { slug: fields.slug, password: fields.password, expiresAt: fields.expiresAt },
+      context
     );
-    const ipQuotaDisplay = convertFromMB(limits.ipQuotaMB, limits.useGiB);
+
+    const share = await createFileShareRecord(options, context, {
+      isBulk: false,
+      size: totalSize,
+    });
+
+    const finalFileName = generateSafeFilename(file.filename, share.id);
+    try {
+      await moveToStorage(finalTempPath, finalFileName);
+      finalTempPath = null; // moved: nothing to clean up
+      await prisma.share.update({
+        where: { id: share.id },
+        data: { filePath: finalFileName },
+      });
+    } catch (error) {
+      await rollbackShare(share.id);
+      throw error;
+    }
+
     return NextResponse.json(
       {
-        error: isAuthenticated
-          ? `IP quota exceeded. Current usage: ${currentUsageDisplay} ${unitLabel}, Limit: ${ipQuotaDisplay} ${unitLabel}`
-          : `IP quota exceeded. Current usage: ${currentUsageDisplay} ${unitLabel}, Limit: ${ipQuotaDisplay} ${unitLabel}. Sign in for higher limits.`,
+        share: {
+          slug: share.slug,
+          type: share.type,
+          filename: file.filename,
+          expiresAt: share.expiresAt,
+          hasPassword: !!share.password,
+        },
       },
-      { status: 429 }
+      { status: 201 }
     );
+  } catch (error) {
+    await removeTempFiles(received);
+    if (finalTempPath) {
+      await unlink(finalTempPath).catch((unlinkError: NodeJS.ErrnoException) => {
+        if (unlinkError.code !== "ENOENT") {
+          console.error("Upload: failed to remove session file:", unlinkError);
+        }
+      });
+    }
+    return uploadErrorResponse(req, error, limits);
   }
-
-  // Effective max is minimum of file size limit and remaining quota
-  const effectiveMaxBytes = Math.min(limits.maxFileSizeBytes, limits.remainingQuotaBytes);
-
-  // Ensure uploads directory exists
-  const uploadsDir = getUploadDir();
-  if (!existsSync(uploadsDir)) {
-    await mkdir(uploadsDir, { recursive: true });
-  }
-
-  return new Promise<NextResponse>((resolve) => {
-    const fields: Record<string, string> = {};
-    let tempFilePath: string | null = null;
-    let originalFilename: string | null = null;
-    let fileSize = 0;
-    let aborted = false;
-    let fileWriteStream: ReturnType<typeof createWriteStream> | null = null;
-
-    // For chunked uploads, use persistent temp file name
-    const tempFileName = isChunked
-      ? `temp_upload_${uploadId}`
-      : `temp_${crypto.randomBytes(16).toString("hex")}`;
-    tempFilePath = path.join(uploadsDir, tempFileName);
-
-    const cleanup = async () => {
-      // Delete temp file if aborted or error
-      if (tempFilePath && existsSync(tempFilePath)) {
-        try {
-          await unlink(tempFilePath);
-        } catch {
-          // Ignore
-        }
-      }
-    };
-
-    const sendError = async (status: number, message: string) => {
-      if (aborted) {
-        await cleanup();
-      }
-      resolve(NextResponse.json({ error: message }, { status }));
-    };
-
-    const sendSuccess = (data: object) => {
-      resolve(NextResponse.json(data, { status: 201 }));
-    };
-
-    // Convert Web API headers to plain object for busboy
-    const headers = Object.fromEntries(req.headers);
-
-    const busboy = Busboy({
-      headers,
-      limits: {
-        fileSize: limits.maxFileSizeBytes * 2, // Check manually
-        files: 1,
-      },
-    });
-
-    busboy.on("field", (name, value) => {
-      fields[name] = value;
-    });
-
-    busboy.on("file", (name, fileStream, info) => {
-      const { filename } = info;
-
-      if (name !== "file" || !filename) {
-        fileStream.resume();
-        return;
-      }
-
-      // Validate filename
-      if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
-        fileStream.resume();
-        aborted = true;
-        sendError(400, "Invalid filename.");
-        return;
-      }
-
-      if (filename.length > 255) {
-        fileStream.resume();
-        aborted = true;
-        sendError(400, "Filename is too long (maximum 255 characters).");
-        return;
-      }
-
-      originalFilename = filename;
-
-      // Handle chunk appending: Check prior existence if chunk > 0
-      if (isChunked && chunkIndex > 0) {
-        if (existsSync(tempFilePath!)) {
-          const stats = statSync(tempFilePath!);
-          fileSize = stats.size;
-        } else {
-          fileStream.resume();
-          aborted = true;
-          sendError(400, "Upload session expired or invalid.");
-          return;
-        }
-      }
-
-      const flags = isChunked && chunkIndex > 0 ? "a" : "w";
-      fileWriteStream = createWriteStream(tempFilePath!, { flags });
-
-      // Track size during streaming
-      fileStream.on("data", (chunk: Buffer) => {
-        fileSize += chunk.length;
-
-        // Double-check limits during streaming
-        if (fileSize > effectiveMaxBytes && !aborted) {
-          aborted = true;
-          fileStream.destroy();
-          fileWriteStream?.destroy();
-
-          const unitLabel = getUnitLabel(limits.useGiB);
-          if (fileSize > limits.remainingQuotaBytes) {
-            const currentUsageMB = Math.round(limits.currentUsageBytes / (1024 * 1024));
-            const currentUsageDisplay = convertFromMB(currentUsageMB, limits.useGiB);
-            const ipQuotaDisplay = convertFromMB(limits.ipQuotaMB, limits.useGiB);
-            sendError(
-              429,
-              limits.isAuthenticated
-                ? `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}`
-                : `IP quota exceeded. Current usage: ${currentUsageDisplay}${unitLabel}, Limit: ${ipQuotaDisplay}${unitLabel}. Sign in for higher limits.`
-            );
-          } else {
-            const maxFileSizeDisplay = convertFromMB(limits.maxFileSizeMB, limits.useGiB);
-            sendError(
-              413,
-              `File size exceeds the allowed limit of ${maxFileSizeDisplay} ${unitLabel}.`
-            );
-          }
-        }
-      });
-
-      fileStream.pipe(fileWriteStream);
-
-      // Handle busboy's file size limit (backup)
-      fileStream.on("limit", () => {
-        if (aborted) return;
-        aborted = true;
-        fileStream.destroy();
-        fileWriteStream?.destroy();
-        sendError(413, `File size limit exceeded.`);
-      });
-
-      fileStream.on("error", (err) => {
-        if (aborted) return;
-        aborted = true;
-        console.error("File stream error:", err);
-        sendError(500, "Error processing file upload.");
-      });
-
-      fileWriteStream.on("error", (err) => {
-        if (aborted) return;
-        aborted = true;
-        console.error("Write stream error:", err);
-        sendError(500, "Error saving file.");
-      });
-    });
-
-    busboy.on("close", async () => {
-      if (aborted) return;
-
-      try {
-        // Wait for file write to complete
-        if (fileWriteStream) {
-          await new Promise<void>((resolveWrite, rejectWrite) => {
-            fileWriteStream!.on("finish", resolveWrite);
-            fileWriteStream!.on("error", rejectWrite);
-          });
-        }
-
-        // Chunk intermediate success
-        if (isChunked && chunkIndex < totalChunks - 1) {
-          return sendSuccess({
-            status: "chunk_received",
-            index: chunkIndex,
-            nextIndex: chunkIndex + 1,
-          });
-        }
-
-        // --- Finalize Logic (Only if not chunked or last chunk) ---
-
-        // Validate required fields
-        if (fields.type !== "FILE") {
-          // Should ideally be present in last chunk
-        }
-
-        if (!tempFilePath || !originalFilename) {
-          return sendError(400, "File required or upload error");
-        }
-
-        // Validate optional fields
-        const slug = fields.slug?.trim();
-        const password = fields.password?.trim();
-        const expiresAtStr = fields.expiresAt;
-
-        if (slug && !isValidSlug(slug)) {
-          aborted = true;
-          await cleanup();
-          return sendError(
-            400,
-            "Invalid slug. It must contain between 3 and 30 alphanumeric characters, dashes or underscores."
-          );
-        }
-
-        // Check slug uniqueness
-        if (slug) {
-          const existingShare = await prisma.share.findUnique({
-            where: { slug },
-          });
-          if (existingShare) {
-            aborted = true;
-            await cleanup();
-            return sendError(409, "This custom URL is already taken. Please choose another one.");
-          }
-        }
-
-        // Parse and validate expiration
-        let expiresAt: Date | null = null;
-        if (expiresAtStr) {
-          expiresAt = new Date(expiresAtStr);
-          if (isNaN(expiresAt.getTime())) {
-            aborted = true;
-            await cleanup();
-            return sendError(400, "Invalid expiration date.");
-          }
-        }
-
-        // Anonymous users must set expiration (max days)
-        if (!isAuthenticated) {
-          const anonResult = resolveAnonExpiry(expiresAt);
-          if (anonResult.error) {
-            aborted = true;
-            await cleanup();
-            return sendError(400, anonResult.error);
-          }
-          expiresAt = anonResult.date!;
-        }
-
-        // Hash password if provided
-        let hashedPassword: string | null = null;
-        if (password) {
-          hashedPassword = await hashPassword(password);
-        }
-
-        // Generate slug if not provided
-        const finalSlug = slug || crypto.randomBytes(8).toString("hex").slice(0, 16);
-
-        const share = await prisma.share.create({
-          data: {
-            slug: finalSlug,
-            type: "FILE",
-            filePath: "",
-            password: hashedPassword,
-            expiresAt,
-            ipSource: clientIp,
-            ownerId: session?.user?.id || null,
-            isBulk: false,
-          },
-        });
-
-        lookupIpGeolocation(clientIp);
-
-        // Move temp file to final destination (local) or upload directly to S3
-        const finalFileName = generateSafeFilename(originalFilename, share.id);
-        const finalFilePath = path.join(uploadsDir, finalFileName);
-
-        const { isS3Enabled, uploadToStorage } = await import("@/lib/storage");
-        const s3Active = await isS3Enabled();
-        if (s3Active) {
-          await uploadToStorage(tempFilePath, finalFileName);
-          unlink(tempFilePath).catch(() => {});
-        } else {
-          await rename(tempFilePath, finalFilePath);
-        }
-        tempFilePath = null; // Prevent cleanup of moved/uploaded file
-
-        // Update database with final file path
-        await prisma.share.update({
-          where: { id: share.id },
-          data: { filePath: finalFileName },
-        });
-
-        sendSuccess({
-          share: {
-            slug: share.slug,
-            type: share.type,
-            filename: originalFilename,
-            expiresAt: share.expiresAt,
-            hasPassword: !!share.password,
-          },
-        });
-      } catch (err) {
-        console.error("Error processing upload:", err);
-        aborted = true;
-        sendError(500, "Error processing upload.");
-      }
-    });
-
-    busboy.on("error", (err) => {
-      if (aborted) return;
-      aborted = true;
-      console.error("Busboy error:", err);
-      sendError(500, "Error processing upload.");
-    });
-
-    // Convert Web API ReadableStream to Node.js Readable and pipe to busboy
-    const nodeStream = Readable.fromWeb(req.body as unknown as import("stream/web").ReadableStream);
-    nodeStream.pipe(busboy);
-  });
 }

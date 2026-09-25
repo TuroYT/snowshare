@@ -1,64 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-import path from "path";
-import { getStorageReadStream, getStorageFileSize, storageFileExists } from "@/lib/storage";
+import { storageFileExists } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
-import { nodeStreamToWebStream } from "@/lib/stream-utils";
-import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";
+import { streamStoredFile } from "@/lib/file-response";
+import { getClientIp } from "@/lib/getClientIp";
+import { logShareAccess } from "@/lib/access-log";
+import {
+  accessDeniedResponse,
+  checkShareAvailability,
+  consumeView,
+  verifyDownloadToken,
+  verifySharePassword,
+} from "@/lib/share-access";
 
-type ShareAccess = {
-  id: string;
-  type: string;
-  password: string | null;
-  expiresAt: Date | null;
-  isBulk: boolean;
-} | null;
-
-async function validateShareAccess(
-  request: NextRequest,
-  share: ShareAccess,
-  password: string | undefined
-): Promise<NextResponse | null> {
-  if (!share || share.type !== "FILE" || !share.isBulk) {
-    return apiError(request, ErrorCode.SHARE_NOT_FOUND);
-  }
-  if (share.expiresAt && new Date(share.expiresAt) <= new Date()) {
-    return apiError(request, ErrorCode.SHARE_EXPIRED);
-  }
-  if (share.password) {
-    if (!password) return apiError(request, ErrorCode.PASSWORD_REQUIRED);
-    const valid = await bcrypt.compare(password, share.password);
-    if (!valid) return apiError(request, ErrorCode.PASSWORD_INCORRECT);
-  }
-  return null;
-}
-
-async function buildFileResponse(
-  shareFile: { filePath: string; originalName: string | null; mimeType: string | null },
-  fileSize: number,
-  forceDownload = false
-): Promise<NextResponse> {
-  let contentType = shareFile.mimeType || "application/octet-stream";
-  if (!shareFile.mimeType) {
-    contentType = getMimeType(path.extname(shareFile.filePath).toLowerCase());
-  }
-  const safeFilename = sanitizeFilenameForHeader(shareFile.originalName || "download");
-  const fileStream = await getStorageReadStream(shareFile.filePath);
-  const webStream = nodeStreamToWebStream(fileStream);
-
-  const disposition = !forceDownload && isSafeForInline(contentType) ? "inline" : "attachment";
-
-  const headers = new Headers();
-  headers.set("Content-Length", fileSize.toString());
-  headers.set("Content-Type", contentType);
-  headers.set("Accept-Ranges", "bytes");
-  headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
-  headers.set("Content-Disposition", `${disposition}; filename="${safeFilename}"`);
-
-  return new NextResponse(webStream as ReadableStream<Uint8Array>, { status: 200, headers });
-}
-
+/**
+ * Serves one file of a bulk share, for preview or individual download.
+ * With a "download" token (issued when a view was counted) files are served freely while it
+ * is valid; without one, every request consumes a view, like any other download.
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
@@ -70,6 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const url = new URL(request.url);
     const relativePath = url.searchParams.get("relativePath");
     const password = url.searchParams.get("password") || undefined;
+    const token = url.searchParams.get("token");
     const forceDownload = url.searchParams.get("download") === "1";
 
     if (!relativePath) {
@@ -82,14 +42,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const share = await prisma.share.findUnique({
       where: { slug },
-      select: { id: true, type: true, password: true, expiresAt: true, isBulk: true },
+      select: {
+        id: true,
+        type: true,
+        password: true,
+        expiresAt: true,
+        maxViews: true,
+        viewCount: true,
+        isBulk: true,
+      },
     });
 
-    const accessError = await validateShareAccess(request, share, password);
-    if (accessError) return accessError;
+    if (!share || share.type !== "FILE" || !share.isBulk) {
+      return apiError(request, ErrorCode.SHARE_NOT_FOUND);
+    }
+
+    const tokenPurpose = verifyDownloadToken(token, share.id, getClientIp(request));
+
+    const unavailable = checkShareAvailability(share, {
+      ignoreViewLimit: tokenPurpose === "download",
+    });
+    if (unavailable) return accessDeniedResponse(request, unavailable);
+
+    if (!tokenPurpose) {
+      const denied = await verifySharePassword(request, share, password);
+      if (denied) return accessDeniedResponse(request, denied);
+    }
 
     const shareFile = await prisma.shareFile.findFirst({
-      where: { shareId: share!.id, relativePath },
+      where: { shareId: share.id, relativePath },
       select: { filePath: true, originalName: true, mimeType: true, size: true },
     });
 
@@ -97,8 +78,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return apiError(request, ErrorCode.FILE_NOT_FOUND);
     }
 
-    const fileSize = await getStorageFileSize(shareFile.filePath);
-    return buildFileResponse(shareFile, fileSize, forceDownload);
+    if (tokenPurpose !== "download") {
+      if (!(await consumeView(share.id))) {
+        return apiError(request, ErrorCode.SHARE_EXPIRED);
+      }
+      void logShareAccess(request, share.id);
+    }
+
+    return streamStoredFile(request, {
+      key: shareFile.filePath,
+      filename: shareFile.originalName || "download",
+      contentType: shareFile.mimeType,
+      size: Number(shareFile.size),
+      disposition: forceDownload ? "attachment" : "inline-when-safe",
+    });
   } catch (error) {
     console.error("File preview error:", error);
     return internalError(request);

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import IpGeoModal from "@/components/admin/IpGeoModal";
+import WarningModal from "@/components/admin/WarningModal";
+import { toast } from "@/components/ui/Toast";
 
 interface IpGeoData {
   countryCode: string | null;
@@ -64,6 +66,7 @@ export default function LogsTab() {
   const [searchInput, setSearchInput] = useState("");
   const [geoModalOpen, setGeoModalOpen] = useState(false);
   const [selectedGeoLog, setSelectedGeoLog] = useState<LogEntry | null>(null);
+  const [logToDelete, setLogToDelete] = useState<LogEntry | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -106,9 +109,7 @@ export default function LogsTab() {
   };
 
   const handleDelete = async (log: LogEntry) => {
-    const confirmed = window.confirm(t("admin.logs.confirm_delete", { slug: log.slug }));
-    if (!confirmed) return;
-
+    setLogToDelete(null);
     setDeletingId(log.id);
     try {
       const response = await fetch(`/api/admin/logs/${log.id}`, { method: "DELETE" });
@@ -130,7 +131,7 @@ export default function LogsTab() {
       }
     } catch (error) {
       console.error("Error deleting share:", error);
-      alert(t("admin.logs.delete_error"));
+      toast.error(t("admin.logs.delete_error"));
     } finally {
       setDeletingId(null);
     }
@@ -218,6 +219,14 @@ export default function LogsTab() {
 
   return (
     <div className="space-y-6">
+      <WarningModal
+        open={logToDelete !== null}
+        title={t("admin.logs.title")}
+        message={logToDelete ? t("admin.logs.confirm_delete", { slug: logToDelete.slug }) : ""}
+        onConfirm={() => logToDelete && handleDelete(logToDelete)}
+        onCancel={() => setLogToDelete(null)}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -482,7 +491,7 @@ export default function LogsTab() {
                   </td>
                   <td className="py-3 px-4 text-right">
                     <button
-                      onClick={() => handleDelete(log)}
+                      onClick={() => setLogToDelete(log)}
                       disabled={deletingId === log.id}
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-600/10 text-red-400 border border-red-500/30 hover:bg-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >

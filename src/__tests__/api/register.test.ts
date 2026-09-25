@@ -6,8 +6,8 @@
  * Tests for user registration API route (POST /api/auth/register)
  */
 
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
+jest.mock("@/lib/prisma", () => {
+  const prisma: Record<string, unknown> = {
     user: {
       count: jest.fn(),
       findUnique: jest.fn(),
@@ -19,8 +19,11 @@ jest.mock("@/lib/prisma", () => ({
     verificationToken: {
       create: jest.fn(),
     },
-  },
-}));
+  };
+  // Interactive transactions run the callback against the same mocked client
+  prisma.$transaction = jest.fn((fn: (tx: unknown) => unknown) => fn(prisma));
+  return { prisma };
+});
 
 jest.mock("@/lib/security", () => ({
   hashPassword: jest.fn((password: string) => Promise.resolve(`hashed:${password}`)),
@@ -49,6 +52,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyCaptcha } from "@/lib/captcha";
 import { sendVerificationEmail } from "@/lib/email";
 import { NextRequest } from "next/server";
+import { __resetAllRateLimits } from "@/lib/rate-limit";
 
 const mockUserCount = prisma.user.count as jest.Mock;
 const mockUserFindUnique = prisma.user.findUnique as jest.Mock;
@@ -79,6 +83,7 @@ const baseSettings = {
 
 describe("POST /api/auth/register", () => {
   beforeEach(() => {
+    __resetAllRateLimits();
     jest.clearAllMocks();
     mockUserCount.mockResolvedValue(0);
     mockSettingsFindFirst.mockResolvedValue(baseSettings);
@@ -463,5 +468,27 @@ describe("POST /api/auth/register", () => {
       expect(response.status).toBe(200);
       expect(data.requiresVerification).toBe(true);
     });
+  });
+});
+
+describe("POST /api/auth/register — rate limiting", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    __resetAllRateLimits();
+    mockUserCount.mockResolvedValue(1);
+    mockSettingsFindFirst.mockResolvedValue(baseSettings);
+    mockUserFindUnique.mockResolvedValue(null);
+    mockUserCreate.mockResolvedValue({ id: "u", email: "a@example.com" });
+  });
+
+  it("returns 429 once the per-IP registration limit is reached", async () => {
+    const body = { email: "a@example.com", password: "password123" };
+    for (let i = 0; i < 10; i++) {
+      const ok = await POST(makeRequest(body));
+      expect(ok.status).not.toBe(429);
+    }
+    const limited = await POST(makeRequest(body));
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get("Retry-After")).toBeTruthy();
   });
 });

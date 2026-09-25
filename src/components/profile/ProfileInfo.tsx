@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
+import { toast } from "@/components/ui/Toast";
 
 type User = {
   id: string;
@@ -56,8 +57,11 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
         defaultTab?: string;
       } = { name, email, defaultTab };
 
-      if (newPassword) {
+      // Changing the email or the password requires the current password (credentials accounts)
+      if (currentPassword) {
         updateData.currentPassword = currentPassword;
+      }
+      if (newPassword) {
         updateData.newPassword = newPassword;
       }
 
@@ -70,7 +74,14 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage(t("profile.success_update"));
+        setMessage(
+          data.requiresVerification
+            ? t(
+                "profile.success_update_verify_email",
+                "Profile updated. Please check your new email address to verify it."
+              )
+            : t("profile.success_update")
+        );
         onUpdate(data.user);
         localStorage.setItem("defaultTab", defaultTab);
         setCurrentPassword("");
@@ -79,7 +90,8 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
       } else {
         setError(data.error || t("profile.error_update"));
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to update profile:", err);
       setError(t("profile.error_update"));
     } finally {
       setSaving(false);
@@ -324,8 +336,9 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
                 "snowshare-export.json";
               a.click();
               URL.revokeObjectURL(url);
-            } catch {
-              alert(t("profile.export_error"));
+            } catch (err) {
+              console.error("Failed to export profile data:", err);
+              toast.error(t("profile.export_error"));
             } finally {
               setExporting(false);
             }

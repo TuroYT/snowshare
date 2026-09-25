@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { MAX_ANON_EXPIRY_DAYS } from "@/lib/share-constants";
 
 /**
  * Bcrypt cost factor — standardized across the entire application.
@@ -32,10 +33,7 @@ export function isValidSlug(slug: string): boolean {
   return SLUG_REGEX.test(slug);
 }
 
-/**
- * Maximum expiry in days for anonymous users.
- */
-export const MAX_ANON_EXPIRY_DAYS = 7;
+export { MAX_ANON_EXPIRY_DAYS };
 
 /**
  * Compute the maximum expiry Date for an anonymous user (now + MAX_ANON_EXPIRY_DAYS).
@@ -78,16 +76,26 @@ export async function generateRandomSlug(
 }
 
 /**
- * Hash an API key using bcrypt.
+ * Hash an API key for storage and lookup: HMAC-SHA256 keyed with NEXTAUTH_SECRET.
+ *
+ * API keys are 128-bit random tokens, not user-chosen passwords, so a fast deterministic hash
+ * is appropriate: it allows an indexed lookup by hash (a salted slow hash such as bcrypt makes
+ * lookups impossible and turns every Bearer request into a CPU-bound operation). The server
+ * secret additionally prevents checking candidate keys offline against a leaked database.
+ * Changing NEXTAUTH_SECRET therefore invalidates every existing API key.
  */
 export function hashApiKey(rawKey: string): string {
-  return bcrypt.hashSync(rawKey, BCRYPT_COST);
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error("NEXTAUTH_SECRET is required to hash API keys");
+  }
+  return crypto.createHmac("sha256", secret).update(rawKey).digest("hex");
 }
 
 /**
  * Generate a new raw API key.
  * Format: sk_<32 hex chars>
- * The raw key is shown once and never stored — only the SHA-256 hash is persisted.
+ * The raw key is shown once and never stored — only its HMAC-SHA256 hash is persisted.
  */
 export function generateApiKey(): { raw: string; hash: string; prefix: string } {
   const raw = `sk_${crypto.randomBytes(16).toString("hex")}`;

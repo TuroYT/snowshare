@@ -5,8 +5,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiRequest } from "@/lib/api-auth";
+import { rateLimitResponse } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
+import { deleteShareFiles } from "@/lib/storage";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
@@ -42,17 +44,23 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { user } = await authenticateApiRequest(request);
+    const auth = await authenticateApiRequest(request);
+    if (auth.retryAfter) return rateLimitResponse(request, auth.retryAfter);
+    const { user } = auth;
     if (!user) return apiError(request, ErrorCode.AUTHENTICATION_REQUIRED);
 
     const { slug } = await params;
-    const share = await prisma.share.findUnique({ where: { slug } });
+    const share = await prisma.share.findUnique({
+      where: { slug },
+      select: { ownerId: true, filePath: true, files: { select: { filePath: true } } },
+    });
 
     if (!share) return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     if (share.ownerId !== user.id && !user.isAdmin) {
       return apiError(request, ErrorCode.FORBIDDEN);
     }
 
+    await deleteShareFiles(share);
     await prisma.share.delete({ where: { slug } });
     return new NextResponse(null, { status: 204 });
   } catch (error) {

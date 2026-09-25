@@ -1,4 +1,5 @@
 import path from "path";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/lib/share-constants";
 
 /**
  * Valid paste language types - must match the pasteType enum in the Prisma schema
@@ -38,8 +39,7 @@ export const MAX_EMAIL_LENGTH = 254;
 /**
  * Password constraints
  */
-export const PASSWORD_MIN_LENGTH = 6;
-export const PASSWORD_MAX_LENGTH = 100;
+export { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH } from "@/lib/share-constants";
 
 /**
  * Email validation regex (simplified, safer version)
@@ -61,22 +61,22 @@ export function isValidEmail(email: string): boolean {
  */
 export function isValidUrl(url: string): { valid: boolean; error?: string } {
   if (!url || typeof url !== "string") {
-    return { valid: false, error: "URL invalide" };
+    return { valid: false, error: "Invalid URL" };
   }
 
   if (url.length > MAX_URL_LENGTH) {
-    return { valid: false, error: "URL trop longue" };
+    return { valid: false, error: "URL too long" };
   }
 
   try {
     const parsed = new URL(url);
     // Only allow http and https protocols
     if (!["http:", "https:"].includes(parsed.protocol)) {
-      return { valid: false, error: "Seuls les protocoles HTTP et HTTPS sont autorisés" };
+      return { valid: false, error: "Only HTTP and HTTPS protocols are allowed" };
     }
     return { valid: true };
   } catch {
-    return { valid: false, error: "Format URL invalide" };
+    return { valid: false, error: "Invalid URL format" };
   }
 }
 

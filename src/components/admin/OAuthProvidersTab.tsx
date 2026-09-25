@@ -186,7 +186,7 @@ export default function OAuthProvidersTab() {
           <p className="text-sm text-[var(--foreground-muted)] mb-6">
             {t(
               "admin.oauth.description",
-              "Configurez les fournisseurs d'authentification externes. Vous devrez créer une application OAuth sur la console développeur du fournisseur."
+              "Configure external authentication providers. You will need to create an OAuth application on the provider's developer console."
             )}
           </p>
 
@@ -214,15 +214,15 @@ export default function OAuthProvidersTab() {
                       }`}
                     >
                       {isEnabled
-                        ? t("admin.oauth.enabled", "Activé")
-                        : t("admin.oauth.disabled", "Désactivé")}
+                        ? t("admin.oauth.enabled", "Enabled")
+                        : t("admin.oauth.disabled", "Disabled")}
                     </span>
                   </div>
 
                   <p className="text-sm text-[var(--foreground-muted)] mb-4 flex-1">
                     {configured
                       ? `${t("admin.oauth.client_id", "Client ID")}: ${configured.clientId?.substring(0, 8)}...`
-                      : t("admin.oauth.not_configured", "Non configuré")}
+                      : t("admin.oauth.not_configured", "Not configured")}
                   </p>
 
                   <button
@@ -304,7 +304,7 @@ export default function OAuthProvidersTab() {
                     <p className="text-xs text-[var(--foreground-muted)] mt-1">
                       {t(
                         "admin.oauth.callback_help",
-                        "Copiez cette URL dans les paramètres de votre fournisseur OAuth."
+                        "Copy this URL into your OAuth provider's settings."
                       )}
                     </p>
                   </div>
@@ -395,15 +395,12 @@ export default function OAuthProvidersTab() {
                       className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                       placeholder={
                         providers.find((p) => p.name === editingProvider)?.clientId
-                          ? t(
-                              "admin.oauth.secret_placeholder",
-                              "(Laisser vide pour ne pas changer)"
-                            )
+                          ? t("admin.oauth.secret_placeholder", "(Leave empty to keep unchanged)")
                           : ""
                       }
                     />
                     <p className="text-xs text-[var(--foreground-muted)]">
-                      {t("admin.oauth.secret_help", "Le secret est chiffré avant d'être stocké.")}
+                      {t("admin.oauth.secret_help", "The secret is encrypted before being stored.")}
                     </p>
                   </div>
 
@@ -427,7 +424,7 @@ export default function OAuthProvidersTab() {
                     onClick={() => setEditingProvider(null)}
                     className="px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-[var(--foreground-muted)] hover:bg-[var(--surface-hover)] transition-colors"
                   >
-                    {t("common.cancel", "Annuler")}
+                    {t("common.cancel", "Cancel")}
                   </button>
                   <button
                     type="submit"
@@ -440,7 +437,7 @@ export default function OAuthProvidersTab() {
                       e.currentTarget.style.backgroundColor = "var(--primary)";
                     }}
                   >
-                    {t("common.save", "Enregistrer")}
+                    {t("common.save", "Save")}
                   </button>
                 </div>
               </form>

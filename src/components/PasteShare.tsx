@@ -35,7 +35,7 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
       <LockedShare type="paste" isLoading={false} isLocked={true} />
     ) : (
       <div className="w-full max-w-full overflow-hidden text-left">
-        {/* Header avec icône */}
+        {/* Header with icon */}
         <div className="flex items-center gap-4 mb-6 lg:hidden">
           <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
             <svg
@@ -63,7 +63,7 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
-          {/* Grand éditeur de code */}
+          {/* Large code editor */}
           <div className="flex-1 min-w-0 max-w-full flex-container-safe">
             <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] min-h-[60vh] lg:min-h-[80vh]">
               <div className="hidden lg:flex items-center gap-4 mb-6">
@@ -97,15 +97,10 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
             </div>
           </div>
 
-          {/* Formulaire à droite sur desktop, en bas sur mobile */}
+          {/* Form on the right on desktop, at the bottom on mobile */}
           <div className="w-full lg:w-[32rem] lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
             <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)]">
-              <ManageCodeBlock
-                code={code}
-                onCodeChange={setCode}
-                language={language}
-                onLanguageChange={setLanguage}
-              />
+              <ManageCodeBlock code={code} language={language} onLanguageChange={setLanguage} />
             </div>
           </div>
         </div>

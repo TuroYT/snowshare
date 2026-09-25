@@ -56,3 +56,5 @@ e2e/.venv
 e2e/results
 .vscode/settings.json
 memory
+# pdf.js worker copied from node_modules on install
+/public/pdf.worker.min.mjs

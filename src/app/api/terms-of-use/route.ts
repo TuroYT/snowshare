@@ -1,11 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { getSettingsCached } from "@/lib/settings";
 
 export async function GET() {
-  const termsOfUse = await prisma.settings.findFirst({
-    select: {
-      termsOfUses: true,
-    },
-  });
+  const termsOfUse = await getSettingsCached();
 
   let termsOfUseText = termsOfUse?.termsOfUses;
   if (!termsOfUseText) {

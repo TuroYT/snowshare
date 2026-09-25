@@ -25,6 +25,7 @@ jest.mock("@/lib/prisma", () => ({
 jest.mock("@/lib/shares", () => ({
   createLinkShare: jest.fn(),
   createPasteShare: jest.fn(),
+  toPublicShare: jest.requireActual("@/lib/shares").toPublicShare,
 }));
 
 jest.mock("@/lib/getClientIp", () => ({

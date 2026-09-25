@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -24,6 +24,8 @@ interface FileInfo {
   fileCount?: number;
   files?: FileListItem[];
   note?: string | null;
+  /** Signed token replacing the password in per-file URLs (bulk shares) */
+  accessToken?: string;
 }
 
 function FilePasswordGate({
@@ -65,17 +67,15 @@ function FilePasswordGate({
 
 function BulkFileList({
   files,
-  slug,
-  password,
   formatFileSize,
   onFileClick,
+  onFileDownload,
   t,
 }: {
   files: FileListItem[];
-  slug: string;
-  password: string;
   formatFileSize: (bytes?: number) => string;
   onFileClick: (f: FileListItem) => void;
+  onFileDownload: (f: FileListItem) => void;
   t: TFunction;
 }) {
   return (
@@ -97,24 +97,35 @@ function BulkFileList({
             <p className="text-sm text-[var(--foreground)] truncate">{f.name}</p>
             <p className="text-xs text-[var(--foreground-muted)]">{formatFileSize(f.size)}</p>
           </div>
-          <a
-            href={`/f/${slug}/file-preview?relativePath=${encodeURIComponent(f.path)}&download=1${
-              password ? `&password=${encodeURIComponent(password)}` : ""
-            }`}
+          <button
+            type="button"
             className="shrink-0 text-xs text-[var(--primary)] hover:underline"
-            download
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onFileDownload(f);
+            }}
           >
             {t("file_download.download", "Download")}
-          </a>
+          </button>
         </li>
       ))}
     </ul>
   );
 }
 
+interface DownloadGrant {
+  downloadUrl: string;
+  isBulk: boolean;
+  token: string | null;
+  expiresAt: number;
+}
+
+// Renew the grant slightly before the server-side token expires
+const GRANT_EXPIRY_MARGIN_MS = 60 * 1000;
+
 export default function FileSharePage() {
   const { t } = useTranslation();
+  const downloadGrantRef = useRef<DownloadGrant | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -123,11 +134,6 @@ export default function FileSharePage() {
   const [useGiB, setUseGiB] = useState(false);
   const [passwordSubmitted, setPasswordSubmitted] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string } | null>(null);
-  const [downloadedBytes, setDownloadedBytes] = useState(0);
-  const [totalBytes, setTotalBytes] = useState(0);
-  const [downloadAbortController, setDownloadAbortController] = useState<AbortController | null>(
-    null
-  );
   const params = useParams();
   const slug = params?.slug as string;
 
@@ -222,6 +228,55 @@ export default function FileSharePage() {
     }
   };
 
+  /**
+   * Returns a download grant: the server counts one view and issues a short-lived token that
+   * unlocks the download, previews and individual bulk files. The grant is reused until it
+   * nearly expires, so previewing then downloading costs a single view.
+   */
+  const getDownloadGrant = async (): Promise<DownloadGrant | null> => {
+    const cached = downloadGrantRef.current;
+    if (cached && cached.expiresAt - GRANT_EXPIRY_MARGIN_MS > Date.now()) return cached;
+
+    const response = await fetch(`/f/${slug}/api`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "download",
+        password: password || undefined,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.downloadUrl) {
+      setError(data.error || t("file_download.download_error"));
+      return null;
+    }
+    const grant: DownloadGrant = {
+      downloadUrl: data.downloadUrl,
+      isBulk: !!data.isBulk,
+      token: data.token ?? null,
+      expiresAt: Date.now() + (data.tokenExpiresIn ?? 0) * 1000,
+    };
+    downloadGrantRef.current = grant;
+    return grant;
+  };
+
+  const triggerBrowserDownload = (url: string, filename: string) => {
+    // Let the browser stream the file to disk (no in-memory buffering, native progress)
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filePreviewUrl = (file: FileListItem, token: string | null, download: boolean) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${
+      download ? "&download=1" : ""
+    }${token ? `&token=${encodeURIComponent(token)}` : ""}`;
+  };
+
   const handleDownload = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -234,99 +289,19 @@ export default function FileSharePage() {
     setError("");
 
     try {
-      const response = await fetch(`/f/${slug}/api`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "download",
-          password: password || undefined,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.downloadUrl) {
-          if (data.isBulk) {
-            await handleBulkDownload(data.downloadUrl);
-          } else {
-            const link = document.createElement("a");
-            link.href = data.downloadUrl;
-            link.download = fileInfo?.filename || "download";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          }
-        }
-      } else {
-        const data = await response.json();
-        setError(data.error || t("file_download.download_error"));
+      const grant = await getDownloadGrant();
+      if (grant) {
+        triggerBrowserDownload(
+          grant.downloadUrl,
+          grant.isBulk ? `${slug}_files.zip` : fileInfo?.filename || "download"
+        );
       }
-    } catch {
+    } catch (err) {
+      console.error("Download request failed:", err);
       setError(t("file_download.connection_error"));
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleBulkDownload = async (downloadUrl: string) => {
-    const controller = new AbortController();
-    setDownloadAbortController(controller);
-    setDownloadedBytes(0);
-    setTotalBytes(0);
-
-    try {
-      const response = await fetch(downloadUrl, { signal: controller.signal });
-
-      if (!response.ok) {
-        setError(t("file_download.download_error"));
-        return;
-      }
-
-      const uncompressedSize = parseInt(response.headers.get("X-Uncompressed-Size") || "0", 10);
-      setTotalBytes(uncompressedSize);
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        setError(t("file_download.download_error"));
-        return;
-      }
-
-      const chunks: BlobPart[] = [];
-      let received = 0;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = new Uint8Array(value.byteLength);
-        chunk.set(value);
-        chunks.push(chunk);
-        received += value.length;
-        setDownloadedBytes(received);
-      }
-
-      const blob = new Blob(chunks, { type: "application/zip" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `${slug}_files.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") {
-        setError(t("file_download.download_cancelled", "Download cancelled"));
-      } else {
-        setError(t("file_download.download_error"));
-      }
-    } finally {
-      setDownloadAbortController(null);
-      setDownloadedBytes(0);
-      setTotalBytes(0);
-    }
-  };
-
-  const handleCancelDownload = () => {
-    downloadAbortController?.abort();
   };
 
   const formatFileSize = (bytes?: number) => {
@@ -335,25 +310,44 @@ export default function FileSharePage() {
   };
 
   const handleFileClick = async (file: FileListItem) => {
-    // Build the preview URL with absolute path (required by reactjs-file-preview)
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const previewUrl = `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${password ? `&password=${encodeURIComponent(password)}` : ""}`;
-
-    setPreviewFile({
-      url: previewUrl,
-      name: file.name,
-    });
+    setError("");
+    try {
+      const grant = await getDownloadGrant();
+      if (!grant) return;
+      // Absolute URL required by reactjs-file-preview
+      setPreviewFile({ url: filePreviewUrl(file, grant.token, false), name: file.name });
+    } catch (err) {
+      console.error("Preview request failed:", err);
+      setError(t("file_download.connection_error"));
+    }
   };
 
-  const handleSingleFilePreview = () => {
-    // For single files (non-bulk), use the download route
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const previewUrl = `${origin}/f/${slug}/download${password ? `?password=${encodeURIComponent(password)}` : ""}`;
+  const handleFileDownload = async (file: FileListItem) => {
+    setError("");
+    try {
+      const grant = await getDownloadGrant();
+      if (!grant) return;
+      triggerBrowserDownload(filePreviewUrl(file, grant.token, true), file.name);
+    } catch (err) {
+      console.error("File download request failed:", err);
+      setError(t("file_download.connection_error"));
+    }
+  };
 
-    setPreviewFile({
-      url: previewUrl,
-      name: fileInfo?.filename || "file",
-    });
+  const handleSingleFilePreview = async () => {
+    setError("");
+    try {
+      const grant = await getDownloadGrant();
+      if (!grant) return;
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      setPreviewFile({
+        url: `${origin}${grant.downloadUrl}`,
+        name: fileInfo?.filename || "file",
+      });
+    } catch (err) {
+      console.error("Preview request failed:", err);
+      setError(t("file_download.connection_error"));
+    }
   };
 
   return (
@@ -444,10 +438,9 @@ export default function FileSharePage() {
               {fileInfo.isBulk && fileInfo.files && fileInfo.files.length > 0 && (
                 <BulkFileList
                   files={fileInfo.files}
-                  slug={slug}
-                  password={password}
                   formatFileSize={formatFileSize}
                   onFileClick={handleFileClick}
+                  onFileDownload={handleFileDownload}
                   t={t}
                 />
               )}
@@ -459,37 +452,11 @@ export default function FileSharePage() {
                 </Button>
               )}
 
-              {/* Download progress bar */}
-              {downloadedBytes > 0 && totalBytes > 0 && (
-                <div className="space-y-1">
-                  <div className="h-1.5 rounded-full bg-[var(--border)] overflow-hidden">
-                    <div
-                      className="h-full bg-[var(--primary)] transition-all"
-                      style={{ width: `${Math.round((downloadedBytes / totalBytes) * 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-[var(--foreground-muted)] text-right">
-                    {formatBytes(downloadedBytes, useGiB)} / {formatBytes(totalBytes, useGiB)}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  onClick={() => handleDownload()}
-                  isLoading={loading && !downloadAbortController}
-                  className="flex-1"
-                >
-                  {fileInfo.isBulk
-                    ? t("file_download.download_all_zip", "Download all as ZIP")
-                    : t("file_download.download")}
-                </Button>
-                {downloadAbortController && (
-                  <Button variant="danger" onClick={handleCancelDownload}>
-                    {t("file_download.cancel_download", "Cancel")}
-                  </Button>
-                )}
-              </div>
+              <Button onClick={() => handleDownload()} isLoading={loading} className="w-full">
+                {fileInfo.isBulk
+                  ? t("file_download.download_all_zip", "Download all as ZIP")
+                  : t("file_download.download")}
+              </Button>
 
               {/* Disclaimer */}
               <p className="text-xs text-[var(--foreground-muted)] text-center">

@@ -1,3 +1,4 @@
+import { isIP } from "net";
 import { prisma } from "@/lib/prisma";
 
 interface DbIpResponse {
@@ -15,7 +16,7 @@ interface DbIpResponse {
  * Does not block the caller — the promise is not awaited.
  */
 export function lookupIpGeolocation(ip: string): void {
-  if (!ip || ip === "127.0.0.1" || ip === "::1") {
+  if (!ip || ip === "127.0.0.1" || ip === "::1" || !isIP(ip)) {
     return;
   }
 
@@ -38,7 +39,7 @@ async function _performLookup(ip: string): Promise<void> {
       data: { ip, status: "pending" },
     });
   } catch (err: unknown) {
-    if (err instanceof Error && err.message.includes("Unique constraint")) {
+    if (typeof err === "object" && err !== null && "code" in err && err.code === "P2002") {
       return;
     }
     throw err;
@@ -48,7 +49,7 @@ async function _performLookup(ip: string): Promise<void> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(`http://api.db-ip.com/v2/free/${ip}`, {
+    const response = await fetch(`https://api.db-ip.com/v2/free/${encodeURIComponent(ip)}`, {
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -79,7 +80,9 @@ async function _performLookup(ip: string): Promise<void> {
         where: { ip },
         data: { status: "unknown" },
       })
-      .catch(() => {});
+      .catch((updateErr) => {
+        console.error(`[IP Geolocation] Failed to mark ${ip} as unknown:`, updateErr);
+      });
   }
 }
 

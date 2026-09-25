@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
+// Only the grammars used by a prisma `pasteType` enum value are loaded (see
+// prisma/schema.prisma): PLAINTEXT, JAVASCRIPT, TYPESCRIPT, PYTHON, JAVA,
+// PHP, GO, POWERSHELL, HTML, CSS, SQL, JSON, MARKDOWN. C/C++/Rust/Bash are
+// never produced by a share, so their grammars are not bundled.
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-typescript";
 import "prismjs/components/prism-json";
-import "prismjs/components/prism-markup";
-import "prismjs/components/prism-markup-templating";
-import "prismjs/components/prism-bash";
-import "prismjs/components/prism-c";
-import "prismjs/components/prism-cpp";
+import "prismjs/components/prism-markup"; // needed for HTML, and as a dependency of prism-markup-templating
+import "prismjs/components/prism-markup-templating"; // dependency of prism-php
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-go";
-import "prismjs/components/prism-rust";
 import "prismjs/components/prism-markdown";
 import "prismjs/components/prism-php";
 import "prismjs/components/prism-css";
@@ -68,6 +68,8 @@ const PasteViewPage = () => {
   useEffect(() => {
     if (!slug) return;
 
+    const controller = new AbortController();
+
     const fetchPaste = async () => {
       setLoading(true);
       setError(null);
@@ -79,6 +81,7 @@ const PasteViewPage = () => {
           headers: {
             "Content-Type": "application/json",
           },
+          signal: controller.signal,
         });
 
         const data: ApiResponse = await res.json();
@@ -92,24 +95,37 @@ const PasteViewPage = () => {
           setError(data.error || t("paste_view.fetch_error"));
         }
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Network error:", err);
         setError(t("paste_view.connection_error"));
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchPaste();
+
+    return () => {
+      controller.abort();
+    };
   }, [slug, t]);
 
   const [copied, setCopied] = useState(false);
   const [highlighted, setHighlighted] = useState("");
+  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    };
+  }, []);
 
   const handleCopy = () => {
     if (pasteData?.paste) {
       navigator.clipboard.writeText(pasteData.paste);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
     }
   };
 

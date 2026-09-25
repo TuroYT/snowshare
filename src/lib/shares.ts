@@ -4,6 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { getSettingsCached } from "@/lib/settings";
 import { encrypt } from "@/lib/crypto-link";
 import {
   isValidUrl as validateUrl,
@@ -42,6 +43,17 @@ function getContextFromRequest(request: NextRequest, overrideUserId?: string | n
   };
 }
 
+/**
+ * Strips server-only fields (password hash, uploader IP, storage key) from a share
+ * before it is sent to a client, exposing `hasPassword` instead.
+ */
+export function toPublicShare<
+  T extends { password?: string | null; ipSource?: string | null; filePath?: string | null },
+>(share: T): Omit<T, "password" | "ipSource" | "filePath"> & { hasPassword: boolean } {
+  const { password, ipSource: _ipSource, filePath: _filePath, ...rest } = share;
+  return { ...rest, hasPassword: !!password };
+}
+
 // ---------------------------------------------------------------------------
 // Link share
 // ---------------------------------------------------------------------------
@@ -72,7 +84,7 @@ export async function createLinkShare(params: CreateLinkShareParams) {
 
   // Check slug uniqueness
   if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug } });
+    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
     if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
   }
 
@@ -99,7 +111,7 @@ export async function createLinkShare(params: CreateLinkShareParams) {
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonLinkShare) {
       return { errorCode: ErrorCode.ANON_LINK_SHARE_DISABLED };
     }
@@ -123,7 +135,7 @@ export async function createLinkShare(params: CreateLinkShareParams) {
   // Generate slug if not provided
   if (!slug) {
     slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
     );
   }
 
@@ -186,7 +198,7 @@ export async function createPasteShare(params: CreatePasteShareParams) {
     return { errorCode: ErrorCode.SLUG_INVALID };
   }
   if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug } });
+    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
     if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
   }
 
@@ -213,7 +225,7 @@ export async function createPasteShare(params: CreatePasteShareParams) {
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonPasteShare) {
       return { errorCode: ErrorCode.ANON_PASTE_SHARE_DISABLED };
     }
@@ -235,7 +247,7 @@ export async function createPasteShare(params: CreatePasteShareParams) {
   // Generate slug
   if (!slug) {
     slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
     );
   }
 
@@ -266,6 +278,8 @@ export async function createPasteShare(params: CreatePasteShareParams) {
 export interface CreateFileShareParams {
   filename: string;
   filePath: string;
+  /** File size in bytes (used for quota accounting) */
+  size?: number;
   context: ShareContext;
   expiresAt?: Date;
   slug?: string;
@@ -282,7 +296,7 @@ export async function createFileShare(params: CreateFileShareParams) {
     return { errorCode: ErrorCode.SLUG_INVALID };
   }
   if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug } });
+    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
     if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
   }
 
@@ -309,7 +323,7 @@ export async function createFileShare(params: CreateFileShareParams) {
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettingsCached();
     if (settings && !settings.allowAnonFileShare) {
       return { errorCode: ErrorCode.ANON_FILE_SHARE_DISABLED };
     }
@@ -333,7 +347,7 @@ export async function createFileShare(params: CreateFileShareParams) {
   // Generate slug
   if (!slug) {
     slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s } }))
+      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
     );
   }
 
@@ -342,6 +356,7 @@ export async function createFileShare(params: CreateFileShareParams) {
   const share = await prisma.share.create({
     data: {
       filePath,
+      size: params.size != null ? BigInt(params.size) : null,
       slug,
       type: "FILE",
       password: password || null,

@@ -171,6 +171,19 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+## Behaviour Changes by Release
+
+### Security & performance audit
+
+- **Client IP resolution**: SnowShare now uses the **last** `X-Forwarded-For` entry (the one appended by your reverse proxy) instead of the first one, which clients could forge to bypass quotas. With a single reverse proxy nothing changes. If several proxies are chained (e.g. Cloudflare → nginx → SnowShare), set `TRUSTED_PROXY_COUNT` to their number.
+- **No reverse proxy?** If SnowShare is exposed directly (clients connect to its port), set `TRUSTED_PROXY_COUNT=0` so forwarding headers sent by clients are ignored.
+- **API keys**: keys are hashed with HMAC-SHA256 keyed with `NEXTAUTH_SECRET`. Keys created with a recent release could not authenticate; recreate them from your profile if needed. **Changing `NEXTAUTH_SECRET` invalidates every API key** (and every session, as before). A client that sends too many invalid keys now receives `429` (it used to be treated as anonymous).
+- **View limits**: download links built by the share page use a short-lived signed `token` instead of `?password=`. Direct downloads without a token (`/f/<slug>/download`, `/api/download/<slug>`, bulk ZIP and individual bulk files) now count one view per request, Range requests included, so `maxViews` can no longer be bypassed. `?password=` is still accepted.
+- **Anonymous file uploads** now honour the "allow anonymous file sharing" admin setting on every upload endpoint.
+- **Profile**: changing your e-mail address now requires your current password (password accounts) and a new verification e-mail when e-mail verification is enabled.
+- **Database migration** (applied automatically): adds a nullable `Share.size` column and indexes. No data is modified.
+- **Docker**: the image has a `HEALTHCHECK`; the unused `/var/log` volume was removed from `docker-compose.yml`, and share cleanup runs inside the app every hour (the old cron script is gone).
+
 ## Version History
 
 Check the [GitHub Releases](https://github.com/TuroYT/snowshare/releases) page for:

@@ -1,6 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+
+/** Escapes a value for use inside a double-quoted CSS string (e.g. url("...")). */
+function escapeCssString(value: string): string {
+  return value.replace(/["\\\n\r]/g, (char) => `\\${char.charCodeAt(0).toString(16)} `);
+}
 
 export interface ThemeColors {
   primaryColor: string;
@@ -87,7 +92,7 @@ const defaultColors: ThemeColors = {
 
 const defaultBranding: BrandingSettings = {
   appName: "SnowShare",
-  appDescription: "Partagez vos fichiers, pastes et URLs en toute sécurité",
+  appDescription: "Share your files, pastes and URLs securely",
   logoUrl: null,
   faviconUrl: null,
   fontFamily: "Geist",
@@ -138,7 +143,7 @@ export function ThemeProvider({
   const [branding, setBranding] = useState<BrandingSettings>(defaultBranding);
   const [isLoading, setIsLoading] = useState(!initialData);
 
-  const refreshSettings = async (options?: { force?: boolean }) => {
+  const refreshSettings = useCallback(async (options?: { force?: boolean }) => {
     try {
       const response = await fetch("/api/settings", options?.force ? { cache: "reload" } : {});
       if (!response.ok) {
@@ -151,11 +156,7 @@ export function ThemeProvider({
 
       setColors(newColors);
       setBranding(newBranding);
-      const isDark =
-        document.documentElement.getAttribute("data-theme") === "dark" ||
-        (!document.documentElement.hasAttribute("data-theme") &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
-      applyThemeToDOM(newColors, isDark);
+      applyThemeToDOM(newColors);
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
     } catch (error) {
@@ -163,26 +164,23 @@ export function ThemeProvider({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (initialData) {
+      // Server already provided the settings for the initial render: apply them
+      // directly and skip the extra client-side fetch (avoids a duplicate request).
       const { colors: newColors, branding: newBranding } = parseSettings(initialData.settings);
       setColors(newColors);
       setBranding(newBranding);
-      const isDark =
-        document.documentElement.getAttribute("data-theme") === "dark" ||
-        (!document.documentElement.hasAttribute("data-theme") &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches);
-      applyThemeToDOM(newColors, isDark);
+      applyThemeToDOM(newColors);
       applyBrandingMeta(newBranding);
       loadGoogleFont(newBranding.fontFamily);
       setIsLoading(false);
-      void refreshSettings();
     } else {
       refreshSettings();
     }
-  }, [initialData]);
+  }, [initialData, refreshSettings]);
 
   const isValidHexColor = (hex: string): boolean => {
     if (!hex || typeof hex !== "string") return false;
@@ -276,7 +274,7 @@ function loadGoogleFont(fontFamily: string) {
  * Chrome colors (background, surface, text, border) are intentionally
  * left to globals.css so next-themes can control light/dark switching.
  */
-function applyThemeToDOM(colors: ThemeColors, _isDark = false) {
+function applyThemeToDOM(colors: ThemeColors) {
   const root = document.documentElement;
 
   // Only override accent colors — next-themes owns data-theme and bg/surface/text/border
@@ -291,7 +289,7 @@ function applyThemeToDOM(colors: ThemeColors, _isDark = false) {
     const img = new Image();
     const url = colors.backgroundImageUrl;
     img.onload = () => {
-      document.body.style.backgroundImage = `url('${url}')`;
+      document.body.style.backgroundImage = `url("${escapeCssString(url)}")`;
       document.body.style.backgroundSize = "cover";
       document.body.style.backgroundPosition = "center";
       document.body.style.backgroundAttachment = "fixed";

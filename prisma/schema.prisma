@@ -31,6 +31,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -39,6 +40,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model User {
@@ -87,6 +90,8 @@ model Share {
   ownerId       String?
   owner         User?      @relation(fields: [ownerId], references: [id])
   filePath      String?
+  /// Size in bytes of a single-file share (bulk shares store sizes on ShareFile)
+  size          BigInt?
   paste         String?
   pastelanguage pasteType?
   urlOriginal   String?
@@ -103,7 +108,7 @@ model Share {
   accessLogs    ShareAccessLog[]
 
   @@index([ipSource])
-  @@index([ownerId])
+  @@index([ownerId, createdAt])
   @@index([expiresAt])
   @@index([createdAt])
 }
@@ -119,7 +124,7 @@ model ShareFile {
   mimeType      String?
   createdAt     DateTime @default(now())
 
-  @@index([shareId])
+  @@index([shareId, relativePath])
 }
 
 model Settings {
@@ -261,7 +266,7 @@ model ShareAccessLog {
   userAgent   String?
   accessedAt  DateTime @default(now())
 
-  @@index([shareId])
+  @@index([shareId, accessedAt])
   @@index([accessedAt])
 }
 

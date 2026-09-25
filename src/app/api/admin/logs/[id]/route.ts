@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteFromStorage } from "@/lib/storage";
+import { deleteShareFiles } from "@/lib/storage";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 export async function DELETE(
@@ -28,19 +28,13 @@ export async function DELETE(
 
     const share = await prisma.share.findUnique({
       where: { id: shareId },
-      select: { id: true, type: true, filePath: true, slug: true },
+      select: { id: true, filePath: true, files: { select: { filePath: true } } },
     });
     if (!share) {
       return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 
-    if (share.type === "FILE" && share.filePath) {
-      try {
-        await deleteFromStorage(share.filePath);
-      } catch (error) {
-        console.error("Error deleting file:", error);
-      }
-    }
+    await deleteShareFiles(share);
 
     await prisma.share.delete({ where: { id: share.id } });
 

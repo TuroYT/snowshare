@@ -4,7 +4,8 @@
     "cancel": "Annuler",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "confirm": "Confirmer"
+    "confirm": "Confirmer",
+    "remove": "Retirer"
   },
   "nav": {
     "hello": "Bonjour, {{email}}",
@@ -16,7 +17,10 @@
     "profile_desc": "Gérer mes infos",
     "signout_desc": "Se déconnecter",
     "admin": "Administration",
-    "admin_desc": "Panneau d'administration"
+    "admin_desc": "Panneau d'administration",
+    "theme_dark": "Mode sombre",
+    "theme_light": "Mode clair",
+    "theme_system": "Automatique"
   },
   "loading": "Chargement...",
   "pasteshare": {
@@ -127,7 +131,10 @@
     "view_limit": "Limite de vues/téléchargements",
     "view_limit_desc": "Le partage expirera après un nombre défini de vues ou téléchargements",
     "views": "vues",
-    "view_limit_info": "Ce partage expirera après {{count}} vue(s)/téléchargement(s)"
+    "view_limit_info": "Ce partage expirera après {{count}} vue(s)/téléchargement(s)",
+    "total_size_too_large": "La taille totale dépasse la limite (max {{max}} {{unit}})",
+    "file": "Fichier",
+    "or_click": "ou cliquez pour sélectionner"
   },
   "file_download": {
     "loading_error": "Erreur lors du chargement des informations",
@@ -266,7 +273,8 @@
     "have_account": "Déjà un compte ?",
     "signin_link": "Se connecter",
     "signup_link": "S'inscrire",
-    "signin_with": "Se connecter avec"
+    "signin_with": "Se connecter avec",
+    "error_too_many_attempts": "Trop de tentatives de connexion échouées. Réessayez plus tard."
   },
   "profile": {
     "title": "Mon Profil",
@@ -365,7 +373,11 @@
     "export_desc": "Téléchargez une copie de toutes vos données personnelles (profil, partages, clés API, comptes liés) au format JSON.",
     "export_button": "Télécharger mes données",
     "export_downloading": "Téléchargement…",
-    "export_error": "Erreur lors de l'export. Veuillez réessayer."
+    "export_error": "Erreur lors de l'export. Veuillez réessayer.",
+    "success_update_verify_email": "Profil mis à jour. Consultez votre nouvelle adresse e-mail pour la vérifier.",
+    "placeholder_protected_url": "Lien protégé : saisissez à nouveau l'URL pour la modifier",
+    "placeholder_password_keep": "Laissez vide pour conserver le mot de passe actuel",
+    "remove_password": "Retirer le mot de passe"
   },
   "apikeys": {
     "title": "Clés API",
@@ -388,7 +400,8 @@
     "error_create": "Erreur lors de la création de la clé API",
     "docs_title": "Documentation API",
     "docs_description": "Parcourez la documentation interactive pour explorer tous les endpoints.",
-    "docs_link": "Ouvrir les docs"
+    "docs_link": "Ouvrir les docs",
+    "error_revoke": "Échec de la révocation de la clé API."
   },
   "setup": {
     "title": "Configuration initiale",
@@ -689,7 +702,8 @@
       "font_family": "Police d'écriture",
       "font_family_hint": "La police utilisée globalement dans toute l'application",
       "accent_colors_label": "Couleurs d'accent",
-      "accent_colors_hint": "Utilisées pour les boutons, liens et états de focus. Sélectionner un preset remplace ces valeurs."
+      "accent_colors_hint": "Utilisées pour les boutons, liens et états de focus. Sélectionner un preset remplace ces valeurs.",
+      "background_image_error": "Impossible de charger l'image. Vérifiez que l'URL pointe vers une image valide."
     },
     "email_templates": {
       "title": "Modèles d'e-mail",
@@ -841,9 +855,28 @@
       "email_not_verified": "Veuillez vérifier votre adresse email avant de vous connecter",
       "recipients_required": "Au moins un destinataire est requis",
       "email_not_configured": "L'envoi d'e-mails n'est pas configuré",
-      "email_send_failed": "Échec de l'envoi de l'e-mail. Veuillez réessayer plus tard."
+      "email_send_failed": "Échec de l'envoi de l'e-mail. Veuillez réessayer plus tard.",
+      "too_many_requests": "Trop de tentatives. Réessayez dans {{seconds}} secondes.",
+      "bulk_share_use_bulk_download": "Ce partage contient plusieurs fichiers. Utilisez plutôt /bulk-download.",
+      "too_many_recipients": "Trop de destinataires (maximum {{max}}).",
+      "link_url_required_for_password_change": "Saisissez à nouveau l'URL de destination pour modifier ou retirer le mot de passe d'un lien protégé.",
+      "link_password_required_for_url_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier la destination d'un lien protégé.",
+      "too_many_files": "Trop de fichiers dans un seul envoi.",
+      "s3_bucket_required": "Le nom du bucket est requis",
+      "email_required": "L'adresse e-mail est requise"
     },
-    "file_protected": "Fichier protégé"
+    "file_protected": "Fichier protégé",
+    "file_count": "{{count}} fichiers",
+    "messages": {
+      "account_created_verify_email": "Compte créé. Consultez vos e-mails pour vérifier votre compte.",
+      "user_created": "Utilisateur créé avec succès",
+      "email_sent": "E-mail envoyé avec succès",
+      "link_deleted": "Lien supprimé avec succès",
+      "account_unlinked": "Compte dissocié avec succès",
+      "account_linked": "Compte associé avec succès",
+      "test_email_sent": "E-mail de test envoyé avec succès",
+      "no_releases_found": "Aucune version trouvée"
+    }
   },
   "share_email": {
     "section_title": "Envoyer par email",
@@ -854,5 +887,19 @@
     "success": "Email envoyé avec succès !",
     "error_invalid": "Veuillez saisir au moins une adresse email valide.",
     "error_send": "Échec de l'envoi. Veuillez réessayer."
+  },
+  "terms_of_use": {
+    "loading": "Chargement des conditions d'utilisation...",
+    "error_load": "Échec du chargement des conditions d'utilisation.",
+    "error_generic": "Une erreur s'est produite lors du chargement des conditions d'utilisation."
+  },
+  "file_preview": {
+    "unsupported_format": "Ce type de fichier n'est pas pris en charge pour l'aperçu",
+    "preview_unavailable": "Aperçu indisponible",
+    "supported_formats": "Formats pris en charge :",
+    "pdf_load_error": "Échec du chargement du PDF",
+    "previous_page": "Page précédente",
+    "page_of": "Page {{current}} sur {{total}}",
+    "next_page": "Page suivante"
   }
 }

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
+import WarningModal from "@/components/admin/WarningModal";
 
 interface ApiKey {
   id: string;
@@ -15,7 +16,11 @@ interface ApiKey {
 
 export default function ApiKeysSection() {
   const { t } = useTranslation();
-  const { data: keysData, loading, refetch: refetchKeys } = useFetch<{ data: ApiKey[] }>("/api/keys");
+  const {
+    data: keysData,
+    loading,
+    refetch: refetchKeys,
+  } = useFetch<{ data: ApiKey[] }>("/api/keys");
   const keys = keysData?.data ?? [];
   const [creating, setCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
@@ -23,6 +28,7 @@ export default function ApiKeysSection() {
   const [revealedToken, setRevealedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [keyToRevoke, setKeyToRevoke] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,14 +64,18 @@ export default function ApiKeysSection() {
   };
 
   const handleRevoke = async (id: string) => {
-    if (!confirm(t("apikeys.confirm_revoke"))) return;
     try {
       const res = await fetch(`/api/keys/${id}`, { method: "DELETE" });
       if (res.ok || res.status === 204) {
         refetchKeys();
+      } else {
+        setError(t("apikeys.error_revoke", "Failed to revoke the API key."));
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Failed to revoke API key:", err);
+      setError(t("apikeys.error_revoke", "Failed to revoke the API key."));
+    } finally {
+      setKeyToRevoke(null);
     }
   };
 
@@ -75,8 +85,8 @@ export default function ApiKeysSection() {
       await navigator.clipboard.writeText(revealedToken);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Failed to copy API key to clipboard:", err);
     }
   };
 
@@ -91,6 +101,13 @@ export default function ApiKeysSection() {
 
   return (
     <div className="space-y-6">
+      <WarningModal
+        open={keyToRevoke !== null}
+        title={t("apikeys.revoke", "Revoke")}
+        message={t("apikeys.confirm_revoke")}
+        onConfirm={() => keyToRevoke && handleRevoke(keyToRevoke)}
+        onCancel={() => setKeyToRevoke(null)}
+      />
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
         <h2 className="text-xl font-semibold text-[var(--foreground)] mb-1">
           {t("apikeys.title", "API Keys")}
@@ -194,7 +211,7 @@ export default function ApiKeysSection() {
                   </p>
                 </div>
                 <button
-                  onClick={() => handleRevoke(key.id)}
+                  onClick={() => setKeyToRevoke(key.id)}
                   className="shrink-0 px-3 py-1.5 text-xs rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                   {t("apikeys.revoke", "Revoke")}

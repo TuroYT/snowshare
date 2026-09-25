@@ -4,7 +4,8 @@
     "cancel": "Cancelar",
     "edit": "Editar",
     "delete": "Eliminar",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "remove": "Quitar"
   },
   "nav": {
     "hello": "Hola, {{email}}",
@@ -16,7 +17,10 @@
     "profile_desc": "Gestionar mi información",
     "signout_desc": "Cerrar sesión",
     "admin": "Administración",
-    "admin_desc": "Panel de administración"
+    "admin_desc": "Panel de administración",
+    "theme_dark": "Modo oscuro",
+    "theme_light": "Modo claro",
+    "theme_system": "Automático"
   },
   "loading": "Cargando...",
   "pasteshare": {
@@ -123,7 +127,14 @@
     "view_limit": "Límite de vistas/descargas",
     "view_limit_desc": "El compartido expirará después de un número definido de vistas o descargas",
     "views": "vistas",
-    "view_limit_info": "Este compartido expirará después de {{count}} vista(s)/descarga(s)"
+    "view_limit_info": "Este compartido expirará después de {{count}} vista(s)/descarga(s)",
+    "total_size_too_large": "El tamaño total supera el límite (máx. {{max}} {{unit}})",
+    "file": "Archivo",
+    "or_click": "o haz clic para seleccionar",
+    "quota_info": "Cuota: {{used}} MB / {{total}} MB utilizados",
+    "quota_remaining": "{{remaining}} MB disponibles",
+    "quota_exceeded": "Cuota excedida",
+    "quota_warning": "Advertencia: ha utilizado el {{percent}}% de su cuota"
   },
   "file_download": {
     "loading_error": "Error al cargar la información",
@@ -262,7 +273,8 @@
     "have_account": "¿Ya tienes cuenta?",
     "signin_link": "Iniciar sesión",
     "signup_link": "Registrarse",
-    "signin_with": "Iniciar sesión con"
+    "signin_with": "Iniciar sesión con",
+    "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde."
   },
   "profile": {
     "title": "Mi Perfil",
@@ -361,7 +373,11 @@
     "export_desc": "Descarga una copia de todos tus datos personales (perfil, compartidos, claves API, cuentas vinculadas) en formato JSON.",
     "export_button": "Descargar mis datos",
     "export_downloading": "Descargando…",
-    "export_error": "Error al exportar. Por favor, inténtalo de nuevo."
+    "export_error": "Error al exportar. Por favor, inténtalo de nuevo.",
+    "success_update_verify_email": "Perfil actualizado. Revisa tu nueva dirección de correo para verificarla.",
+    "placeholder_protected_url": "Enlace protegido: vuelve a introducir la URL para cambiarla",
+    "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
+    "remove_password": "Quitar la contraseña"
   },
   "apikeys": {
     "title": "Claves API",
@@ -384,7 +400,8 @@
     "error_create": "Error al crear la clave API",
     "docs_title": "Documentación API",
     "docs_description": "Explora la documentación interactiva de la API.",
-    "docs_link": "Abrir docs"
+    "docs_link": "Abrir docs",
+    "error_revoke": "No se pudo revocar la clave de API."
   },
   "setup": {
     "title": "Configuración Inicial",
@@ -685,7 +702,8 @@
       "font_family": "Fuente",
       "font_family_hint": "La fuente utilizada globalmente en toda la aplicación",
       "accent_colors_label": "Colores de acento",
-      "accent_colors_hint": "Usados para botones, enlaces y estados de foco. Seleccionar un preset anula estos valores."
+      "accent_colors_hint": "Usados para botones, enlaces y estados de foco. Seleccionar un preset anula estos valores.",
+      "background_image_error": "No se pudo cargar la imagen. Compruebe que la URL apunta a una imagen válida."
     },
     "email_templates": {
       "title": "Plantillas de correo",
@@ -837,9 +855,28 @@
       "email_not_verified": "Por favor verifica tu dirección de email antes de iniciar sesión",
       "recipients_required": "Se requiere al menos un destinatario",
       "email_not_configured": "El envío de correos no está configurado",
-      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde."
+      "email_send_failed": "Error al enviar el correo. Por favor inténtalo más tarde.",
+      "too_many_requests": "Demasiados intentos. Inténtalo de nuevo en {{seconds}} segundos.",
+      "bulk_share_use_bulk_download": "Este es un recurso compartido múltiple. Usa /bulk-download en su lugar.",
+      "too_many_recipients": "Demasiados destinatarios (máximo {{max}}).",
+      "link_url_required_for_password_change": "Vuelve a introducir la URL de destino para cambiar o quitar la contraseña de un enlace protegido.",
+      "link_password_required_for_url_change": "Introduce una contraseña (actual o nueva) para cambiar el destino de un enlace protegido.",
+      "too_many_files": "Demasiados archivos en una sola subida.",
+      "s3_bucket_required": "El nombre del bucket es obligatorio",
+      "email_required": "El correo electrónico es obligatorio"
     },
-    "file_protected": "Archivo protegido"
+    "file_protected": "Archivo protegido",
+    "file_count": "{{count}} archivos",
+    "messages": {
+      "account_created_verify_email": "Cuenta creada. Revisa tu correo para verificar tu cuenta.",
+      "user_created": "Usuario creado correctamente",
+      "email_sent": "Correo enviado correctamente",
+      "link_deleted": "Enlace eliminado correctamente",
+      "account_unlinked": "Cuenta desvinculada correctamente",
+      "account_linked": "Cuenta vinculada correctamente",
+      "test_email_sent": "Correo de prueba enviado correctamente",
+      "no_releases_found": "No se encontraron versiones"
+    }
   },
   "share_email": {
     "section_title": "Enviar por correo",
@@ -850,5 +887,19 @@
     "success": "¡Correo enviado con éxito!",
     "error_invalid": "Por favor, introduce al menos una dirección de correo válida.",
     "error_send": "Error al enviar el correo. Por favor, inténtelo de nuevo."
+  },
+  "terms_of_use": {
+    "loading": "Cargando los términos de uso...",
+    "error_load": "Error al cargar los términos de uso.",
+    "error_generic": "Se produjo un error al cargar los términos de uso."
+  },
+  "file_preview": {
+    "unsupported_format": "Este tipo de archivo no es compatible con la vista previa",
+    "preview_unavailable": "Vista previa no disponible",
+    "supported_formats": "Formatos compatibles:",
+    "pdf_load_error": "Error al cargar el PDF",
+    "previous_page": "Página anterior",
+    "page_of": "Página {{current}} de {{total}}",
+    "next_page": "Página siguiente"
   }
 }

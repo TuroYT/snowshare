@@ -57,6 +57,35 @@ function addSecurityHeaders(
   return response;
 }
 
+// Setup status and iframe setting, cached so page navigations do not each trigger a
+// loopback HTTP request (and its database queries). Once setup is done it never reverts.
+const SETUP_STATE_TTL_MS = 30 * 1000;
+let setupCompleted = false;
+let cachedIframeSetting: { value: boolean; expiresAt: number } | null = null;
+
+async function getSetupState(): Promise<{ needsSetup: boolean; allowIframeEmbedding: boolean }> {
+  if (setupCompleted && cachedIframeSetting && cachedIframeSetting.expiresAt > Date.now()) {
+    return { needsSetup: false, allowIframeEmbedding: cachedIframeSetting.value };
+  }
+
+  const port = process.env.PORT || "3000";
+  const response = await fetch(new URL("/api/setup/check", `http://localhost:${port}`));
+  if (!response.ok) {
+    throw new Error(`Setup check failed with status ${response.status}`);
+  }
+
+  const data = await response.json();
+  const allowIframeEmbedding = data.allowIframeEmbedding ?? false;
+  if (!data.needsSetup) {
+    setupCompleted = true;
+    cachedIframeSetting = {
+      value: allowIframeEmbedding,
+      expiresAt: Date.now() + SETUP_STATE_TTL_MS,
+    };
+  }
+  return { needsSetup: !!data.needsSetup, allowIframeEmbedding };
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApiDocs = pathname.startsWith("/api-docs");
@@ -73,25 +102,13 @@ export default async function proxy(request: NextRequest) {
     return addSecurityHeaders(response, isApiDocs, isScalarHtml);
   }
 
-  // Check if setup is needed
+  // Check if setup is needed (result cached, see getSetupState)
   let allowIframeEmbedding: boolean;
   try {
-    const port = process.env.PORT || "3000";
-    const baseUrl = `http://localhost:${port}`;
-    const checkUrl = new URL("/api/setup/check", baseUrl);
-    const response = await fetch(checkUrl.toString());
+    const state = await getSetupState();
+    allowIframeEmbedding = state.allowIframeEmbedding;
 
-    if (!response.ok) {
-      // If we can't check setup status, fail open to avoid lockout
-      console.error("Setup check failed with status:", response.status);
-      const nextResponse = NextResponse.next();
-      return addSecurityHeaders(nextResponse, isApiDocs, isScalarHtml);
-    }
-
-    const data = await response.json();
-    allowIframeEmbedding = data.allowIframeEmbedding ?? false;
-
-    if (data.needsSetup) {
+    if (state.needsSetup) {
       // Redirect to setup page if not already there
       const redirectResponse = NextResponse.redirect(new URL("/setup", request.url));
       return addSecurityHeaders(redirectResponse, isApiDocs, isScalarHtml);

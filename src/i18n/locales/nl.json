@@ -4,7 +4,8 @@
     "cancel": "Annuleren",
     "edit": "Bewerken",
     "delete": "Verwijderen",
-    "confirm": "Bevestigen"
+    "confirm": "Bevestigen",
+    "remove": "Verwijderen"
   },
   "nav": {
     "hello": "Hallo, {{email}}",
@@ -17,10 +18,9 @@
     "signout_desc": "Uitloggen",
     "admin": "Beheer",
     "admin_desc": "Beheerpaneel",
-    "save_error": "Fout bij opslaan",
-    "validation_required": "Vereiste velden ontbreken",
-    "validation_invalid_color": "Ongeldige kleur (verwacht formaat: #RRGGBB)",
-    "validation_invalid_url": "Ongeldige URL"
+    "theme_dark": "Donkere modus",
+    "theme_light": "Lichte modus",
+    "theme_system": "Automatisch"
   },
   "loading": "Laden...",
   "pasteshare": {
@@ -131,7 +131,10 @@
     "view_limit": "Weergave-/downloadlimiet",
     "view_limit_desc": "De share verloopt na een ingesteld aantal weergaves of downloads",
     "views": "weergaves",
-    "view_limit_info": "Deze share verloopt na {{count}} weergave(s)/download(s)"
+    "view_limit_info": "Deze share verloopt na {{count}} weergave(s)/download(s)",
+    "total_size_too_large": "De totale grootte overschrijdt de limiet (max. {{max}} {{unit}})",
+    "file": "Bestand",
+    "or_click": "of klik om te selecteren"
   },
   "file_download": {
     "loading_error": "Fout bij laden van informatie",
@@ -270,7 +273,8 @@
     "have_account": "Al een account?",
     "signin_link": "Inloggen",
     "signup_link": "Registreren",
-    "signin_with": "Inloggen met"
+    "signin_with": "Inloggen met",
+    "error_too_many_attempts": "Te veel mislukte aanmeldpogingen. Probeer het later opnieuw."
   },
   "profile": {
     "title": "Mijn profiel",
@@ -369,7 +373,11 @@
     "export_desc": "Download een kopie van al je persoonlijke gegevens (profiel, delingen, API-sleutels, gekoppelde accounts) in JSON-formaat.",
     "export_button": "Mijn gegevens downloaden",
     "export_downloading": "Downloaden…",
-    "export_error": "Export mislukt. Probeer het opnieuw."
+    "export_error": "Export mislukt. Probeer het opnieuw.",
+    "success_update_verify_email": "Profiel bijgewerkt. Controleer je nieuwe e-mailadres om het te verifiëren.",
+    "placeholder_protected_url": "Beveiligde link: voer de URL opnieuw in om deze te wijzigen",
+    "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
+    "remove_password": "Wachtwoord verwijderen"
   },
   "apikeys": {
     "title": "API-sleutels",
@@ -392,7 +400,8 @@
     "error_create": "Fout bij het aanmaken van de API-sleutel",
     "docs_title": "API-documentatie",
     "docs_description": "Verken de interactieve API-documentatie.",
-    "docs_link": "Docs openen"
+    "docs_link": "Docs openen",
+    "error_revoke": "Kan de API-sleutel niet intrekken."
   },
   "setup": {
     "title": "Eerste installatie",
@@ -608,7 +617,8 @@
         "ip": "IP-adres",
         "created": "Aangemaakt",
         "expires": "Verloopt",
-        "status": "Status"
+        "status": "Status",
+        "actions": "Acties"
       },
       "anonymous": "Anoniem",
       "never": "Nooit",
@@ -692,7 +702,8 @@
       "font_family": "Lettertype",
       "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt",
       "accent_colors_label": "Accentkleuren",
-      "accent_colors_hint": "Gebruikt voor knoppen, links en focusstatussen. Een preset overschrijft deze waarden."
+      "accent_colors_hint": "Gebruikt voor knoppen, links en focusstatussen. Een preset overschrijft deze waarden.",
+      "background_image_error": "Kan afbeelding niet laden. Controleer of de URL naar een geldige afbeelding verwijst."
     },
     "email_templates": {
       "title": "E-mailsjablonen",
@@ -844,9 +855,28 @@
       "email_not_verified": "Verifieer uw e-mailadres voordat u inlogt",
       "recipients_required": "Minstens één ontvanger is vereist",
       "email_not_configured": "E-mailverzending is niet geconfigureerd",
-      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw."
+      "email_send_failed": "E-mail verzenden mislukt. Probeer het later opnieuw.",
+      "too_many_requests": "Te veel pogingen. Probeer het over {{seconds}} seconden opnieuw.",
+      "bulk_share_use_bulk_download": "Dit is een bulkdeling. Gebruik in plaats daarvan /bulk-download.",
+      "too_many_recipients": "Te veel ontvangers (maximaal {{max}}).",
+      "link_url_required_for_password_change": "Voer de doel-URL opnieuw in om het wachtwoord van een beveiligde link te wijzigen of te verwijderen.",
+      "link_password_required_for_url_change": "Voer een wachtwoord (huidig of nieuw) in om de bestemming van een beveiligde link te wijzigen.",
+      "too_many_files": "Te veel bestanden in één upload.",
+      "s3_bucket_required": "De bucketnaam is verplicht",
+      "email_required": "E-mailadres is verplicht"
     },
-    "file_protected": "Beveiligd bestand"
+    "file_protected": "Beveiligd bestand",
+    "file_count": "{{count}} bestanden",
+    "messages": {
+      "account_created_verify_email": "Account aangemaakt. Controleer je e-mail om je account te verifiëren.",
+      "user_created": "Gebruiker succesvol aangemaakt",
+      "email_sent": "E-mail succesvol verzonden",
+      "link_deleted": "Link succesvol verwijderd",
+      "account_unlinked": "Account succesvol ontkoppeld",
+      "account_linked": "Account succesvol gekoppeld",
+      "test_email_sent": "Test-e-mail succesvol verzonden",
+      "no_releases_found": "Geen releases gevonden"
+    }
   },
   "share_email": {
     "section_title": "Verstuur per e-mail",
@@ -857,5 +887,19 @@
     "success": "E-mail succesvol verzonden!",
     "error_invalid": "Voer ten minste één geldig e-mailadres in.",
     "error_send": "Verzenden mislukt. Probeer het opnieuw."
+  },
+  "terms_of_use": {
+    "loading": "Gebruiksvoorwaarden laden...",
+    "error_load": "Kan gebruiksvoorwaarden niet laden.",
+    "error_generic": "Er is een fout opgetreden bij het laden van de gebruiksvoorwaarden."
+  },
+  "file_preview": {
+    "unsupported_format": "Dit bestandstype wordt niet ondersteund voor voorbeeldweergave",
+    "preview_unavailable": "Voorbeeld niet beschikbaar",
+    "supported_formats": "Ondersteunde formaten:",
+    "pdf_load_error": "PDF laden mislukt",
+    "previous_page": "Vorige pagina",
+    "page_of": "Pagina {{current}} van {{total}}",
+    "next_page": "Volgende pagina"
   }
 }

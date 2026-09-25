@@ -3,31 +3,17 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui";
-import ShareAccessLogsModal from "./ShareAccessLogsModal";
-
-type Share = {
-  id: string;
-  type: "FILE" | "PASTE" | "URL";
-  slug: string;
-  filePath?: string;
-  paste?: string;
-  pastelanguage?: string;
-  urlOriginal?: string;
-  password?: string;
-  createdAt: string;
-  expiresAt?: string;
-  maxViews?: number | null;
-  viewCount: number;
-  accessCount?: number;
-};
+import ShareAccessLogsModal from "@/components/profile/ShareAccessLogsModal";
+import WarningModal from "@/components/admin/WarningModal";
+import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 
 type ShareItemProps = {
-  share: Share;
+  share: UserShare;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, data: Partial<Share>) => void;
+  onUpdate: (id: string, data: UserShareUpdate) => void;
 };
 
-const TYPE_PREFIX: Record<Share["type"], string> = {
+const TYPE_PREFIX: Record<UserShare["type"], string> = {
   FILE: "/f/",
   PASTE: "/p/",
   URL: "/l/",
@@ -38,24 +24,42 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<Share>>({
-    paste: share.paste,
-    pastelanguage: share.pastelanguage,
-    urlOriginal: share.urlOriginal,
-    password: share.password || "",
-    expiresAt: share.expiresAt,
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editForm, setEditForm] = useState({
+    paste: share.paste ?? "",
+    pastelanguage: share.pastelanguage ?? "PLAINTEXT",
+    // Protected links are stored encrypted: the owner re-enters the URL to change it
+    urlOriginal: share.urlOriginal ?? "",
+    // Never prefilled: empty keeps the current password
+    newPassword: "",
+    removePassword: false,
+    expiresAt: share.expiresAt ?? "",
   });
 
   const path = `${TYPE_PREFIX[share.type]}${share.slug}`;
 
   const handleDelete = () => {
-    if (confirm(t("profile.confirm_delete"))) {
-      onDelete(share.id);
-    }
+    setShowDeleteConfirm(false);
+    onDelete(share.id);
   };
 
   const handleUpdate = () => {
-    onUpdate(share.id, editForm);
+    const update: UserShareUpdate = {
+      expiresAt: editForm.expiresAt ? new Date(editForm.expiresAt).toISOString() : null,
+    };
+    if (share.type === "PASTE") {
+      update.paste = editForm.paste;
+      update.pastelanguage = editForm.pastelanguage;
+    }
+    if (share.type === "URL" && editForm.urlOriginal) {
+      update.urlOriginal = editForm.urlOriginal;
+    }
+    if (editForm.removePassword) {
+      update.password = null;
+    } else if (editForm.newPassword) {
+      update.password = editForm.newPassword;
+    }
+    onUpdate(share.id, update);
     setIsEditing(false);
   };
 
@@ -127,6 +131,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
         isExpired ? "opacity-70" : ""
       }`}
     >
+      <WarningModal
+        open={showDeleteConfirm}
+        title={t("profile.tab_shares", "Shares")}
+        message={t("profile.confirm_delete")}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
       <div className="flex items-start gap-3 p-4 sm:p-5">
         {/* Type icon */}
         <div
@@ -184,20 +195,18 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
                 {t("profile.view_limit_reached", "View Limit Reached")}
               </Badge>
             )}
-            {share.password && (
+            {share.hasPassword && (
               <Badge variant="warning">{t("profile.protected", "Protected")}</Badge>
             )}
           </div>
 
           {/* Target preview */}
           <div className="mt-1.5 text-sm text-[var(--foreground-muted)] truncate">
-            {share.type === "FILE" && share.filePath && (
-              <span>{share.filePath.split("_").slice(1).join("_")}</span>
-            )}
+            {share.type === "FILE" && share.fileName && <span>{share.fileName}</span>}
             {share.type === "PASTE" && (
               <span className="font-mono text-xs">{share.paste?.substring(0, 100)}</span>
             )}
-            {share.type === "URL" && <span>{share.urlOriginal}</span>}
+            {share.type === "URL" && share.urlOriginal && <span>{share.urlOriginal}</span>}
           </div>
 
           {/* Meta line */}
@@ -268,7 +277,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               </button>
             )}
             <button
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10 transition-colors"
               title={t("profile.delete")}
               aria-label={t("profile.delete")}
@@ -336,7 +345,15 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               </label>
               <input
                 type="url"
-                value={editForm.urlOriginal || ""}
+                value={editForm.urlOriginal}
+                placeholder={
+                  share.hasPassword
+                    ? t(
+                        "profile.placeholder_protected_url",
+                        "Protected link: re-enter the URL to change it"
+                      )
+                    : undefined
+                }
                 onChange={(e) => setEditForm({ ...editForm, urlOriginal: e.target.value })}
                 className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
               />
@@ -349,11 +366,29 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
             </label>
             <input
               type="text"
-              value={editForm.password || ""}
-              onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+              value={editForm.newPassword}
+              disabled={editForm.removePassword}
+              onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
               className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-              placeholder={t("profile.placeholder_password_optional")}
+              placeholder={
+                share.hasPassword
+                  ? t(
+                      "profile.placeholder_password_keep",
+                      "Leave empty to keep the current password"
+                    )
+                  : t("profile.placeholder_password_optional")
+              }
             />
+            {share.hasPassword && (
+              <label className="mt-2 flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
+                <input
+                  type="checkbox"
+                  checked={editForm.removePassword}
+                  onChange={(e) => setEditForm({ ...editForm, removePassword: e.target.checked })}
+                />
+                {t("profile.remove_password", "Remove password")}
+              </label>
+            )}
           </div>
 
           <div>
