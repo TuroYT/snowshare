@@ -19,7 +19,7 @@
     "test:coverage": "jest --coverage",
     "type-check": "npx prisma generate && tsc --noEmit",
     "prepare": "husky",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package && node scripts/copy-pdf-worker.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

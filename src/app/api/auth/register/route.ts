@@ -14,7 +14,7 @@ import { sendVerificationEmail } from "@/lib/email";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { getClientIp } from "@/lib/getClientIp";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@/generated/prisma";
 import crypto from "crypto";
 
 function isPrismaError(error: unknown, code: string): boolean {
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
               const isStillFirst = (await tx.user.count()) === 0;
               return tx.user.create({ data: { ...userData, isAdmin: isStillFirst } });
             },
-            { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+            { isolationLevel: "Serializable" satisfies Prisma.TransactionIsolationLevel }
           )
         : await prisma.user.create({ data: { ...userData, isAdmin: false } });
     } catch (error) {
