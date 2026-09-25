@@ -25,6 +25,7 @@ export default defineConfig([
       ".git/**",
       "uploads/**",
       "src/generated/**",
+      "public/pdf.worker.min.mjs",
       "prisma/migrations/**",
       "**/.*",
     ],
