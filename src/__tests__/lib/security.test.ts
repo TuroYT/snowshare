@@ -10,7 +10,7 @@ jest.mock("bcryptjs", () => ({
   ),
 }));
 
-import { createHash } from "crypto";
+import { createHmac } from "crypto";
 import {
   hashPassword,
   verifyPassword,
@@ -219,9 +219,20 @@ describe("resolveAnonExpiry", () => {
 });
 
 describe("hashApiKey", () => {
-  it("returns the hex SHA-256 digest of the key", () => {
-    const expected = createHash("sha256").update("sk_abc123").digest("hex");
+  it("returns the hex HMAC-SHA256 of the key, keyed with NEXTAUTH_SECRET", () => {
+    const expected = createHmac("sha256", "test-nextauth-secret").update("sk_abc123").digest("hex");
     expect(hashApiKey("sk_abc123")).toBe(expected);
+  });
+
+  it("depends on the server secret", () => {
+    const withTestSecret = hashApiKey("sk_abc123");
+    const original = process.env.NEXTAUTH_SECRET;
+    process.env.NEXTAUTH_SECRET = "another-secret";
+    try {
+      expect(hashApiKey("sk_abc123")).not.toBe(withTestSecret);
+    } finally {
+      process.env.NEXTAUTH_SECRET = original;
+    }
   });
 
   it("is deterministic so keys can be looked up by hash", () => {

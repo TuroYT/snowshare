@@ -14,7 +14,7 @@ listed under **Open items**. The 2026-09 audit found and fixed the issues below.
 
 | Issue                                                                                                                                                                                | Fix                                                                                                                                                                      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| API keys hashed with bcrypt (random salt): every key lookup failed, and each `Bearer sk_` request ran a blocking bcrypt                                                              | SHA-256 lookup hash (`src/lib/security.ts`)                                                                                                                              |
+| API keys hashed with bcrypt (random salt): every key lookup failed, and each `Bearer sk_` request ran a blocking bcrypt                                                              | HMAC-SHA256 lookup hash keyed with `NEXTAUTH_SECRET` (`src/lib/security.ts`)                                                                                             |
 | `maxViews` bypass: direct `GET /f/<slug>/download` never counted views; bulk ZIP and individual bulk files ignored the limit; `maxViews=1` files could not be downloaded from the UI | Atomic `consumeView()`; IP-bound signed download tokens replace `?password=` in URLs; every tokenless request (Range included) counts a view (`src/lib/share-access.ts`) |
 | OAuth account-link token not bound to the browser that requested it (account takeover with providers that do not verify e-mails)                                                     | Token must match the httpOnly link cookie; link + token deletion in one transaction; accounts matched by `providerAccountId`                                             |
 | Profile e-mail change without re-authentication, format check or re-verification                                                                                                     | Current password required, format/uniqueness checked, `emailVerified` reset and verification e-mail sent                                                                 |
@@ -48,7 +48,7 @@ listed under **Open items**. The 2026-09 audit found and fixed the issues below.
 
 ## Security positives
 
-- bcrypt (cost 12) for passwords; SHA-256 for random API keys
+- bcrypt (cost 12) for passwords; HMAC-SHA256 (server secret) for random API keys
 - Strict slug validation, sanitized storage keys and `Content-Disposition` filenames
 - SVG/HTML never served inline; `X-Content-Type-Options: nosniff` everywhere
 - AES-256-CBC + PBKDF2 (100k) for protected link URLs

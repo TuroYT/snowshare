@@ -24,7 +24,7 @@ export interface ApiAuthResult {
  * Authenticate an API request.
  *
  * Resolution order:
- * 1. `Authorization: Bearer sk_...` → SHA-256 hash lookup in ApiKey table
+ * 1. `Authorization: Bearer sk_...` → HMAC-SHA256 hash lookup in ApiKey table
  * 2. NextAuth session cookie
  * 3. Unauthenticated (anonymous)
  */
