@@ -21,15 +21,18 @@ interface IpGeoModalProps {
 }
 
 function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
-  if (!countryCode || countryCode.length !== 2) {
+  if (countryCode?.length !== 2) {
     return "\u2753";
   }
   const code = countryCode.toUpperCase();
   const offset = 0x1f1e6 - 65;
-  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
+  return String.fromCodePoint(
+    (code.codePointAt(0) ?? 65) + offset,
+    (code.codePointAt(1) ?? 65) + offset
+  );
 }
 
-export default function IpGeoModal({ isOpen, onClose, ip, geoData }: IpGeoModalProps) {
+export default function IpGeoModal({ isOpen, onClose, ip, geoData }: Readonly<IpGeoModalProps>) {
   const { t } = useTranslation();
 
   const isResolved = geoData?.status === "resolved";

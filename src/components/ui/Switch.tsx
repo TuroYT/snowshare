@@ -9,7 +9,7 @@ interface SwitchProps {
   id?: string;
 }
 
-export function Switch({ checked, onChange, label, disabled, id }: SwitchProps) {
+export function Switch({ checked, onChange, label, disabled, id }: Readonly<SwitchProps>) {
   return (
     <label
       className={cn(

@@ -59,7 +59,14 @@ describe("ThemeContext", () => {
   });
 
   describe("updateTheme with invalid hex colors", () => {
-    it("should not crash when given an empty string", async () => {
+    it.each([
+      ["an empty string", ""],
+      ["undefined", undefined as unknown as string],
+      ["null", null as unknown as string],
+      ["incomplete hex (missing #)", "#"],
+      ["incomplete hex (partial)", "#3B8"],
+      ["invalid hex characters", "#GGGGGG"],
+    ])("should not crash when given %s", async (_label, primaryColor) => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <ThemeProvider initialData={{ settings: {} }}>{children}</ThemeProvider>
       );
@@ -74,102 +81,7 @@ describe("ThemeContext", () => {
       // This should not crash
       expect(() => {
         act(() => {
-          result.current.updateTheme({ primaryColor: "" });
-        });
-      }).not.toThrow();
-    });
-
-    it("should not crash when given undefined", async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider initialData={{ settings: {} }}>{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      // This should not crash
-      expect(() => {
-        act(() => {
-          result.current.updateTheme({ primaryColor: undefined as unknown as string });
-        });
-      }).not.toThrow();
-    });
-
-    it("should not crash when given null", async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider initialData={{ settings: {} }}>{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      // This should not crash
-      expect(() => {
-        act(() => {
-          result.current.updateTheme({ primaryColor: null as unknown as string });
-        });
-      }).not.toThrow();
-    });
-
-    it("should not crash when given incomplete hex (missing #)", async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider initialData={{ settings: {} }}>{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      // This should not crash
-      expect(() => {
-        act(() => {
-          result.current.updateTheme({ primaryColor: "#" });
-        });
-      }).not.toThrow();
-    });
-
-    it("should not crash when given incomplete hex (partial)", async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider initialData={{ settings: {} }}>{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      // This should not crash
-      expect(() => {
-        act(() => {
-          result.current.updateTheme({ primaryColor: "#3B8" });
-        });
-      }).not.toThrow();
-    });
-
-    it("should not crash when given invalid hex characters", async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider initialData={{ settings: {} }}>{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      // This should not crash
-      expect(() => {
-        act(() => {
-          result.current.updateTheme({ primaryColor: "#GGGGGG" });
+          result.current.updateTheme({ primaryColor });
         });
       }).not.toThrow();
     });

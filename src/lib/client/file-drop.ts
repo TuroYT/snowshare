@@ -71,8 +71,7 @@ export async function traverseFileTree(
 export async function collectDroppedFiles(items: DataTransferItemList): Promise<FileWithPath[]> {
   const filePromises: Promise<FileWithPath[]>[] = [];
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
+  for (const item of Array.from(items)) {
     if (item.kind === "file") {
       const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
       if (!entry) {

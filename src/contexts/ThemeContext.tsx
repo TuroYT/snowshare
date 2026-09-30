@@ -1,10 +1,18 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
 /** Escapes a value for use inside a double-quoted CSS string (e.g. url("...")). */
 function escapeCssString(value: string): string {
-  return value.replace(/["\\\n\r]/g, (char) => `\\${char.charCodeAt(0).toString(16)} `);
+  return value.replace(/["\\\n\r]/g, (char) => `\\${char.codePointAt(0)!.toString(16)} `);
 }
 
 export interface ThemeColors {
@@ -130,15 +138,21 @@ function parseSettings(settings: ThemeData["settings"]): {
   };
 }
 
+const isValidHexColor = (hex: string): boolean => {
+  if (!hex || typeof hex !== "string") return false;
+  const cleanHex = hex.replace("#", "");
+  return /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(cleanHex);
+};
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({
   children,
   initialData,
-}: {
+}: Readonly<{
   children: ReactNode;
   initialData?: ThemeData | null;
-}) {
+}>) {
   const [colors, setColors] = useState<ThemeColors>(defaultColors);
   const [branding, setBranding] = useState<BrandingSettings>(defaultBranding);
   const [isLoading, setIsLoading] = useState(!initialData);
@@ -182,25 +196,27 @@ export function ThemeProvider({
     }
   }, [initialData, refreshSettings]);
 
-  const isValidHexColor = (hex: string): boolean => {
-    if (!hex || typeof hex !== "string") return false;
-    const cleanHex = hex.replace("#", "");
-    return /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(cleanHex);
-  };
+  const updateTheme = useCallback(
+    (newColors: Partial<ThemeColors>) => {
+      // Filter out invalid color values to prevent crashes during editing
+      const validatedColors: Partial<ThemeColors> = {};
+      Object.entries(newColors).forEach(([key, value]) => {
+        if (typeof value === "string" && isValidHexColor(value)) {
+          validatedColors[key as keyof ThemeColors] = value;
+        }
+      });
 
-  const updateTheme = (newColors: Partial<ThemeColors>) => {
-    // Filter out invalid color values to prevent crashes during editing
-    const validatedColors: Partial<ThemeColors> = {};
-    Object.entries(newColors).forEach(([key, value]) => {
-      if (typeof value === "string" && isValidHexColor(value)) {
-        validatedColors[key as keyof ThemeColors] = value;
-      }
-    });
+      const updatedColors = { ...colors, ...validatedColors };
+      setColors(updatedColors);
+      applyThemeToDOM(updatedColors);
+    },
+    [colors]
+  );
 
-    const updatedColors = { ...colors, ...validatedColors };
-    setColors(updatedColors);
-    applyThemeToDOM(updatedColors);
-  };
+  const contextValue = useMemo(
+    () => ({ colors, branding, isLoading, updateTheme, refreshSettings }),
+    [colors, branding, isLoading, updateTheme, refreshSettings]
+  );
 
   // Apply branding metadata (title, favicon) when ready
   useEffect(() => {
@@ -209,11 +225,7 @@ export function ThemeProvider({
     }
   }, [branding, isLoading]);
 
-  return (
-    <ThemeContext.Provider value={{ colors, branding, isLoading, updateTheme, refreshSettings }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

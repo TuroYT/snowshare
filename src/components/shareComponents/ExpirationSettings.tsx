@@ -54,6 +54,11 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
     return t(`${translationPrefix}.duration_in_x_years`, { count: Math.round(days / 365) });
   }, [expiresDays, neverExpires, isAuthenticated, translationPrefix, t]);
 
+  const neverExpiresLabel = t(
+    labelOverrides?.neverExpires || `${translationPrefix}.never_expires`,
+    "No expiration"
+  );
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-[var(--foreground)]">
@@ -65,7 +70,10 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
 
       {isAuthenticated && (
         <div className="bg-[var(--surface-hover)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
-          <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--border)] rounded-[var(--radius)] p-3 -m-3 transition-colors">
+          <label
+            aria-label={neverExpiresLabel}
+            className="flex items-center gap-4 cursor-pointer hover:bg-[var(--border)] rounded-[var(--radius)] p-3 -m-3 transition-colors"
+          >
             <div className="relative flex-shrink-0">
               <input
                 type="checkbox"
@@ -83,10 +91,7 @@ const ExpirationSettings: React.FC<ExpirationSettingsProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
-                {t(
-                  labelOverrides?.neverExpires || `${translationPrefix}.never_expires`,
-                  "No expiration"
-                )}
+                {neverExpiresLabel}
               </div>
               <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
                 {t(

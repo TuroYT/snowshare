@@ -13,19 +13,19 @@ import SubmitButton from "./shareComponents/SubmitButton";
 import ShareFormSkeleton from "./ShareFormSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 
+function isValidUrl(value: string) {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const LinkShare: React.FC = () => {
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState<string | null>(null);
-
-  function isValidUrl(value: string) {
-    try {
-      new URL(value);
-      return true;
-    } catch {
-      return false;
-    }
-  }
 
   const {
     isAuthenticated,

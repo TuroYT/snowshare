@@ -181,7 +181,7 @@ function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.id) {
+  if (!session?.user?.id) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
@@ -225,7 +225,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.id) {
+  if (!session?.user?.id) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 

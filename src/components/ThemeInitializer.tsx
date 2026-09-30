@@ -10,7 +10,7 @@ async function fetchInitialTheme() {
   }
 }
 
-export async function ThemeInitializer({ children }: { children: ReactNode }) {
+export async function ThemeInitializer({ children }: Readonly<{ children: ReactNode }>) {
   const themeData = await fetchInitialTheme();
   return <ThemeProvider initialData={themeData}>{children}</ThemeProvider>;
 }

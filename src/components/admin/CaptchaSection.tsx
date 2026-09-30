@@ -15,7 +15,7 @@ interface Props {
   onChange: (patch: Partial<CaptchaSectionSettings>) => void;
 }
 
-export default function CaptchaSection({ settings, onChange }: Props) {
+export default function CaptchaSection({ settings, onChange }: Readonly<Props>) {
   const { t } = useTranslation();
 
   return (

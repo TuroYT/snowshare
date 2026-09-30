@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     let take: number | undefined;
     if (limitParam !== null) {
-      const parsedLimit = parseInt(limitParam, 10);
+      const parsedLimit = Number.parseInt(limitParam, 10);
       if (!Number.isNaN(parsedLimit)) {
         take = Math.min(100, Math.max(1, parsedLimit));
       }
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     let skip: number | undefined;
     if (offsetParam !== null) {
-      const parsedOffset = parseInt(offsetParam, 10);
+      const parsedOffset = Number.parseInt(offsetParam, 10);
       if (!Number.isNaN(parsedOffset) && parsedOffset >= 0) {
         skip = parsedOffset;
       }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         maxViews?: number;
       };
 
-    if (!type || (type !== "URL" && type !== "PASTE")) {
+    if (type !== "URL" && type !== "PASTE") {
       return apiError(request, ErrorCode.SHARE_TYPE_INVALID);
     }
 
@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
     if (parsedExpiresAt && Number.isNaN(parsedExpiresAt.getTime())) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
+    const parsedMaxViews = typeof maxViews === "number" ? maxViews : undefined;
 
     if (type === "URL") {
       if (!urlOriginal) return apiError(request, ErrorCode.MISSING_DATA);
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
         expiresAt: parsedExpiresAt,
         slug,
         password,
-        maxViews: typeof maxViews === "number" ? maxViews : undefined,
+        maxViews: parsedMaxViews,
       });
       if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
       return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
       expiresAt: parsedExpiresAt,
       slug,
       password,
-      maxViews: typeof maxViews === "number" ? maxViews : undefined,
+      maxViews: parsedMaxViews,
     });
     if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
     return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });

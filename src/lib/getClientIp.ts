@@ -1,4 +1,4 @@
-import { isIP } from "net";
+import { isIP } from "node:net";
 import type { NextRequest } from "next/server";
 
 const LOCALHOST = "127.0.0.1";
@@ -18,7 +18,7 @@ export const CLIENT_IP_HEADER = "x-snowshare-client-ip";
  * 0 means the app is exposed directly: forwarding headers are ignored, the socket address is used.
  */
 export function getTrustedProxyCount(): number {
-  const parsed = parseInt(process.env.TRUSTED_PROXY_COUNT || "", 10);
+  const parsed = Number.parseInt(process.env.TRUSTED_PROXY_COUNT || "", 10);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 1;
 }
 

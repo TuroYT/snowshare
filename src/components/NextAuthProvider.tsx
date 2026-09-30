@@ -5,7 +5,7 @@ import { I18nextProvider } from "react-i18next";
 import i18n, { supportedLngs } from "@/i18n/client";
 import { useEffect } from "react";
 
-function I18nHydrationSync({ children }: { children: React.ReactNode }) {
+function I18nHydrationSync({ children }: Readonly<{ children: React.ReactNode }>) {
   useEffect(() => {
     // Detect stored language after hydration to avoid SSR/client mismatch.
     const stored =
@@ -19,7 +19,7 @@ function I18nHydrationSync({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function NextAuthProvider({ children }: { children: React.ReactNode }) {
+export default function NextAuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <SessionProvider>
       <I18nextProvider i18n={i18n}>

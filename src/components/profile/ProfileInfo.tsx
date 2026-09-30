@@ -18,7 +18,7 @@ type ProfileInfoProps = {
   onUpdate: (data: User) => void;
 };
 
-export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
+export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProps>) {
   const { t } = useTranslation();
   const [name, setName] = useState(user.name || "");
   const [email, setEmail] = useState(user.email);
@@ -326,7 +326,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
             setExporting(true);
             try {
               const res = await fetch("/api/user/export");
-              if (!res.ok) throw new Error();
+              if (!res.ok) throw new Error("Failed to export user data");
               const blob = await res.blob();
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");

@@ -20,11 +20,15 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
   translationPrefix,
 }) => {
   const { t } = useTranslation();
+  const viewLimitLabel = t(`${translationPrefix}.view_limit`, "View/download limit");
 
   return (
     <div className="space-y-3">
       <div className="bg-[var(--surface-hover)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
-        <label className="flex items-center gap-4 cursor-pointer hover:bg-[var(--border)] rounded-[var(--radius)] p-3 -m-3 transition-colors">
+        <label
+          aria-label={viewLimitLabel}
+          className="flex items-center gap-4 cursor-pointer hover:bg-[var(--border)] rounded-[var(--radius)] p-3 -m-3 transition-colors"
+        >
           <div className="relative flex-shrink-0">
             <input
               type="checkbox"
@@ -42,7 +46,7 @@ const ViewLimitSettings: React.FC<ViewLimitSettingsProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-[var(--foreground)] mb-1">
-              {t(`${translationPrefix}.view_limit`, "View/download limit")}
+              {viewLimitLabel}
             </div>
             <div className="text-xs text-[var(--foreground-muted)] leading-relaxed">
               {t(

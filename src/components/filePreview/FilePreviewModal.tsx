@@ -35,8 +35,8 @@ interface FilePreviewModalProps {
   fileName: string;
 }
 
-const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
-const VIDEO_EXTENSIONS = ["mp4", "webm", "ogg"];
+const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
+const VIDEO_EXTENSIONS = new Set(["mp4", "webm", "ogg"]);
 
 /**
  * File type for reactjs-file-preview. Without it the library starts in "unknown" (rendering
@@ -44,12 +44,12 @@ const VIDEO_EXTENSIONS = ["mp4", "webm", "ogg"];
  * share URLs carry no file extension.
  */
 function previewFileType(extension: string): "image" | "video" | undefined {
-  if (IMAGE_EXTENSIONS.includes(extension)) return "image";
-  if (VIDEO_EXTENSIONS.includes(extension)) return "video";
+  if (IMAGE_EXTENSIONS.has(extension)) return "image";
+  if (VIDEO_EXTENSIONS.has(extension)) return "video";
   return undefined;
 }
 
-const SUPPORTED_EXTENSIONS = [
+const SUPPORTED_EXTENSIONS = new Set([
   // Images
   "jpg",
   "jpeg",
@@ -62,18 +62,18 @@ const SUPPORTED_EXTENSIONS = [
   "mp4",
   "webm",
   "ogg",
-];
+]);
 
 export default function FilePreviewModal({
   isOpen,
   onClose,
   fileUrl,
   fileName,
-}: FilePreviewModalProps) {
+}: Readonly<FilePreviewModalProps>) {
   const { t } = useTranslation();
   // Derived during render so the very first render already knows the file type
   const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-  const isSupported = SUPPORTED_EXTENSIONS.includes(fileExtension);
+  const isSupported = SUPPORTED_EXTENSIONS.has(fileExtension);
 
   const error = isSupported
     ? null
@@ -84,7 +84,7 @@ export default function FilePreviewModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={fileName} size="xl">
       <div className="min-h-[400px] flex flex-col">
-        {error ? (
+        {error && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center max-w-md">
               <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-yellow-900/20 border border-yellow-800 mb-4">
@@ -118,11 +118,13 @@ export default function FilePreviewModal({
               )}
             </div>
           </div>
-        ) : isPdf ? (
+        )}
+        {!error && isPdf && (
           <div className="flex-1 overflow-hidden">
             <PdfViewer fileUrl={fileUrl} />
           </div>
-        ) : (
+        )}
+        {!error && !isPdf && (
           <div className="flex-1 bg-[var(--background)] rounded-lg overflow-hidden">
             <FilePreview
               preview={fileUrl}

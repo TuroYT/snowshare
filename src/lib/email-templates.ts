@@ -66,11 +66,11 @@ export const DEFAULT_VERIFY_TEXT = `Verify your email for {{appName}}:\n\n{{veri
 
 function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replaceAll(/&/g, "&amp;")
+    .replaceAll(/</g, "&lt;")
+    .replaceAll(/>/g, "&gt;")
+    .replaceAll(/"/g, "&quot;")
+    .replaceAll(/'/g, "&#39;");
 }
 
 /**
@@ -107,12 +107,12 @@ export function sanitizeEmailHtml(html: string): string {
       strong: ["style"],
       em: ["style"],
       hr: ["style"],
-      "*": ["style"]
+      "*": ["style"],
     },
     // Disallow javascript: and other non-http/mailto schemes in URLs.
     allowedSchemes: ["http", "https", "mailto"],
     allowedSchemesAppliedToAttributes: ["href", "src", "cite"],
-    allowProtocolRelative: false
+    allowProtocolRelative: false,
   });
 }
 
@@ -131,7 +131,7 @@ export function renderTemplate(
   escapeVars = true
 ): string {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-    if (Object.prototype.hasOwnProperty.call(vars, key)) {
+    if (Object.hasOwn(vars, key)) {
       const value = vars[key];
       return escapeVars ? escapeHtml(value) : value;
     }

@@ -1,5 +1,5 @@
-import path from "path";
-import { Readable } from "stream";
+import path from "node:path";
+import { Readable } from "node:stream";
 import { ZipArchive } from "archiver";
 import { getStorageReadStream } from "@/lib/storage";
 
@@ -123,5 +123,5 @@ export function validateFilePath(filePath: string): boolean {
 }
 
 export function normalizeRelativePath(relativePath: string): string {
-  return relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\.\.+/g, ".");
+  return relativePath.replaceAll("\\", "/").replace(/^\/+/, "").replaceAll(/\.\.+/g, ".");
 }

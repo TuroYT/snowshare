@@ -37,18 +37,15 @@ export default function TermsOfUse() {
     fetchTermsOfUse();
   }, [t]);
 
+  let content: React.ReactNode;
+  if (loading) content = <p>{t("terms_of_use.loading", "Loading terms of use...")}</p>;
+  else if (error) content = <p className="text-red-500">{error}</p>;
+  else content = <ReactMarkdown>{termsOfUseText}</ReactMarkdown>;
+
   return (
     <div className="min-h-screen flex flex-col" style={{ color: colors.primaryColor }}>
       <Navigation />
-      <main className="flex-grow prose mx-auto p-4 w-full">
-        {loading ? (
-          <p>{t("terms_of_use.loading", "Loading terms of use...")}</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : (
-          <ReactMarkdown>{termsOfUseText}</ReactMarkdown>
-        )}
-      </main>
+      <main className="flex-grow prose mx-auto p-4 w-full">{content}</main>
       <Footer />
     </div>
   );

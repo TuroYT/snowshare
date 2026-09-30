@@ -94,7 +94,7 @@ export function detectLocale(request: NextRequest): SupportedLocale {
       .split(",")
       .map((lang) => {
         const [code, qValue] = lang.trim().split(";");
-        const q = qValue ? parseFloat(qValue.split("=")[1]) : 1.0;
+        const q = qValue ? Number.parseFloat(qValue.split("=")[1]) : 1.0;
         const baseCode = code.split("-")[0].toLowerCase();
         return { code: baseCode, q };
       })

@@ -3,10 +3,10 @@
  * our own origin (the Content Security Policy does not allow third-party scripts).
  * Runs on postinstall; the worker version always matches the installed react-pdf.
  */
-import fs from "fs";
-import path from "path";
-import { createRequire } from "module";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 
 const resolver = createRequire(import.meta.url);
 const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");

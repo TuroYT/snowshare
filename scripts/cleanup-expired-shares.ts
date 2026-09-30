@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { deleteShareFiles } from "@/lib/storage";
 import { getUploadDir } from "@/lib/constants";

@@ -3,15 +3,15 @@
  * Uses tus protocol for resumable file uploads
  */
 
-import { createServer } from "http";
-import { parse } from "url";
-import { AsyncLocalStorage } from "async_hooks";
+import { createServer } from "node:http";
+import { parse } from "node:url";
+import { AsyncLocalStorage } from "node:async_hooks";
 import next from "next";
 import { Server as TusServer } from "@tus/server";
 import { FileStore } from "@tus/file-store";
-import { existsSync, mkdirSync } from "fs";
-import { unlink } from "fs/promises";
-import path from "path";
+import { existsSync, mkdirSync } from "node:fs";
+import { unlink } from "node:fs/promises";
+import path from "node:path";
 import { getToken } from "next-auth/jwt";
 import cron from "node-cron";
 import { CLIENT_IP_HEADER, resolveClientIp } from "./src/lib/getClientIp.js";
@@ -24,7 +24,7 @@ const CTX_SIZE_CHECKED = "ss_size_checked";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
-const port = parseInt(process.env.PORT || "3000", 10);
+const port = Number.parseInt(process.env.PORT || "3000", 10);
 
 // Initialize Next.js
 const app = next({ dev, hostname, port });
@@ -155,14 +155,22 @@ function loadLibs() {
   return libsPromise;
 }
 
+/**
+ * Builds an Error carrying the { status_code, body } properties tus-node-server reads to
+ * build the HTTP response.
+ */
+function tusError(status_code, body) {
+  return Object.assign(new Error(body), { status_code, body });
+}
+
 /** Converts an error to the { status_code, body } shape tus-node-server returns to clients. */
 function toTusError(error, UploadError) {
   if (error && typeof error === "object" && "status_code" in error) return error;
   if (UploadError && error instanceof UploadError) {
-    return { status_code: error.status, body: JSON.stringify({ error: error.code }) };
+    return tusError(error.status, JSON.stringify({ error: error.code }));
   }
   console.error("[Upload] Unexpected error:", error);
-  return { status_code: 500, body: JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }) };
+  return tusError(500, JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }));
 }
 
 /** Upload context persisted in the upload metadata at creation (survives restarts). */
@@ -185,20 +193,21 @@ async function assertWithinLimits(libs, context, size) {
     limits = await libs.getUploadLimits(context.clientIp, context.isAuthenticated);
   } catch (error) {
     console.error("[Upload] Cannot compute upload limits, refusing upload:", error);
-    throw { status_code: 503, body: JSON.stringify({ error: "QUOTA_UNAVAILABLE" }) };
+    throw tusError(503, JSON.stringify({ error: "QUOTA_UNAVAILABLE" }));
   }
   if (size > limits.maxFileSizeBytes) {
-    throw { status_code: 413, body: JSON.stringify({ error: "FILE_TOO_LARGE" }) };
+    throw tusError(413, JSON.stringify({ error: "FILE_TOO_LARGE" }));
   }
   if (size > limits.remainingQuotaBytes) {
-    throw { status_code: 429, body: JSON.stringify({ error: "IP_QUOTA_EXCEEDED" }) };
+    throw tusError(429, JSON.stringify({ error: "IP_QUOTA_EXCEEDED" }));
   }
 }
 
 function isBulkSubsequentFile(metadata) {
   return (
     metadata.isBulk === "true" &&
-    (!!metadata.bulkShareId || (!!metadata.fileIndex && parseInt(metadata.fileIndex, 10) > 0))
+    (!!metadata.bulkShareId ||
+      (!!metadata.fileIndex && Number.parseInt(metadata.fileIndex, 10) > 0))
   );
 }
 
@@ -215,20 +224,58 @@ function rawUploadOptions(metadata) {
 /** Returns the existing bulk share for a subsequent file, after checking the uploader owns it. */
 async function getOwnedBulkShare(libs, bulkShareId, context) {
   const share = await libs.prisma.share.findUnique({ where: { id: bulkShareId } });
-  if (!share || !share.isBulk) {
+  if (!share?.isBulk) {
     console.error(`[Upload] Bulk share not found: ${bulkShareId}`);
-    throw { status_code: 404, body: JSON.stringify({ error: "SHARE_NOT_FOUND" }) };
+    throw tusError(404, JSON.stringify({ error: "SHARE_NOT_FOUND" }));
   }
   const ownsShare = context.isAuthenticated
     ? share.ownerId === context.userId
     : share.ipSource === context.clientIp;
   if (!ownsShare) {
-    console.error(
-      `[Upload] Unauthorized bulk share access: ${bulkShareId} by ${context.isAuthenticated ? `user ${context.userId}` : `IP ${context.clientIp}`}`
-    );
-    throw { status_code: 403, body: JSON.stringify({ error: "UNAUTHORIZED_SHARE_ACCESS" }) };
+    const uploader = context.isAuthenticated ? `user ${context.userId}` : `IP ${context.clientIp}`;
+    console.error(`[Upload] Unauthorized bulk share access: ${bulkShareId} by ${uploader}`);
+    throw tusError(403, JSON.stringify({ error: "UNAUTHORIZED_SHARE_ACCESS" }));
   }
   return share;
+}
+
+/** Links the stored file to its share; removes the file from storage if that fails. */
+async function recordStoredFile(libs, share, finalFileName, info) {
+  const { filename, relativePath, size, mimeType, fileIndex, totalFiles } = info;
+  try {
+    if (share.isBulk) {
+      await libs.prisma.shareFile.create({
+        data: {
+          shareId: share.id,
+          filePath: finalFileName,
+          originalName: filename,
+          relativePath,
+          size: BigInt(size),
+          mimeType: mimeType || "application/octet-stream",
+        },
+      });
+      console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
+    } else {
+      await libs.prisma.share.update({
+        where: { id: share.id },
+        data: { filePath: finalFileName },
+      });
+      console.log(`Upload complete: ${filename} -> ${share.slug}`);
+    }
+  } catch (error) {
+    // The file is stored but not referenced: remove it
+    await libs.deleteFromStorage(finalFileName).catch((deleteError) => {
+      console.error(`[Upload] Failed to remove unreferenced ${finalFileName}:`, deleteError);
+    });
+    throw error;
+  }
+}
+
+/** True when the error is a deliberate rejection (limits, validation) rather than a crash. */
+function isUploadRejection(error, UploadError) {
+  return (
+    !!error && typeof error === "object" && ("status_code" in error || error instanceof UploadError)
+  );
 }
 
 async function removeTusFiles(uploadId) {
@@ -277,14 +324,14 @@ const tusServer = new TusServer({
   async onUploadCreate(req, upload) {
     if (!upload) {
       console.error("onUploadCreate: upload object is undefined");
-      throw { status_code: 500, body: "Internal Server Error: Upload context missing" };
+      throw tusError(500, "Internal Server Error: Upload context missing");
     }
 
     const libs = await loadLibs();
     const context = requestContext.getStore();
     if (!context) {
       console.error("[Upload] Missing request context in onUploadCreate");
-      throw { status_code: 500, body: JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }) };
+      throw tusError(500, JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }));
     }
 
     const metadata = upload.metadata || {};
@@ -326,15 +373,15 @@ const tusServer = new TusServer({
     const context = readUploadContext(metadata) ?? requestContext.getStore();
     if (!context) {
       console.error(`[Upload] No upload context for ${upload.id}`);
-      throw { status_code: 500, body: JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }) };
+      throw tusError(500, JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }));
     }
 
     const filename = metadata.filename || "upload";
     const isBulk = metadata.isBulk === "true";
     const bulkShareId = metadata.bulkShareId || "";
     const relativePath = metadata.relativePath || filename;
-    const fileIndex = metadata.fileIndex ? parseInt(metadata.fileIndex, 10) : 0;
-    const totalFiles = metadata.totalFiles ? parseInt(metadata.totalFiles, 10) : 1;
+    const fileIndex = metadata.fileIndex ? Number.parseInt(metadata.fileIndex, 10) : 0;
+    const totalFiles = metadata.totalFiles ? Number.parseInt(metadata.totalFiles, 10) : 1;
     const size = upload.size ?? upload.offset ?? 0;
     const tusFilePath = path.join(tusTempDir, upload.id);
 
@@ -362,35 +409,14 @@ const tusServer = new TusServer({
           console.error("[Upload] Failed to remove tus metadata:", error);
       });
 
-      try {
-        if (share.isBulk) {
-          await libs.prisma.shareFile.create({
-            data: {
-              shareId: share.id,
-              filePath: finalFileName,
-              originalName: filename,
-              relativePath,
-              size: BigInt(size),
-              mimeType: metadata.filetype || "application/octet-stream",
-            },
-          });
-          console.log(
-            `Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`
-          );
-        } else {
-          await libs.prisma.share.update({
-            where: { id: share.id },
-            data: { filePath: finalFileName },
-          });
-          console.log(`Upload complete: ${filename} -> ${share.slug}`);
-        }
-      } catch (error) {
-        // The file is stored but not referenced: remove it
-        await libs.deleteFromStorage(finalFileName).catch((deleteError) => {
-          console.error(`[Upload] Failed to remove unreferenced ${finalFileName}:`, deleteError);
-        });
-        throw error;
-      }
+      await recordStoredFile(libs, share, finalFileName, {
+        filename,
+        relativePath,
+        size,
+        mimeType: metadata.filetype,
+        fileIndex,
+        totalFiles,
+      });
 
       return {
         headers: {
@@ -403,11 +429,7 @@ const tusServer = new TusServer({
     } catch (error) {
       if (createdShareId) await libs.rollbackShare(createdShareId);
       // A rejected upload (limits, validation) will never be finalized: free the disk now
-      if (
-        error &&
-        typeof error === "object" &&
-        ("status_code" in error || error instanceof libs.UploadError)
-      ) {
+      if (isUploadRejection(error, libs.UploadError)) {
         await removeTusFiles(upload.id);
       }
       throw toTusError(error, libs.UploadError);
@@ -459,71 +481,69 @@ process.on("unhandledRejection", (reason) => {
   console.error("[Server] Unhandled promise rejection:", reason);
 });
 
-app
-  .prepare()
-  .then(async () => {
-    const { runCleanup } = await import("./scripts/cleanup-expired-shares.ts");
-    const cleanupTask = cron.schedule("0 * * * *", () => runScheduledCleanup(runCleanup));
-    console.log("> Scheduled hourly cleanup (expired shares, abandoned uploads, orphan files)");
+try {
+  await app.prepare();
+  const { runCleanup } = await import("./scripts/cleanup-expired-shares.ts");
+  const cleanupTask = cron.schedule("0 * * * *", () => runScheduledCleanup(runCleanup));
+  console.log("> Scheduled hourly cleanup (expired shares, abandoned uploads, orphan files)");
 
-    const server = createServer(async (req, res) => {
-      try {
-        const parsedUrl = parse(req.url, true);
-        const { pathname } = parsedUrl;
+  const server = createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true);
+      const { pathname } = parsedUrl;
 
-        // Handle tus uploads
-        if (pathname.startsWith("/api/tus")) {
-          await handleTus(req, res);
-          return;
-        }
-
-        // Pass the client IP resolved from the socket to Next.js routes. Always overwritten,
-        // so a client cannot forge it.
-        req.headers[CLIENT_IP_HEADER] = getClientIpFromHttpReq(req);
-
-        // Let Next.js handle everything else
-        await handle(req, res, parsedUrl);
-      } catch (err) {
-        console.error("Server error:", err);
-        res.statusCode = 500;
-        res.end("Internal server error");
+      // Handle tus uploads
+      if (pathname.startsWith("/api/tus")) {
+        await handleTus(req, res);
+        return;
       }
-    });
 
-    // Large single-request uploads (non-tus) can legitimately take longer than Node's
-    // default 5-minute request timeout; idle sockets are still closed by keepAliveTimeout
-    server.requestTimeout = 0;
+      // Pass the client IP resolved from the socket to Next.js routes. Always overwritten,
+      // so a client cannot forge it.
+      req.headers[CLIENT_IP_HEADER] = getClientIpFromHttpReq(req);
 
-    server.listen(port, () => {
-      console.log(`> Ready on http://${hostname}:${port}`);
-      console.log(
-        `> Tus upload endpoint: http://${hostname}:${port}/api/tus (resumable uploads enabled)`
-      );
-    });
-
-    let shuttingDown = false;
-    const shutdown = (signal) => {
-      if (shuttingDown) return;
-      shuttingDown = true;
-      console.log(`> ${signal} received, shutting down gracefully`);
-      cleanupTask.stop();
-      const forceExit = setTimeout(() => process.exit(1), 10_000);
-      forceExit.unref();
-      server.close(async () => {
-        try {
-          const { prisma } = await import("./src/lib/prisma.js");
-          await prisma.$disconnect();
-        } catch (error) {
-          console.error("> Error while disconnecting Prisma:", error);
-        }
-        process.exit(0);
-      });
-      server.closeIdleConnections?.();
-    };
-    process.on("SIGTERM", () => shutdown("SIGTERM"));
-    process.on("SIGINT", () => shutdown("SIGINT"));
-  })
-  .catch((error) => {
-    console.error("> Failed to start server:", error);
-    process.exit(1);
+      // Let Next.js handle everything else
+      await handle(req, res, parsedUrl);
+    } catch (err) {
+      console.error("Server error:", err);
+      res.statusCode = 500;
+      res.end("Internal server error");
+    }
   });
+
+  // Large single-request uploads (non-tus) can legitimately take longer than Node's
+  // default 5-minute request timeout; idle sockets are still closed by keepAliveTimeout
+  server.requestTimeout = 0;
+
+  server.listen(port, () => {
+    console.log(`> Ready on http://${hostname}:${port}`);
+    console.log(
+      `> Tus upload endpoint: http://${hostname}:${port}/api/tus (resumable uploads enabled)`
+    );
+  });
+
+  let shuttingDown = false;
+  const shutdown = (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`> ${signal} received, shutting down gracefully`);
+    cleanupTask.stop();
+    const forceExit = setTimeout(() => process.exit(1), 10_000);
+    forceExit.unref();
+    server.close(async () => {
+      try {
+        const { prisma } = await import("./src/lib/prisma.js");
+        await prisma.$disconnect();
+      } catch (error) {
+        console.error("> Error while disconnecting Prisma:", error);
+      }
+      process.exit(0);
+    });
+    server.closeIdleConnections?.();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+} catch (error) {
+  console.error("> Failed to start server:", error);
+  process.exit(1);
+}

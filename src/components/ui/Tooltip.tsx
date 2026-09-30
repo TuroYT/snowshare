@@ -6,11 +6,11 @@ export function Tooltip({
   children,
   content,
   className,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   content: string;
   className?: string;
-}) {
+}>) {
   const [visible, setVisible] = useState(false);
   const tooltipId = useId();
   return (

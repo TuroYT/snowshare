@@ -12,7 +12,7 @@ export default function IdentitySection({
   appName,
   appDescription,
   onChange,
-}: IdentitySectionProps) {
+}: Readonly<IdentitySectionProps>) {
   const { t } = useTranslation();
 
   return (

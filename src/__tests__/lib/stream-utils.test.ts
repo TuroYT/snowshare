@@ -45,43 +45,17 @@ describe("parseRangeHeader", () => {
   });
 
   describe("invalid ranges", () => {
-    it("should return null for an empty string", () => {
-      const result = parseRangeHeader("", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null when start > end", () => {
-      const result = parseRangeHeader("bytes=500-100", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null when start is out of bounds", () => {
-      const result = parseRangeHeader("bytes=1000-1999", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null when end exceeds fileSize - 1", () => {
-      const result = parseRangeHeader("bytes=0-1000", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null for negative start", () => {
-      const result = parseRangeHeader("bytes=-1-499", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null for non-numeric values", () => {
-      const result = parseRangeHeader("bytes=abc-def", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null when format has too many parts", () => {
-      const result = parseRangeHeader("bytes=0-499-999", FILE_SIZE);
-      expect(result).toBeNull();
-    });
-
-    it("should return null for a missing separator", () => {
-      const result = parseRangeHeader("bytes=0", FILE_SIZE);
+    it.each([
+      ["an empty string", ""],
+      ["start > end", "bytes=500-100"],
+      ["start out of bounds", "bytes=1000-1999"],
+      ["end exceeding fileSize - 1", "bytes=0-1000"],
+      ["negative start", "bytes=-1-499"],
+      ["non-numeric values", "bytes=abc-def"],
+      ["too many parts", "bytes=0-499-999"],
+      ["a missing separator", "bytes=0"],
+    ])("should return null for %s", (_label, header) => {
+      const result = parseRangeHeader(header, FILE_SIZE);
       expect(result).toBeNull();
     });
   });

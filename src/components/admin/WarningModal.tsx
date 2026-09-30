@@ -21,10 +21,10 @@ export default function WarningModal({
   onCancel,
   confirmText,
   cancelText,
-}: WarningModalProps) {
+}: Readonly<WarningModalProps>) {
   const { t } = useTranslation();
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -48,17 +48,15 @@ export default function WarningModal({
       );
       if (focusable.length === 0) return;
       const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const last = focusable.at(-1) ?? first;
       if (e.shiftKey) {
         if (document.activeElement === first) {
           e.preventDefault();
           last.focus();
         }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+      } else if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
 
@@ -79,18 +77,20 @@ export default function WarningModal({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel();
-      }}
-    >
-      <div
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full cursor-default"
+        onClick={onCancel}
+      />
+      <dialog
+        open
         ref={dialogRef}
-        role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-sm bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
+        className="relative inset-auto m-0 p-0 max-h-none text-inherit w-full max-w-sm bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
       >
         {/* Header */}
         <div
@@ -146,7 +146,7 @@ export default function WarningModal({
             {confirmText || t("common.confirm")}
           </button>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 }

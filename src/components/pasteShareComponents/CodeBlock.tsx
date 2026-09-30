@@ -23,7 +23,7 @@ const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), {
 
 let themePromise: Promise<typeof import("@uiw/codemirror-theme-atomone")> | null = null;
 function loadTheme() {
-  if (!themePromise) themePromise = import("@uiw/codemirror-theme-atomone");
+  themePromise ??= import("@uiw/codemirror-theme-atomone");
   return themePromise;
 }
 

@@ -5,10 +5,10 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-import { createReadStream, existsSync } from "fs";
-import { stat, unlink } from "fs/promises";
-import { Readable } from "stream";
-import path from "path";
+import { createReadStream, existsSync } from "node:fs";
+import { stat, unlink } from "node:fs/promises";
+import { Readable } from "node:stream";
+import path from "node:path";
 import { getUploadDir } from "@/lib/constants";
 import { getSettingsCached } from "@/lib/settings";
 
@@ -58,7 +58,7 @@ const globalForS3 = globalThis as unknown as {
 function getS3Client(config: S3Config): S3Client {
   const fingerprint = JSON.stringify(config);
   const cached = globalForS3.__snowshareS3Client;
-  if (cached && cached.fingerprint === fingerprint) return cached.client;
+  if (cached?.fingerprint === fingerprint) return cached.client;
 
   cached?.client.destroy();
   const client = new S3Client({

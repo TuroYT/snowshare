@@ -1,10 +1,10 @@
 import Busboy from "busboy";
-import crypto from "crypto";
-import { createWriteStream } from "fs";
-import { unlink } from "fs/promises";
-import path from "path";
-import { Readable, Transform, type TransformCallback } from "stream";
-import { pipeline } from "stream/promises";
+import crypto from "node:crypto";
+import { createWriteStream } from "node:fs";
+import { unlink } from "node:fs/promises";
+import path from "node:path";
+import { Readable, Transform, type TransformCallback } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import type { NextRequest } from "next/server";
 
 /**
@@ -98,13 +98,15 @@ export async function receiveMultipart(
     throw new MultipartError("MALFORMED", { cause: error });
   }
 
-  const source = Readable.fromWeb(request.body as unknown as import("stream/web").ReadableStream);
+  const source = Readable.fromWeb(
+    request.body as unknown as import("node:stream/web").ReadableStream
+  );
 
   // Settles the parsing promise once a failure is recorded (see the promise below)
   let settleOnFailure: () => void = () => {};
 
   const fail = (error: MultipartError) => {
-    if (!failure) failure = error;
+    failure ??= error;
     // Stop reading the request: nothing more will be stored
     source.unpipe(busboy);
     source.resume();

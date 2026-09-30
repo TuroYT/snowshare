@@ -16,7 +16,7 @@ export default function ColorsSection({
   secondaryColor,
   onChange,
   onSelectPreset,
-}: ColorsSectionProps) {
+}: Readonly<ColorsSectionProps>) {
   const { t } = useTranslation();
 
   return (
@@ -81,12 +81,12 @@ function ColorInput({
   value,
   onChange,
   hint,
-}: {
+}: Readonly<{
   label: string;
   value: string;
   onChange: (value: string) => void;
   hint?: string;
-}) {
+}>) {
   return (
     <div>
       <label className="text-xs text-[var(--foreground)] block mb-2">{label}</label>
