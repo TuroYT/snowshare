@@ -48,7 +48,8 @@ export function convertFromMB(megabytes: number, useGiB: boolean): number {
  * @returns Size in MiB (mebibytes, 1024² bytes)
  */
 export function convertToMB(value: number, useGiB: boolean): number {
-  return Math.round(useGiB ? value * MIB_PER_GIB : value);
+  // Factor is 1024 for GiB and 1 for MiB (1024 ** 0)
+  return Math.round(value * MIB_PER_GIB ** Number(useGiB));
 }
 
 /**
