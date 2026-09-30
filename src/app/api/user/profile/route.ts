@@ -16,7 +16,7 @@ import crypto from "node:crypto";
 
 const MAX_NAME_LENGTH = 100;
 
-const VALID_TABS = ["linkshare", "pasteshare", "fileshare"];
+const VALID_TABS = new Set(["linkshare", "pasteshare", "fileshare"]);
 
 type ProfileUpdateData = {
   name?: string;
@@ -44,7 +44,7 @@ function applyNameAndTab(
   }
 
   if (defaultTab !== undefined) {
-    if (!VALID_TABS.includes(defaultTab as string)) {
+    if (!VALID_TABS.has(defaultTab as string)) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
     updateData.defaultTab = defaultTab as ProfileUpdateData["defaultTab"];
