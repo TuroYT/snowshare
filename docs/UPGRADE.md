@@ -1,205 +1,152 @@
-# Upgrade Guide
+# Upgrade guide
 
-This guide explains how to upgrade your SnowShare instance to the latest version.
+How to move a SnowShare instance to a newer version, depending on how you installed it.
 
-## Important
+The admin panel tells you when a new release is out, with your current version, the latest one and a link to the release notes. Read those notes before upgrading: anything that needs manual action is listed there and in [Behaviour changes](#behaviour-changes) below.
 
-If you cant connect after an update in ProxmoxLXC, try this in you container's console
+## Before you start
+
+Back up the database and, if you store files locally, the uploads.
+
+With Docker:
+
+```bash
+docker compose exec db pg_dump -U postgres snowshare > backup_$(date +%Y%m%d).sql
+docker compose cp app:/app/uploads ./uploads_backup_$(date +%Y%m%d)
+```
+
+Without Docker:
+
+```bash
+pg_dump -U postgres snowshare > backup_$(date +%Y%m%d).sql
+cp -r uploads/ uploads_backup_$(date +%Y%m%d)/
+```
+
+## Upgrading
+
+### Docker Hub image
+
+This is the setup described in the [README](../README.md#install-with-docker), where `docker-compose.yml` uses `image: turodev/snowshare`.
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Database migrations run when the new container starts.
+
+If you pinned a version (`turodev/snowshare:1.5.4`), change the tag in `docker-compose.yml` first. With `latest` or a minor tag like `1.5`, `pull` is enough.
+
+With `docker run` instead of Compose:
+
+```bash
+docker pull turodev/snowshare:latest
+docker rm -f snowshare
+```
+
+Then start the container again with the same `docker run` command as before, including the same `NEXTAUTH_SECRET`.
+
+### Docker, built from source
+
+If you cloned the repository and build the image yourself:
+
+```bash
+cd /path/to/snowshare
+git pull origin main
+docker compose up -d --build
+```
+
+Migrations also run on startup here.
+
+### Manual installation
+
+Node.js 24 or newer is required.
+
+```bash
+cd /path/to/snowshare
+git pull origin main
+npm install
+npx prisma migrate deploy
+npm run build
+```
+
+Then restart the app with whatever manages it, for example `pm2 restart snowshare` or `systemctl restart snowshare`.
+
+### Proxmox LXC
+
+If you can't log in after an update, the `.env` file was probably overwritten. Restore it from the container's console:
 
 ```bash
 cd /opt/snowshare && cp ../snowshare.env .env && reboot
 ```
 
-## Version Check
+## After the upgrade
 
-SnowShare automatically checks for updates and displays a notification in the **Admin Panel** when a new version is available. The notification shows:
+Check the logs (`docker compose logs -f app`), open the web interface, and make sure an existing share still opens and that you can create a new one. If the UI looks broken, clear your browser cache first.
 
-- Your current version
-- The latest available version
-- Links to release notes and this upgrade guide
+## Rolling back
 
-## Upgrade Methods
+A newer version may have changed the database schema, and migrations are not reverted automatically. The safe way back is to restore the database backup you made before upgrading, then start the old version.
 
-### Docker Compose (Recommended)
+Docker Hub image: set the previous tag in `docker-compose.yml` (for example `turodev/snowshare:1.5.3`) and run `docker compose up -d`.
 
-If you're running SnowShare with Docker Compose:
+Built from source or manual installation:
 
 ```bash
-# Navigate to your SnowShare directory
-cd /path/to/snowshare
-
-# Pull the latest changes
-git pull origin main
-
-# Rebuild and restart containers
-docker compose down
-docker compose up -d --build
+git checkout v1.5.3   # your previous version
 ```
 
-The container will automatically run database migrations on startup.
-
-### Manual Installation
-
-If you installed SnowShare manually:
-
-dont forget to have node.js 24+ installed
-
-```bash
-# Navigate to your SnowShare directory
-cd /path/to/snowshare
-
-# Pull the latest changes
-git pull origin main
-
-# Install dependencies
-npm install
-
-# Run database migrations
-npx prisma migrate deploy
-
-# Rebuild the application
-npm run build
-
-# Restart the application
-# (depends on your process manager, e.g., pm2, systemd)
-pm2 restart snowshare
-# or
-systemctl restart snowshare
-```
-
-## Pre-Upgrade Checklist
-
-Before upgrading, ensure you:
-
-1. **Backup your database**
-
-   ```bash
-   # PostgreSQL backup example
-   pg_dump -U postgres snowshare > backup_$(date +%Y%m%d).sql
-   ```
-
-2. **Backup your uploads folder**
-
-   ```bash
-   cp -r uploads/ uploads_backup_$(date +%Y%m%d)/
-   ```
-
-3. **Check the release notes** for any breaking changes or migration steps
-
-4. **Test in a staging environment** if possible
-
-## Post-Upgrade Steps
-
-After upgrading:
-
-1. **Verify the application starts correctly**
-   - Check the logs for any errors
-   - Verify you can access the web interface
-
-2. **Test core functionality**
-   - Create a test share (file, link, paste)
-   - Verify existing shares are accessible
-   - Check admin panel access
-
-3. **Clear browser cache** if you notice UI issues
-
-## Rollback
-
-If you need to rollback to a previous version:
-
-### Docker Compose
-
-```bash
-# Revert to a specific version
-git checkout v0.1.0  # Replace with your previous version tag
-docker compose down
-docker compose up -d --build
-```
-
-### Manual Installation
-
-```bash
-# Revert to a specific version
-git checkout v0.1.0  # Replace with your previous version tag
-npm install
-npm run build
-# Restart your process manager
-```
-
-⚠️ **Note**: Rolling back may require reversing database migrations manually if the new version added schema changes.
+Then rebuild as in the upgrade steps above (`docker compose up -d --build`, or `npm install && npm run build` and a restart).
 
 ## Troubleshooting
 
-### Migration Errors
-
-If you encounter database migration errors:
+### The container doesn't start
 
 ```bash
-# Check migration status
-npx prisma migrate status
-
-# Reset migrations (⚠️ This will delete all data!)
-npx prisma migrate reset
-```
-
-### Build Errors
-
-If the build fails after upgrade:
-
-```bash
-# Clear Next.js cache
-rm -rf .next
-
-# Reinstall dependencies
-rm -rf node_modules
-npm install
-
-# Rebuild
-npm run build
-```
-
-### Container Issues
-
-If Docker containers fail to start:
-
-```bash
-# Check logs
 docker compose logs -f app
+```
 
-# Rebuild without cache
+Most of the time the cause is in the first lines: a failed migration or a missing environment variable. If you build from source and suspect a stale layer, rebuild without cache:
+
+```bash
 docker compose build --no-cache
 docker compose up -d
 ```
 
-## Behaviour Changes by Release
+### Migration errors
 
-### Security & performance audit
+```bash
+npx prisma migrate status
+```
 
-- **Client IP resolution**: SnowShare now uses the **last** `X-Forwarded-For` entry (the one appended by your reverse proxy) instead of the first one, which clients could forge to bypass quotas. With a single reverse proxy nothing changes. If several proxies are chained (e.g. Cloudflare → nginx → SnowShare), set `TRUSTED_PROXY_COUNT` to their number.
-- **No reverse proxy?** If SnowShare is exposed directly (clients connect to its port), set `TRUSTED_PROXY_COUNT=0` so forwarding headers sent by clients are ignored.
-- **API keys**: keys are hashed with HMAC-SHA256 keyed with `NEXTAUTH_SECRET`. Keys created with a recent release could not authenticate; recreate them from your profile if needed. **Changing `NEXTAUTH_SECRET` invalidates every API key** (and every session, as before). A client that sends too many invalid keys now receives `429` (it used to be treated as anonymous).
-- **View limits**: download links built by the share page use a short-lived signed `token` instead of `?password=`. Direct downloads without a token (`/f/<slug>/download`, `/api/download/<slug>`, bulk ZIP and individual bulk files) now count one view per request, Range requests included, so `maxViews` can no longer be bypassed. `?password=` is still accepted.
-- **Anonymous file uploads** now honour the "allow anonymous file sharing" admin setting on every upload endpoint.
-- **Profile**: changing your e-mail address now requires your current password (password accounts) and a new verification e-mail when e-mail verification is enabled.
-- **Database migration** (applied automatically): adds a nullable `Share.size` column and indexes. No data is modified.
-- **Docker**: the image has a `HEALTHCHECK`; the unused `/var/log` volume was removed from `docker-compose.yml`, and share cleanup runs inside the app every hour (the old cron script is gone).
+With Docker, prefix it with `docker compose exec app`. The output shows which migration failed.
 
-## Version History
+Do not run `npx prisma migrate reset` on a real instance: it drops every table and all your data.
 
-Check the [GitHub Releases](https://github.com/TuroYT/snowshare/releases) page for:
+### Build errors (manual installation)
 
-- Complete changelog
-- Breaking changes
-- New features
-- Bug fixes
+Start again from a clean tree:
 
-## Getting Help
+```bash
+rm -rf .next node_modules
+npm install
+npm run build
+```
 
-If you encounter issues during upgrade:
+## Behaviour changes
 
-1. Check the [GitHub Issues](https://github.com/TuroYT/snowshare/issues) for known problems
-2. Open a new issue with:
-   - Your current version
-   - Target version
-   - Error messages/logs
-   - Your environment (Docker/manual, OS, Node version)
+Changes that can affect an existing instance. The full changelog is on the [releases page](https://github.com/TuroYT/snowshare/releases).
+
+### Security and performance audit
+
+- Client IP: SnowShare now uses the last `X-Forwarded-For` entry (the one added by your reverse proxy) instead of the first, which clients could forge to get around quotas. Nothing changes with a single reverse proxy. If several proxies are chained (Cloudflare → nginx → SnowShare), set `TRUSTED_PROXY_COUNT` to their number. If SnowShare is exposed directly with no proxy, set `TRUSTED_PROXY_COUNT=0` so forwarding headers sent by clients are ignored.
+- API keys are hashed with HMAC-SHA256 keyed with `NEXTAUTH_SECRET`. Keys created with a recent release could not authenticate; recreate them from your profile if needed. Changing `NEXTAUTH_SECRET` invalidates every API key, and every session as before. A client that sends too many invalid keys now gets a `429` instead of being treated as anonymous.
+- View limits: download links built by the share page use a short-lived signed `token` instead of `?password=`. Direct downloads without a token (`/f/<slug>/download`, `/api/download/<slug>`, bulk ZIP and individual bulk files) count one view per request, Range requests included, so `maxViews` can no longer be bypassed. `?password=` is still accepted.
+- Anonymous file uploads now follow the "allow anonymous file sharing" admin setting on every upload endpoint.
+- Profile: changing your email address requires your current password (for password accounts), and a new verification email when email verification is enabled.
+- Database: a nullable `Share.size` column and some indexes are added automatically. No data is modified.
+- Docker: the image has a `HEALTHCHECK`. The unused `/var/log` volume was removed from `docker-compose.yml`, and expired shares are now cleaned up inside the app every hour (the old cron script is gone).
+
+## Getting help
+
+Look through the [open issues](https://github.com/TuroYT/snowshare/issues) first. If nothing matches, open a new one with the version you came from, the version you upgraded to, the error messages or logs, and your setup (Docker or manual, OS, Node version).
