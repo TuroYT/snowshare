@@ -40,16 +40,18 @@ function addSecurityHeaders(
   }
 
   // Content Security Policy
+  const scalarScriptSrc = isScalarHtml ? " https://cdn.jsdelivr.net" : "";
+  const scalarDomains = isScalarHtml ? " " + SCALAR_DOMAINS : "";
   response.headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://stats.sheephost.fr https://www.google.com https://www.gstatic.com${isScalarHtml ? " https://cdn.jsdelivr.net" : ""}`,
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://stats.sheephost.fr https://www.google.com https://www.gstatic.com${scalarScriptSrc}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://www.gravatar.com",
-      `font-src 'self' data:${isScalarHtml ? ` ${SCALAR_DOMAINS}` : ""}`,
+      `font-src 'self' data:${scalarDomains}`,
       "frame-src 'self' https://challenges.cloudflare.com https://www.google.com",
-      `connect-src 'self' https://challenges.cloudflare.com https://stats.sheephost.fr${isScalarHtml ? ` ${SCALAR_DOMAINS}` : ""}`,
+      `connect-src 'self' https://challenges.cloudflare.com https://stats.sheephost.fr${scalarDomains}`,
       frameAncestors,
     ].join("; ")
   );

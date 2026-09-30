@@ -57,10 +57,30 @@ const DEFAULT_SETTINGS: BrandingSettings = {
 function darkenHex(hex: string, factor: number): string {
   const clean = hex.replace("#", "");
   if (!/^[0-9A-Fa-f]{6}$/.test(clean)) return hex;
-  const r = Math.max(0, Math.round(parseInt(clean.slice(0, 2), 16) * (1 - factor)));
-  const g = Math.max(0, Math.round(parseInt(clean.slice(2, 4), 16) * (1 - factor)));
-  const b = Math.max(0, Math.round(parseInt(clean.slice(4, 6), 16) * (1 - factor)));
+  const r = Math.max(0, Math.round(Number.parseInt(clean.slice(0, 2), 16) * (1 - factor)));
+  const g = Math.max(0, Math.round(Number.parseInt(clean.slice(2, 4), 16) * (1 - factor)));
+  const b = Math.max(0, Math.round(Number.parseInt(clean.slice(4, 6), 16) * (1 - factor)));
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+function SkeletonSection({ fields }: Readonly<{ fields: number }>) {
+  const fieldIds = Array.from({ length: fields }, (_, n) => `skeleton-field-${n}`);
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <WaveSkeleton variant="rounded" width={32} height={32} />
+        <WaveSkeleton variant="text" width={160} height={26} />
+      </div>
+      <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+        {fieldIds.map((id) => (
+          <div key={id}>
+            <WaveSkeleton variant="text" width={120} height={18} sx={{ mb: 1 }} />
+            <WaveSkeleton variant="rounded" height={40} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function mapBrandingFromApi(s: Record<string, string | null>): BrandingSettings {
@@ -231,23 +251,6 @@ export default function BrandingTab() {
   const handleResetDefaults = () => {
     setSettings(DEFAULT_SETTINGS);
   };
-
-  const SkeletonSection = ({ fields }: { fields: number }) => (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <WaveSkeleton variant="rounded" width={32} height={32} />
-        <WaveSkeleton variant="text" width={160} height={26} />
-      </div>
-      <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-        {Array.from({ length: fields }).map((_, i) => (
-          <div key={i}>
-            <WaveSkeleton variant="text" width={120} height={18} sx={{ mb: 1 }} />
-            <WaveSkeleton variant="rounded" height={40} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 
   const skeleton = (
     <div className="space-y-6 w-full">

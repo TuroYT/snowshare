@@ -18,7 +18,7 @@ export default function ShareAccessLogsModal({
   slug,
   isOpen,
   onClose,
-}: ShareAccessLogsModalProps) {
+}: Readonly<ShareAccessLogsModalProps>) {
   const { t } = useTranslation();
   const { logs, total, page, setPage, loading, totalPages } = useAccessLogs({ shareId });
 
@@ -41,7 +41,6 @@ export default function ShareAccessLogsModal({
         <AccessLogTable
           logs={logs}
           loading={loading}
-          total={total}
           page={page}
           totalPages={totalPages}
           onPageChange={setPage}

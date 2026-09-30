@@ -14,7 +14,7 @@ import { hashPassword } from "@/lib/security";
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.id) {
+  if (!session?.user?.id) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     let take: number | undefined;
     if (limitParam !== null) {
-      const parsedLimit = parseInt(limitParam, 10);
+      const parsedLimit = Number.parseInt(limitParam, 10);
       if (!Number.isNaN(parsedLimit)) {
         take = Math.min(100, Math.max(1, parsedLimit));
       }
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     let skip: number | undefined;
     if (offsetParam !== null) {
-      const parsedOffset = parseInt(offsetParam, 10);
+      const parsedOffset = Number.parseInt(offsetParam, 10);
       if (!Number.isNaN(parsedOffset) && parsedOffset >= 0) {
         skip = parsedOffset;
       }
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.id) {
+  if (!session?.user?.id) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
@@ -139,10 +139,46 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
+/** Validates the new-user payload, returning an error response if invalid. */
+function validateNewUser(
+  request: NextRequest,
+  email: unknown,
+  password: unknown,
+  ssoAutoLink: unknown
+): NextResponse | null {
+  if (!email || typeof email !== "string") {
+    return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
+  }
+
+  if (!isValidEmail(email)) {
+    return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
+  }
+
+  // Explicit boolean validation — reject non-boolean values (e.g. "true" as a string) with a 400
+  if (ssoAutoLink !== undefined && typeof ssoAutoLink !== "boolean") {
+    return apiError(request, ErrorCode.INVALID_REQUEST);
+  }
+
+  // Password is required unless this is an SSO-only user
+  if (ssoAutoLink !== true && (!password || typeof password !== "string")) {
+    return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
+  }
+
+  // Validate password length whenever a password is provided, even for SSO users
+  const hasPassword = password !== undefined && password !== null && password !== "";
+  if (hasPassword && (typeof password !== "string" || !isValidPassword(password))) {
+    return apiError(request, ErrorCode.PASSWORD_LENGTH, {
+      min: PASSWORD_MIN_LENGTH,
+      max: PASSWORD_MAX_LENGTH,
+    });
+  }
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.id) {
+  if (!session?.user?.id) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
@@ -157,36 +193,9 @@ export async function POST(request: NextRequest) {
   try {
     const { email, name, password, isAdmin: makeAdmin, ssoAutoLink } = await request.json();
 
-    if (!email || typeof email !== "string") {
-      return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
-    }
-
-    if (!isValidEmail(email)) {
-      return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
-    }
-
-    // Explicit boolean validation — reject non-boolean values (e.g. "true" as a string) with a 400
-    if (ssoAutoLink !== undefined && typeof ssoAutoLink !== "boolean") {
-      return apiError(request, ErrorCode.INVALID_REQUEST);
-    }
+    const validationError = validateNewUser(request, email, password, ssoAutoLink);
+    if (validationError) return validationError;
     const ssoAutoLinkBool = ssoAutoLink === true;
-
-    // Password is required unless this is an SSO-only user
-    if (!ssoAutoLinkBool) {
-      if (!password || typeof password !== "string") {
-        return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
-      }
-    }
-
-    // Validate password length whenever a password is provided, even for SSO users
-    if (password !== undefined && password !== null && password !== "") {
-      if (typeof password !== "string" || !isValidPassword(password)) {
-        return apiError(request, ErrorCode.PASSWORD_LENGTH, {
-          min: PASSWORD_MIN_LENGTH,
-          max: PASSWORD_MAX_LENGTH,
-        });
-      }
-    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {

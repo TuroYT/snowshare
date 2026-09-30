@@ -108,8 +108,12 @@ describe("isValidUrl", () => {
       expect(result.error).toBeDefined();
     });
 
-    it("should reject a URL without protocol", () => {
-      const result = isValidUrl("example.com");
+    it.each([
+      ["a URL without protocol", "example.com"],
+      ["a javascript URL", "javascript:alert(1)"],
+      ["a data URL", "data:text/html,<script>alert(1)</script>"],
+    ])("should reject %s", (_label, value) => {
+      const result = isValidUrl(value);
       expect(result.valid).toBe(false);
     });
 
@@ -117,16 +121,6 @@ describe("isValidUrl", () => {
       const result = isValidUrl("ftp://example.com");
       expect(result.valid).toBe(false);
       expect(result.error).toContain("HTTP");
-    });
-
-    it("should reject a javascript URL", () => {
-      const result = isValidUrl("javascript:alert(1)");
-      expect(result.valid).toBe(false);
-    });
-
-    it("should reject a data URL", () => {
-      const result = isValidUrl("data:text/html,<script>alert(1)</script>");
-      expect(result.valid).toBe(false);
     });
 
     it("should reject a non-string value", () => {

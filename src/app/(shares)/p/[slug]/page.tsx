@@ -28,11 +28,11 @@ import { Badge, Button, Input, Spinner } from "@/components/ui";
 
 function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 interface PasteData {
@@ -54,12 +54,9 @@ interface ApiResponse {
 const PasteViewPage = () => {
   const { t } = useTranslation();
   const params = useParams();
-  const slug =
-    typeof params?.slug === "string"
-      ? params.slug
-      : Array.isArray(params?.slug)
-        ? params.slug[0]
-        : "";
+  let slug = "";
+  if (typeof params?.slug === "string") slug = params.slug;
+  else if (Array.isArray(params?.slug)) slug = params.slug[0];
   const [pasteData, setPasteData] = useState<PasteData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

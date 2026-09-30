@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir } from "fs/promises";
+import { mkdir } from "node:fs/promises";
 import { authenticateApiRequest } from "@/lib/api-auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { createFileShare } from "@/lib/shares";
@@ -30,6 +30,19 @@ import { moveToStorage, rollbackShare, uploadErrorResponse } from "@/lib/upload-
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+type UploadLimits = Awaited<ReturnType<typeof getUploadLimits>>;
+
+/** Keeps this endpoint's documented status codes (default ErrorCode mapping). */
+function multipartErrorResponse(request: NextRequest, error: unknown, limits: UploadLimits) {
+  if (error instanceof MultipartError && error.kind === "FILE_TOO_LARGE") {
+    return apiError(request, ErrorCode.FILE_TOO_LARGE, { maxSizeMB: limits.maxFileSizeMB });
+  }
+  if (error instanceof MultipartError && error.kind === "TOTAL_TOO_LARGE") {
+    return apiError(request, ErrorCode.IP_QUOTA_EXCEEDED, { quota: limits.ipQuotaMB });
+  }
+  return uploadErrorResponse(request, error, limits);
+}
 
 export async function POST(request: NextRequest) {
   const auth = await authenticateApiRequest(request);
@@ -73,7 +86,7 @@ export async function POST(request: NextRequest) {
       await removeTempFiles(files);
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
-    const maxViews = fields.maxViews ? parseInt(fields.maxViews, 10) : undefined;
+    const maxViews = fields.maxViews ? Number.parseInt(fields.maxViews, 10) : undefined;
 
     // Create share record with the temporary path first
     const tempKey = file.tempPath.slice(uploadsDir.length + 1);
@@ -120,13 +133,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     await removeTempFiles(files);
-    // Keep this endpoint's documented status codes (default ErrorCode mapping)
-    if (error instanceof MultipartError && error.kind === "FILE_TOO_LARGE") {
-      return apiError(request, ErrorCode.FILE_TOO_LARGE, { maxSizeMB: limits.maxFileSizeMB });
-    }
-    if (error instanceof MultipartError && error.kind === "TOTAL_TOO_LARGE") {
-      return apiError(request, ErrorCode.IP_QUOTA_EXCEEDED, { quota: limits.ipQuotaMB });
-    }
-    return uploadErrorResponse(request, error, limits);
+    return multipartErrorResponse(request, error, limits);
   }
 }

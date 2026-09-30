@@ -9,7 +9,10 @@ interface TypographySectionProps {
   onChange: (key: "fontFamily", value: string) => void;
 }
 
-export default function TypographySection({ fontFamily, onChange }: TypographySectionProps) {
+export default function TypographySection({
+  fontFamily,
+  onChange,
+}: Readonly<TypographySectionProps>) {
   const { t } = useTranslation();
 
   return (
@@ -67,7 +70,7 @@ export default function TypographySection({ fontFamily, onChange }: TypographySe
 }
 
 // Font preview component
-function FontPreview({ fontFamily }: { fontFamily: string }) {
+function FontPreview({ fontFamily }: Readonly<{ fontFamily: string }>) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -81,7 +84,7 @@ function FontPreview({ fontFamily }: { fontFamily: string }) {
     link.onload = () => setLoaded(true);
     document.head.appendChild(link);
     return () => {
-      document.head.removeChild(link);
+      link.remove();
     };
   }, [fontFamily]);
 

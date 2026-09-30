@@ -14,7 +14,7 @@ export function Toggle({
   onChange,
   activeColor = "bg-[var(--primary)]",
   disabled,
-}: ToggleProps) {
+}: Readonly<ToggleProps>) {
   return (
     <button
       disabled={disabled}
@@ -50,7 +50,7 @@ export function ToggleRow({
   onChange,
   disabled,
   activeColor,
-}: ToggleRowProps) {
+}: Readonly<ToggleRowProps>) {
   return (
     <div className="flex items-center justify-between gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
       <div className="flex-1 min-w-0">
@@ -83,7 +83,7 @@ export function FieldInput({
   placeholder,
   hint,
   min,
-}: FieldInputProps) {
+}: Readonly<FieldInputProps>) {
   return (
     <div>
       <label className="text-sm font-medium text-[var(--foreground)]">{label}</label>

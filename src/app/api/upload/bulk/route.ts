@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir } from "fs/promises";
+import { mkdir } from "node:fs/promises";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";

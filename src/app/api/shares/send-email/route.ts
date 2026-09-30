@@ -71,10 +71,12 @@ export async function POST(request: NextRequest) {
   const baseUrl =
     process.env.NEXTAUTH_URL?.replace(/\/$/, "") ||
     `${request.nextUrl.protocol}//${request.nextUrl.host}`;
-  const prefix = share.type === "FILE" ? "f" : share.type === "PASTE" ? "p" : "l";
+  let prefix = "l";
+  if (share.type === "FILE") prefix = "f";
+  else if (share.type === "PASTE") prefix = "p";
   const shareUrl = `${baseUrl}/${prefix}/${slug}`;
 
-  for (let i = 0; i < recipients.length; i++) {
+  for (const _recipient of recipients) {
     recordRateLimitHit("sendEmail", session.user.id);
   }
 

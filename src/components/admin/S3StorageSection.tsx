@@ -18,7 +18,7 @@ interface Props {
   onChange: (patch: Partial<S3SectionSettings>) => void;
 }
 
-export default function S3StorageSection({ settings, onChange }: Props) {
+export default function S3StorageSection({ settings, onChange }: Readonly<Props>) {
   const { t } = useTranslation();
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);

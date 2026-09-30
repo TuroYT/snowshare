@@ -19,7 +19,7 @@ const TYPE_PREFIX: Record<UserShare["type"], string> = {
   URL: "/l/",
 };
 
-export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps) {
+export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareItemProps>) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -400,7 +400,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: ShareItemProps)
               value={(() => {
                 if (!editForm.expiresAt) return "";
                 const d = new Date(editForm.expiresAt);
-                if (isNaN(d.getTime())) return "";
+                if (Number.isNaN(d.getTime())) return "";
                 return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
                   .toISOString()
                   .slice(0, 16);

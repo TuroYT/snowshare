@@ -29,7 +29,6 @@ export default function AccessLogs() {
       <AccessLogTable
         logs={logs}
         loading={loading}
-        total={total}
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}

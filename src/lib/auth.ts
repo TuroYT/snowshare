@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+import type { Account, NextAuthOptions, Profile } from "next-auth";
 import { getSettingsCached } from "@/lib/settings";
 import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -48,6 +48,190 @@ declare module "next-auth/jwt" {
     name?: string | null;
     image?: string | null;
   }
+}
+
+type ExistingUserWithAccounts = Prisma.UserGetPayload<{ include: { accounts: true } }>;
+
+function buildAccountData(userId: string, account: Account) {
+  return {
+    userId,
+    type: account.type,
+    provider: account.provider,
+    providerAccountId: account.providerAccountId,
+    refresh_token: account.refresh_token,
+    access_token: account.access_token,
+    expires_at: account.expires_at,
+    token_type: account.token_type,
+    scope: account.scope,
+    id_token: account.id_token,
+    session_state: account.session_state as string | null,
+  };
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: string }).code === "P2002"
+  );
+}
+
+/**
+ * Handles a unique constraint violation while auto-linking: the account may already have been
+ * linked by a concurrent request. Returns true when that is the case.
+ */
+async function recoverFromConcurrentAutoLink(
+  existingUser: ExistingUserWithAccounts,
+  account: Account
+): Promise<boolean> {
+  const alreadyLinked = await prisma.account.findFirst({
+    where: {
+      userId: existingUser.id,
+      provider: account.provider,
+      providerAccountId: account.providerAccountId,
+    },
+  });
+  if (!alreadyLinked) return false;
+
+  // Reset flag if it wasn't reset yet by the concurrent request
+  const stillFlagged = await prisma.user.findUnique({
+    where: { id: existingUser.id },
+    select: { ssoAutoLink: true },
+  });
+  if (stillFlagged?.ssoAutoLink) {
+    await prisma.user.update({
+      where: { id: existingUser.id },
+      data: { ssoAutoLink: false },
+    });
+  }
+  return true;
+}
+
+/**
+ * Admin flagged this user for SSO auto-link, or the provider vouches for the email:
+ * link the account without an explicit token.
+ */
+async function autoLinkSsoAccount(
+  existingUser: ExistingUserWithAccounts,
+  account: Account
+): Promise<boolean> {
+  try {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.account.create({ data: buildAccountData(existingUser.id, account) });
+      await tx.user.update({
+        where: { id: existingUser.id },
+        data: { ssoAutoLink: false },
+      });
+    });
+    console.log(
+      `SSO auto-link: ${account.provider} linked to user ${existingUser.id} (${
+        existingUser.ssoAutoLink ? "admin flag" : "verified email"
+      })`
+    );
+    return true;
+  } catch (error) {
+    // Handle unique constraint violation — account may already be linked by a concurrent request
+    if (
+      isUniqueConstraintError(error) &&
+      (await recoverFromConcurrentAutoLink(existingUser, account))
+    ) {
+      return true;
+    }
+    console.error("SSO auto-link error:", error);
+    return false;
+  }
+}
+
+/**
+ * Explicit link token flow: the token must match the httpOnly cookie set by
+ * POST /api/user/accounts/link, so only the browser that requested the link
+ * can complete it.
+ */
+async function linkAccountWithToken(
+  existingUser: ExistingUserWithAccounts,
+  account: Account
+): Promise<boolean | string> {
+  const notLinked = (reason: string) => {
+    console.warn(
+      `SSO sign-in refused: ${account.provider} not linked to user ${existingUser.id} (${reason})`
+    );
+    return "/auth/signin?error=OAuthAccountNotLinked";
+  };
+
+  const cookieToken = await readLinkTokenCookie();
+  if (!cookieToken) return notLinked("email not verified by provider, no link request");
+
+  const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
+  const linkToken = await prisma.verificationToken.findFirst({
+    where: {
+      identifier: linkTokenIdentifier,
+      token: cookieToken,
+      expires: { gt: new Date() },
+    },
+  });
+
+  if (!linkToken) return notLinked("invalid or expired link request");
+
+  try {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.account.create({ data: buildAccountData(existingUser.id, account) });
+      await tx.verificationToken.delete({
+        where: {
+          identifier_token: {
+            identifier: linkTokenIdentifier,
+            token: linkToken.token,
+          },
+        },
+      });
+    });
+    console.log(`✅ Account linked successfully`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error creating account link:`, error);
+    return false;
+  }
+}
+
+async function handleExistingUserSignIn(
+  existingUser: ExistingUserWithAccounts,
+  account: Account,
+  settings: Awaited<ReturnType<typeof getSettingsCached>>,
+  profile: Profile | undefined,
+  email: string
+): Promise<boolean | string> {
+  // Account already linked — allow sign in
+  const accountExists = existingUser.accounts.some(
+    (acc: { provider: string; providerAccountId: string }) =>
+      acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+  );
+  if (accountExists) return true;
+
+  // allowSignin applies to all new link attempts, including ssoAutoLink
+  if (settings && !settings.allowSignin) {
+    console.warn(
+      `SSO sign-in refused: sign-in disabled, cannot link ${account.provider} to user ${existingUser.id}`
+    );
+    return "/auth/signin?error=OAuthSigninDisabled";
+  }
+
+  const azureTenantId =
+    account.provider === "azure-ad"
+      ? (
+          await prisma.oAuthProvider.findUnique({
+            where: { name: "azure-ad" },
+            select: { tenantId: true },
+          })
+        )?.tenantId
+      : null;
+  const emailVerified = isProviderEmailVerified(account, profile, email, azureTenantId);
+
+  // Admin flagged this user for SSO auto-link, or the provider vouches for the email
+  if (existingUser.ssoAutoLink || emailVerified) {
+    return autoLinkSsoAccount(existingUser, account);
+  }
+
+  return linkAccountWithToken(existingUser, account);
 }
 
 // Cache for providers
@@ -106,7 +290,7 @@ export async function getDynamicProviders() {
             select: { id: true, email: true, name: true, password: true, emailVerified: true },
           });
 
-          if (!user || !user.password) {
+          if (!user?.password) {
             recordRateLimitHit("login", limitKey);
             return null;
           }
@@ -205,159 +389,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         });
 
         if (existingUser) {
-          // Account already linked — allow sign in
-          const accountExists = existingUser.accounts.find(
-            (acc: { provider: string; providerAccountId: string }) =>
-              acc.provider === account.provider &&
-              acc.providerAccountId === account.providerAccountId
-          );
-          if (accountExists) return true;
-
-          // allowSignin applies to all new link attempts, including ssoAutoLink
-          if (settings && !settings.allowSignin) {
-            console.warn(
-              `SSO sign-in refused: sign-in disabled, cannot link ${account.provider} to user ${existingUser.id}`
-            );
-            return "/auth/signin?error=OAuthSigninDisabled";
-          }
-
-          const azureTenantId =
-            account.provider === "azure-ad"
-              ? (
-                  await prisma.oAuthProvider.findUnique({
-                    where: { name: "azure-ad" },
-                    select: { tenantId: true },
-                  })
-                )?.tenantId
-              : null;
-          const emailVerified = isProviderEmailVerified(
-            account,
-            profile,
-            user.email,
-            azureTenantId
-          );
-
-          // Admin flagged this user for SSO auto-link, or the provider vouches for the email
-          if (existingUser.ssoAutoLink || emailVerified) {
-            try {
-              await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-                await tx.account.create({
-                  data: {
-                    userId: existingUser.id,
-                    type: account.type,
-                    provider: account.provider,
-                    providerAccountId: account.providerAccountId,
-                    refresh_token: account.refresh_token,
-                    access_token: account.access_token,
-                    expires_at: account.expires_at,
-                    token_type: account.token_type,
-                    scope: account.scope,
-                    id_token: account.id_token,
-                    session_state: account.session_state as string | null,
-                  },
-                });
-                await tx.user.update({
-                  where: { id: existingUser.id },
-                  data: { ssoAutoLink: false },
-                });
-              });
-              console.log(
-                `SSO auto-link: ${account.provider} linked to user ${existingUser.id} (${
-                  existingUser.ssoAutoLink ? "admin flag" : "verified email"
-                })`
-              );
-              return true;
-            } catch (error) {
-              // Handle unique constraint violation — account may already be linked by a concurrent request
-              if (
-                typeof error === "object" &&
-                error !== null &&
-                "code" in error &&
-                (error as { code: string }).code === "P2002"
-              ) {
-                const alreadyLinked = await prisma.account.findFirst({
-                  where: {
-                    userId: existingUser.id,
-                    provider: account.provider,
-                    providerAccountId: account.providerAccountId,
-                  },
-                });
-                if (alreadyLinked) {
-                  // Reset flag if it wasn't reset yet by the concurrent request
-                  const stillFlagged = await prisma.user.findUnique({
-                    where: { id: existingUser.id },
-                    select: { ssoAutoLink: true },
-                  });
-                  if (stillFlagged?.ssoAutoLink) {
-                    await prisma.user.update({
-                      where: { id: existingUser.id },
-                      data: { ssoAutoLink: false },
-                    });
-                  }
-                  return true;
-                }
-              }
-              console.error("SSO auto-link error:", error);
-              return false;
-            }
-          }
-
-          // Explicit link token flow: the token must match the httpOnly cookie set by
-          // POST /api/user/accounts/link, so only the browser that requested the link
-          // can complete it.
-          const notLinked = (reason: string) => {
-            console.warn(
-              `SSO sign-in refused: ${account.provider} not linked to user ${existingUser.id} (${reason})`
-            );
-            return "/auth/signin?error=OAuthAccountNotLinked";
-          };
-
-          const cookieToken = await readLinkTokenCookie();
-          if (!cookieToken) return notLinked("email not verified by provider, no link request");
-
-          const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
-          const linkToken = await prisma.verificationToken.findFirst({
-            where: {
-              identifier: linkTokenIdentifier,
-              token: cookieToken,
-              expires: { gt: new Date() },
-            },
-          });
-
-          if (!linkToken) return notLinked("invalid or expired link request");
-
-          try {
-            await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-              await tx.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  refresh_token: account.refresh_token,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state as string | null,
-                },
-              });
-              await tx.verificationToken.delete({
-                where: {
-                  identifier_token: {
-                    identifier: linkTokenIdentifier,
-                    token: linkToken.token,
-                  },
-                },
-              });
-            });
-            console.log(`✅ Account linked successfully`);
-            return true;
-          } catch (error) {
-            console.error(`❌ Error creating account link:`, error);
-            return false;
-          }
+          return handleExistingUserSignIn(existingUser, account, settings, profile, user.email);
         }
 
         if (settings && !settings.allowSignin) {

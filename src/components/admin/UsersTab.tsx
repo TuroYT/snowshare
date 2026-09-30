@@ -95,7 +95,7 @@ export default function UsersTab() {
   const filteredUsers = users.filter(
     (user) =>
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalUsers = users.length;

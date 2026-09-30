@@ -24,14 +24,12 @@ ENV NODE_ENV=production
 ENV PORT=3000
 RUN DATABASE_URL=${DATABASE_URL} npm run build
 
-# Make scripts executable
-RUN chmod +x scripts/entrypoint.sh
-
 # Create a non-root user and give ownership of writable directories only.
 # uploads/ also holds uploads/.tus-temp (created lazily by server.js at runtime).
 # uploads/ and src/generated stay world-writable so deployments running under a custom
 # UID (e.g. `user: 1011:1011` in docker-compose) can still write to them.
-RUN addgroup -S snowshare && adduser -S snowshare -G snowshare \
+RUN chmod +x scripts/entrypoint.sh \
+    && addgroup -S snowshare && adduser -S snowshare -G snowshare \
     && mkdir -p uploads \
     && chown -R snowshare:snowshare uploads src/generated .next \
     && chmod -R a+rwX uploads src/generated

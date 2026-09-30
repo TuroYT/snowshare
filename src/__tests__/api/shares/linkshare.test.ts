@@ -83,36 +83,14 @@ describe("createLinkShare", () => {
       expect(result.errorCode).toBe(ErrorCode.INVALID_URL);
     });
 
-    it("should accept valid http URL", async () => {
+    it.each([
+      ["valid http URL", "http://example.com"],
+      ["valid https URL", "https://example.com"],
+      ["localhost URL", "http://localhost:3000"],
+      ["IP address URL", "http://192.168.1.1:8080/path"],
+    ])("should accept %s", async (_label, urlOriginal) => {
       const result = await createLinkShare({
-        urlOriginal: "http://example.com",
-        context: authContext,
-      });
-      expect(result.errorCode).toBeUndefined();
-      expect(result.share).toBeDefined();
-    });
-
-    it("should accept valid https URL", async () => {
-      const result = await createLinkShare({
-        urlOriginal: "https://example.com",
-        context: authContext,
-      });
-      expect(result.errorCode).toBeUndefined();
-      expect(result.share).toBeDefined();
-    });
-
-    it("should accept localhost URL", async () => {
-      const result = await createLinkShare({
-        urlOriginal: "http://localhost:3000",
-        context: authContext,
-      });
-      expect(result.errorCode).toBeUndefined();
-      expect(result.share).toBeDefined();
-    });
-
-    it("should accept IP address URL", async () => {
-      const result = await createLinkShare({
-        urlOriginal: "http://192.168.1.1:8080/path",
+        urlOriginal,
         context: authContext,
       });
       expect(result.errorCode).toBeUndefined();

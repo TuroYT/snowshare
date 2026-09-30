@@ -35,14 +35,14 @@ function FilePasswordGate({
   loading,
   error,
   t,
-}: {
+}: Readonly<{
   onSubmit: (e: React.FormEvent) => void;
   password: string;
   setPassword: (v: string) => void;
   loading: boolean;
   error: string;
   t: TFunction;
-}) {
+}>) {
   return (
     <form
       onSubmit={onSubmit}
@@ -71,17 +71,16 @@ function BulkFileList({
   onFileClick,
   onFileDownload,
   t,
-}: {
+}: Readonly<{
   files: FileListItem[];
   formatFileSize: (bytes?: number) => string;
   onFileClick: (f: FileListItem) => void;
   onFileDownload: (f: FileListItem) => void;
   t: TFunction;
-}) {
+}>) {
   return (
     <ul
       className="divide-y divide-[var(--border)]"
-      role="list"
       aria-label={t("file_download.files_list_aria", "Files in this share, {{count}} items", {
         count: files.length,
       })}
@@ -89,14 +88,19 @@ function BulkFileList({
       {files.map((f) => (
         <li
           key={f.path}
-          className="flex items-center justify-between py-2.5 gap-4 cursor-pointer hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded transition-colors"
-          aria-label={`${f.path}, ${formatFileSize(f.size)}`}
-          onClick={() => onFileClick(f)}
+          className="flex items-center justify-between py-2.5 gap-4 hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded transition-colors"
         >
-          <div className="min-w-0">
-            <p className="text-sm text-[var(--foreground)] truncate">{f.name}</p>
-            <p className="text-xs text-[var(--foreground-muted)]">{formatFileSize(f.size)}</p>
-          </div>
+          <button
+            type="button"
+            className="min-w-0 flex-1 text-left cursor-pointer"
+            aria-label={`${f.path}, ${formatFileSize(f.size)}`}
+            onClick={() => onFileClick(f)}
+          >
+            <span className="block text-sm text-[var(--foreground)] truncate">{f.name}</span>
+            <span className="block text-xs text-[var(--foreground-muted)]">
+              {formatFileSize(f.size)}
+            </span>
+          </button>
           <button
             type="button"
             className="shrink-0 text-xs text-[var(--primary)] hover:underline"
@@ -267,14 +271,14 @@ export default function FileSharePage() {
     link.download = filename;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
   };
 
   const filePreviewUrl = (file: FileListItem, token: string | null, download: boolean) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${
-      download ? "&download=1" : ""
-    }${token ? `&token=${encodeURIComponent(token)}` : ""}`;
+    const downloadParam = download ? "&download=1" : "";
+    const tokenParam = token ? `&token=${encodeURIComponent(token)}` : "";
+    return `${origin}/f/${slug}/file-preview?relativePath=${encodeURIComponent(file.path)}${downloadParam}${tokenParam}`;
   };
 
   const handleDownload = async (e?: React.FormEvent) => {

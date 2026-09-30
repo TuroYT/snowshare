@@ -1,4 +1,4 @@
-import { isIP } from "net";
+import { isIP } from "node:net";
 import { prisma } from "@/lib/prisma";
 
 interface DbIpResponse {
@@ -87,11 +87,18 @@ async function _performLookup(ip: string): Promise<void> {
 }
 
 export function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
-  if (!countryCode || countryCode.length !== 2) {
+  if (countryCode?.length !== 2) {
     return "\u2753";
   }
 
   const code = countryCode.toUpperCase();
+  const first = code.codePointAt(0);
+  const second = code.codePointAt(1);
+  // A surrogate pair also has a length of 2 but is not a country code
+  if (first === undefined || second === undefined || first > 0xffff) {
+    return "\u2753";
+  }
+
   const offset = 0x1f1e6 - 65;
-  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
+  return String.fromCodePoint(first + offset, second + offset);
 }

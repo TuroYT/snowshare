@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
+import path from "node:path";
 import { getStorageReadStream, getStorageFileSize } from "@/lib/storage";
 import { nodeStreamToWebStream, parseRangeHeader } from "@/lib/stream-utils";
 import { getMimeType, isSafeForInline, sanitizeFilenameForHeader } from "@/lib/mime-types";

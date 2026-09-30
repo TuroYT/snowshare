@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/lib/share-constants";
 
 /**

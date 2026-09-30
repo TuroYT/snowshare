@@ -13,7 +13,7 @@ export default function LogoFaviconSection({
   logoUrl,
   faviconUrl,
   onChange,
-}: LogoFaviconSectionProps) {
+}: Readonly<LogoFaviconSectionProps>) {
   const { t } = useTranslation();
 
   return (

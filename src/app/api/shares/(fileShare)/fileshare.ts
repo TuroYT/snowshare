@@ -62,7 +62,7 @@ export const getFileShare = async (
     },
   });
 
-  if (!share || share.type !== "FILE") {
+  if (share?.type !== "FILE") {
     return { errorCode: ErrorCode.SHARE_NOT_FOUND };
   }
 

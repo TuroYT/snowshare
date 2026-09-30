@@ -75,7 +75,7 @@ export default function SignIn() {
       );
     } else if (errorParam === "EmailNotVerified") {
       setError(t("auth.error_email_not_verified"));
-    } else if (errorParam && providers && providers[errorParam]) {
+    } else if (errorParam && providers?.[errorParam]) {
       // Auto-click if error param matches a provider ID (e.g. error=github)
       signIn(errorParam, { callbackUrl: "/" });
     }
@@ -162,8 +162,7 @@ export default function SignIn() {
 
         {/* OAuth providers */}
         {providers &&
-          Object.values(providers).filter((p: ClientSafeProvider) => p.name !== "credentials")
-            .length > 0 && (
+          Object.values(providers).some((p: ClientSafeProvider) => p.name !== "credentials") && (
             <>
               {!disableCredentialsLogin && (
                 <div className="relative my-6">

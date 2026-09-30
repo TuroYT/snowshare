@@ -12,7 +12,7 @@ interface BackgroundImageSectionProps {
 export default function BackgroundImageSection({
   backgroundImageUrl,
   onChange,
-}: BackgroundImageSectionProps) {
+}: Readonly<BackgroundImageSectionProps>) {
   const { t } = useTranslation();
 
   return (
@@ -42,7 +42,7 @@ export default function BackgroundImageSection({
   );
 }
 
-function BackgroundImagePreview({ url }: { url: string }) {
+function BackgroundImagePreview({ url }: Readonly<{ url: string }>) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
 

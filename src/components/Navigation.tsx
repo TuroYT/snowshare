@@ -32,7 +32,7 @@ function ProfileDropdown({
   handleSignOut,
   initials,
   t,
-}: ProfileDropdownProps) {
+}: Readonly<ProfileDropdownProps>) {
   return (
     <div ref={profileRef} className="relative">
       <button
@@ -120,11 +120,20 @@ function MobileDrawer({
   themeIcon,
   showSignup,
   t,
-}: MobileDrawerProps) {
+}: Readonly<MobileDrawerProps>) {
   if (!open) return null;
+  let themeLabel = t("nav.theme_system", "System");
+  if (theme === "dark") themeLabel = t("nav.theme_dark", "Dark mode");
+  else if (theme === "light") themeLabel = t("nav.theme_light", "Light mode");
   return (
     <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        className="absolute inset-0 bg-black/50 cursor-default"
+        onClick={onClose}
+      />
       <div className="relative ml-auto w-72 bg-[var(--surface)] h-full shadow-[var(--shadow-lg)] flex flex-col">
         <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--border)]">
           <span className="font-semibold text-sm">{appName}</span>
@@ -202,13 +211,7 @@ function MobileDrawer({
             className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] px-3 py-2 w-full rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
           >
             {themeIcon}
-            <span>
-              {theme === "dark"
-                ? t("nav.theme_dark", "Dark mode")
-                : theme === "light"
-                  ? t("nav.theme_light", "Light mode")
-                  : t("nav.theme_system", "System")}
-            </span>
+            <span>{themeLabel}</span>
           </button>
         </div>
       </div>
@@ -292,14 +295,9 @@ export default function Navigation() {
     else setTheme("system");
   };
 
-  const themeIcon =
-    theme === "dark" ? (
-      <Moon className="w-4 h-4" />
-    ) : theme === "light" ? (
-      <Sun className="w-4 h-4" />
-    ) : (
-      <Monitor className="w-4 h-4" />
-    );
+  let themeIcon = <Monitor className="w-4 h-4" />;
+  if (theme === "dark") themeIcon = <Moon className="w-4 h-4" />;
+  else if (theme === "light") themeIcon = <Sun className="w-4 h-4" />;
 
   const initials =
     session?.user?.name

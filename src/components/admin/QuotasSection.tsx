@@ -26,7 +26,14 @@ interface QuotaInputProps {
   currentValueLabel: string;
 }
 
-function QuotaInput({ label, hint, value, onChange, unit, currentValueLabel }: QuotaInputProps) {
+function QuotaInput({
+  label,
+  hint,
+  value,
+  onChange,
+  unit,
+  currentValueLabel,
+}: Readonly<QuotaInputProps>) {
   return (
     <div>
       <label className="text-sm text-[var(--foreground)]">{label}</label>
@@ -36,7 +43,7 @@ function QuotaInput({ label, hint, value, onChange, unit, currentValueLabel }: Q
           <input
             type="number"
             value={value}
-            onChange={(e) => onChange(parseInt(e.target.value))}
+            onChange={(e) => onChange(Number.parseInt(e.target.value))}
             className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             min="0"
           />
@@ -74,7 +81,7 @@ function QuotaGroup({
   ipQuota,
   onChangeMax,
   onChangeIp,
-}: QuotaGroupProps) {
+}: Readonly<QuotaGroupProps>) {
   const { t } = useTranslation();
   const unit = useGiB ? "GiB" : "MiB";
 
@@ -139,7 +146,7 @@ function QuotaGroup({
   );
 }
 
-export default function QuotasSection({ settings, onChange }: Props) {
+export default function QuotasSection({ settings, onChange }: Readonly<Props>) {
   const { t } = useTranslation();
 
   return (

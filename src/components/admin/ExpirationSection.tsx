@@ -11,7 +11,7 @@ interface Props {
   onChange: (patch: Partial<ExpirationSectionSettings>) => void;
 }
 
-export default function ExpirationSection({ settings, onChange }: Props) {
+export default function ExpirationSection({ settings, onChange }: Readonly<Props>) {
   const { t } = useTranslation();
 
   return (
@@ -51,7 +51,9 @@ export default function ExpirationSection({ settings, onChange }: Props) {
               min={1}
               max={365}
               value={settings.defaultExpirationDays}
-              onChange={(e) => onChange({ defaultExpirationDays: parseInt(e.target.value) || 1 })}
+              onChange={(e) =>
+                onChange({ defaultExpirationDays: Number.parseInt(e.target.value) || 1 })
+              }
               className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>

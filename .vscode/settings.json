@@ -32,10 +32,15 @@
     "**/.git": true,
     "**/.svn": true,
     "**/.hg": true,
+    "**/.jj": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "node_modules": true,
     ".next": true
   },
-  "hide-files.files": []
+  "hide-files.files": [],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "https-sonar-sheephost-fr",
+    "projectKey": "TuroYT_snowshare_4db21712-11b7-4dfd-96ba-6cfd0c472d4e"
+  }
 }

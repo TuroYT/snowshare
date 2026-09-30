@@ -22,6 +22,95 @@ type EditableShare = {
   urlOriginal: string | null;
 };
 
+type ShareUpdateBody = {
+  expiresAt?: unknown;
+  password?: unknown;
+  paste?: unknown;
+  pastelanguage?: unknown;
+  urlOriginal?: unknown;
+};
+
+/** Returns the new expiration (Date or null), or an error response. */
+function parseExpiresAt(request: NextRequest, value: unknown): Date | null | NextResponse {
+  if (!value) return null;
+  const date = new Date(value as string);
+  if (Number.isNaN(date.getTime())) {
+    return apiError(request, ErrorCode.INVALID_DATE_FORMAT);
+  }
+  return date;
+}
+
+/** Returns the new password (null removes it), or an error response. */
+function parseNewPassword(request: NextRequest, value: unknown): string | null | NextResponse {
+  if (!value) return null;
+  if (typeof value !== "string") {
+    return apiError(request, ErrorCode.INVALID_REQUEST);
+  }
+  if (value.length < PASSWORD_MIN_LENGTH || value.length > PASSWORD_MAX_LENGTH) {
+    return apiError(request, ErrorCode.PASSWORD_INVALID_LENGTH, {
+      min: PASSWORD_MIN_LENGTH,
+      max: PASSWORD_MAX_LENGTH,
+    });
+  }
+  return value;
+}
+
+/** Applies the paste content and language changes, or returns an error response. */
+function applyPasteUpdate(
+  request: NextRequest,
+  data: ShareUpdateBody,
+  updateData: Prisma.ShareUpdateInput
+): NextResponse | null {
+  if (data.paste !== undefined) {
+    if (typeof data.paste !== "string" || data.paste.length > MAX_PASTE_SIZE) {
+      return apiError(request, ErrorCode.PASTE_CONTENT_REQUIRED);
+    }
+    updateData.paste = data.paste;
+  }
+
+  if (data.pastelanguage !== undefined) {
+    if (!isValidPasteLanguage(data.pastelanguage as string)) {
+      return apiError(request, ErrorCode.PASTE_LANGUAGE_INVALID);
+    }
+    updateData.pastelanguage = data.pastelanguage as $Enums.pasteType;
+  }
+  return null;
+}
+
+/** Validates the new destination URL of a link; undefined means "unchanged". */
+function parseNewUrl(request: NextRequest, value: unknown): string | undefined | NextResponse {
+  if (value === undefined || value === "") return undefined;
+  if (typeof value !== "string" || !isValidUrl(value).valid) {
+    return apiError(request, ErrorCode.INVALID_URL);
+  }
+  return value;
+}
+
+/** Re-encrypts the link URL when its URL or password changes, or returns an error response. */
+function applyLinkUpdate(
+  request: NextRequest,
+  share: EditableShare,
+  newUrl: string | undefined,
+  newPassword: string | null | undefined,
+  updateData: Prisma.ShareUpdateInput
+): NextResponse | null {
+  const wasProtected = !!share.password;
+
+  if (wasProtected && newUrl === undefined) {
+    // The plaintext URL is unknown: it cannot be re-encrypted or decrypted
+    return apiError(request, ErrorCode.LINK_URL_REQUIRED_FOR_PASSWORD_CHANGE);
+  }
+  if (wasProtected && newPassword === undefined) {
+    // The plaintext password is unknown: the new URL cannot be encrypted
+    return apiError(request, ErrorCode.LINK_PASSWORD_REQUIRED_FOR_URL_CHANGE);
+  }
+
+  const targetUrl = newUrl ?? share.urlOriginal ?? "";
+  const effectivePassword = newPassword ?? null;
+  updateData.urlOriginal = effectivePassword ? encrypt(targetUrl, effectivePassword) : targetUrl;
+  return null;
+}
+
 /**
  * Builds the update from the PATCH body.
  *
@@ -32,86 +121,36 @@ type EditableShare = {
 async function buildShareUpdateData(
   request: NextRequest,
   share: EditableShare,
-  data: {
-    expiresAt?: unknown;
-    password?: unknown;
-    paste?: unknown;
-    pastelanguage?: unknown;
-    urlOriginal?: unknown;
-  }
+  data: ShareUpdateBody
 ): Promise<Prisma.ShareUpdateInput | NextResponse> {
   const updateData: Prisma.ShareUpdateInput = {};
 
   if (data.expiresAt !== undefined) {
-    if (data.expiresAt) {
-      const date = new Date(data.expiresAt as string);
-      if (Number.isNaN(date.getTime())) {
-        return apiError(request, ErrorCode.INVALID_DATE_FORMAT);
-      }
-      updateData.expiresAt = date;
-    } else {
-      updateData.expiresAt = null;
-    }
+    const expiresAt = parseExpiresAt(request, data.expiresAt);
+    if (expiresAt instanceof NextResponse) return expiresAt;
+    updateData.expiresAt = expiresAt;
   }
 
   let newPassword: string | null | undefined;
   if (data.password !== undefined) {
-    if (data.password) {
-      if (typeof data.password !== "string") {
-        return apiError(request, ErrorCode.INVALID_REQUEST);
-      }
-      if (
-        data.password.length < PASSWORD_MIN_LENGTH ||
-        data.password.length > PASSWORD_MAX_LENGTH
-      ) {
-        return apiError(request, ErrorCode.PASSWORD_INVALID_LENGTH, {
-          min: PASSWORD_MIN_LENGTH,
-          max: PASSWORD_MAX_LENGTH,
-        });
-      }
-      newPassword = data.password;
-    } else {
-      newPassword = null;
-    }
+    const parsedPassword = parseNewPassword(request, data.password);
+    if (parsedPassword instanceof NextResponse) return parsedPassword;
+    newPassword = parsedPassword;
   }
 
-  if (share.type === "PASTE" && data.paste !== undefined) {
-    if (typeof data.paste !== "string" || data.paste.length > MAX_PASTE_SIZE) {
-      return apiError(request, ErrorCode.PASTE_CONTENT_REQUIRED);
-    }
-    updateData.paste = data.paste;
+  if (share.type === "PASTE") {
+    const pasteError = applyPasteUpdate(request, data, updateData);
+    if (pasteError) return pasteError;
   }
 
-  if (share.type === "PASTE" && data.pastelanguage !== undefined) {
-    if (!isValidPasteLanguage(data.pastelanguage as string)) {
-      return apiError(request, ErrorCode.PASTE_LANGUAGE_INVALID);
-    }
-    updateData.pastelanguage = data.pastelanguage as $Enums.pasteType;
-  }
+  if (share.type === "URL") {
+    const newUrl = parseNewUrl(request, data.urlOriginal);
+    if (newUrl instanceof NextResponse) return newUrl;
 
-  let newUrl: string | undefined;
-  if (share.type === "URL" && data.urlOriginal !== undefined && data.urlOriginal !== "") {
-    if (typeof data.urlOriginal !== "string" || !isValidUrl(data.urlOriginal).valid) {
-      return apiError(request, ErrorCode.INVALID_URL);
+    if (newUrl !== undefined || newPassword !== undefined) {
+      const linkError = applyLinkUpdate(request, share, newUrl, newPassword, updateData);
+      if (linkError) return linkError;
     }
-    newUrl = data.urlOriginal;
-  }
-
-  if (share.type === "URL" && (newUrl !== undefined || newPassword !== undefined)) {
-    const wasProtected = !!share.password;
-
-    if (wasProtected && newUrl === undefined) {
-      // The plaintext URL is unknown: it cannot be re-encrypted or decrypted
-      return apiError(request, ErrorCode.LINK_URL_REQUIRED_FOR_PASSWORD_CHANGE);
-    }
-    if (wasProtected && newPassword === undefined) {
-      // The plaintext password is unknown: the new URL cannot be encrypted
-      return apiError(request, ErrorCode.LINK_PASSWORD_REQUIRED_FOR_URL_CHANGE);
-    }
-
-    const targetUrl = newUrl ?? share.urlOriginal ?? "";
-    const effectivePassword = newPassword === undefined ? null : newPassword;
-    updateData.urlOriginal = effectivePassword ? encrypt(targetUrl, effectivePassword) : targetUrl;
   }
 
   if (newPassword !== undefined) {

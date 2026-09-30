@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/security";
@@ -151,7 +151,8 @@ export function createDownloadToken(
 ): string {
   const expiresAt = Math.floor(Date.now() / 1000) + ttlSeconds;
   const payload = `${purpose}.${expiresAt}`;
-  return `${payload}.${sign(`${shareId}.${payload}.${clientIp}`)}`;
+  const signature = sign(`${shareId}.${payload}.${clientIp}`);
+  return `${payload}.${signature}`;
 }
 
 /**

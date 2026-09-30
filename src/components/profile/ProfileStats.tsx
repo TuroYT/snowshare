@@ -14,7 +14,7 @@ type ProfileStatsProps = {
   shares: Share[];
 };
 
-export default function ProfileStats({ shares }: ProfileStatsProps) {
+export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
   const { t } = useTranslation();
   const totalShares = shares.length;
   const fileShares = shares.filter((s) => s.type === "FILE").length;
@@ -116,9 +116,9 @@ export default function ProfileStats({ shares }: ProfileStatsProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-      {stats.map((stat, index) => (
+      {stats.map((stat) => (
         <div
-          key={index}
+          key={stat.label}
           className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4"
         >
           <div className="flex flex-col items-center text-center gap-3">
