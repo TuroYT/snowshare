@@ -146,6 +146,46 @@ async function sendVerification(email: string) {
   }
 }
 
+function checkSignupAllowed(
+  request: NextRequest,
+  settings: Awaited<ReturnType<typeof loadRegistrationSettings>>,
+  isFirstUser: boolean,
+  isActuallyFirstUser: boolean
+): NextResponse | null {
+  // Allow registration if:
+  // 1. Settings allow signup (allowSignin), AND credentials login is NOT disabled
+  // 2. OR This is the first user being created (database is empty)
+  if ((!settings.allowSignup || settings.disableCredentialsLogin) && !isActuallyFirstUser) {
+    return apiError(request, ErrorCode.SIGNUP_DISABLED);
+  }
+
+  // If claiming to be first user but database has users, reject
+  if (isFirstUser && !isActuallyFirstUser) {
+    return apiError(request, ErrorCode.USERS_ALREADY_EXIST);
+  }
+
+  return null;
+}
+
+async function createUserOrError(
+  request: NextRequest,
+  userData: Parameters<typeof createUser>[0],
+  isActuallyFirstUser: boolean
+) {
+  try {
+    return await createUser(userData, isActuallyFirstUser);
+  } catch (error) {
+    if (isPrismaError(error, "P2002")) {
+      return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
+    }
+    if (isPrismaError(error, "P2034")) {
+      // Serialization conflict: another first user was created concurrently
+      return apiError(request, ErrorCode.USERS_ALREADY_EXIST);
+    }
+    throw error;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const retryAfter = consumeRateLimit("register", getClientIp(request));
@@ -161,17 +201,8 @@ export async function POST(request: NextRequest) {
 
     const settings = await loadRegistrationSettings();
 
-    // Allow registration if:
-    // 1. Settings allow signup (allowSignin), AND credentials login is NOT disabled
-    // 2. OR This is the first user being created (database is empty)
-    if ((!settings.allowSignup || settings.disableCredentialsLogin) && !isActuallyFirstUser) {
-      return apiError(request, ErrorCode.SIGNUP_DISABLED);
-    }
-
-    // If claiming to be first user but database has users, reject
-    if (isFirstUser && !isActuallyFirstUser) {
-      return apiError(request, ErrorCode.USERS_ALREADY_EXIST);
-    }
+    const signupError = checkSignupAllowed(request, settings, isFirstUser, isActuallyFirstUser);
+    if (signupError) return signupError;
 
     const credentialsError = validateCredentials(request, email, password);
     if (credentialsError) return credentialsError;
@@ -206,19 +237,9 @@ export async function POST(request: NextRequest) {
       emailVerified: needsEmailVerification ? null : new Date(),
     };
 
-    let user;
-    try {
-      user = await createUser(userData, isActuallyFirstUser);
-    } catch (error) {
-      if (isPrismaError(error, "P2002")) {
-        return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
-      }
-      if (isPrismaError(error, "P2034")) {
-        // Serialization conflict: another first user was created concurrently
-        return apiError(request, ErrorCode.USERS_ALREADY_EXIST);
-      }
-      throw error;
-    }
+    const created = await createUserOrError(request, userData, isActuallyFirstUser);
+    if (created instanceof NextResponse) return created;
+    const user = created;
 
     // Send verification email if required
     if (needsEmailVerification) {

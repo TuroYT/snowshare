@@ -137,7 +137,7 @@ async function removeSessionFile(filePath: string) {
   });
 }
 
-export async function POST(req: NextRequest) {
+function rejectInvalidUploadRequest(req: NextRequest): NextResponse | null {
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
     return apiErrorWithStatus(req, ErrorCode.INVALID_REQUEST, 400);
@@ -146,6 +146,21 @@ export async function POST(req: NextRequest) {
   if (!req.body) {
     return apiErrorWithStatus(req, ErrorCode.MISSING_DATA, 400);
   }
+
+  return null;
+}
+
+/** Bytes already received for this chunked upload (0 for a first chunk or a single request) */
+async function bytesAlreadyReceived(sessionPath: string | null, chunkIndex: number) {
+  if (!sessionPath || chunkIndex === 0) return 0;
+  const size = await fileSizeOrNull(sessionPath);
+  if (size === null) throw new UploadError(400, ErrorCode.INVALID_REQUEST);
+  return size;
+}
+
+export async function POST(req: NextRequest) {
+  const invalidRequest = rejectInvalidUploadRequest(req);
+  if (invalidRequest) return invalidRequest;
 
   const session = await getServerSession(authOptions);
   const context: UploadContext = {
@@ -177,13 +192,7 @@ export async function POST(req: NextRequest) {
 
     await mkdir(uploadsDir, { recursive: true });
 
-    // Bytes already received for this chunked upload
-    let alreadyReceived = 0;
-    if (sessionPath && chunkIndex > 0) {
-      const size = await fileSizeOrNull(sessionPath);
-      if (size === null) throw new UploadError(400, ErrorCode.INVALID_REQUEST);
-      alreadyReceived = size;
-    }
+    const alreadyReceived = await bytesAlreadyReceived(sessionPath, chunkIndex);
 
     const effectiveMaxBytes = Math.min(limits.maxFileSizeBytes, limits.remainingQuotaBytes);
     const result = await receiveMultipart(req, {

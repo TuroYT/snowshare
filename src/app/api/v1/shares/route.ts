@@ -66,6 +66,38 @@ export async function GET(request: NextRequest) {
   }
 }
 
+type CreateShareBody = {
+  type?: string;
+  urlOriginal?: string;
+  paste?: string;
+  pastelanguage?: string;
+  slug?: string;
+  password?: string;
+  expiresAt?: string;
+  maxViews?: number;
+};
+
+type CommonShareOptions = Pick<
+  Parameters<typeof createLinkShare>[0],
+  "context" | "expiresAt" | "slug" | "password" | "maxViews"
+>;
+
+async function createShareFromBody(body: CreateShareBody, common: CommonShareOptions) {
+  if (body.type === "URL") {
+    if (!body.urlOriginal) return { errorCode: ErrorCode.MISSING_DATA, share: undefined };
+    const result = await createLinkShare({ ...common, urlOriginal: body.urlOriginal });
+    return { errorCode: result.errorCode as ErrorCode | undefined, share: result.share };
+  }
+
+  if (!body.paste) return { errorCode: ErrorCode.PASTE_CONTENT_EMPTY, share: undefined };
+  const result = await createPasteShare({
+    ...common,
+    paste: body.paste,
+    pastelanguage: body.pastelanguage || "PLAINTEXT",
+  });
+  return { errorCode: result.errorCode as ErrorCode | undefined, share: result.share };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await authenticateApiRequest(request);
@@ -79,62 +111,33 @@ export async function POST(request: NextRequest) {
       ip,
     };
 
-    let body: Record<string, unknown>;
+    let body: CreateShareBody;
     try {
       body = await request.json();
     } catch {
       return apiError(request, ErrorCode.INVALID_JSON);
     }
 
-    const { type, urlOriginal, paste, pastelanguage, slug, password, expiresAt, maxViews } =
-      body as {
-        type?: string;
-        urlOriginal?: string;
-        paste?: string;
-        pastelanguage?: string;
-        slug?: string;
-        password?: string;
-        expiresAt?: string;
-        maxViews?: number;
-      };
-
-    if (type !== "URL" && type !== "PASTE") {
+    if (body.type !== "URL" && body.type !== "PASTE") {
       return apiError(request, ErrorCode.SHARE_TYPE_INVALID);
     }
 
-    const parsedExpiresAt = expiresAt ? new Date(expiresAt) : undefined;
+    const parsedExpiresAt = body.expiresAt ? new Date(body.expiresAt) : undefined;
     if (parsedExpiresAt && Number.isNaN(parsedExpiresAt.getTime())) {
       return apiError(request, ErrorCode.INVALID_REQUEST);
     }
-    const parsedMaxViews = typeof maxViews === "number" ? maxViews : undefined;
 
-    if (type === "URL") {
-      if (!urlOriginal) return apiError(request, ErrorCode.MISSING_DATA);
-      const result = await createLinkShare({
-        urlOriginal,
-        context,
-        expiresAt: parsedExpiresAt,
-        slug,
-        password,
-        maxViews: parsedMaxViews,
-      });
-      if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
-      return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
-    }
-
-    // PASTE
-    if (!paste) return apiError(request, ErrorCode.PASTE_CONTENT_EMPTY);
-    const result = await createPasteShare({
-      paste,
-      pastelanguage: pastelanguage || "PLAINTEXT",
+    const common = {
       context,
       expiresAt: parsedExpiresAt,
-      slug,
-      password,
-      maxViews: parsedMaxViews,
-    });
-    if (result.errorCode) return apiError(request, result.errorCode as ErrorCode);
-    return NextResponse.json({ share: toPublicShare(result.share!) }, { status: 201 });
+      slug: body.slug,
+      password: body.password,
+      maxViews: typeof body.maxViews === "number" ? body.maxViews : undefined,
+    };
+
+    const outcome = await createShareFromBody(body, common);
+    if (outcome.errorCode) return apiError(request, outcome.errorCode);
+    return NextResponse.json({ share: toPublicShare(outcome.share!) }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/v1/shares]", error);
     return internalError(request);
