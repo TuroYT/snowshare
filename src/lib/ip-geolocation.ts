@@ -21,7 +21,7 @@ export function lookupIpGeolocation(ip: string): void {
   }
 
   _performLookup(ip).catch((err) => {
-    console.error(`[IP Geolocation] Unexpected error for ${ip}:`, err);
+    console.error("[IP Geolocation] Unexpected error for %s:", ip, err);
   });
 }
 
@@ -73,7 +73,7 @@ async function _performLookup(ip: string): Promise<void> {
       },
     });
   } catch (err) {
-    console.warn(`[IP Geolocation] Lookup failed for ${ip}:`, err);
+    console.warn("[IP Geolocation] Lookup failed for %s:", ip, err);
 
     await prisma.ipLocalisation
       .update({
@@ -81,7 +81,7 @@ async function _performLookup(ip: string): Promise<void> {
         data: { status: "unknown" },
       })
       .catch((updateErr) => {
-        console.error(`[IP Geolocation] Failed to mark ${ip} as unknown:`, updateErr);
+        console.error("[IP Geolocation] Failed to mark %s as unknown:", ip, updateErr);
       });
   }
 }

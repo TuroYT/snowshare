@@ -115,7 +115,7 @@ export async function storageFileExists(key: string): Promise<boolean> {
     return true;
   } catch (error) {
     if (!isS3NotFound(error)) {
-      console.error(`Storage: HEAD failed for ${key}:`, error);
+      console.error("Storage: HEAD failed for %s:", key, error);
     }
     return false;
   }
@@ -186,7 +186,7 @@ export async function deleteShareFiles(share: {
     try {
       await deleteFromStorage(key);
     } catch (error) {
-      console.error(`Storage: failed to delete ${key}:`, error);
+      console.error("Storage: failed to delete %s:", key, error);
       failed.push(key);
     }
   }

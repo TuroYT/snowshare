@@ -42,7 +42,7 @@ export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<num
       totalSize += size;
       await prisma.share.update({ where: { id: share.id }, data: { size: BigInt(size) } });
     } catch (error) {
-      console.error(`Quota: cannot measure legacy share ${share.id}, not counted:`, error);
+      console.error("Quota: cannot measure legacy share %s, not counted:", share.id, error);
     }
   }
 

@@ -223,7 +223,7 @@ export async function moveToStorage(tempPath: string, key: string): Promise<void
   if (await isS3Enabled()) {
     await uploadToStorage(tempPath, key);
     await unlink(tempPath).catch((error) => {
-      console.error(`Upload: failed to remove temp file ${tempPath} after S3 upload:`, error);
+      console.error("Upload: failed to remove temp file %s after S3 upload:", tempPath, error);
     });
     return;
   }
@@ -233,7 +233,7 @@ export async function moveToStorage(tempPath: string, key: string): Promise<void
 /** Deletes a share created for an upload that could not be finalized. */
 export async function rollbackShare(shareId: string): Promise<void> {
   await prisma.share.delete({ where: { id: shareId } }).catch((error) => {
-    console.error(`Upload: failed to roll back share ${shareId}:`, error);
+    console.error("Upload: failed to roll back share %s:", shareId, error);
   });
 }
 

@@ -329,7 +329,7 @@ export async function getDynamicProviders() {
       try {
         providers.push(providerMap[config.name](config));
       } catch (error) {
-        console.error(`Failed to initialize provider ${config.name}:`, error);
+        console.error("Failed to initialize provider %s:", config.name, error);
       }
     }
   }

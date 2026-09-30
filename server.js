@@ -265,7 +265,7 @@ async function recordStoredFile(libs, share, finalFileName, info) {
   } catch (error) {
     // The file is stored but not referenced: remove it
     await libs.deleteFromStorage(finalFileName).catch((deleteError) => {
-      console.error(`[Upload] Failed to remove unreferenced ${finalFileName}:`, deleteError);
+      console.error("[Upload] Failed to remove unreferenced %s:", finalFileName, deleteError);
     });
     throw error;
   }
@@ -282,7 +282,7 @@ async function removeTusFiles(uploadId) {
   const tusFilePath = path.join(tusTempDir, uploadId);
   for (const file of [tusFilePath, `${tusFilePath}.json`]) {
     await unlink(file).catch((error) => {
-      if (error.code !== "ENOENT") console.error(`[Upload] Failed to remove ${file}:`, error);
+      if (error.code !== "ENOENT") console.error("[Upload] Failed to remove %s:", file, error);
     });
   }
 }
