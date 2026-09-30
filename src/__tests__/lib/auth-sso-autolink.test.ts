@@ -7,7 +7,7 @@ type MockPrisma = {
   user: { findUnique: jest.Mock; update: jest.Mock };
   account: { create: jest.Mock; findFirst: jest.Mock };
   verificationToken: { findFirst: jest.Mock; delete: jest.Mock };
-  oAuthProvider: { findMany: jest.Mock };
+  oAuthProvider: { findMany: jest.Mock; findUnique: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -16,7 +16,7 @@ const mockPrisma: MockPrisma = {
   user: { findUnique: jest.fn(), update: jest.fn() },
   account: { create: jest.fn(), findFirst: jest.fn() },
   verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
-  oAuthProvider: { findMany: jest.fn() },
+  oAuthProvider: { findMany: jest.fn(), findUnique: jest.fn() },
   $transaction: jest.fn((fn: (tx: MockPrisma) => Promise<unknown>) => fn(mockPrisma)),
 };
 
@@ -62,6 +62,7 @@ describe("signIn callback - SSO auto-link", () => {
     (prisma.user.update as jest.Mock).mockResolvedValue({});
     (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.oAuthProvider.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.oAuthProvider.findUnique as jest.Mock).mockResolvedValue({ tenantId: "common" });
   });
 
   it("auto-links account and resets flag when ssoAutoLink is true", async () => {
@@ -116,7 +117,7 @@ describe("signIn callback - SSO auto-link", () => {
       credentials: undefined,
     });
 
-    expect(result).toBe(false);
+    expect(result).toBe("/auth/signin?error=OAuthSigninDisabled");
     expect(prisma.account.create).not.toHaveBeenCalled();
   });
 
@@ -139,7 +140,7 @@ describe("signIn callback - SSO auto-link", () => {
       credentials: undefined,
     });
 
-    expect(result).toBe(false);
+    expect(result).toBe("/auth/signin?error=OAuthAccountNotLinked");
   });
 
   it("allows SSO login when account already linked regardless of ssoAutoLink", async () => {
@@ -234,6 +235,110 @@ describe("signIn callback - SSO auto-link", () => {
     expect(result).toBe(false);
   });
 
+  it("refuses to create a new SSO user when sign-up is disabled", async () => {
+    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: false });
+
+    const options = await getAuthOptions();
+    const result = await options.callbacks!.signIn!({
+      user: mockUser,
+      account: mockAccount,
+      profile: undefined,
+      email: undefined,
+      credentials: undefined,
+    });
+
+    expect(result).toBe("/auth/signin?error=OAuthSigninDisabled");
+  });
+
+  describe("verified provider email", () => {
+    const idToken = (claims: Record<string, unknown>) =>
+      `h.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.s`;
+
+    beforeEach(() => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: "u1",
+        email: "user@example.com",
+        ssoAutoLink: false,
+        accounts: [],
+      });
+      (prisma.$transaction as jest.Mock).mockImplementation(
+        (fn: (tx: MockPrisma) => Promise<unknown>) => fn(mockPrisma)
+      );
+      mockCookieStore.get.mockReturnValue(undefined);
+    });
+
+    async function runSignIn(
+      account: typeof mockAccount | Record<string, unknown>,
+      profile?: object
+    ) {
+      const options = await getAuthOptions();
+      return options.callbacks!.signIn!({
+        user: mockUser,
+        account: account as typeof mockAccount,
+        profile: profile as never,
+        email: undefined,
+        credentials: undefined,
+      });
+    }
+
+    it("auto-links a Google account whose email is verified", async () => {
+      const result = await runSignIn(
+        { ...mockAccount, provider: "google", providerAccountId: "g-1" },
+        { email: "user@example.com", email_verified: true }
+      );
+
+      expect(result).toBe(true);
+      expect(prisma.account.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ userId: "u1", provider: "google" }),
+        })
+      );
+    });
+
+    it("does not auto-link a Google account whose email is not verified", async () => {
+      const result = await runSignIn(
+        { ...mockAccount, provider: "google", providerAccountId: "g-1" },
+        { email: "user@example.com", email_verified: false }
+      );
+
+      expect(result).toBe("/auth/signin?error=OAuthAccountNotLinked");
+      expect(prisma.account.create).not.toHaveBeenCalled();
+    });
+
+    it("auto-links an Entra ID account on a single-tenant configuration", async () => {
+      (prisma.oAuthProvider.findUnique as jest.Mock).mockResolvedValue({
+        tenantId: "11111111-2222-3333-4444-555555555555",
+      });
+
+      const result = await runSignIn({
+        ...mockAccount,
+        id_token: idToken({ email: "User@Example.com" }),
+      });
+
+      expect(result).toBe(true);
+      expect(prisma.account.create).toHaveBeenCalled();
+    });
+
+    it("does not auto-link a multi-tenant Entra ID account without xms_edov", async () => {
+      const result = await runSignIn({
+        ...mockAccount,
+        id_token: idToken({ email: "user@example.com" }),
+      });
+
+      expect(result).toBe("/auth/signin?error=OAuthAccountNotLinked");
+      expect(prisma.account.create).not.toHaveBeenCalled();
+    });
+
+    it("auto-links a multi-tenant Entra ID account with xms_edov", async () => {
+      const result = await runSignIn({
+        ...mockAccount,
+        id_token: idToken({ email: "user@example.com", xms_edov: true }),
+      });
+
+      expect(result).toBe(true);
+    });
+  });
+
   describe("explicit account link token", () => {
     const linkToken = { identifier: "account-link:user@example.com:azure-ad", token: "tok-1" };
 
@@ -265,7 +370,7 @@ describe("signIn callback - SSO auto-link", () => {
       mockCookieStore.get.mockReturnValue(undefined);
       (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(linkToken);
 
-      expect(await runSignIn()).toBe(false);
+      expect(await runSignIn()).toBe("/auth/signin?error=OAuthAccountNotLinked");
       expect(prisma.account.create).not.toHaveBeenCalled();
     });
 

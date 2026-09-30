@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
         email: true,
         name: true,
         isAdmin: true,
+        ssoAutoLink: true,
         createdAt: true,
         _count: {
           select: { shares: true },
@@ -92,6 +93,15 @@ export async function PATCH(request: NextRequest) {
 
     if (!userId || !action) {
       return apiError(request, ErrorCode.MISSING_DATA);
+    }
+
+    // Arm or cancel the one-time SSO auto-link (allowed on self: it only affects the next SSO sign-in)
+    if (action === "enableSsoAutoLink" || action === "disableSsoAutoLink") {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { ssoAutoLink: action === "enableSsoAutoLink" },
+      });
+      return NextResponse.json({ success: true });
     }
 
     // Prevent self-modification
@@ -198,6 +208,7 @@ export async function POST(request: NextRequest) {
         email: true,
         name: true,
         isAdmin: true,
+        ssoAutoLink: true,
         createdAt: true,
         _count: { select: { shares: true } },
       },

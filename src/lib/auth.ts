@@ -8,6 +8,7 @@ import { gravatarUrl } from "@/lib/gravatar";
 import bcrypt from "bcryptjs";
 import { Provider } from "next-auth/providers/index";
 import { providerMap } from "@/lib/providers";
+import { isProviderEmailVerified } from "@/lib/oauth-email";
 import { cookies } from "next/headers";
 import { resolveClientIp } from "@/lib/getClientIp";
 import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
@@ -188,7 +189,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
       strategy: "jwt",
     },
     callbacks: {
-      async signIn({ user, account }) {
+      async signIn({ user, account, profile }) {
         if (!account) return false;
         if (account.provider === "credentials") return true;
 
@@ -213,10 +214,31 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           if (accountExists) return true;
 
           // allowSignin applies to all new link attempts, including ssoAutoLink
-          if (settings && !settings.allowSignin) return false;
+          if (settings && !settings.allowSignin) {
+            console.warn(
+              `SSO sign-in refused: sign-in disabled, cannot link ${account.provider} to user ${existingUser.id}`
+            );
+            return "/auth/signin?error=OAuthSigninDisabled";
+          }
 
-          // Admin flagged this user for SSO auto-link
-          if (existingUser.ssoAutoLink) {
+          const azureTenantId =
+            account.provider === "azure-ad"
+              ? (
+                  await prisma.oAuthProvider.findUnique({
+                    where: { name: "azure-ad" },
+                    select: { tenantId: true },
+                  })
+                )?.tenantId
+              : null;
+          const emailVerified = isProviderEmailVerified(
+            account,
+            profile,
+            user.email,
+            azureTenantId
+          );
+
+          // Admin flagged this user for SSO auto-link, or the provider vouches for the email
+          if (existingUser.ssoAutoLink || emailVerified) {
             try {
               await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
                 await tx.account.create({
@@ -239,7 +261,11 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
                   data: { ssoAutoLink: false },
                 });
               });
-              console.log(`SSO auto-link: account linked for user ${existingUser.id}`);
+              console.log(
+                `SSO auto-link: ${account.provider} linked to user ${existingUser.id} (${
+                  existingUser.ssoAutoLink ? "admin flag" : "verified email"
+                })`
+              );
               return true;
             } catch (error) {
               // Handle unique constraint violation — account may already be linked by a concurrent request
@@ -279,8 +305,15 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           // Explicit link token flow: the token must match the httpOnly cookie set by
           // POST /api/user/accounts/link, so only the browser that requested the link
           // can complete it.
+          const notLinked = (reason: string) => {
+            console.warn(
+              `SSO sign-in refused: ${account.provider} not linked to user ${existingUser.id} (${reason})`
+            );
+            return "/auth/signin?error=OAuthAccountNotLinked";
+          };
+
           const cookieToken = await readLinkTokenCookie();
-          if (!cookieToken) return false;
+          if (!cookieToken) return notLinked("email not verified by provider, no link request");
 
           const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
           const linkToken = await prisma.verificationToken.findFirst({
@@ -291,7 +324,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
             },
           });
 
-          if (!linkToken) return false;
+          if (!linkToken) return notLinked("invalid or expired link request");
 
           try {
             await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -327,7 +360,10 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           }
         }
 
-        if (settings && !settings.allowSignin) return false;
+        if (settings && !settings.allowSignin) {
+          console.warn(`SSO sign-in refused: sign-up disabled for new ${account.provider} user`);
+          return "/auth/signin?error=OAuthSigninDisabled";
+        }
 
         return true;
       },
@@ -365,6 +401,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
     },
     pages: {
       signIn: "/auth/signin",
+      error: "/auth/signin",
     },
   };
 }
