@@ -75,7 +75,7 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
         if (!cancelled) setExtensions(Array.isArray(ext) ? ext : [ext]);
       })
       .catch((error) => {
-        console.error(`CodeBlock: failed to load language extension "${language}":`, error);
+        console.error('CodeBlock: failed to load language extension "%s":', language, error);
         if (!cancelled) setExtensions([]);
       });
     return () => {

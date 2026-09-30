@@ -101,7 +101,7 @@ async function cleanupAbandonedTusUploads(
         console.log(`🗑️  Abandoned tus file deleted: ${entry.name}`);
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          console.error(`❌ Error deleting tus file ${entry.name}:`, error);
+          console.error("❌ Error deleting tus file %s:", entry.name, error);
         }
       }
     })
@@ -166,7 +166,7 @@ async function cleanupOrphanFiles(
         console.log(`🗑️  Orphan file deleted: ${entry.name}`);
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          console.error(`❌ Error deleting orphan ${entry.name}:`, error);
+          console.error("❌ Error deleting orphan %s:", entry.name, error);
         }
       }
     })

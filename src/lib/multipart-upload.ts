@@ -65,7 +65,7 @@ export async function removeTempFiles(files: Pick<ReceivedFile, "tempPath">[]): 
     files.map((file) =>
       unlink(file.tempPath).catch((error: NodeJS.ErrnoException) => {
         if (error.code !== "ENOENT") {
-          console.error(`Multipart: failed to remove temp file ${file.tempPath}:`, error);
+          console.error("Multipart: failed to remove temp file %s:", file.tempPath, error);
         }
       })
     )

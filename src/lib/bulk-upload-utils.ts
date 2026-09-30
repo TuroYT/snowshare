@@ -78,7 +78,7 @@ function lazyStorageStream(key: string): Readable {
         })
         .catch((error) => {
           // A missing file becomes an empty entry instead of breaking the whole archive
-          console.error(`Zip archive: cannot open ${key}, adding an empty entry:`, error);
+          console.error("Zip archive: cannot open %s, adding an empty entry:", key, error);
           lazy.push(null);
         });
     },
