@@ -1,4 +1,4 @@
-import type { Account, NextAuthOptions } from "next-auth";
+import type { Account, NextAuthOptions, Profile } from "next-auth";
 import { getSettingsCached } from "@/lib/settings";
 import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -8,6 +8,7 @@ import { gravatarUrl } from "@/lib/gravatar";
 import bcrypt from "bcryptjs";
 import { Provider } from "next-auth/providers/index";
 import { providerMap } from "@/lib/providers";
+import { isProviderEmailVerified } from "@/lib/oauth-email";
 import { cookies } from "next/headers";
 import { resolveClientIp } from "@/lib/getClientIp";
 import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
@@ -107,7 +108,10 @@ async function recoverFromConcurrentAutoLink(
   return true;
 }
 
-/** Admin flagged this user for SSO auto-link: link the account without an explicit token. */
+/**
+ * Admin flagged this user for SSO auto-link, or the provider vouches for the email:
+ * link the account without an explicit token.
+ */
 async function autoLinkSsoAccount(
   existingUser: ExistingUserWithAccounts,
   account: Account
@@ -120,7 +124,11 @@ async function autoLinkSsoAccount(
         data: { ssoAutoLink: false },
       });
     });
-    console.log(`SSO auto-link: account linked for user ${existingUser.id}`);
+    console.log(
+      `SSO auto-link: ${account.provider} linked to user ${existingUser.id} (${
+        existingUser.ssoAutoLink ? "admin flag" : "verified email"
+      })`
+    );
     return true;
   } catch (error) {
     // Handle unique constraint violation — account may already be linked by a concurrent request
@@ -143,9 +151,16 @@ async function autoLinkSsoAccount(
 async function linkAccountWithToken(
   existingUser: ExistingUserWithAccounts,
   account: Account
-): Promise<boolean> {
+): Promise<boolean | string> {
+  const notLinked = (reason: string) => {
+    console.warn(
+      `SSO sign-in refused: ${account.provider} not linked to user ${existingUser.id} (${reason})`
+    );
+    return "/auth/signin?error=OAuthAccountNotLinked";
+  };
+
   const cookieToken = await readLinkTokenCookie();
-  if (!cookieToken) return false;
+  if (!cookieToken) return notLinked("email not verified by provider, no link request");
 
   const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
   const linkToken = await prisma.verificationToken.findFirst({
@@ -156,7 +171,7 @@ async function linkAccountWithToken(
     },
   });
 
-  if (!linkToken) return false;
+  if (!linkToken) return notLinked("invalid or expired link request");
 
   try {
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -181,8 +196,10 @@ async function linkAccountWithToken(
 async function handleExistingUserSignIn(
   existingUser: ExistingUserWithAccounts,
   account: Account,
-  settings: Awaited<ReturnType<typeof getSettingsCached>>
-): Promise<boolean> {
+  settings: Awaited<ReturnType<typeof getSettingsCached>>,
+  profile: Profile | undefined,
+  email: string
+): Promise<boolean | string> {
   // Account already linked — allow sign in
   const accountExists = existingUser.accounts.some(
     (acc: { provider: string; providerAccountId: string }) =>
@@ -191,9 +208,26 @@ async function handleExistingUserSignIn(
   if (accountExists) return true;
 
   // allowSignin applies to all new link attempts, including ssoAutoLink
-  if (settings && !settings.allowSignin) return false;
+  if (settings && !settings.allowSignin) {
+    console.warn(
+      `SSO sign-in refused: sign-in disabled, cannot link ${account.provider} to user ${existingUser.id}`
+    );
+    return "/auth/signin?error=OAuthSigninDisabled";
+  }
 
-  if (existingUser.ssoAutoLink) {
+  const azureTenantId =
+    account.provider === "azure-ad"
+      ? (
+          await prisma.oAuthProvider.findUnique({
+            where: { name: "azure-ad" },
+            select: { tenantId: true },
+          })
+        )?.tenantId
+      : null;
+  const emailVerified = isProviderEmailVerified(account, profile, email, azureTenantId);
+
+  // Admin flagged this user for SSO auto-link, or the provider vouches for the email
+  if (existingUser.ssoAutoLink || emailVerified) {
     return autoLinkSsoAccount(existingUser, account);
   }
 
@@ -339,7 +373,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
       strategy: "jwt",
     },
     callbacks: {
-      async signIn({ user, account }) {
+      async signIn({ user, account, profile }) {
         if (!account) return false;
         if (account.provider === "credentials") return true;
 
@@ -355,10 +389,13 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         });
 
         if (existingUser) {
-          return handleExistingUserSignIn(existingUser, account, settings);
+          return handleExistingUserSignIn(existingUser, account, settings, profile, user.email);
         }
 
-        if (settings && !settings.allowSignin) return false;
+        if (settings && !settings.allowSignin) {
+          console.warn(`SSO sign-in refused: sign-up disabled for new ${account.provider} user`);
+          return "/auth/signin?error=OAuthSigninDisabled";
+        }
 
         return true;
       },
@@ -396,6 +433,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
     },
     pages: {
       signIn: "/auth/signin",
+      error: "/auth/signin",
     },
   };
 }

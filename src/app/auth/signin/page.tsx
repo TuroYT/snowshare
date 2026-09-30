@@ -44,7 +44,29 @@ export default function SignIn() {
           "No email is associated with this provider account. Make sure your identity provider is configured to share the email claim."
         )
       );
-    } else if (errorParam === "OAuthSignin") {
+    } else if (errorParam === "OAuthAccountNotLinked") {
+      setError(
+        t(
+          "auth.error_oauth_not_linked",
+          "An account already exists with this email. Sign in with your password, then link this provider from your profile (Connected accounts)."
+        )
+      );
+    } else if (errorParam === "OAuthSigninDisabled") {
+      setError(
+        t(
+          "auth.error_oauth_signin_disabled",
+          "Signing in with a new account through this provider is disabled. Contact an administrator."
+        )
+      );
+    } else if (errorParam === "AccessDenied") {
+      setError(t("auth.error_access_denied", "You do not have permission to sign in."));
+    } else if (
+      errorParam === "OAuthSignin" ||
+      errorParam === "OAuthCallback" ||
+      errorParam === "OAuthCreateAccount" ||
+      errorParam === "Callback" ||
+      errorParam === "Configuration"
+    ) {
       setError(
         t(
           "auth.error_oauth_signin",

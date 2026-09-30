@@ -7,13 +7,14 @@ import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import CreateUserDialog from "./CreateUserDialog";
 import WarningModal from "./WarningModal";
 
-type UserAction = "promote" | "demote" | "delete";
+type UserAction = "promote" | "demote" | "delete" | "enableSsoAutoLink" | "disableSsoAutoLink";
 
 interface User {
   id: string;
   email: string;
   name?: string;
   isAdmin: boolean;
+  ssoAutoLink: boolean;
   createdAt: string;
   _count: {
     shares: number;
@@ -60,6 +61,8 @@ export default function UsersTab() {
   const confirmKeyFor = (action: UserAction) => {
     if (action === "promote") return "admin.users.confirm_make_admin";
     if (action === "demote") return "admin.users.confirm_remove_admin";
+    if (action === "enableSsoAutoLink") return "admin.users.confirm_enable_sso_link";
+    if (action === "disableSsoAutoLink") return "admin.users.confirm_disable_sso_link";
     return "admin.users.confirm_delete";
   };
 
@@ -275,6 +278,26 @@ export default function UsersTab() {
                               : t("admin.users.action_remove_admin")}
                           </button>
                         )}
+                        <button
+                          onClick={() =>
+                            requestAction(
+                              user.id,
+                              user.ssoAutoLink ? "disableSsoAutoLink" : "enableSsoAutoLink"
+                            )
+                          }
+                          disabled={actionLoading === user.id}
+                          title={t(
+                            "admin.users.sso_link_hint",
+                            "Link the user's SSO account automatically on their next SSO sign-in"
+                          )}
+                          className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-700/50 rounded text-xs text-blue-400 transition-colors disabled:opacity-50"
+                        >
+                          {actionLoading === user.id
+                            ? "..."
+                            : user.ssoAutoLink
+                              ? t("admin.users.action_disable_sso_link", "Cancel SSO link")
+                              : t("admin.users.action_enable_sso_link", "Allow SSO link")}
+                        </button>
                         <button
                           onClick={() => requestAction(user.id, "delete")}
                           disabled={actionLoading === user.id}
