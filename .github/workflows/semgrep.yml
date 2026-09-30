@@ -9,14 +9,21 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   semgrep:
     name: Semgrep Scan
     runs-on: [self-hosted]
     if: github.event.pull_request.draft == false
     timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
       - name: Run Semgrep
@@ -42,4 +49,13 @@ jobs:
             -v "$GITHUB_EVENT_PATH":"$GITHUB_EVENT_PATH":ro \
             -w /src \
             returntocorp/semgrep \
-            semgrep ci --timeout 60 --timeout-threshold 3 --max-memory 5000 --oss-only
+            semgrep ci --timeout 60 --timeout-threshold 3 --max-memory 5000 --oss-only \
+              --sarif-output=semgrep.sarif
+      # Findings show up as annotations in the PR diff and in the Security tab.
+      # Fork PRs get a read-only token, so the upload is skipped for them.
+      - name: Upload findings to GitHub code scanning
+        if: always() && hashFiles('semgrep.sarif') != '' && github.event.pull_request.head.repo.fork != true
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep

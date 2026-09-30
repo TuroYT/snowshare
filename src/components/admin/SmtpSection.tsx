@@ -19,7 +19,7 @@ interface Props {
   onChange: (patch: Partial<SmtpSectionSettings>) => void;
 }
 
-export default function SmtpSection({ settings, onChange }: Props) {
+export default function SmtpSection({ settings, onChange }: Readonly<Props>) {
   const { t } = useTranslation();
 
   return (
@@ -48,7 +48,7 @@ export default function SmtpSection({ settings, onChange }: Props) {
               label={t("admin.settings.smtp_port")}
               type="number"
               value={settings.smtpPort ?? 587}
-              onChange={(v) => onChange({ smtpPort: v ? parseInt(v) : 587 })}
+              onChange={(v) => onChange({ smtpPort: v ? Number.parseInt(v) : 587 })}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -13,7 +13,7 @@ interface PdfViewerProps {
   fileUrl: string;
 }
 
-export default function PdfViewer({ fileUrl }: PdfViewerProps) {
+export default function PdfViewer({ fileUrl }: Readonly<PdfViewerProps>) {
   const { t } = useTranslation();
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);

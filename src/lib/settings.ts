@@ -30,8 +30,7 @@ export async function getSettingsCached(): Promise<Settings | null> {
   if (cached?.pending) return cached.pending;
 
   const pending = Promise.resolve(prisma.settings.findFirst())
-    .then((value) => {
-      const settings = value ?? null;
+    .then((settings = null) => {
       globalForSettings.__snowshareSettingsCache = {
         value: settings,
         expiresAt: Date.now() + SETTINGS_CACHE_TTL_MS,
@@ -169,10 +168,10 @@ export async function getPublicSettings() {
         fontFamily: s.fontFamily,
       },
     } as const;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     console.warn(
-      "failed to fetch settings from database, note that this is expected during static builds/prerendering:"
+      "failed to fetch settings from database, note that this is expected during static builds/prerendering:",
+      error instanceof Error ? error.message : error
     );
     return defaultSettings;
   }
@@ -213,10 +212,10 @@ export async function getBrandingSettings() {
         faviconUrl: null,
       },
     } as const;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     console.warn(
-      "failed to fetch settings from database, note that this is expected during static builds/prerendering:"
+      "failed to fetch settings from database, note that this is expected during static builds/prerendering:",
+      error instanceof Error ? error.message : error
     );
 
     return defaultBranding;

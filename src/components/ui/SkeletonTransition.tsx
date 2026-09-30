@@ -17,7 +17,7 @@ export default function SkeletonTransition({
   children,
   className,
   lazy,
-}: Props) {
+}: Readonly<Props>) {
   if (lazy) {
     return (
       <div className={className}>

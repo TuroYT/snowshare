@@ -418,7 +418,8 @@ describe("PATCH /api/user/shares/[id]", () => {
     const data = mockShareUpdate.mock.calls[0][0].data;
     expect(data.password).toBe("hashed:secret123");
     expect(data.urlOriginal).not.toBe("https://old.com");
-    expect(data.urlOriginal.split(":")).toHaveLength(3);
+    expect(data.urlOriginal.split(":")).toHaveLength(5);
+    expect(data.urlOriginal.startsWith("v2:")).toBe(true);
   });
 
   it("should require the URL to change the password of a protected link", async () => {

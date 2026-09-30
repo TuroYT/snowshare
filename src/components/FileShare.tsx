@@ -142,6 +142,20 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     setUploadProgress(progress);
   };
 
+  const buildBaseMetadata = () => {
+    const baseMetadata: Record<string, string> = {};
+
+    const expiresAt = computeExpiresAt();
+    if (expiresAt) baseMetadata.expiresAt = expiresAt;
+
+    if (slug.trim()) baseMetadata.slug = slug.trim();
+    if (password.trim()) baseMetadata.password = password.trim();
+    if (note.trim()) baseMetadata.note = note.trim().slice(0, MAX_NOTE_LENGTH);
+    if (hasViewLimit) baseMetadata.maxViews = maxViews.toString();
+
+    return baseMetadata;
+  };
+
   // Handle form submission with tus resumable upload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,15 +193,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     );
 
     try {
-      const baseMetadata: Record<string, string> = {};
-
-      const expiresAt = computeExpiresAt();
-      if (expiresAt) baseMetadata.expiresAt = expiresAt;
-
-      if (slug.trim()) baseMetadata.slug = slug.trim();
-      if (password.trim()) baseMetadata.password = password.trim();
-      if (note.trim()) baseMetadata.note = note.trim().slice(0, MAX_NOTE_LENGTH);
-      if (hasViewLimit) baseMetadata.maxViews = maxViews.toString();
+      const baseMetadata = buildBaseMetadata();
 
       if (files.length === 1) {
         const file = files[0].file;

@@ -11,7 +11,7 @@ type SharesListProps = {
   onUpdate: (id: string, data: UserShareUpdate) => void;
 };
 
-export default function SharesList({ shares, onDelete, onUpdate }: SharesListProps) {
+export default function SharesList({ shares, onDelete, onUpdate }: Readonly<SharesListProps>) {
   const { t } = useTranslation();
 
   if (shares.length === 0) {

@@ -43,10 +43,13 @@ interface Pagination {
 }
 
 function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
-  if (!countryCode || countryCode.length !== 2) return "\u2753";
+  if (countryCode?.length !== 2) return "\u2753";
   const code = countryCode.toUpperCase();
   const offset = 0x1f1e6 - 65;
-  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
+  return String.fromCodePoint(
+    (code.codePointAt(0) ?? 65) + offset,
+    (code.codePointAt(1) ?? 65) + offset
+  );
 }
 
 export default function LogsTab() {
@@ -61,6 +64,7 @@ export default function LogsTab() {
     total: 0,
     totalPages: 0,
   });
+  const skeletonRowIds = Array.from({ length: pagination.limit }, (_, n) => `skeleton-row-${n}`);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -328,9 +332,9 @@ export default function LogsTab() {
             key={loading ? "loading" : "loaded"}
             className="animate-fade-in divide-y divide-gray-700/30"
           >
-            {loading ? (
-              Array.from({ length: pagination.limit }).map((_, i) => (
-                <tr key={i}>
+            {loading &&
+              skeletonRowIds.map((id) => (
+                <tr key={id}>
                   <td className="py-3 px-4">
                     <WaveSkeleton
                       variant="rounded"
@@ -366,14 +370,16 @@ export default function LogsTab() {
                     <WaveSkeleton variant="rounded" width={64} height={30} sx={{ ml: "auto" }} />
                   </td>
                 </tr>
-              ))
-            ) : logs.length === 0 ? (
+              ))}
+            {!loading && logs.length === 0 && (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-[var(--foreground-muted)]">
                   {t("admin.logs.no_logs")}
                 </td>
               </tr>
-            ) : (
+            )}
+            {!loading &&
+              logs.length > 0 &&
               logs.map((log) => (
                 <tr key={log.id} className="hover:bg-[var(--surface)]/30 transition-colors">
                   <td className="py-3 px-4">
@@ -524,8 +530,7 @@ export default function LogsTab() {
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>

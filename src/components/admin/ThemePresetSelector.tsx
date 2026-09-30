@@ -9,7 +9,7 @@ interface ThemePresetSelectorProps {
   onSelectPreset: (colors: PresetColors) => void;
 }
 
-export function ThemePresetSelector({ onSelectPreset }: ThemePresetSelectorProps) {
+export function ThemePresetSelector({ onSelectPreset }: Readonly<ThemePresetSelectorProps>) {
   const { isDark } = useColorScheme();
   const { t } = useTranslation();
 

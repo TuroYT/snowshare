@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 interface TabsCtx {
@@ -13,14 +13,18 @@ export function Tabs({
   onValueChange,
   children,
   className,
-}: {
+}: Readonly<{
   value: string;
   onValueChange: (v: string) => void;
   children: React.ReactNode;
   className?: string;
-}) {
+}>) {
+  const ctxValue = useMemo(
+    () => ({ active: value, onChange: onValueChange }),
+    [value, onValueChange]
+  );
   return (
-    <Ctx.Provider value={{ active: value, onChange: onValueChange }}>
+    <Ctx.Provider value={ctxValue}>
       <div
         role="tablist"
         className={cn(
@@ -34,7 +38,7 @@ export function Tabs({
   );
 }
 
-export function Tab({ value, children }: { value: string; children: React.ReactNode }) {
+export function Tab({ value, children }: Readonly<{ value: string; children: React.ReactNode }>) {
   const { active, onChange } = useContext(Ctx);
   const isActive = active === value;
   return (

@@ -62,7 +62,8 @@ export default function ConnectedAccounts() {
           const data = await res.json();
           setError(data.error || t("profile.accounts.error_link"));
         }
-      } catch (_err) {
+      } catch (err) {
+        console.error("Failed to process account token:", err);
         setError(t("profile.accounts.error_link"));
       } finally {
         window.history.replaceState({}, "", window.location.pathname + "?tab=accounts");
@@ -102,10 +103,20 @@ export default function ConnectedAccounts() {
         const data = await res.json();
         setError(data.error || t("profile.accounts.error_link"));
       }
-    } catch (_err) {
+    } catch (err) {
+      console.error("Failed to start account linking:", err);
       setError(t("profile.accounts.error_link"));
     }
   };
+
+  useEffect(() => {
+    if (!deleteDialogOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDeleteDialogOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [deleteDialogOpen]);
 
   const handleDeleteClick = (account: Account) => {
     setAccountToDelete(account);
@@ -134,7 +145,8 @@ export default function ConnectedAccounts() {
         const data = await res.json();
         setError(data.error || t("profile.accounts.error_unlink"));
       }
-    } catch (_err) {
+    } catch (err) {
+      console.error("Failed to unlink account:", err);
       setError(t("profile.accounts.error_unlink"));
     } finally {
       setDeleting(false);
@@ -394,14 +406,15 @@ export default function ConnectedAccounts() {
 
         {/* Unlink confirmation dialog */}
         {deleteDialogOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
-            onClick={() => setDeleteDialogOpen(false)}
-          >
-            <div
-              className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6 max-w-md w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full cursor-default"
+              onClick={() => setDeleteDialogOpen(false)}
+            />
+            <div className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6 max-w-md w-full">
               <h3 className="text-xl font-bold text-[var(--foreground)] mb-3">
                 {t("profile.accounts.confirm_unlink")}
               </h3>

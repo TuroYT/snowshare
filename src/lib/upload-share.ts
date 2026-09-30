@@ -3,8 +3,8 @@
  * Used by the tus server (server.js), /api/upload, /api/upload/bulk and /api/v1/upload.
  */
 
-import { rename, unlink } from "fs/promises";
-import path from "path";
+import { rename, unlink } from "node:fs/promises";
+import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { apiErrorWithStatus, ErrorCode, internalError, type ErrorParams } from "@/lib/api-errors";
@@ -78,6 +78,42 @@ export interface ValidatedUploadOptions {
   note: string | null;
 }
 
+type AnonExpiryMode = "clamp" | "reject";
+
+/** Parses the requested expiration; an invalid date is rejected or ignored depending on the mode. */
+function parseRequestedExpiry(
+  raw: RawUploadOptions["expiresAt"],
+  anonExpiry: AnonExpiryMode
+): Date | null {
+  if (!raw) return null;
+  const expiresAt = new Date(raw);
+  if (Number.isNaN(expiresAt.getTime())) {
+    if (anonExpiry === "reject") throw new UploadError(400, ErrorCode.INVALID_DATE_FORMAT);
+    return null;
+  }
+  return expiresAt;
+}
+
+/** Anonymous uploads always expire, at most at the configured maximum. */
+function applyAnonExpiryLimit(expiresAt: Date | null, anonExpiry: AnonExpiryMode): Date {
+  const maxExpiry = getMaxAnonExpiry();
+  if (!expiresAt) return maxExpiry;
+  if (expiresAt > maxExpiry) {
+    if (anonExpiry === "reject") {
+      throw new UploadError(400, ErrorCode.EXPIRATION_TOO_FAR, { days: MAX_ANON_EXPIRY_DAYS });
+    }
+    return maxExpiry;
+  }
+  return expiresAt;
+}
+
+function parseUploadMaxViews(raw: RawUploadOptions["maxViews"]): number | null {
+  const maxViewsNumber = typeof raw === "string" ? Number.parseInt(raw, 10) : (raw ?? null);
+  return maxViewsNumber && Number.isInteger(maxViewsNumber) && maxViewsNumber > 0
+    ? maxViewsNumber
+    : null;
+}
+
 /**
  * Validates and normalizes user-supplied share options (no hashing, cheap to call early).
  *
@@ -91,7 +127,7 @@ export async function validateUploadOptions(
     anonExpiry = "reject",
     checkSlugAvailability = true,
   }: {
-    anonExpiry?: "clamp" | "reject";
+    anonExpiry?: AnonExpiryMode;
     checkSlugAvailability?: boolean;
   } = {}
 ): Promise<ValidatedUploadOptions> {
@@ -104,24 +140,9 @@ export async function validateUploadOptions(
     if (existing) throw new UploadError(409, ErrorCode.SLUG_ALREADY_TAKEN);
   }
 
-  let expiresAt: Date | null = null;
-  if (raw.expiresAt) {
-    expiresAt = new Date(raw.expiresAt);
-    if (Number.isNaN(expiresAt.getTime())) {
-      if (anonExpiry === "reject") throw new UploadError(400, ErrorCode.INVALID_DATE_FORMAT);
-      expiresAt = null;
-    }
-  }
+  let expiresAt = parseRequestedExpiry(raw.expiresAt, anonExpiry);
   if (!context.isAuthenticated) {
-    const maxExpiry = getMaxAnonExpiry();
-    if (!expiresAt) {
-      expiresAt = maxExpiry;
-    } else if (expiresAt > maxExpiry) {
-      if (anonExpiry === "reject") {
-        throw new UploadError(400, ErrorCode.EXPIRATION_TOO_FAR, { days: MAX_ANON_EXPIRY_DAYS });
-      }
-      expiresAt = maxExpiry;
-    }
+    expiresAt = applyAnonExpiryLimit(expiresAt, anonExpiry);
   }
 
   const password = raw.password?.trim() || null;
@@ -135,18 +156,11 @@ export async function validateUploadOptions(
     });
   }
 
-  const maxViewsNumber =
-    typeof raw.maxViews === "string" ? parseInt(raw.maxViews, 10) : (raw.maxViews ?? null);
-  const maxViews =
-    maxViewsNumber && Number.isInteger(maxViewsNumber) && maxViewsNumber > 0
-      ? maxViewsNumber
-      : null;
-
   return {
     slug,
     password,
     expiresAt,
-    maxViews,
+    maxViews: parseUploadMaxViews(raw.maxViews),
     note: raw.note?.slice(0, MAX_NOTE_LENGTH) || null,
   };
 }

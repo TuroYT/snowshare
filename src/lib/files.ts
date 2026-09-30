@@ -1,5 +1,5 @@
-import crypto from "crypto";
-import path from "path";
+import crypto from "node:crypto";
+import path from "node:path";
 
 const MAX_BASENAME_LENGTH = 150;
 

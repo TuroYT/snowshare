@@ -186,11 +186,11 @@ export default function ApiKeysSection() {
         )}
 
         {/* Keys list */}
-        {loading ? (
-          <p className="text-sm text-[var(--muted)]">{t("loading", "Loading...")}</p>
-        ) : keys.length === 0 ? (
+        {loading && <p className="text-sm text-[var(--muted)]">{t("loading", "Loading...")}</p>}
+        {!loading && keys.length === 0 && (
           <p className="text-sm text-[var(--muted)]">{t("apikeys.no_keys", "No API keys yet.")}</p>
-        ) : (
+        )}
+        {!loading && keys.length > 0 && (
           <div className="space-y-3">
             {keys.map((key) => (
               <div

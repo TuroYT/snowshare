@@ -5,10 +5,13 @@ import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui";
 
 function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
-  if (!countryCode || countryCode.length !== 2) return "❓";
+  if (countryCode?.length !== 2) return "❓";
   const code = countryCode.toUpperCase();
   const offset = 0x1f1e6 - 65;
-  return String.fromCodePoint(code.charCodeAt(0) + offset, code.charCodeAt(1) + offset);
+  return String.fromCodePoint(
+    (code.codePointAt(0) ?? 65) + offset,
+    (code.codePointAt(1) ?? 65) + offset
+  );
 }
 
 export type IpGeo = {
@@ -43,7 +46,7 @@ const TYPE_BADGE: Record<string, string> = {
   URL: "bg-emerald-500/10 text-emerald-400 border border-emerald-700/40",
 };
 
-function GeoCell({ geo }: { geo: IpGeo | null }) {
+function GeoCell({ geo }: Readonly<{ geo: IpGeo | null }>) {
   if (!geo || geo.status === "pending") {
     return <span className="text-[var(--foreground-muted)]">—</span>;
   }
@@ -66,7 +69,6 @@ function GeoCell({ geo }: { geo: IpGeo | null }) {
 type AccessLogTableProps = {
   logs: AccessLog[];
   loading: boolean;
-  total: number;
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -81,7 +83,7 @@ export default function AccessLogTable({
   totalPages,
   onPageChange,
   showShareColumn = true,
-}: AccessLogTableProps) {
+}: Readonly<AccessLogTableProps>) {
   const { t } = useTranslation();
 
   if (loading) {

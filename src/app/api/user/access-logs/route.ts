@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const url = new URL(request.url);
     const shareId = url.searchParams.get("shareId") ?? undefined;
-    const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+    const page = Math.max(1, Number.parseInt(url.searchParams.get("page") ?? "1", 10));
     const limit = 50;
     const skip = (page - 1) * limit;
 
@@ -43,9 +43,7 @@ export async function GET(request: NextRequest) {
       prisma.shareAccessLog.count({ where }),
     ]);
 
-    const uniqueIps = [
-      ...new Set(rawLogs.map((l) => l.ip).filter((ip): ip is string => !!ip)),
-    ];
+    const uniqueIps = [...new Set(rawLogs.map((l) => l.ip).filter((ip): ip is string => !!ip))];
 
     const geoData =
       uniqueIps.length > 0

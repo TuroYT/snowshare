@@ -15,22 +15,22 @@ export function useDefaultExpirationDays(
   settingsLoading: boolean,
   maxDaysAnon: number
 ): [number, (days: number) => void] {
-  const [expiresDays, setExpiresDaysState] = useState<number>(isAuthenticated ? 30 : maxDaysAnon);
+  const [expiresDays, setExpiresDays] = useState<number>(isAuthenticated ? 30 : maxDaysAnon);
   const applied = useRef(false);
   const userEdited = useRef(false);
 
   useEffect(() => {
     if (applied.current || userEdited.current || settingsLoading || authLoading) return;
     applied.current = true;
-    setExpiresDaysState(
+    setExpiresDays(
       isAuthenticated ? defaultExpirationDays : Math.min(defaultExpirationDays, maxDaysAnon)
     );
   }, [settingsLoading, authLoading, isAuthenticated, defaultExpirationDays, maxDaysAnon]);
 
-  const setExpiresDays = (days: number) => {
+  const updateExpiresDays = (days: number) => {
     userEdited.current = true;
-    setExpiresDaysState(days);
+    setExpiresDays(days);
   };
 
-  return [expiresDays, setExpiresDays];
+  return [expiresDays, updateExpiresDays];
 }

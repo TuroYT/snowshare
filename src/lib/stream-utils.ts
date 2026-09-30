@@ -1,4 +1,4 @@
-import { Readable } from "stream";
+import { Readable } from "node:stream";
 
 /**
  * Convert a Node.js stream to a Web ReadableStream for Next.js responses.
@@ -72,11 +72,11 @@ export function parseRangeHeader(
     return null;
   }
 
-  const start = parseInt(parts[0], 10);
-  const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+  const start = Number.parseInt(parts[0], 10);
+  const end = parts[1] ? Number.parseInt(parts[1], 10) : fileSize - 1;
 
   // Validate parsed values
-  if (isNaN(start) || isNaN(end)) {
+  if (Number.isNaN(start) || Number.isNaN(end)) {
     return null;
   }
 

@@ -24,7 +24,7 @@ import {
 } from "@/lib/security";
 import { ErrorCode } from "@/lib/api-errors";
 import { NextRequest } from "next/server";
-import type { pasteType } from "@/generated/prisma";
+import type { pasteType, Share } from "@/generated/prisma";
 
 export interface ShareContext {
   /** The authenticated user's ID, or null for anonymous. */
@@ -55,6 +55,94 @@ export function toPublicShare<
 }
 
 // ---------------------------------------------------------------------------
+// Shared validation helpers (order of checks is significant: callers run them in sequence)
+// ---------------------------------------------------------------------------
+
+type ShareError = { errorCode: ErrorCode; params?: Record<string, number> };
+
+/** Either a validation error (errorCode, params) or the created share. */
+type ShareCreationResult =
+  | (ShareError & { share?: undefined })
+  | { share: Share; errorCode?: undefined; params?: undefined };
+
+type AnonShareSetting = "allowAnonLinkShare" | "allowAnonPasteShare" | "allowAnonFileShare";
+
+/** Slug format, then uniqueness. Returns null when there is no slug or it is usable. */
+async function validateRequestedSlug(slug: string | undefined): Promise<ShareError | null> {
+  if (!slug) return null;
+  if (!isValidSlug(slug)) {
+    return { errorCode: ErrorCode.SLUG_INVALID };
+  }
+  const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
+  if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
+  return null;
+}
+
+function validateExpiration(expiresAt: Date | undefined): ShareError | null {
+  if (!expiresAt) return null;
+  if (Number.isNaN(expiresAt.getTime())) {
+    return { errorCode: ErrorCode.INVALID_REQUEST };
+  }
+  if (expiresAt <= new Date()) {
+    return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
+  }
+  return null;
+}
+
+function validatePasswordLength(password: string | undefined): ShareError | null {
+  if (
+    password &&
+    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
+  ) {
+    return {
+      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
+      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
+    };
+  }
+  return null;
+}
+
+/** Whether the admin settings allow anonymous users to create this kind of share. */
+async function isAnonShareAllowed(setting: AnonShareSetting): Promise<boolean> {
+  const settings = await getSettingsCached();
+  return !settings || Boolean(settings[setting]);
+}
+
+/** Anonymous shares cannot expire later than the configured maximum. */
+function validateAnonExpiryRange(expiresAt: Date): ShareError | null {
+  const result = resolveAnonExpiry(new Date(expiresAt));
+  if (result.error) {
+    return { errorCode: ErrorCode.EXPIRATION_TOO_FAR, params: { days: MAX_ANON_EXPIRY_DAYS } };
+  }
+  return null;
+}
+
+/** Anonymous restrictions for link and paste shares: enabled, and an expiration is required. */
+async function validateAnonymousExpiringShare(
+  setting: AnonShareSetting,
+  disabledCode: ErrorCode,
+  expiresAt: Date | undefined
+): Promise<ShareError | null> {
+  if (!(await isAnonShareAllowed(setting))) {
+    return { errorCode: disabledCode };
+  }
+  if (!expiresAt) {
+    return { errorCode: ErrorCode.EXPIRATION_REQUIRED };
+  }
+  return validateAnonExpiryRange(expiresAt);
+}
+
+async function generateUniqueSlug(): Promise<string> {
+  return generateRandomSlug(
+    async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
+  );
+}
+
+function parseMaxViews(maxViews: number | undefined): number | null {
+  return maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
+}
+
+// ---------------------------------------------------------------------------
 // Link share
 // ---------------------------------------------------------------------------
 
@@ -67,7 +155,7 @@ export interface CreateLinkShareParams {
   maxViews?: number;
 }
 
-export async function createLinkShare(params: CreateLinkShareParams) {
+export async function createLinkShare(params: CreateLinkShareParams): Promise<ShareCreationResult> {
   const { context, expiresAt, maxViews } = params;
   let { urlOriginal, slug, password } = params;
 
@@ -77,52 +165,26 @@ export async function createLinkShare(params: CreateLinkShareParams) {
     return { errorCode: ErrorCode.INVALID_URL };
   }
 
-  // Validate slug if provided
-  if (slug && !isValidSlug(slug)) {
-    return { errorCode: ErrorCode.SLUG_INVALID };
-  }
-
-  // Check slug uniqueness
-  if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
-    if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
-  }
+  // Validate slug (format, then uniqueness)
+  const slugError = await validateRequestedSlug(slug);
+  if (slugError) return slugError;
 
   // Validate expiration
-  if (expiresAt) {
-    if (Number.isNaN(expiresAt.getTime())) {
-      return { errorCode: ErrorCode.INVALID_REQUEST };
-    }
-    if (expiresAt <= new Date()) {
-      return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
-    }
-  }
+  const expirationError = validateExpiration(expiresAt);
+  if (expirationError) return expirationError;
 
   // Password length
-  if (
-    password &&
-    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
-  ) {
-    return {
-      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
-      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
-    };
-  }
+  const passwordError = validatePasswordLength(password);
+  if (passwordError) return passwordError;
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await getSettingsCached();
-    if (settings && !settings.allowAnonLinkShare) {
-      return { errorCode: ErrorCode.ANON_LINK_SHARE_DISABLED };
-    }
-    if (expiresAt) {
-      const result = resolveAnonExpiry(new Date(expiresAt));
-      if (result.error) {
-        return { errorCode: ErrorCode.EXPIRATION_TOO_FAR, params: { days: MAX_ANON_EXPIRY_DAYS } };
-      }
-    } else {
-      return { errorCode: ErrorCode.EXPIRATION_REQUIRED };
-    }
+    const anonError = await validateAnonymousExpiringShare(
+      "allowAnonLinkShare",
+      ErrorCode.ANON_LINK_SHARE_DISABLED,
+      expiresAt
+    );
+    if (anonError) return anonError;
   }
 
   // Hash password and encrypt URL
@@ -134,12 +196,10 @@ export async function createLinkShare(params: CreateLinkShareParams) {
 
   // Generate slug if not provided
   if (!slug) {
-    slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
-    );
+    slug = await generateUniqueSlug();
   }
 
-  const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
+  const parsedMaxViews = parseMaxViews(maxViews);
 
   const share = await prisma.share.create({
     data: {
@@ -172,7 +232,9 @@ export interface CreatePasteShareParams {
   maxViews?: number;
 }
 
-export async function createPasteShare(params: CreatePasteShareParams) {
+export async function createPasteShare(
+  params: CreatePasteShareParams
+): Promise<ShareCreationResult> {
   const { context, expiresAt, maxViews } = params;
   const { paste, pastelanguage } = params;
   let { slug, password } = params;
@@ -193,50 +255,26 @@ export async function createPasteShare(params: CreatePasteShareParams) {
     return { errorCode: ErrorCode.PASTE_LANGUAGE_INVALID };
   }
 
-  // Validate slug
-  if (slug && !isValidSlug(slug)) {
-    return { errorCode: ErrorCode.SLUG_INVALID };
-  }
-  if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
-    if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
-  }
+  // Validate slug (format, then uniqueness)
+  const slugError = await validateRequestedSlug(slug);
+  if (slugError) return slugError;
 
   // Validate expiration
-  if (expiresAt) {
-    if (Number.isNaN(expiresAt.getTime())) {
-      return { errorCode: ErrorCode.INVALID_REQUEST };
-    }
-    if (expiresAt <= new Date()) {
-      return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
-    }
-  }
+  const expirationError = validateExpiration(expiresAt);
+  if (expirationError) return expirationError;
 
   // Password length
-  if (
-    password &&
-    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
-  ) {
-    return {
-      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
-      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
-    };
-  }
+  const passwordError = validatePasswordLength(password);
+  if (passwordError) return passwordError;
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await getSettingsCached();
-    if (settings && !settings.allowAnonPasteShare) {
-      return { errorCode: ErrorCode.ANON_PASTE_SHARE_DISABLED };
-    }
-    if (expiresAt) {
-      const result = resolveAnonExpiry(new Date(expiresAt));
-      if (result.error) {
-        return { errorCode: ErrorCode.EXPIRATION_TOO_FAR, params: { days: MAX_ANON_EXPIRY_DAYS } };
-      }
-    } else {
-      return { errorCode: ErrorCode.EXPIRATION_REQUIRED };
-    }
+    const anonError = await validateAnonymousExpiringShare(
+      "allowAnonPasteShare",
+      ErrorCode.ANON_PASTE_SHARE_DISABLED,
+      expiresAt
+    );
+    if (anonError) return anonError;
   }
 
   // Hash password
@@ -246,12 +284,10 @@ export async function createPasteShare(params: CreatePasteShareParams) {
 
   // Generate slug
   if (!slug) {
-    slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
-    );
+    slug = await generateUniqueSlug();
   }
 
-  const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
+  const parsedMaxViews = parseMaxViews(maxViews);
 
   const share = await prisma.share.create({
     data: {
@@ -287,51 +323,30 @@ export interface CreateFileShareParams {
   maxViews?: number;
 }
 
-export async function createFileShare(params: CreateFileShareParams) {
+export async function createFileShare(params: CreateFileShareParams): Promise<ShareCreationResult> {
   const { context, expiresAt, maxViews, filePath, filename: _filename } = params;
   let { slug, password } = params;
 
-  // Validate slug
-  if (slug && !isValidSlug(slug)) {
-    return { errorCode: ErrorCode.SLUG_INVALID };
-  }
-  if (slug) {
-    const existing = await prisma.share.findUnique({ where: { slug }, select: { id: true } });
-    if (existing) return { errorCode: ErrorCode.SLUG_ALREADY_TAKEN };
-  }
+  // Validate slug (format, then uniqueness)
+  const slugError = await validateRequestedSlug(slug);
+  if (slugError) return slugError;
 
   // Validate expiration
-  if (expiresAt) {
-    if (Number.isNaN(expiresAt.getTime())) {
-      return { errorCode: ErrorCode.INVALID_REQUEST };
-    }
-    if (expiresAt <= new Date()) {
-      return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
-    }
-  }
+  const expirationError = validateExpiration(expiresAt);
+  if (expirationError) return expirationError;
 
   // Password length
-  if (
-    password &&
-    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
-  ) {
-    return {
-      errorCode: ErrorCode.PASSWORD_INVALID_LENGTH,
-      params: { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH },
-    };
-  }
+  const passwordError = validatePasswordLength(password);
+  if (passwordError) return passwordError;
 
   // Anonymous restrictions
   if (!context.isAuthenticated) {
-    const settings = await getSettingsCached();
-    if (settings && !settings.allowAnonFileShare) {
+    if (!(await isAnonShareAllowed("allowAnonFileShare"))) {
       return { errorCode: ErrorCode.ANON_FILE_SHARE_DISABLED };
     }
     if (expiresAt) {
-      const result = resolveAnonExpiry(new Date(expiresAt));
-      if (result.error) {
-        return { errorCode: ErrorCode.EXPIRATION_TOO_FAR, params: { days: MAX_ANON_EXPIRY_DAYS } };
-      }
+      const expiryError = validateAnonExpiryRange(expiresAt);
+      if (expiryError) return expiryError;
     } else {
       // Default to max anon expiry
       const result = resolveAnonExpiry(null);
@@ -346,12 +361,10 @@ export async function createFileShare(params: CreateFileShareParams) {
 
   // Generate slug
   if (!slug) {
-    slug = await generateRandomSlug(
-      async (s) => !!(await prisma.share.findUnique({ where: { slug: s }, select: { id: true } }))
-    );
+    slug = await generateUniqueSlug();
   }
 
-  const parsedMaxViews = maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
+  const parsedMaxViews = parseMaxViews(maxViews);
 
   const share = await prisma.share.create({
     data: {

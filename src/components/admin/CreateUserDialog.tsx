@@ -13,7 +13,7 @@ export default function CreateUserDialog({
   isOpen,
   onClose,
   onUserCreated,
-}: CreateUserDialogProps) {
+}: Readonly<CreateUserDialogProps>) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");

@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
 
     // Optional pagination (?limit=&offset=); without it every share is returned, as before
     const { searchParams } = new URL(request.url);
-    const limitParam = parseInt(searchParams.get("limit") || "", 10);
-    const offsetParam = parseInt(searchParams.get("offset") || "", 10);
+    const limitParam = Number.parseInt(searchParams.get("limit") || "", 10);
+    const offsetParam = Number.parseInt(searchParams.get("offset") || "", 10);
     const take =
       Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, MAX_LIMIT) : undefined;
     const skip = Number.isFinite(offsetParam) && offsetParam > 0 ? offsetParam : undefined;

@@ -42,14 +42,10 @@ function muiSxToStyle(sx: Record<string, unknown>): React.CSSProperties {
 }
 
 const WaveSkeleton = ({ variant = "text", width, height, className, sx }: WaveSkeletonProps) => {
-  const borderRadius =
-    variant === "circular"
-      ? "9999px"
-      : variant === "rounded"
-        ? ((sx?.borderRadius as string) ?? "var(--radius)")
-        : variant === "text"
-          ? "4px"
-          : "0px";
+  let borderRadius = "0px";
+  if (variant === "circular") borderRadius = "9999px";
+  else if (variant === "rounded") borderRadius = (sx?.borderRadius as string) ?? "var(--radius)";
+  else if (variant === "text") borderRadius = "4px";
 
   return (
     <div

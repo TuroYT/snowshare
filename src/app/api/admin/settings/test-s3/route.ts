@@ -2,8 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
-import { S3ServiceException } from "@aws-sdk/client-s3";
+import { S3Client, HeadBucketCommand, S3ServiceException } from "@aws-sdk/client-s3";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 

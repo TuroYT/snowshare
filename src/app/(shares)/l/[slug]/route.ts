@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const share = await prisma.share.findUnique({ where: { slug }, select: LINK_SELECT });
-    if (!share || share.type !== "URL") return apiError(request, ErrorCode.SHARE_NOT_FOUND);
+    if (share?.type !== "URL") return apiError(request, ErrorCode.SHARE_NOT_FOUND);
 
     const unavailable = checkShareAvailability(share);
     if (unavailable) return accessDeniedResponse(request, unavailable);

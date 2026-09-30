@@ -36,7 +36,7 @@ export default function OAuthProvidersTab() {
   });
   const [origin, setOrigin] = useState("");
   const dialogId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   const fetchProviders = async () => {
@@ -79,17 +79,15 @@ export default function OAuthProvidersTab() {
       );
       if (focusable.length === 0) return;
       const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const last = focusable.at(-1) ?? first;
       if (e.shiftKey) {
         if (document.activeElement === first) {
           e.preventDefault();
           last.focus();
         }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+      } else if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
 
@@ -248,18 +246,20 @@ export default function OAuthProvidersTab() {
 
         {/* Edit dialog */}
         {editingProvider && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setEditingProvider(null);
-            }}
-          >
-            <div
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full cursor-default"
+              onClick={() => setEditingProvider(null)}
+            />
+            <dialog
+              open
               ref={dialogRef}
-              role="dialog"
               aria-modal="true"
               aria-labelledby={dialogId}
-              className="relative w-full max-w-lg bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
+              className="relative inset-auto m-0 p-0 max-h-none text-inherit w-full max-w-lg bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] shadow-[var(--shadow-lg)] overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
@@ -441,7 +441,7 @@ export default function OAuthProvidersTab() {
                   </button>
                 </div>
               </form>
-            </div>
+            </dialog>
           </div>
         )}
       </div>

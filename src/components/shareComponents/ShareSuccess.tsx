@@ -123,10 +123,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
   };
 
   return (
-    <div
-      role="status"
-      className="mt-6 bg-[var(--surface)] border border-[var(--success)] rounded-[var(--radius)] p-4"
-    >
+    <output className="block mt-6 bg-[var(--surface)] border border-[var(--success)] rounded-[var(--radius)] p-4">
       <div className="flex-1 min-w-0">
         <h4 className="text-sm font-medium text-[var(--success)] mb-2 flex items-center gap-2">
           <svg
@@ -285,7 +282,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
           </div>
         </div>
       </div>
-    </div>
+    </output>
   );
 };
 

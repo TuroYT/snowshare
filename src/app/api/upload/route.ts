@@ -7,11 +7,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createReadStream, createWriteStream } from "fs";
-import { mkdir, stat, unlink } from "fs/promises";
-import { pipeline } from "stream/promises";
-import path from "path";
-import crypto from "crypto";
+import { createReadStream, createWriteStream } from "node:fs";
+import { mkdir, stat, unlink } from "node:fs/promises";
+import { pipeline } from "node:stream/promises";
+import path from "node:path";
+import crypto from "node:crypto";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +57,86 @@ async function fileSizeOrNull(filePath: string): Promise<number | null> {
   }
 }
 
+type ChunkInfo = { isChunked: boolean; uploadId: string | null; index: number; total: number };
+
+/** Parses the chunk headers. Returns null when they are present but invalid. */
+function parseChunkInfo(req: NextRequest): ChunkInfo | null {
+  const chunkIndexHeader = req.headers.get("x-chunk-index");
+  const totalChunksHeader = req.headers.get("x-total-chunks");
+  const uploadId = req.headers.get("x-upload-id");
+
+  if (chunkIndexHeader === null || totalChunksHeader === null || uploadId === null) {
+    return { isChunked: false, uploadId: null, index: 0, total: 1 };
+  }
+
+  const index = Number.parseInt(chunkIndexHeader, 10);
+  const total = Number.parseInt(totalChunksHeader, 10);
+  const valid =
+    /^[a-zA-Z0-9-]{1,100}$/.test(uploadId) &&
+    Number.isInteger(index) &&
+    Number.isInteger(total) &&
+    index >= 0 &&
+    total >= 1 &&
+    index < total;
+
+  return valid ? { isChunked: true, uploadId, index, total } : null;
+}
+
+/** Creates the share for a completely received file and moves it to storage. */
+async function finalizeUpload(
+  req: NextRequest,
+  context: UploadContext,
+  file: ReceivedFile,
+  fields: Record<string, string>,
+  pending: { tempPath: string | null }
+): Promise<NextResponse> {
+  const totalSize = (await fileSizeOrNull(pending.tempPath!)) ?? 0;
+
+  const options = await resolveUploadOptions(
+    { slug: fields.slug, password: fields.password, expiresAt: fields.expiresAt },
+    context
+  );
+
+  const share = await createFileShareRecord(options, context, {
+    isBulk: false,
+    size: totalSize,
+  });
+
+  const finalFileName = generateSafeFilename(file.filename, share.id);
+  try {
+    await moveToStorage(pending.tempPath!, finalFileName);
+    pending.tempPath = null; // moved: nothing to clean up
+    await prisma.share.update({
+      where: { id: share.id },
+      data: { filePath: finalFileName },
+    });
+  } catch (error) {
+    await rollbackShare(share.id);
+    throw error;
+  }
+
+  return NextResponse.json(
+    {
+      share: {
+        slug: share.slug,
+        type: share.type,
+        filename: file.filename,
+        expiresAt: share.expiresAt,
+        hasPassword: !!share.password,
+      },
+    },
+    { status: 201 }
+  );
+}
+
+async function removeSessionFile(filePath: string) {
+  await unlink(filePath).catch((unlinkError: NodeJS.ErrnoException) => {
+    if (unlinkError.code !== "ENOENT") {
+      console.error("Upload: failed to remove session file:", unlinkError);
+    }
+  });
+}
+
 export async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
@@ -74,34 +154,18 @@ export async function POST(req: NextRequest) {
     isAuthenticated: !!session?.user,
   };
 
-  // Parse chunk headers
-  const chunkIndexHeader = req.headers.get("x-chunk-index");
-  const totalChunksHeader = req.headers.get("x-total-chunks");
-  const uploadIdHeader = req.headers.get("x-upload-id");
-  const isChunked =
-    chunkIndexHeader !== null && totalChunksHeader !== null && uploadIdHeader !== null;
-
-  const chunkIndex = isChunked ? parseInt(chunkIndexHeader!, 10) : 0;
-  const totalChunks = isChunked ? parseInt(totalChunksHeader!, 10) : 1;
-
-  if (
-    isChunked &&
-    (!/^[a-zA-Z0-9-]{1,100}$/.test(uploadIdHeader!) ||
-      !Number.isInteger(chunkIndex) ||
-      !Number.isInteger(totalChunks) ||
-      chunkIndex < 0 ||
-      totalChunks < 1 ||
-      chunkIndex >= totalChunks)
-  ) {
+  const chunk = parseChunkInfo(req);
+  if (!chunk) {
     return apiErrorWithStatus(req, ErrorCode.INVALID_REQUEST, 400);
   }
+  const { index: chunkIndex, total: totalChunks } = chunk;
 
   const limits = await getUploadLimits(context.clientIp, context.isAuthenticated);
   const uploadsDir = getUploadDir();
-  const sessionPath = isChunked ? chunkSessionPath(uploadsDir, uploadIdHeader!, context) : null;
+  const sessionPath = chunk.uploadId ? chunkSessionPath(uploadsDir, chunk.uploadId, context) : null;
 
   let received: ReceivedFile[] = [];
-  let finalTempPath: string | null = null;
+  const pending: { tempPath: string | null } = { tempPath: null };
 
   try {
     await assertFileUploadAllowed(context);
@@ -130,7 +194,6 @@ export async function POST(req: NextRequest) {
       acceptFile: (fieldName) => fieldName === "file",
     });
     received = result.files;
-    const { fields } = result;
 
     const file = received[0];
     if (!file) throw new UploadError(400, ErrorCode.FILE_REQUIRED);
@@ -150,57 +213,17 @@ export async function POST(req: NextRequest) {
           { status: 201 }
         );
       }
-      finalTempPath = sessionPath;
+      pending.tempPath = sessionPath;
     } else {
-      finalTempPath = file.tempPath;
+      pending.tempPath = file.tempPath;
     }
 
     // --- Finalize (single request or last chunk) ---
-    const totalSize = (await fileSizeOrNull(finalTempPath)) ?? 0;
-
-    const options = await resolveUploadOptions(
-      { slug: fields.slug, password: fields.password, expiresAt: fields.expiresAt },
-      context
-    );
-
-    const share = await createFileShareRecord(options, context, {
-      isBulk: false,
-      size: totalSize,
-    });
-
-    const finalFileName = generateSafeFilename(file.filename, share.id);
-    try {
-      await moveToStorage(finalTempPath, finalFileName);
-      finalTempPath = null; // moved: nothing to clean up
-      await prisma.share.update({
-        where: { id: share.id },
-        data: { filePath: finalFileName },
-      });
-    } catch (error) {
-      await rollbackShare(share.id);
-      throw error;
-    }
-
-    return NextResponse.json(
-      {
-        share: {
-          slug: share.slug,
-          type: share.type,
-          filename: file.filename,
-          expiresAt: share.expiresAt,
-          hasPassword: !!share.password,
-        },
-      },
-      { status: 201 }
-    );
+    return await finalizeUpload(req, context, file, result.fields, pending);
   } catch (error) {
     await removeTempFiles(received);
-    if (finalTempPath) {
-      await unlink(finalTempPath).catch((unlinkError: NodeJS.ErrnoException) => {
-        if (unlinkError.code !== "ENOENT") {
-          console.error("Upload: failed to remove session file:", unlinkError);
-        }
-      });
+    if (pending.tempPath) {
+      await removeSessionFile(pending.tempPath);
     }
     return uploadErrorResponse(req, error, limits);
   }

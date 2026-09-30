@@ -24,7 +24,7 @@ export default function GeneralSection({
   hasActiveSSO,
   onChange,
   onRequestDisableCredentials,
-}: Props) {
+}: Readonly<Props>) {
   const { t } = useTranslation();
 
   const handleToggleDisableCredentials = () => {

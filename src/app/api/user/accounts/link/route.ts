@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { getAuthOptions, LINK_TOKEN_COOKIE } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
 /**
@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
     });
 
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const linkUrl = `${baseUrl}/api/auth/signin/${provider}?callbackUrl=${encodeURIComponent(`/profile?tab=accounts&linked=true`)}`;
+    const callbackUrl = encodeURIComponent("/profile?tab=accounts&linked=true");
+    const linkUrl = `${baseUrl}/api/auth/signin/${provider}?callbackUrl=${callbackUrl}`;
 
     const response = NextResponse.json({
       linkUrl,

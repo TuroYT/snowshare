@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { MAX_ANON_EXPIRY_DAYS } from "@/lib/share-constants";
 
 /**

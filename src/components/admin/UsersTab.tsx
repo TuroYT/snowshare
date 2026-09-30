@@ -7,6 +7,8 @@ import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import CreateUserDialog from "./CreateUserDialog";
 import WarningModal from "./WarningModal";
 
+type UserAction = "promote" | "demote" | "delete";
+
 interface User {
   id: string;
   email: string;
@@ -28,7 +30,7 @@ export default function UsersTab() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     userId: string;
-    action: "promote" | "demote" | "delete";
+    action: UserAction;
   } | null>(null);
 
   const fetchUsers = useCallback(async () => {
@@ -51,11 +53,11 @@ export default function UsersTab() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const requestAction = (userId: string, action: "promote" | "demote" | "delete") => {
+  const requestAction = (userId: string, action: UserAction) => {
     setPendingAction({ userId, action });
   };
 
-  const confirmKeyFor = (action: "promote" | "demote" | "delete") => {
+  const confirmKeyFor = (action: UserAction) => {
     if (action === "promote") return "admin.users.confirm_make_admin";
     if (action === "demote") return "admin.users.confirm_remove_admin";
     return "admin.users.confirm_delete";
@@ -90,7 +92,7 @@ export default function UsersTab() {
   const filteredUsers = users.filter(
     (user) =>
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalUsers = users.length;

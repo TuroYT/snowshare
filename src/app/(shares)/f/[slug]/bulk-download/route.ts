@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
 
-    if (!share || share.type !== "FILE") {
+    if (share?.type !== "FILE") {
       return apiError(request, ErrorCode.SHARE_NOT_FOUND);
     }
 

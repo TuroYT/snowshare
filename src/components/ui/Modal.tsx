@@ -10,7 +10,13 @@ interface ModalProps {
   size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
-export default function Modal({ isOpen, onClose, children, title, size = "lg" }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  title,
+  size = "lg",
+}: Readonly<ModalProps>) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -45,15 +51,18 @@ export default function Modal({ isOpen, onClose, children, title, size = "lg" }:
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in">
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full cursor-default"
+        onClick={onClose}
+      />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         className={`relative w-full ${sizeClasses[size]} max-h-[90vh] bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border border-[var(--border)] animate-scale-in overflow-hidden flex flex-col`}
       >
         {/* Header */}

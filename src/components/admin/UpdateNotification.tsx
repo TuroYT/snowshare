@@ -18,7 +18,7 @@ interface Props {
   setVersionInfo: Dispatch<SetStateAction<VersionInfo | null>>;
 }
 
-export default function UpdateNotification({ versionInfo, setVersionInfo }: Props) {
+export default function UpdateNotification({ versionInfo, setVersionInfo }: Readonly<Props>) {
   const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(true);

@@ -19,7 +19,7 @@ async function POST(req: NextRequest) {
   // Handle JSON data for other share types
   try {
     const data = await req.json();
-    if (!data || !data.type) {
+    if (!data?.type) {
       return apiError(req, ErrorCode.SHARE_TYPE_REQUIRED);
     }
 
