@@ -6,9 +6,13 @@ on:
 
 jobs:
   update-version:
-    runs-on: self-hosted
+    runs-on: [self-hosted]
+    timeout-minutes: 10
     permissions:
       contents: write
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      TARGET_BRANCH: ${{ github.event.release.target_commitish }}
 
     steps:
       - name: Checkout repository
@@ -20,14 +24,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Bump package.json on release branch and move tag to match
         run: |
           # Extract version from tag (removes 'v' prefix if present)
-          TAG="${{ github.event.release.tag_name }}"
           VERSION="${TAG#v}"
-          TARGET_BRANCH="${{ github.event.release.target_commitish }}"
 
           echo "Updating version to: ${VERSION} (tag ${TAG}) on branch ${TARGET_BRANCH}"
 
@@ -58,7 +60,6 @@ jobs:
 
       - name: Mirror version bump on canary
         run: |
-          TAG="${{ github.event.release.tag_name }}"
           VERSION="${TAG#v}"
 
           if ! git ls-remote --exit-code --heads origin canary >/dev/null 2>&1; then
