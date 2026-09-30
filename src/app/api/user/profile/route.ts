@@ -118,6 +118,31 @@ async function applyPasswordChange(
   return null;
 }
 
+async function reauthenticate(
+  request: NextRequest,
+  currentPassword: string | undefined,
+  currentHash: string | null
+): Promise<NextResponse | null> {
+  if (!currentHash) return null;
+  return checkCurrentPassword(request, currentPassword, currentHash);
+}
+
+async function sendEmailChangeVerification(email: string) {
+  const token = crypto.randomBytes(32).toString("hex");
+  await prisma.verificationToken.create({
+    data: {
+      identifier: `email-verify:${email}`,
+      token,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+  try {
+    await sendVerificationEmail(email, token);
+  } catch (emailError) {
+    console.error("Failed to send verification email after email change:", emailError);
+  }
+}
+
 // GET - Get User informations
 export async function GET(request: NextRequest) {
   try {
@@ -178,8 +203,8 @@ export async function PATCH(request: NextRequest) {
 
     // Password-based accounts must re-authenticate before changing email or password
     const emailChanged = email !== undefined && email !== user.email;
-    if ((emailChanged || newPassword) && user.password) {
-      const reauthError = await checkCurrentPassword(request, currentPassword, user.password);
+    if (emailChanged || newPassword) {
+      const reauthError = await reauthenticate(request, currentPassword, user.password);
       if (reauthError) return reauthError;
     }
 
@@ -217,19 +242,7 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (needsEmailVerification && updateData.email) {
-      const token = crypto.randomBytes(32).toString("hex");
-      await prisma.verificationToken.create({
-        data: {
-          identifier: `email-verify:${updateData.email}`,
-          token,
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-      });
-      try {
-        await sendVerificationEmail(updateData.email, token);
-      } catch (emailError) {
-        console.error("Failed to send verification email after email change:", emailError);
-      }
+      await sendEmailChangeVerification(updateData.email);
     }
 
     return NextResponse.json({

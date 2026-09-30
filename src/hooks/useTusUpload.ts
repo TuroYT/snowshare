@@ -39,10 +39,13 @@ export function useTusUpload() {
     const activeUploads = activeUploadsRef.current;
     return () => {
       activeUploads.forEach((upload) => {
-        try {
-          upload.abort();
-        } catch (error) {
+        // abort() may throw synchronously or return a rejected promise
+        const logAbortError = (error: unknown) =>
           console.error("useTusUpload: error aborting upload on unmount:", error);
+        try {
+          Promise.resolve(upload.abort()).catch(logAbortError);
+        } catch (error) {
+          logAbortError(error);
         }
       });
       activeUploads.clear();

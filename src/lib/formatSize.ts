@@ -18,6 +18,12 @@ export function formatBytes(bytes: number, useBinary: boolean = false): string {
   return `${value} ${sizes[i]}`;
 }
 
+const MIB_PER_GIB = 1024;
+
+function mibToGiB(mebibytes: number): number {
+  return Math.round((mebibytes / MIB_PER_GIB) * 100) / 100;
+}
+
 /**
  * Convert megabytes to appropriate unit value based on settings
  *
@@ -30,13 +36,8 @@ export function formatBytes(bytes: number, useBinary: boolean = false): string {
  * @returns Size in requested unit
  */
 export function convertFromMB(megabytes: number, useGiB: boolean): number {
-  if (useGiB) {
-    // 1 GiB = 1024 MiB
-    return Math.round((megabytes / 1024) * 100) / 100;
-  } else {
-    // Return as MiB (no conversion needed since input is already MiB)
-    return megabytes;
-  }
+  // 1 GiB = 1024 MiB; MiB needs no conversion since the input is already MiB
+  return useGiB ? mibToGiB(megabytes) : megabytes;
 }
 
 /**
@@ -47,13 +48,7 @@ export function convertFromMB(megabytes: number, useGiB: boolean): number {
  * @returns Size in MiB (mebibytes, 1024² bytes)
  */
 export function convertToMB(value: number, useGiB: boolean): number {
-  if (useGiB) {
-    // GiB to MiB: multiply by 1024
-    return Math.round(value * 1024);
-  } else {
-    // Already in MiB, no conversion needed
-    return Math.round(value);
-  }
+  return Math.round(useGiB ? value * MIB_PER_GIB : value);
 }
 
 /**

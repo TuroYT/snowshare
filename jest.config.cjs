@@ -34,6 +34,8 @@ const config = {
     "/node_modules/(?!(?:.*/node_modules/)?(htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities)/)",
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  // The default babel provider writes malformed lcov paths with ts-jest ("dir/file:/abs/path"), which SonarQube cannot match
+  coverageProvider: "v8",
   collectCoverageFrom: ["src/**/*.{ts,tsx}", "!src/**/*.d.ts", "!src/generated/**"],
 };
 

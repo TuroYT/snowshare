@@ -111,6 +111,26 @@ function applyLinkUpdate(
   return null;
 }
 
+function applyTypeSpecificUpdate(
+  request: NextRequest,
+  share: EditableShare,
+  data: ShareUpdateBody,
+  newPassword: string | null | undefined,
+  updateData: Prisma.ShareUpdateInput
+): NextResponse | null {
+  if (share.type === "PASTE") {
+    return applyPasteUpdate(request, data, updateData);
+  }
+
+  if (share.type !== "URL") return null;
+
+  const newUrl = parseNewUrl(request, data.urlOriginal);
+  if (newUrl instanceof NextResponse) return newUrl;
+  if (newUrl === undefined && newPassword === undefined) return null;
+
+  return applyLinkUpdate(request, share, newUrl, newPassword, updateData);
+}
+
 /**
  * Builds the update from the PATCH body.
  *
@@ -138,20 +158,8 @@ async function buildShareUpdateData(
     newPassword = parsedPassword;
   }
 
-  if (share.type === "PASTE") {
-    const pasteError = applyPasteUpdate(request, data, updateData);
-    if (pasteError) return pasteError;
-  }
-
-  if (share.type === "URL") {
-    const newUrl = parseNewUrl(request, data.urlOriginal);
-    if (newUrl instanceof NextResponse) return newUrl;
-
-    if (newUrl !== undefined || newPassword !== undefined) {
-      const linkError = applyLinkUpdate(request, share, newUrl, newPassword, updateData);
-      if (linkError) return linkError;
-    }
-  }
+  const typeError = applyTypeSpecificUpdate(request, share, data, newPassword, updateData);
+  if (typeError) return typeError;
 
   if (newPassword !== undefined) {
     updateData.password = newPassword ? await hashPassword(newPassword) : null;
