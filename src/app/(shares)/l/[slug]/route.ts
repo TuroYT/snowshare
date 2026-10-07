@@ -1,5 +1,6 @@
 import { decrypt } from "@/lib/crypto-link";
 import { prisma } from "@/lib/prisma";
+import { isLinkPreviewBot, previewBotResponse } from "@/lib/preview-bots";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { logShareAccess } from "@/lib/access-log";
 import {
@@ -37,6 +38,9 @@ export async function GET(request: NextRequest) {
   }
 
   if (!slug) return apiError(request, ErrorCode.MISSING_DATA);
+
+  // Link preview bots must not consume a view (nor get an embed of the target)
+  if (isLinkPreviewBot(request.headers.get("user-agent"))) return previewBotResponse();
 
   try {
     const share = await prisma.share.findUnique({ where: { slug }, select: LINK_SELECT });

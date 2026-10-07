@@ -745,6 +745,14 @@
       "view_release": "Voir les notes de version",
       "upgrade_guide": "Guide de mise à jour",
       "dismiss": "Ignorer"
+    },
+    "embeds": {
+      "title": "Aperçus de liens",
+      "enabled": "Aperçus de liens enrichis",
+      "enabled_desc": "Affiche le nom du fichier, sa taille ou le langage du paste quand un lien de partage est publié sur Discord, WhatsApp, Slack et autres applications. Les partages protégés par mot de passe n'affichent qu'un aperçu générique.",
+      "paste_excerpt": "Afficher un extrait des pastes",
+      "paste_excerpt_desc": "Inclut les premières lignes des pastes publics sans limite de vues dans les aperçus de liens.",
+      "paste_excerpt_warning": "Les extraits sont conservés par les applications de messagerie qui récupèrent l'aperçu."
     }
   },
   "paste_view": {
@@ -909,5 +917,14 @@
     "previous_page": "Page précédente",
     "page_of": "Page {{current}} sur {{total}}",
     "next_page": "Page suivante"
+  },
+  "embed": {
+    "file": "Fichier",
+    "plain_text": "Texte",
+    "paste_title": "Paste {{language}}",
+    "protected_file": "Fichier protégé par mot de passe",
+    "protected_paste": "Paste protégé par mot de passe",
+    "unavailable": "Ce partage n'est plus disponible",
+    "shared_via": "Partagé via {{appName}}"
   }
 }

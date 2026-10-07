@@ -745,6 +745,14 @@
     "theme": {
       "presets_label": "Preajustes",
       "preset_helper": "Haga clic en un preajuste para rellenar los campos de color. Puede personalizarlos después."
+    },
+    "embeds": {
+      "title": "Vistas previas de enlaces",
+      "enabled": "Vistas previas enriquecidas",
+      "enabled_desc": "Muestra el nombre del archivo, su tamaño o el lenguaje del paste cuando se publica un enlace en Discord, WhatsApp, Slack y otras aplicaciones. Los elementos protegidos con contraseña solo muestran una vista previa genérica.",
+      "paste_excerpt": "Mostrar extractos de pastes",
+      "paste_excerpt_desc": "Incluye las primeras líneas de los pastes públicos sin límite de vistas en las vistas previas.",
+      "paste_excerpt_warning": "Los extractos quedan almacenados en las aplicaciones de mensajería que obtienen la vista previa."
     }
   },
   "paste_view": {
@@ -909,5 +917,14 @@
     "previous_page": "Página anterior",
     "page_of": "Página {{current}} de {{total}}",
     "next_page": "Página siguiente"
+  },
+  "embed": {
+    "file": "Archivo",
+    "plain_text": "Texto",
+    "paste_title": "Paste de {{language}}",
+    "protected_file": "Archivo protegido con contraseña",
+    "protected_paste": "Paste protegido con contraseña",
+    "unavailable": "Este enlace compartido ya no está disponible",
+    "shared_via": "Compartido mediante {{appName}}"
   }
 }

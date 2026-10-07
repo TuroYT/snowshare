@@ -745,6 +745,14 @@
       "view_release": "Zobacz informacje o wydaniu",
       "upgrade_guide": "Przewodnik aktualizacji",
       "dismiss": "Odrzuć"
+    },
+    "embeds": {
+      "title": "Podglądy linków",
+      "enabled": "Rozszerzone podglądy linków",
+      "enabled_desc": "Wyświetla nazwę pliku, rozmiar lub język paste'a, gdy link zostanie opublikowany na Discordzie, WhatsAppie, Slacku i w innych aplikacjach. Udostępnienia chronione hasłem pokazują tylko ogólny podgląd.",
+      "paste_excerpt": "Pokazuj fragmenty paste'ów",
+      "paste_excerpt_desc": "Dodaje pierwsze linie publicznych paste'ów bez limitu wyświetleń do podglądów linków.",
+      "paste_excerpt_warning": "Fragmenty są przechowywane przez komunikatory, które pobierają podgląd."
     }
   },
   "paste_view": {
@@ -909,5 +917,14 @@
     "previous_page": "Poprzednia strona",
     "page_of": "Strona {{current}} z {{total}}",
     "next_page": "Następna strona"
+  },
+  "embed": {
+    "file": "Plik",
+    "plain_text": "Tekst",
+    "paste_title": "Paste {{language}}",
+    "protected_file": "Plik chroniony hasłem",
+    "protected_paste": "Paste chroniony hasłem",
+    "unavailable": "To udostępnienie nie jest już dostępne",
+    "shared_via": "Udostępnione przez {{appName}}"
   }
 }

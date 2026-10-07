@@ -745,6 +745,14 @@
     "theme": {
       "presets_label": "Voreinstellungen",
       "preset_helper": "Klicken Sie auf eine Voreinstellung, um die Farbfelder auszufüllen. Sie können diese danach anpassen."
+    },
+    "embeds": {
+      "title": "Link-Vorschauen",
+      "enabled": "Erweiterte Link-Vorschauen",
+      "enabled_desc": "Zeigt Dateiname, Größe oder Paste-Sprache an, wenn ein Freigabelink in Discord, WhatsApp, Slack und anderen Apps gepostet wird. Passwortgeschützte Freigaben zeigen nur eine allgemeine Vorschau.",
+      "paste_excerpt": "Paste-Auszüge anzeigen",
+      "paste_excerpt_desc": "Fügt die ersten Zeilen öffentlicher Pastes ohne Aufruflimit in Link-Vorschauen ein.",
+      "paste_excerpt_warning": "Auszüge werden von den Messaging-Apps gespeichert, die die Vorschau abrufen."
     }
   },
   "paste_view": {
@@ -909,5 +917,14 @@
     "previous_page": "Vorherige Seite",
     "page_of": "Seite {{current}} von {{total}}",
     "next_page": "Nächste Seite"
+  },
+  "embed": {
+    "file": "Datei",
+    "plain_text": "Text",
+    "paste_title": "{{language}}-Paste",
+    "protected_file": "Passwortgeschützte Datei",
+    "protected_paste": "Passwortgeschützter Paste",
+    "unavailable": "Diese Freigabe ist nicht mehr verfügbar",
+    "shared_via": "Geteilt über {{appName}}"
   }
 }
