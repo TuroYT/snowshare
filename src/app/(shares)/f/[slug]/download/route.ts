@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileShare } from "@/app/api/shares/(fileShare)/fileshare";
+import { isLinkPreviewBot, previewBotResponse } from "@/lib/preview-bots";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { logShareAccess } from "@/lib/access-log";
@@ -12,6 +13,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!slug) {
     return apiError(request, ErrorCode.MISSING_DATA);
   }
+
+  // Link preview bots must not consume a view
+  if (isLinkPreviewBot(request.headers.get("user-agent"))) return previewBotResponse();
 
   try {
     const url = new URL(request.url);

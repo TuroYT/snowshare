@@ -18,6 +18,7 @@ import CaptchaSection from "./CaptchaSection";
 import SmtpSection from "./SmtpSection";
 import QuotasSection from "./QuotasSection";
 import ExpirationSection from "./ExpirationSection";
+import EmbedsSection from "./EmbedsSection";
 import S3StorageSection from "./S3StorageSection";
 
 interface Settings {
@@ -36,6 +37,8 @@ interface Settings {
   useGiBForAuth: boolean;
   termsOfUses: string;
   allowIframeEmbedding: boolean;
+  socialEmbedsEnabled: boolean;
+  embedPasteExcerpt: boolean;
   captchaEnabled: boolean;
   captchaProvider: string | null;
   captchaSiteKey: string | null;
@@ -66,6 +69,8 @@ function mapSettingsWithDefaults(data: Settings): Settings {
     allowAnonPasteShare: data.allowAnonPasteShare ?? true,
     defaultExpirationDays: data.defaultExpirationDays ?? 30,
     allowIframeEmbedding: data.allowIframeEmbedding ?? false,
+    socialEmbedsEnabled: data.socialEmbedsEnabled ?? true,
+    embedPasteExcerpt: data.embedPasteExcerpt ?? false,
     captchaEnabled: data.captchaEnabled ?? false,
     captchaProvider: data.captchaProvider ?? null,
     captchaSiteKey: data.captchaSiteKey ?? null,
@@ -200,6 +205,8 @@ export default function SettingsTab() {
           <QuotasSection settings={settings} onChange={patchSettings} />
 
           <ExpirationSection settings={settings} onChange={patchSettings} />
+
+          <EmbedsSection settings={settings} onChange={patchSettings} />
 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[var(--foreground)]">

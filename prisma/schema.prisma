@@ -182,6 +182,10 @@ model Settings {
   // Embedding
   allowIframeEmbedding Boolean @default(false)
 
+  // Social embeds (Open Graph previews on Discord, WhatsApp, Slack...)
+  socialEmbedsEnabled Boolean @default(true)
+  embedPasteExcerpt   Boolean @default(false) // Show the start of public pastes in previews
+
   // Security - Email Verification (SMTP)
   smtpEnabled               Boolean @default(false)
   smtpHost                  String?

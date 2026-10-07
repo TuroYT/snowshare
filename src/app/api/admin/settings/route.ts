@@ -117,6 +117,8 @@ function buildFirstRunSettingsCreate(data: SettingsInput) {
     borderColor: (data.borderColor as string) || "#374151",
     fontFamily: (data.fontFamily as string) || "Geist",
     allowIframeEmbedding: d(data.allowIframeEmbedding, false),
+    socialEmbedsEnabled: d(data.socialEmbedsEnabled, true),
+    embedPasteExcerpt: d(data.embedPasteExcerpt, false),
     termsOfUses: (data.termsOfUses as string) || DEFAULT_TERMS,
   };
 }
@@ -169,6 +171,8 @@ function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
     smtpSecure: field(data, current, "smtpSecure"),
     emailVerificationRequired: field(data, current, "emailVerificationRequired"),
     allowIframeEmbedding: field(data, current, "allowIframeEmbedding"),
+    socialEmbedsEnabled: field(data, current, "socialEmbedsEnabled"),
+    embedPasteExcerpt: field(data, current, "embedPasteExcerpt"),
     s3Enabled: field(data, current, "s3Enabled"),
     s3Endpoint: nullableString(data, current, "s3Endpoint"),
     s3Region: nullableString(data, current, "s3Region"),

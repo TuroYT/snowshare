@@ -745,6 +745,14 @@
       "view_release": "Release notes bekijken",
       "upgrade_guide": "Upgrade-handleiding",
       "dismiss": "Sluiten"
+    },
+    "embeds": {
+      "title": "Linkvoorbeelden",
+      "enabled": "Uitgebreide linkvoorbeelden",
+      "enabled_desc": "Toont de bestandsnaam, grootte of paste-taal wanneer een sharelink op Discord, WhatsApp, Slack en andere apps wordt geplaatst. Met wachtwoord beveiligde shares tonen alleen een algemeen voorbeeld.",
+      "paste_excerpt": "Paste-fragmenten tonen",
+      "paste_excerpt_desc": "Neemt de eerste regels van openbare pastes zonder weergavelimiet op in linkvoorbeelden.",
+      "paste_excerpt_warning": "Fragmenten worden opgeslagen door de berichtenapps die het voorbeeld ophalen."
     }
   },
   "paste_view": {
@@ -909,5 +917,14 @@
     "previous_page": "Vorige pagina",
     "page_of": "Pagina {{current}} van {{total}}",
     "next_page": "Volgende pagina"
+  },
+  "embed": {
+    "file": "Bestand",
+    "plain_text": "Tekst",
+    "paste_title": "{{language}}-paste",
+    "protected_file": "Met wachtwoord beveiligd bestand",
+    "protected_paste": "Met wachtwoord beveiligde paste",
+    "unavailable": "Deze share is niet meer beschikbaar",
+    "shared_via": "Gedeeld via {{appName}}"
   }
 }

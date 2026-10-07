@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createZipStream } from "@/lib/bulk-upload-utils";
 import { nodeStreamToWebStream } from "@/lib/stream-utils";
+import { isLinkPreviewBot, previewBotResponse } from "@/lib/preview-bots";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { logShareAccess } from "@/lib/access-log";
 import { getClientIp } from "@/lib/getClientIp";
@@ -22,6 +23,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!slug) {
     return apiError(request, ErrorCode.MISSING_DATA);
   }
+
+  // Link preview bots must not consume a view
+  if (isLinkPreviewBot(request.headers.get("user-agent"))) return previewBotResponse();
 
   try {
     const url = new URL(request.url);

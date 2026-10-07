@@ -745,6 +745,14 @@
       "view_release": "View Release Notes",
       "upgrade_guide": "Upgrade Guide",
       "dismiss": "Dismiss"
+    },
+    "embeds": {
+      "title": "Link previews",
+      "enabled": "Rich link previews",
+      "enabled_desc": "Show the file name, size or paste language when a share link is posted on Discord, WhatsApp, Slack and other apps. Password-protected shares only show a generic preview.",
+      "paste_excerpt": "Show paste excerpts",
+      "paste_excerpt_desc": "Include the first lines of public pastes without a view limit in link previews.",
+      "paste_excerpt_warning": "Excerpts are stored by the messaging apps that fetch the preview."
     }
   },
   "paste_view": {
@@ -909,5 +917,14 @@
     "previous_page": "Previous page",
     "page_of": "Page {{current}} of {{total}}",
     "next_page": "Next page"
+  },
+  "embed": {
+    "file": "File",
+    "plain_text": "Text",
+    "paste_title": "{{language}} paste",
+    "protected_file": "Password-protected file",
+    "protected_paste": "Password-protected paste",
+    "unavailable": "This share is no longer available",
+    "shared_via": "Shared via {{appName}}"
   }
 }
