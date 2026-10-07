@@ -91,6 +91,9 @@ export default function SignIn() {
         email,
         password,
         redirect: false,
+        // Without it next-auth uses the current URL as callbackUrl and reports any
+        // leftover ?error= (e.g. from a refused SSO attempt) as a failed sign-in.
+        callbackUrl: "/",
       });
 
       if (result?.error === "EmailNotVerified") {

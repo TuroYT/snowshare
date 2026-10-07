@@ -160,7 +160,7 @@ async function linkAccountWithToken(
   };
 
   const cookieToken = await readLinkTokenCookie();
-  if (!cookieToken) return notLinked("email not verified by provider, no link request");
+  if (!cookieToken) return notLinked("no link request");
 
   const linkTokenIdentifier = `account-link:${existingUser.email}:${account.provider}`;
   const linkToken = await prisma.verificationToken.findFirst({
@@ -207,28 +207,27 @@ async function handleExistingUserSignIn(
   );
   if (accountExists) return true;
 
-  // allowSignin applies to all new link attempts, including ssoAutoLink
-  if (settings && !settings.allowSignin) {
-    console.warn(
-      `SSO sign-in refused: sign-in disabled, cannot link ${account.provider} to user ${existingUser.id}`
-    );
-    return "/auth/signin?error=OAuthSigninDisabled";
+  // Linking creates no user, so the sign-up setting (allowSignin) does not block
+  // the links someone explicitly asked for: the admin's ssoAutoLink flag and the
+  // link token requested from the profile page.
+  if (existingUser.ssoAutoLink) {
+    return autoLinkSsoAccount(existingUser, account);
   }
 
-  const azureTenantId =
-    account.provider === "azure-ad"
-      ? (
-          await prisma.oAuthProvider.findUnique({
-            where: { name: "azure-ad" },
-            select: { tenantId: true },
-          })
-        )?.tenantId
-      : null;
-  const emailVerified = isProviderEmailVerified(account, profile, email, azureTenantId);
-
-  // Admin flagged this user for SSO auto-link, or the provider vouches for the email
-  if (existingUser.ssoAutoLink || emailVerified) {
-    return autoLinkSsoAccount(existingUser, account);
+  // Unrequested link on a provider-verified email: only while sign-up is open
+  if (!settings || settings.allowSignin) {
+    const azureTenantId =
+      account.provider === "azure-ad"
+        ? (
+            await prisma.oAuthProvider.findUnique({
+              where: { name: "azure-ad" },
+              select: { tenantId: true },
+            })
+          )?.tenantId
+        : null;
+    if (isProviderEmailVerified(account, profile, email, azureTenantId)) {
+      return autoLinkSsoAccount(existingUser, account);
+    }
   }
 
   return linkAccountWithToken(existingUser, account);
