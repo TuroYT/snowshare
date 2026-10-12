@@ -107,7 +107,7 @@ export function buildShareEmbed(
   const sharedVia = t("embed.shared_via", { appName: settings.appName });
 
   let content: EmbedContent;
-  if (!share || share.type !== kind || isShareExpired(share) || isShareExhausted(share)) {
+  if (share?.type !== kind || isShareExpired(share) || isShareExhausted(share)) {
     content = { title: t("embed.unavailable"), description: "" };
   } else if (share.password) {
     content = {
