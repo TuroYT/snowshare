@@ -96,7 +96,7 @@ describe("signIn callback - SSO auto-link", () => {
     });
   });
 
-  it("blocks ssoAutoLink user when allowSignin is false", async () => {
+  it("links ssoAutoLink user even when sign-up (allowSignin) is disabled", async () => {
     (prisma.settings.findFirst as jest.Mock).mockResolvedValue({
       allowSignin: false,
     });
@@ -117,8 +117,8 @@ describe("signIn callback - SSO auto-link", () => {
       credentials: undefined,
     });
 
-    expect(result).toBe("/auth/signin?error=OAuthSigninDisabled");
-    expect(prisma.account.create).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+    expect(prisma.account.create).toHaveBeenCalled();
   });
 
   it("blocks SSO login when user exists, no ssoAutoLink, and no link token", async () => {
@@ -295,6 +295,18 @@ describe("signIn callback - SSO auto-link", () => {
       );
     });
 
+    it("does not auto-link a verified email when sign-up (allowSignin) is disabled", async () => {
+      (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: false });
+
+      const result = await runSignIn(
+        { ...mockAccount, provider: "google", providerAccountId: "g-1" },
+        { email: "user@example.com", email_verified: true }
+      );
+
+      expect(result).toBe("/auth/signin?error=OAuthAccountNotLinked");
+      expect(prisma.account.create).not.toHaveBeenCalled();
+    });
+
     it("does not auto-link a Google account whose email is not verified", async () => {
       const result = await runSignIn(
         { ...mockAccount, provider: "google", providerAccountId: "g-1" },
@@ -372,6 +384,15 @@ describe("signIn callback - SSO auto-link", () => {
 
       expect(await runSignIn()).toBe("/auth/signin?error=OAuthAccountNotLinked");
       expect(prisma.account.create).not.toHaveBeenCalled();
+    });
+
+    it("links the account even when sign-up (allowSignin) is disabled", async () => {
+      (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: false });
+      mockCookieStore.get.mockReturnValue({ value: "tok-1" });
+      (prisma.verificationToken.findFirst as jest.Mock).mockResolvedValue(linkToken);
+
+      expect(await runSignIn()).toBe(true);
+      expect(prisma.account.create).toHaveBeenCalled();
     });
 
     it("looks the token up by the cookie value and links the account", async () => {
