@@ -47,7 +47,8 @@ export default function RootLayout({
   const plausibleHost = process.env.PLAUSIBLE_HOST || "https://stats.sheephost.fr";
 
   return (
-    <html lang={resolveDefaultLocale(SUPPORTED_LOCALES)} suppressHydrationWarning>
+    // translate="no": Chrome's page translation rewrites text nodes and makes React throw on update (#357); the app has its own i18n
+    <html lang={resolveDefaultLocale(SUPPORTED_LOCALES)} translate="no" suppressHydrationWarning>
       <head>
         {/* Privacy-friendly analytics by Plausible - no cookies, GDPR compliant */}
         {/* Disable with TELEMETRY=false in .env */}
