@@ -58,3 +58,6 @@ e2e/results
 memory
 # pdf.js worker copied from node_modules on install
 /public/pdf.worker.min.mjs
+
+# graphify
+graphify-out/
