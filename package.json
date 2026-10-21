@@ -69,7 +69,7 @@
     "react-pdf": "^10.4.1",
     "reactjs-file-preview": "^1.0.11",
     "rehype-sanitize": "^6.0.0",
-    "sanitize-html": "^2.17.5",
+    "sanitize-html": "^2.18.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tsx": "^4.22.4",
