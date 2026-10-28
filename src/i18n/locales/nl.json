@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profiel bijgewerkt. Controleer je nieuwe e-mailadres om het te verifiëren.",
     "placeholder_protected_url": "Beveiligde link: voer de URL opnieuw in om deze te wijzigen",
     "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
-    "remove_password": "Wachtwoord verwijderen"
+    "remove_password": "Wachtwoord verwijderen",
+    "tab_requests": "Uploadverzoeken"
   },
   "apikeys": {
     "title": "API-sleutels",
@@ -926,5 +927,38 @@
     "protected_paste": "Met wachtwoord beveiligde paste",
     "unavailable": "Deze share is niet meer beschikbaar",
     "shared_via": "Gedeeld via {{appName}}"
+  },
+  "reverse_shares": {
+    "title": "Uploadverzoeken",
+    "description": "Maak een link waarmee iedereen, ook zonder account, je bestanden kan sturen. Elke inzending verschijnt bij je shares.",
+    "label_name": "Naam die afzenders zien",
+    "placeholder_name": "bijv. Trouwfoto's",
+    "label_expiry": "Vervaldatum (optioneel)",
+    "label_password": "Wachtwoord (optioneel)",
+    "label_max_uploads": "Max. inzendingen (optioneel)",
+    "label_max_size": "Max. grootte per inzending, MB (optioneel)",
+    "creating": "Aanmaken...",
+    "create_button": "Link maken",
+    "error_create": "Het verzoek kon niet worden aangemaakt.",
+    "error_delete": "Het verzoek kon niet worden verwijderd.",
+    "empty": "Nog geen uploadverzoeken.",
+    "submissions": "Inzendingen: {{count}}",
+    "expires": "Verloopt",
+    "protected": "Met wachtwoord beveiligd",
+    "copied": "Gekopieerd!",
+    "copy_link": "Link kopiëren",
+    "delete": "Verwijderen",
+    "confirm_delete": "Dit uploadverzoek verwijderen? Al ontvangen bestanden blijven bij je shares."
+  },
+  "reverse_upload": {
+    "not_found": "Deze uploadlink bestaat niet.",
+    "error_send": "De bestanden konden niet worden verzonden.",
+    "heading": "Bestanden versturen",
+    "closed": "Deze uploadlink is gesloten.",
+    "sent": "Verzonden! Ontvangen bestanden: {{count}}",
+    "send_more": "Meer bestanden versturen",
+    "files": "Bestanden",
+    "message_placeholder": "Bericht (optioneel)",
+    "send": "Versturen"
   }
 }

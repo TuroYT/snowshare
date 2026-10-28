@@ -17,6 +17,7 @@ SnowShare is a self-hosted app for sharing files, links and pastes. You run it o
 - Files: uploads are resumable (tus), so a dropped connection doesn't restart a 20 GB transfer. Several files can go in one share, and common formats are previewed in the browser.
 - Links: a URL shortener with optional custom slugs.
 - Pastes: text or code with syntax highlighting.
+- Upload requests: a link through which anyone, even without an account, can send you files.
 
 Any share can have an expiration date, a maximum number of views, a password and a QR code.
 

@@ -380,7 +380,8 @@
     "success_update_verify_email": "Perfil actualizado. Revisa tu nueva dirección de correo para verificarla.",
     "placeholder_protected_url": "Enlace protegido: vuelve a introducir la URL para cambiarla",
     "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
-    "remove_password": "Quitar la contraseña"
+    "remove_password": "Quitar la contraseña",
+    "tab_requests": "Solicitudes de archivos"
   },
   "apikeys": {
     "title": "Claves API",
@@ -926,5 +927,38 @@
     "protected_paste": "Paste protegido con contraseña",
     "unavailable": "Este enlace compartido ya no está disponible",
     "shared_via": "Compartido mediante {{appName}}"
+  },
+  "reverse_shares": {
+    "title": "Solicitudes de archivos",
+    "description": "Crea un enlace con el que cualquiera, incluso sin cuenta, puede enviarte archivos. Cada envío aparece en tus elementos compartidos.",
+    "label_name": "Nombre visible para los remitentes",
+    "placeholder_name": "p. ej. Fotos de la boda",
+    "label_expiry": "Caducidad (opcional)",
+    "label_password": "Contraseña (opcional)",
+    "label_max_uploads": "Envíos máximos (opcional)",
+    "label_max_size": "Tamaño máximo por envío, MB (opcional)",
+    "creating": "Creando...",
+    "create_button": "Crear enlace",
+    "error_create": "No se pudo crear la solicitud.",
+    "error_delete": "No se pudo eliminar la solicitud.",
+    "empty": "Aún no hay solicitudes de archivos.",
+    "submissions": "Envíos: {{count}}",
+    "expires": "Caduca",
+    "protected": "Protegido con contraseña",
+    "copied": "¡Copiado!",
+    "copy_link": "Copiar enlace",
+    "delete": "Eliminar",
+    "confirm_delete": "¿Eliminar esta solicitud? Los archivos ya recibidos se quedan en tus elementos compartidos."
+  },
+  "reverse_upload": {
+    "not_found": "Este enlace de envío no existe.",
+    "error_send": "No se pudieron enviar los archivos.",
+    "heading": "Enviar archivos",
+    "closed": "Este enlace de envío está cerrado.",
+    "sent": "¡Enviado! Archivos recibidos: {{count}}",
+    "send_more": "Enviar más archivos",
+    "files": "Archivos",
+    "message_placeholder": "Mensaje (opcional)",
+    "send": "Enviar"
   }
 }

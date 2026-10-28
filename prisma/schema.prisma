@@ -60,6 +60,7 @@ model User {
   sessions      Session[]
   shares        Share[]
   apiKeys       ApiKey[]
+  reverseShares ReverseShare[]
 }
 
 model ApiKey {
@@ -285,4 +286,23 @@ model OAuthProvider {
   tenantId      String?  // Azure AD tenant ID
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+/// Upload request: a public link through which anyone can send files to the owner
+model ReverseShare {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  password    String?
+  expiresAt   DateTime?
+  /// Maximum number of submissions (null = unlimited)
+  maxUploads  Int?
+  /// Maximum total size of one submission in MB (null = the owner's upload limit)
+  maxSizeMB   Int?
+  uploadCount Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([ownerId, createdAt])
 }
