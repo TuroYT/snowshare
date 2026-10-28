@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profil aktualisiert. Bitte prüfe deine neue E-Mail-Adresse, um sie zu bestätigen.",
     "placeholder_protected_url": "Geschützter Link: URL erneut eingeben, um sie zu ändern",
     "placeholder_password_keep": "Leer lassen, um das aktuelle Passwort beizubehalten",
-    "remove_password": "Passwort entfernen"
+    "remove_password": "Passwort entfernen",
+    "tab_requests": "Upload-Anfragen"
   },
   "apikeys": {
     "title": "API-Schlüssel",
@@ -926,5 +927,38 @@
     "protected_paste": "Passwortgeschützter Paste",
     "unavailable": "Diese Freigabe ist nicht mehr verfügbar",
     "shared_via": "Geteilt über {{appName}}"
+  },
+  "reverse_shares": {
+    "title": "Upload-Anfragen",
+    "description": "Erstelle einen Link, über den dir jeder, auch ohne Konto, Dateien senden kann. Jede Einsendung erscheint in deinen Freigaben.",
+    "label_name": "Für Absender angezeigter Name",
+    "placeholder_name": "z. B. Hochzeitsfotos",
+    "label_expiry": "Ablauf (optional)",
+    "label_password": "Passwort (optional)",
+    "label_max_uploads": "Max. Einsendungen (optional)",
+    "label_max_size": "Max. Größe pro Einsendung, MB (optional)",
+    "creating": "Wird erstellt...",
+    "create_button": "Link erstellen",
+    "error_create": "Die Anfrage konnte nicht erstellt werden.",
+    "error_delete": "Die Anfrage konnte nicht gelöscht werden.",
+    "empty": "Noch keine Upload-Anfragen.",
+    "submissions": "Einsendungen: {{count}}",
+    "expires": "Läuft ab",
+    "protected": "Passwortgeschützt",
+    "copied": "Kopiert!",
+    "copy_link": "Link kopieren",
+    "delete": "Löschen",
+    "confirm_delete": "Diese Upload-Anfrage löschen? Bereits empfangene Dateien bleiben in deinen Freigaben."
+  },
+  "reverse_upload": {
+    "not_found": "Dieser Upload-Link existiert nicht.",
+    "error_send": "Die Dateien konnten nicht gesendet werden.",
+    "heading": "Dateien senden",
+    "closed": "Dieser Upload-Link ist geschlossen.",
+    "sent": "Gesendet! Empfangene Dateien: {{count}}",
+    "send_more": "Weitere Dateien senden",
+    "files": "Dateien",
+    "message_placeholder": "Nachricht (optional)",
+    "send": "Senden"
   }
 }

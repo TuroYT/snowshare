@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profile updated. Please check your new email address to verify it.",
     "placeholder_protected_url": "Protected link: re-enter the URL to change it",
     "placeholder_password_keep": "Leave empty to keep the current password",
-    "remove_password": "Remove password"
+    "remove_password": "Remove password",
+    "tab_requests": "Upload requests"
   },
   "apikeys": {
     "title": "API Keys",
@@ -926,5 +927,38 @@
     "protected_paste": "Password-protected paste",
     "unavailable": "This share is no longer available",
     "shared_via": "Shared via {{appName}}"
+  },
+  "reverse_shares": {
+    "title": "Upload requests",
+    "description": "Create a link through which anyone, even without an account, can send you files. Each submission appears in your shares.",
+    "label_name": "Name shown to senders",
+    "placeholder_name": "e.g. Wedding photos",
+    "label_expiry": "Expiration (optional)",
+    "label_password": "Password (optional)",
+    "label_max_uploads": "Max submissions (optional)",
+    "label_max_size": "Max size per submission, MB (optional)",
+    "creating": "Creating...",
+    "create_button": "Create link",
+    "error_create": "Could not create the request.",
+    "error_delete": "Could not delete the request.",
+    "empty": "No upload requests yet.",
+    "submissions": "Submissions: {{count}}",
+    "expires": "Expires",
+    "protected": "Password protected",
+    "copied": "Copied!",
+    "copy_link": "Copy link",
+    "delete": "Delete",
+    "confirm_delete": "Delete this upload request? Files already received stay in your shares."
+  },
+  "reverse_upload": {
+    "not_found": "This upload link does not exist.",
+    "error_send": "The files could not be sent.",
+    "heading": "Send files",
+    "closed": "This upload link is closed.",
+    "sent": "Sent! Files received: {{count}}",
+    "send_more": "Send more files",
+    "files": "Files",
+    "message_placeholder": "Message (optional)",
+    "send": "Send"
   }
 }

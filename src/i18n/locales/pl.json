@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profil zaktualizowany. Sprawdź nowy adres e-mail, aby go zweryfikować.",
     "placeholder_protected_url": "Chroniony link: wpisz ponownie URL, aby go zmienić",
     "placeholder_password_keep": "Pozostaw puste, aby zachować obecne hasło",
-    "remove_password": "Usuń hasło"
+    "remove_password": "Usuń hasło",
+    "tab_requests": "Prośby o pliki"
   },
   "apikeys": {
     "title": "Klucze API",
@@ -926,5 +927,38 @@
     "protected_paste": "Paste chroniony hasłem",
     "unavailable": "To udostępnienie nie jest już dostępne",
     "shared_via": "Udostępnione przez {{appName}}"
+  },
+  "reverse_shares": {
+    "title": "Prośby o pliki",
+    "description": "Utwórz link, przez który każdy, nawet bez konta, może wysłać Ci pliki. Każde przesłanie pojawi się w Twoich udostępnieniach.",
+    "label_name": "Nazwa widoczna dla nadawców",
+    "placeholder_name": "np. Zdjęcia z wesela",
+    "label_expiry": "Wygaśnięcie (opcjonalnie)",
+    "label_password": "Hasło (opcjonalnie)",
+    "label_max_uploads": "Maks. liczba przesłań (opcjonalnie)",
+    "label_max_size": "Maks. rozmiar przesłania, MB (opcjonalnie)",
+    "creating": "Tworzenie...",
+    "create_button": "Utwórz link",
+    "error_create": "Nie udało się utworzyć prośby.",
+    "error_delete": "Nie udało się usunąć prośby.",
+    "empty": "Brak próśb o pliki.",
+    "submissions": "Przesłania: {{count}}",
+    "expires": "Wygasa",
+    "protected": "Chronione hasłem",
+    "copied": "Skopiowano!",
+    "copy_link": "Kopiuj link",
+    "delete": "Usuń",
+    "confirm_delete": "Usunąć tę prośbę? Otrzymane już pliki pozostaną w Twoich udostępnieniach."
+  },
+  "reverse_upload": {
+    "not_found": "Ten link do przesyłania nie istnieje.",
+    "error_send": "Nie udało się wysłać plików.",
+    "heading": "Wyślij pliki",
+    "closed": "Ten link do przesyłania jest zamknięty.",
+    "sent": "Wysłano! Otrzymane pliki: {{count}}",
+    "send_more": "Wyślij więcej plików",
+    "files": "Pliki",
+    "message_placeholder": "Wiadomość (opcjonalnie)",
+    "send": "Wyślij"
   }
 }
