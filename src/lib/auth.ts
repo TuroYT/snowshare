@@ -12,6 +12,7 @@ import { isProviderEmailVerified } from "@/lib/oauth-email";
 import { cookies } from "next/headers";
 import { resolveClientIp } from "@/lib/getClientIp";
 import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
+import { openTotpSecret, verifyTotp } from "@/lib/totp";
 
 /** httpOnly cookie binding an account-link request to the browser that initiated it. */
 export const LINK_TOKEN_COOKIE = "__snowshare-link-token";
@@ -262,6 +263,7 @@ export async function getDynamicProviders() {
         credentials: {
           email: { label: "Email", type: "email" },
           password: { label: "Password", type: "password" },
+          totp: { label: "Authentication code", type: "text" },
         },
         async authorize(credentials, req) {
           if (!credentials?.email || !credentials?.password) {
@@ -286,7 +288,16 @@ export async function getDynamicProviders() {
             where: {
               email: credentials.email,
             },
-            select: { id: true, email: true, name: true, password: true, emailVerified: true },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              emailVerified: true,
+              totpEnabled: true,
+              totpSecret: true,
+              totpLastCounter: true,
+            },
           });
 
           if (!user?.password) {
@@ -299,6 +310,21 @@ export async function getDynamicProviders() {
           if (!isPasswordValid) {
             recordRateLimitHit("login", limitKey);
             return null;
+          }
+
+          if (user.totpEnabled && user.totpSecret) {
+            if (!credentials.totp) throw new Error("TotpRequired");
+            const counter = verifyTotp(openTotpSecret(user.totpSecret), credentials.totp, {
+              lastCounter: user.totpLastCounter,
+            });
+            if (counter === null) {
+              recordRateLimitHit("login", limitKey);
+              throw new Error("TotpInvalid");
+            }
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { totpLastCounter: counter },
+            });
           }
 
           resetRateLimit("login", limitKey);

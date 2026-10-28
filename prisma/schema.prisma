@@ -56,6 +56,11 @@ model User {
   isAdmin       Boolean    @default(false)
   ssoAutoLink   Boolean    @default(false)
   defaultTab    DefaultTab @default(linkshare)
+  /// TOTP secret, encrypted with NEXTAUTH_SECRET; set (but not enabled) during setup
+  totpSecret      String?
+  totpEnabled     Boolean  @default(false)
+  /// Last accepted TOTP time step (replay protection)
+  totpLastCounter Int?
   accounts      Account[]
   sessions      Session[]
   shares        Share[]
