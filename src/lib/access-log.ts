@@ -7,18 +7,37 @@ import { sendAccessNotificationEmail } from "@/lib/email";
 
 const SHARE_PREFIX = { FILE: "f", PASTE: "p", URL: "l" } as const;
 
-/** E-mails the share owner when they opted in, at most once per share per hour. */
+const NOTIFY_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
+ * E-mails the share owner when they opted in: at most once per share per hour (persisted, so
+ * it holds across restarts and instances) and at most 20 per owner per hour.
+ */
 export async function notifyShareOwner(shareId: string, accessedAt = new Date()) {
   const share = await prisma.share.findUnique({
     where: { id: shareId },
     select: {
       slug: true,
       type: true,
+      ownerId: true,
       owner: { select: { email: true, notifyOnAccess: true } },
     },
   });
-  if (!share?.owner?.notifyOnAccess) return false;
-  if (consumeRateLimit("accessNotification", shareId) > 0) return false;
+  if (!share?.ownerId || !share.owner?.notifyOnAccess) return false;
+
+  // Claim the hourly slot atomically: concurrent accesses can't both send
+  const claimed = await prisma.share.updateMany({
+    where: {
+      id: shareId,
+      OR: [
+        { lastAccessNotifiedAt: null },
+        { lastAccessNotifiedAt: { lt: new Date(accessedAt.getTime() - NOTIFY_INTERVAL_MS) } },
+      ],
+    },
+    data: { lastAccessNotifiedAt: accessedAt },
+  });
+  if (claimed.count === 0) return false;
+  if (consumeRateLimit("accessNotification", share.ownerId) > 0) return false;
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const shareUrl = `${baseUrl}/${SHARE_PREFIX[share.type]}/${share.slug}`;

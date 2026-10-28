@@ -106,6 +106,8 @@ model Share {
   isBulk        Boolean    @default(false)
   maxViews      Int?
   viewCount     Int        @default(0)
+  /// Last access notification e-mailed to the owner (throttle, see notifyShareOwner)
+  lastAccessNotifiedAt DateTime?
   files         ShareFile[]
   accessLogs    ShareAccessLog[]
 
