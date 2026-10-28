@@ -153,6 +153,7 @@ The rest is optional:
 | `AUTH_TRUST_HOST`            |             | Set to `true` behind a reverse proxy                                  |
 | `TRUSTED_PROXY_COUNT`        | `1`         | Number of reverse proxies in front of SnowShare                       |
 | `PORT`                       | `3000`      | Port the server listens on                                            |
+| `METRICS_TOKEN`              |             | Enables Prometheus metrics at `/api/metrics` (Bearer token)           |
 | `UPLOAD_DIR`                 | `./uploads` | Absolute path for local file storage, ignored when `S3_BUCKET` is set |
 | `S3_BUCKET`                  |             | Setting it switches file storage to S3                                |
 | `S3_REGION`                  | `us-east-1` |                                                                       |

@@ -37,9 +37,9 @@ RUN chmod +x scripts/entrypoint.sh \
 # Switch to non-root user for runtime
 USER snowshare
 
-# Lightweight liveness/readiness check hitting an existing, unauthenticated endpoint
+# Liveness/readiness check (200 when the database answers)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:${PORT}/api/setup/check || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:${PORT}/api/health || exit 1
 
 # Default command via entrypoint (cleanup runs via node-cron)
 ENTRYPOINT ["sh", "scripts/entrypoint.sh"]
