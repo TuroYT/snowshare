@@ -69,5 +69,19 @@ describe("notifyShareOwner", () => {
     for (let i = 0; i < 20; i++) expect(await notifyShareOwner(`s${i}`)).toBe(true);
     expect(await notifyShareOwner("s99")).toBe(false);
     expect(send).toHaveBeenCalledTimes(20);
+    // The exhausted budget did not claim the share's hourly slot
+    expect(updateMany).toHaveBeenCalledTimes(20);
+  });
+
+  it("frees the hourly slot when the e-mail is not sent", async () => {
+    findUnique.mockResolvedValue(optedIn);
+    send.mockRejectedValue(new Error("smtp down"));
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    const at = new Date("2026-10-28T10:00:00Z");
+    expect(await notifyShareOwner("s1", at)).toBe(false);
+    expect(updateMany).toHaveBeenLastCalledWith({
+      where: { id: "s1", lastAccessNotifiedAt: at },
+      data: { lastAccessNotifiedAt: null },
+    });
   });
 });
