@@ -144,13 +144,15 @@ function loadLibs() {
     import("./src/lib/files.js"),
     import("./src/lib/storage.js"),
     import("./src/lib/settings.js"),
-  ]).then(([prismaLib, uploadShare, quota, files, storage, settings]) => ({
+    import("./src/lib/webhooks.js"),
+  ]).then(([prismaLib, uploadShare, quota, files, storage, settings, webhooks]) => ({
     prisma: prismaLib.prisma,
     ...uploadShare,
     ...quota,
     ...files,
     ...storage,
     ...settings,
+    ...webhooks,
   }));
   return libsPromise;
 }
@@ -417,6 +419,7 @@ const tusServer = new TusServer({
         fileIndex,
         totalFiles,
       });
+      if (createdShareId) void libs.emitShareEvent("share.created", share);
 
       return {
         headers: {

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
+import { emitShareEvent } from "@/lib/webhooks";
 
 export async function logShareAccess(request: NextRequest, shareId: string) {
   try {
@@ -14,4 +15,5 @@ export async function logShareAccess(request: NextRequest, shareId: string) {
   } catch (error) {
     console.error("Failed to log share access:", error);
   }
+  await emitShareEvent("share.accessed", shareId);
 }

@@ -753,6 +753,13 @@
       "paste_excerpt": "Paste-Auszüge anzeigen",
       "paste_excerpt_desc": "Fügt die ersten Zeilen öffentlicher Pastes ohne Aufruflimit in Link-Vorschauen ein.",
       "paste_excerpt_warning": "Auszüge werden von den Messaging-Apps gespeichert, die die Vorschau abrufen."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare sendet per POST ein JSON-Ereignis an diese URL, wenn eine Freigabe erstellt, geöffnet oder gelöscht wird. Leer lassen zum Deaktivieren.",
+      "url": "Webhook-URL",
+      "secret": "Signaturschlüssel (optional)",
+      "secret_hint": "Wird als X-SnowShare-Signature: sha256=<HMAC-SHA256 des Inhalts> gesendet"
     }
   },
   "paste_view": {

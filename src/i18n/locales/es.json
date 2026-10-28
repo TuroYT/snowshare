@@ -753,6 +753,13 @@
       "paste_excerpt": "Mostrar extractos de pastes",
       "paste_excerpt_desc": "Incluye las primeras líneas de los pastes públicos sin límite de vistas en las vistas previas.",
       "paste_excerpt_warning": "Los extractos quedan almacenados en las aplicaciones de mensajería que obtienen la vista previa."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare envía un evento JSON por POST a esta URL cuando se crea, abre o elimina un elemento compartido. Déjalo vacío para desactivarlo.",
+      "url": "URL del webhook",
+      "secret": "Secreto de firma (opcional)",
+      "secret_hint": "Se envía como X-SnowShare-Signature: sha256=<HMAC-SHA256 del cuerpo>"
     }
   },
   "paste_view": {

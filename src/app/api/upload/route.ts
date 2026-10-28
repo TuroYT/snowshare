@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { emitShareEvent } from "@/lib/webhooks";
 import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, stat, unlink } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
@@ -114,6 +115,7 @@ async function finalizeUpload(
     await rollbackShare(share.id);
     throw error;
   }
+  void emitShareEvent("share.created", share);
 
   return NextResponse.json(
     {

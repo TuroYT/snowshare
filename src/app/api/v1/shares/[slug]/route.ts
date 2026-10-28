@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { emitShareEvent } from "@/lib/webhooks";
 import { authenticateApiRequest } from "@/lib/api-auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
@@ -61,7 +62,8 @@ export async function DELETE(
     }
 
     await deleteShareFiles(share);
-    await prisma.share.delete({ where: { slug } });
+    const deleted = await prisma.share.delete({ where: { slug } });
+    void emitShareEvent("share.deleted", deleted);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("[DELETE /api/v1/shares/:slug]", error);
