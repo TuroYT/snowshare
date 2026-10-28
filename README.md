@@ -182,6 +182,27 @@ Uploaded files are in `/app/uploads` unless you use S3, and the database is in t
 
 The REST API lives under `/api/v1` and uses API keys, which you create from your profile page. Each instance serves its own docs at `/api-docs`, and the OpenAPI spec at `/api/v1/openapi.json`.
 
+### Webhooks
+
+An admin can set a webhook URL (and an optional signing secret) under Admin → Settings. SnowShare then POSTs a JSON event for `share.created`, `share.accessed` and `share.deleted`:
+
+```json
+{
+  "event": "share.created",
+  "timestamp": "2026-10-28T12:00:00.000Z",
+  "share": {
+    "id": "…",
+    "slug": "abc",
+    "type": "FILE",
+    "url": "https://share.example.com/f/abc",
+    "ownerId": "…",
+    "expiresAt": null
+  }
+}
+```
+
+With a secret, the `X-SnowShare-Signature` header is `sha256=` followed by the hex HMAC-SHA256 of the raw body. Delivery is best effort: one attempt, 5 s timeout, no retries.
+
 ## Development
 
 You need Node.js 24 or newer and a PostgreSQL database.

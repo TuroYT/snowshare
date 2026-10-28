@@ -753,6 +753,13 @@
       "paste_excerpt": "Pokazuj fragmenty paste'ów",
       "paste_excerpt_desc": "Dodaje pierwsze linie publicznych paste'ów bez limitu wyświetleń do podglądów linków.",
       "paste_excerpt_warning": "Fragmenty są przechowywane przez komunikatory, które pobierają podgląd."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare wysyła zdarzenie JSON metodą POST na ten adres, gdy udostępnienie zostanie utworzone, otwarte lub usunięte. Pozostaw puste, aby wyłączyć.",
+      "url": "Adres URL webhooka",
+      "secret": "Sekret podpisu (opcjonalnie)",
+      "secret_hint": "Wysyłany jako X-SnowShare-Signature: sha256=<HMAC-SHA256 treści>"
     }
   },
   "paste_view": {

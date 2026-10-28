@@ -5,6 +5,7 @@ import { invalidateSettingsCache } from "@/lib/settings";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import type { Settings } from "@/generated/prisma";
+import { isValidWebhookUrl } from "@/lib/webhooks";
 
 type SettingsInput = Record<string, unknown>;
 
@@ -179,6 +180,8 @@ function buildSettingsUpdateData(data: SettingsInput, current: Settings) {
     s3Bucket: nullableString(data, current, "s3Bucket"),
     s3AccessKeyId: nullableString(data, current, "s3AccessKeyId"),
     s3SecretAccessKey: maskedSecret(data, current, "s3SecretAccessKey"),
+    webhookUrl: nullableString(data, current, "webhookUrl"),
+    webhookSecret: maskedSecret(data, current, "webhookSecret"),
   };
 }
 
@@ -217,6 +220,7 @@ export async function GET(request: NextRequest) {
       smtpPassword: settings.smtpPassword ? "••••••••" : null,
       allowIframeEmbedding: settings.allowIframeEmbedding,
       s3SecretAccessKey: settings.s3SecretAccessKey ? "••••••••" : null,
+      webhookSecret: settings.webhookSecret ? "••••••••" : null,
     };
 
     return NextResponse.json({ settings: safeSettings, hasActiveSSO: activeProvidersCount > 0 });
@@ -245,6 +249,14 @@ export async function PATCH(request: NextRequest) {
   try {
     const data = await request.json();
 
+    if (
+      typeof data.webhookUrl === "string" &&
+      data.webhookUrl !== "" &&
+      !isValidWebhookUrl(data.webhookUrl)
+    ) {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
+    }
+
     if (data.disableCredentialsLogin === true) {
       const activeProvidersCount = await prisma.oAuthProvider.count({
         where: { enabled: true },
@@ -271,6 +283,7 @@ export async function PATCH(request: NextRequest) {
       captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
       smtpPassword: settings.smtpPassword ? "••••••••" : null,
       s3SecretAccessKey: settings.s3SecretAccessKey ? "••••••••" : null,
+      webhookSecret: settings.webhookSecret ? "••••••••" : null,
     };
 
     return NextResponse.json({ settings: safeUpdated });

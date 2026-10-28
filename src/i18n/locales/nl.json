@@ -753,6 +753,13 @@
       "paste_excerpt": "Paste-fragmenten tonen",
       "paste_excerpt_desc": "Neemt de eerste regels van openbare pastes zonder weergavelimiet op in linkvoorbeelden.",
       "paste_excerpt_warning": "Fragmenten worden opgeslagen door de berichtenapps die het voorbeeld ophalen."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare stuurt een JSON-gebeurtenis via POST naar deze URL wanneer een share wordt aangemaakt, geopend of verwijderd. Leeg laten om uit te schakelen.",
+      "url": "Webhook-URL",
+      "secret": "Ondertekeningsgeheim (optioneel)",
+      "secret_hint": "Verzonden als X-SnowShare-Signature: sha256=<HMAC-SHA256 van de body>"
     }
   },
   "paste_view": {

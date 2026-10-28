@@ -211,6 +211,10 @@ model Settings {
   s3Bucket          String?
   s3AccessKeyId     String?
   s3SecretAccessKey String?
+
+  // Webhook: share events POSTed as JSON, signed with HMAC-SHA256 when a secret is set
+  webhookUrl    String?
+  webhookSecret String?
 }
 
 model CustomLink {

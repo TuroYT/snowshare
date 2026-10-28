@@ -15,6 +15,7 @@ import {
 } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
+import { emitShareEvent } from "@/lib/webhooks";
 import {
   hashPassword,
   isValidSlug,
@@ -215,6 +216,7 @@ export async function createLinkShare(params: CreateLinkShareParams): Promise<Sh
   });
 
   lookupIpGeolocation(context.ip);
+  void emitShareEvent("share.created", share);
   return { share };
 }
 
@@ -304,6 +306,7 @@ export async function createPasteShare(
   });
 
   lookupIpGeolocation(context.ip);
+  void emitShareEvent("share.created", share);
   return { share };
 }
 
