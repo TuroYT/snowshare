@@ -404,7 +404,10 @@
     "docs_title": "Documentación API",
     "docs_description": "Explora la documentación interactiva de la API.",
     "docs_link": "Abrir docs",
-    "error_revoke": "No se pudo revocar la clave de API."
+    "error_revoke": "No se pudo revocar la clave de API.",
+    "sharex_label": "ShareX:",
+    "sharex_files": "Descargar uploader de archivos",
+    "sharex_links": "Descargar acortador de URL"
   },
   "setup": {
     "title": "Configuración Inicial",

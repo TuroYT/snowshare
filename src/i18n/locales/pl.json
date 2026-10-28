@@ -404,7 +404,10 @@
     "docs_title": "Dokumentacja API",
     "docs_description": "Przeglądaj interaktywną dokumentację API.",
     "docs_link": "Otwórz dokumentację",
-    "error_revoke": "Nie udało się unieważnić klucza API."
+    "error_revoke": "Nie udało się unieważnić klucza API.",
+    "sharex_label": "ShareX:",
+    "sharex_files": "Pobierz konfigurację wysyłania plików",
+    "sharex_links": "Pobierz skracacz URL"
   },
   "setup": {
     "title": "Konfiguracja początkowa",
