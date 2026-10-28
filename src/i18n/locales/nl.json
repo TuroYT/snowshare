@@ -277,7 +277,9 @@
     "signin_link": "Inloggen",
     "signup_link": "Registreren",
     "signin_with": "Inloggen met",
-    "error_too_many_attempts": "Te veel mislukte aanmeldpogingen. Probeer het later opnieuw."
+    "error_too_many_attempts": "Te veel mislukte aanmeldpogingen. Probeer het later opnieuw.",
+    "error_totp_invalid": "Ongeldige authenticatiecode.",
+    "totp_label": "Authenticatiecode"
   },
   "profile": {
     "title": "Mijn profiel",
@@ -926,5 +928,17 @@
     "protected_paste": "Met wachtwoord beveiligde paste",
     "unavailable": "Deze share is niet meer beschikbaar",
     "shared_via": "Gedeeld via {{appName}}"
+  },
+  "totp": {
+    "title": "Tweestapsverificatie",
+    "enabled_desc": "Aan: inloggen met je wachtwoord vraagt ook om een code uit je app.",
+    "disabled_desc": "Vraag bij inloggen met wachtwoord om een code uit een authenticator-app (Aegis, Google Authenticator, 1Password…).",
+    "setup": "Instellen",
+    "scan": "Scan deze QR-code met je app en voer daarna de getoonde code in.",
+    "manual": "Of voer deze sleutel handmatig in:",
+    "enable": "Inschakelen",
+    "disable": "Uitschakelen",
+    "code_label": "Authenticatiecode",
+    "error": "Er ging iets mis."
   }
 }

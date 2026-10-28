@@ -277,7 +277,9 @@
     "signin_link": "Iniciar sesión",
     "signup_link": "Registrarse",
     "signin_with": "Iniciar sesión con",
-    "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde."
+    "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde.",
+    "error_totp_invalid": "Código de autenticación no válido.",
+    "totp_label": "Código de autenticación"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -926,5 +928,17 @@
     "protected_paste": "Paste protegido con contraseña",
     "unavailable": "Este enlace compartido ya no está disponible",
     "shared_via": "Compartido mediante {{appName}}"
+  },
+  "totp": {
+    "title": "Autenticación en dos pasos",
+    "enabled_desc": "Activada: al iniciar sesión con contraseña también se pide un código de tu aplicación.",
+    "disabled_desc": "Pedir un código de una aplicación de autenticación (Aegis, Google Authenticator, 1Password…) al iniciar sesión con contraseña.",
+    "setup": "Configurar",
+    "scan": "Escanea este código QR con tu aplicación y luego introduce el código que muestra.",
+    "manual": "O introduce esta clave manualmente:",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "code_label": "Código de autenticación",
+    "error": "Algo salió mal."
   }
 }
