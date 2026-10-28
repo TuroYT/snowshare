@@ -380,7 +380,9 @@
     "success_update_verify_email": "Profiel bijgewerkt. Controleer je nieuwe e-mailadres om het te verifiëren.",
     "placeholder_protected_url": "Beveiligde link: voer de URL opnieuw in om deze te wijzigen",
     "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
-    "remove_password": "Wachtwoord verwijderen"
+    "remove_password": "Wachtwoord verwijderen",
+    "notify_on_access": "Stuur me een e-mail wanneer een van mijn shares wordt geopend",
+    "notify_on_access_desc": "Maximaal één e-mail per share per uur. Vereist dat de beheerder e-mail heeft ingesteld."
   },
   "apikeys": {
     "title": "API-sleutels",

@@ -380,7 +380,9 @@
     "success_update_verify_email": "Profil zaktualizowany. Sprawdź nowy adres e-mail, aby go zweryfikować.",
     "placeholder_protected_url": "Chroniony link: wpisz ponownie URL, aby go zmienić",
     "placeholder_password_keep": "Pozostaw puste, aby zachować obecne hasło",
-    "remove_password": "Usuń hasło"
+    "remove_password": "Usuń hasło",
+    "notify_on_access": "Powiadom mnie e-mailem, gdy ktoś otworzy jeden z moich udostępnień",
+    "notify_on_access_desc": "Najwyżej jeden e-mail na udostępnienie na godzinę. Wymaga skonfigurowania poczty przez administratora."
   },
   "apikeys": {
     "title": "Klucze API",

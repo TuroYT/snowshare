@@ -56,6 +56,8 @@ model User {
   isAdmin       Boolean    @default(false)
   ssoAutoLink   Boolean    @default(false)
   defaultTab    DefaultTab @default(linkshare)
+  /// E-mail the owner when one of their shares is opened (at most once per share per hour)
+  notifyOnAccess Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
   shares        Share[]

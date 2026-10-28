@@ -27,6 +27,8 @@ export const RATE_LIMITS = {
   sendEmail: { limit: 30, windowMs: 60 * 60 * 1000 },
   /** Invalid API keys presented, per IP */
   apiKey: { limit: 30, windowMs: 60 * 1000 },
+  /** Access notification e-mails, per share */
+  accessNotification: { limit: 1, windowMs: 60 * 60 * 1000 },
 } satisfies Record<string, RateLimitRule>;
 
 export type RateLimitScope = keyof typeof RATE_LIMITS;
