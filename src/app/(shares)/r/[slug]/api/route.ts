@@ -74,8 +74,8 @@ export async function POST(request: NextRequest, { params }: Params) {
   const retryAfter = consumeRateLimit("reverseShareUpload", clientIp);
   if (retryAfter > 0) return rateLimitResponse(request, retryAfter);
 
-  // The uploader's IP quota and the per-file limit of a signed-in user apply
-  const limits = await getUploadLimits(clientIp, true);
+  // Senders are anonymous: the admin's anonymous per-file limit and IP quota apply
+  const limits = await getUploadLimits(clientIp, false);
   const maxTotalBytes = Math.min(
     limits.remainingQuotaBytes,
     rs.maxSizeMB ? rs.maxSizeMB * BYTES_PER_MB : Number.POSITIVE_INFINITY

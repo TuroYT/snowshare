@@ -113,6 +113,7 @@ describe("POST /r/:slug/api", () => {
     expect(res.status).toBe(201);
     expect(await res.json()).toEqual({ data: { fileCount: 1 } });
     expect(receive.mock.calls[0][1].maxTotalBytes).toBe(5 * 1024 * 1024);
+    expect(getUploadLimits).toHaveBeenCalledWith("10.0.0.9", false);
     expect(createShare).toHaveBeenCalledWith(
       expect.objectContaining({ note: "Wedding\n\nhello", passwordHash: null }),
       { clientIp: "10.0.0.9", userId: "owner", isAuthenticated: true },
