@@ -277,7 +277,9 @@
     "signin_link": "Sign in",
     "signup_link": "Sign up",
     "signin_with": "Sign in with",
-    "error_too_many_attempts": "Too many failed sign-in attempts. Please try again later."
+    "error_too_many_attempts": "Too many failed sign-in attempts. Please try again later.",
+    "error_totp_invalid": "Invalid authentication code.",
+    "totp_label": "Authentication code"
   },
   "profile": {
     "title": "My Profile",
@@ -926,5 +928,17 @@
     "protected_paste": "Password-protected paste",
     "unavailable": "This share is no longer available",
     "shared_via": "Shared via {{appName}}"
+  },
+  "totp": {
+    "title": "Two-factor authentication",
+    "enabled_desc": "On: signing in with your password also asks for a code from your app.",
+    "disabled_desc": "Ask for a code from an authenticator app (Aegis, Google Authenticator, 1Password…) when signing in with your password.",
+    "setup": "Set up",
+    "scan": "Scan this QR code with your app, then enter the code it shows.",
+    "manual": "Or enter this key manually:",
+    "enable": "Turn on",
+    "disable": "Turn off",
+    "code_label": "Authentication code",
+    "error": "Something went wrong."
   }
 }

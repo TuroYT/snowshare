@@ -277,7 +277,9 @@
     "signin_link": "Se connecter",
     "signup_link": "S'inscrire",
     "signin_with": "Se connecter avec",
-    "error_too_many_attempts": "Trop de tentatives de connexion échouées. Réessayez plus tard."
+    "error_too_many_attempts": "Trop de tentatives de connexion échouées. Réessayez plus tard.",
+    "error_totp_invalid": "Code d'authentification invalide.",
+    "totp_label": "Code d'authentification"
   },
   "profile": {
     "title": "Mon Profil",
@@ -926,5 +928,17 @@
     "protected_paste": "Paste protégé par mot de passe",
     "unavailable": "Ce partage n'est plus disponible",
     "shared_via": "Partagé via {{appName}}"
+  },
+  "totp": {
+    "title": "Double authentification",
+    "enabled_desc": "Activée : la connexion par mot de passe demande aussi un code de votre application.",
+    "disabled_desc": "Demander un code d'une application d'authentification (Aegis, Google Authenticator, 1Password…) lors de la connexion par mot de passe.",
+    "setup": "Configurer",
+    "scan": "Scannez ce QR code avec votre application, puis saisissez le code affiché.",
+    "manual": "Ou saisissez cette clé manuellement :",
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "code_label": "Code d'authentification",
+    "error": "Une erreur est survenue."
   }
 }

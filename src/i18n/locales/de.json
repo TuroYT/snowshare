@@ -277,7 +277,9 @@
     "signin_link": "Anmelden",
     "signup_link": "Registrieren",
     "signin_with": "Anmelden mit",
-    "error_too_many_attempts": "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es später erneut."
+    "error_too_many_attempts": "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es später erneut.",
+    "error_totp_invalid": "Ungültiger Authentifizierungscode.",
+    "totp_label": "Authentifizierungscode"
   },
   "profile": {
     "title": "Mein Profil",
@@ -926,5 +928,17 @@
     "protected_paste": "Passwortgeschützter Paste",
     "unavailable": "Diese Freigabe ist nicht mehr verfügbar",
     "shared_via": "Geteilt über {{appName}}"
+  },
+  "totp": {
+    "title": "Zwei-Faktor-Authentifizierung",
+    "enabled_desc": "Aktiv: Die Anmeldung mit Passwort verlangt zusätzlich einen Code aus deiner App.",
+    "disabled_desc": "Bei der Anmeldung mit Passwort einen Code aus einer Authenticator-App (Aegis, Google Authenticator, 1Password…) verlangen.",
+    "setup": "Einrichten",
+    "scan": "Scanne diesen QR-Code mit deiner App und gib dann den angezeigten Code ein.",
+    "manual": "Oder gib diesen Schlüssel manuell ein:",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren",
+    "code_label": "Authentifizierungscode",
+    "error": "Etwas ist schiefgelaufen."
   }
 }
