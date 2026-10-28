@@ -97,3 +97,25 @@ export async function sendShareEmail(
 
   return true;
 }
+
+export async function sendAccessNotificationEmail(
+  to: string,
+  shareUrl: string,
+  accessedAt: Date
+): Promise<boolean> {
+  const config = await getSmtpConfig();
+  if (!config) return false;
+
+  const appName = config.appName || "SnowShare";
+  const fromAddress = config.smtpFrom || config.smtpUser || `noreply@snowshare`;
+  const when = accessedAt.toISOString().replace("T", " ").slice(0, 16) + " UTC";
+
+  await createSmtpTransporter(config).sendMail({
+    from: `"${appName}" <${fromAddress}>`,
+    to,
+    subject: `Your share was opened – ${appName}`,
+    text: `Your share ${shareUrl} was opened on ${when}.\n\nYou get at most one such e-mail per share per hour. You can turn these e-mails off in your profile.`,
+  });
+
+  return true;
+}
