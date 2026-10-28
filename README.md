@@ -180,7 +180,7 @@ Uploaded files are in `/app/uploads` unless you use S3, and the database is in t
 
 ## API
 
-The REST API lives under `/api/v1` and uses API keys, which you create from your profile page. Each instance serves its own docs at `/api-docs`, and the OpenAPI spec at `/api/v1/openapi.json`.
+The REST API lives under `/api/v1` and uses API keys, which you create from your profile page. Each instance serves its own docs at `/api-docs`, and the OpenAPI spec at `/api/v1/openapi.json`. Right after creating a key, the profile page also offers ShareX custom uploader files (`.sxcu`) for files and for the URL shortener.
 
 ## Development
 

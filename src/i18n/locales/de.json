@@ -404,7 +404,10 @@
     "docs_title": "API-Dokumentation",
     "docs_description": "Durchsuche die interaktive API-Dokumentation.",
     "docs_link": "Docs öffnen",
-    "error_revoke": "Der API-Schlüssel konnte nicht widerrufen werden."
+    "error_revoke": "Der API-Schlüssel konnte nicht widerrufen werden.",
+    "sharex_label": "ShareX:",
+    "sharex_files": "Datei-Uploader herunterladen",
+    "sharex_links": "URL-Kürzer herunterladen"
   },
   "setup": {
     "title": "Ersteinrichtung",
