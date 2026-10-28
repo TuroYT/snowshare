@@ -277,7 +277,8 @@ export async function createPasteShare(
     if (anonError) return anonError;
   }
 
-  // Hash password
+  // Encrypt the content with the plaintext password, then hash the password
+  const storedPaste = password ? encrypt(paste, password) : paste;
   if (password) {
     password = await hashPassword(password);
   }
@@ -291,7 +292,8 @@ export async function createPasteShare(
 
   const share = await prisma.share.create({
     data: {
-      paste,
+      paste: storedPaste,
+      pasteEncrypted: !!password,
       pastelanguage: pastelanguage as pasteType,
       expiresAt,
       slug,

@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profil zaktualizowany. Sprawdź nowy adres e-mail, aby go zweryfikować.",
     "placeholder_protected_url": "Chroniony link: wpisz ponownie URL, aby go zmienić",
     "placeholder_password_keep": "Pozostaw puste, aby zachować obecne hasło",
-    "remove_password": "Usuń hasło"
+    "remove_password": "Usuń hasło",
+    "placeholder_protected_paste": "Chronione wklejenie: wpisz treść ponownie, aby ją zmienić"
   },
   "apikeys": {
     "title": "Klucze API",
@@ -879,7 +880,9 @@
       "link_password_required_for_url_change": "Podaj hasło (obecne lub nowe), aby zmienić cel chronionego linku.",
       "too_many_files": "Zbyt wiele plików w jednym przesłaniu.",
       "s3_bucket_required": "Nazwa bucketu jest wymagana",
-      "email_required": "Adres e-mail jest wymagany"
+      "email_required": "Adres e-mail jest wymagany",
+      "paste_content_required_for_password_change": "Wpisz ponownie treść, aby zmienić lub usunąć hasło chronionego wklejenia.",
+      "paste_password_required_for_content_change": "Podaj hasło (obecne lub nowe), aby zmienić treść chronionego wklejenia."
     },
     "file_protected": "Chroniony plik",
     "file_count": "Pliki: {{count}}",

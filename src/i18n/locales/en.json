@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profile updated. Please check your new email address to verify it.",
     "placeholder_protected_url": "Protected link: re-enter the URL to change it",
     "placeholder_password_keep": "Leave empty to keep the current password",
-    "remove_password": "Remove password"
+    "remove_password": "Remove password",
+    "placeholder_protected_paste": "Protected paste: re-enter the content to change it"
   },
   "apikeys": {
     "title": "API Keys",
@@ -879,7 +880,9 @@
       "link_password_required_for_url_change": "Enter a password (current or new) to change the destination of a protected link.",
       "too_many_files": "Too many files in a single upload.",
       "s3_bucket_required": "Bucket name is required",
-      "email_required": "Email is required"
+      "email_required": "Email is required",
+      "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
+      "paste_password_required_for_content_change": "Enter a password (current or new) to change the content of a protected paste."
     },
     "file_protected": "Protected file",
     "file_count": "{{count}} files",

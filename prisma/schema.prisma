@@ -93,6 +93,8 @@ model Share {
   /// Size in bytes of a single-file share (bulk shares store sizes on ShareFile)
   size          BigInt?
   paste         String?
+  /// Paste content encrypted with the share password (password-protected pastes)
+  pasteEncrypted Boolean   @default(false)
   pastelanguage pasteType?
   urlOriginal   String?
   slug          String     @unique

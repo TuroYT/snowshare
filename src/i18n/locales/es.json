@@ -380,7 +380,8 @@
     "success_update_verify_email": "Perfil actualizado. Revisa tu nueva dirección de correo para verificarla.",
     "placeholder_protected_url": "Enlace protegido: vuelve a introducir la URL para cambiarla",
     "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
-    "remove_password": "Quitar la contraseña"
+    "remove_password": "Quitar la contraseña",
+    "placeholder_protected_paste": "Paste protegido: vuelve a introducir el contenido para cambiarlo"
   },
   "apikeys": {
     "title": "Claves API",
@@ -879,7 +880,9 @@
       "link_password_required_for_url_change": "Introduce una contraseña (actual o nueva) para cambiar el destino de un enlace protegido.",
       "too_many_files": "Demasiados archivos en una sola subida.",
       "s3_bucket_required": "El nombre del bucket es obligatorio",
-      "email_required": "El correo electrónico es obligatorio"
+      "email_required": "El correo electrónico es obligatorio",
+      "paste_content_required_for_password_change": "Vuelve a introducir el contenido para cambiar o quitar la contraseña de un paste protegido.",
+      "paste_password_required_for_content_change": "Introduce una contraseña (actual o nueva) para cambiar el contenido de un paste protegido."
     },
     "file_protected": "Archivo protegido",
     "file_count": "{{count}} archivos",

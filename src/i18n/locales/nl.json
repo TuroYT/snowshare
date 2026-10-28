@@ -380,7 +380,8 @@
     "success_update_verify_email": "Profiel bijgewerkt. Controleer je nieuwe e-mailadres om het te verifiëren.",
     "placeholder_protected_url": "Beveiligde link: voer de URL opnieuw in om deze te wijzigen",
     "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
-    "remove_password": "Wachtwoord verwijderen"
+    "remove_password": "Wachtwoord verwijderen",
+    "placeholder_protected_paste": "Beveiligde paste: voer de inhoud opnieuw in om deze te wijzigen"
   },
   "apikeys": {
     "title": "API-sleutels",
@@ -879,7 +880,9 @@
       "link_password_required_for_url_change": "Voer een wachtwoord (huidig of nieuw) in om de bestemming van een beveiligde link te wijzigen.",
       "too_many_files": "Te veel bestanden in één upload.",
       "s3_bucket_required": "De bucketnaam is verplicht",
-      "email_required": "E-mailadres is verplicht"
+      "email_required": "E-mailadres is verplicht",
+      "paste_content_required_for_password_change": "Voer de inhoud opnieuw in om het wachtwoord van een beveiligde paste te wijzigen of te verwijderen.",
+      "paste_password_required_for_content_change": "Voer een wachtwoord (huidig of nieuw) in om de inhoud van een beveiligde paste te wijzigen."
     },
     "file_protected": "Beveiligd bestand",
     "file_count": "{{count}} bestanden",

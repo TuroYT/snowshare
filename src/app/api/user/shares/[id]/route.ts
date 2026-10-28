@@ -20,6 +20,8 @@ type EditableShare = {
   type: $Enums.ShareType;
   password: string | null;
   urlOriginal: string | null;
+  paste: string | null;
+  pasteEncrypted: boolean;
 };
 
 type ShareUpdateBody = {
@@ -55,17 +57,22 @@ function parseNewPassword(request: NextRequest, value: unknown): string | null |
   return value;
 }
 
-/** Applies the paste content and language changes, or returns an error response. */
+/**
+ * Applies the paste content and language changes, or returns an error response.
+ * Encrypted pastes work like protected links: changing the content or the password of one
+ * requires both the content and the (new) password.
+ */
 function applyPasteUpdate(
   request: NextRequest,
+  share: EditableShare,
   data: ShareUpdateBody,
+  newPassword: string | null | undefined,
   updateData: Prisma.ShareUpdateInput
 ): NextResponse | null {
   if (data.paste !== undefined) {
     if (typeof data.paste !== "string" || data.paste.length > MAX_PASTE_SIZE) {
       return apiError(request, ErrorCode.PASTE_CONTENT_REQUIRED);
     }
-    updateData.paste = data.paste;
   }
 
   if (data.pastelanguage !== undefined) {
@@ -74,6 +81,21 @@ function applyPasteUpdate(
     }
     updateData.pastelanguage = data.pastelanguage as $Enums.pasteType;
   }
+
+  const newContent = data.paste as string | undefined;
+  if (newContent === undefined && newPassword === undefined) return null;
+  if (share.pasteEncrypted && newContent === undefined) {
+    // The plaintext content is unknown: it cannot be re-encrypted or decrypted
+    return apiError(request, ErrorCode.PASTE_CONTENT_REQUIRED_FOR_PASSWORD_CHANGE);
+  }
+  if (share.pasteEncrypted && newPassword === undefined) {
+    // The plaintext password is unknown: the new content cannot be encrypted
+    return apiError(request, ErrorCode.PASTE_PASSWORD_REQUIRED_FOR_CONTENT_CHANGE);
+  }
+
+  const content = newContent ?? share.paste ?? "";
+  updateData.paste = newPassword ? encrypt(content, newPassword) : content;
+  updateData.pasteEncrypted = !!newPassword;
   return null;
 }
 
@@ -119,7 +141,7 @@ function applyTypeSpecificUpdate(
   updateData: Prisma.ShareUpdateInput
 ): NextResponse | null {
   if (share.type === "PASTE") {
-    return applyPasteUpdate(request, data, updateData);
+    return applyPasteUpdate(request, share, data, newPassword, updateData);
   }
 
   if (share.type !== "URL") return null;
@@ -219,7 +241,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id } = await params;
     const share = await prisma.share.findUnique({
       where: { id },
-      select: { ownerId: true, type: true, password: true, urlOriginal: true },
+      select: {
+        ownerId: true,
+        type: true,
+        password: true,
+        urlOriginal: true,
+        paste: true,
+        pasteEncrypted: true,
+      },
     });
 
     if (!share) {
