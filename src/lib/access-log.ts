@@ -39,6 +39,11 @@ export async function notifyShareOwner(shareId: string, accessedAt = new Date())
     data: { lastAccessNotifiedAt: accessedAt },
   });
   if (claimed.count === 0) return false;
+  // Re-check after the await: concurrent notifications for other shares may have used the budget
+  if (getRetryAfter("accessNotification", share.ownerId) > 0) {
+    await releaseSlot(shareId, accessedAt);
+    return false;
+  }
   recordRateLimitHit("accessNotification", share.ownerId);
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -49,11 +54,15 @@ export async function notifyShareOwner(shareId: string, accessedAt = new Date())
     console.error("Failed to send share access notification:", error);
   }
   // Not sent: free the slot so the next access can retry
+  await releaseSlot(shareId, accessedAt);
+  return false;
+}
+
+async function releaseSlot(shareId: string, claimedAt: Date) {
   await prisma.share.updateMany({
-    where: { id: shareId, lastAccessNotifiedAt: accessedAt },
+    where: { id: shareId, lastAccessNotifiedAt: claimedAt },
     data: { lastAccessNotifiedAt: null },
   });
-  return false;
 }
 
 export async function logShareAccess(request: NextRequest, shareId: string) {
