@@ -404,7 +404,10 @@
     "docs_title": "API Documentation",
     "docs_description": "Browse the interactive API docs to explore all endpoints.",
     "docs_link": "Open docs",
-    "error_revoke": "Failed to revoke the API key."
+    "error_revoke": "Failed to revoke the API key.",
+    "sharex_label": "ShareX:",
+    "sharex_files": "Download file uploader",
+    "sharex_links": "Download URL shortener"
   },
   "setup": {
     "title": "Initial Setup",

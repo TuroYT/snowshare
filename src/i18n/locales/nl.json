@@ -404,7 +404,10 @@
     "docs_title": "API-documentatie",
     "docs_description": "Verken de interactieve API-documentatie.",
     "docs_link": "Docs openen",
-    "error_revoke": "Kan de API-sleutel niet intrekken."
+    "error_revoke": "Kan de API-sleutel niet intrekken.",
+    "sharex_label": "ShareX:",
+    "sharex_files": "Bestandsuploader downloaden",
+    "sharex_links": "URL-verkorter downloaden"
   },
   "setup": {
     "title": "Eerste installatie",

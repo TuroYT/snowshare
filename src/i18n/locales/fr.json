@@ -404,7 +404,10 @@
     "docs_title": "Documentation API",
     "docs_description": "Parcourez la documentation interactive pour explorer tous les endpoints.",
     "docs_link": "Ouvrir les docs",
-    "error_revoke": "Échec de la révocation de la clé API."
+    "error_revoke": "Échec de la révocation de la clé API.",
+    "sharex_label": "ShareX :",
+    "sharex_files": "Télécharger l'uploader de fichiers",
+    "sharex_links": "Télécharger le raccourcisseur d'URL"
   },
   "setup": {
     "title": "Configuration initiale",
