@@ -160,7 +160,7 @@ The rest is optional:
 | `S3_ACCESS_KEY_ID`           |             |                                                                       |
 | `S3_SECRET_ACCESS_KEY`       |             |                                                                       |
 | `S3_ENDPOINT`                |             | For S3-compatible services (MinIO, Garage, R2...)                     |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | `en`        | Fallback language: `en`, `fr`, `es`, `de`, `nl` or `pl`               |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | `en`        | Fallback language: `en`, `fr`, `es`, `de`, `it`, `nl` or `pl`         |
 | `TELEMETRY`                  | `true`      | `false` turns analytics off                                           |
 | `PLAUSIBLE_DOMAIN`           |             | Use your own Plausible site                                           |
 | `PLAUSIBLE_HOST`             |             | URL of your own Plausible instance                                    |
