@@ -16,7 +16,7 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
 
   if (isLoading) {
     return (
-      <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-center flex flex-col items-center gap-4">
+      <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full max-w-2xl mx-auto text-center flex flex-col items-center gap-4">
         <WaveSkeleton variant="rounded" width={48} height={48} />
         <WaveSkeleton variant="text" width={192} height={28} />
         <WaveSkeleton variant="text" width={256} height={20} />
@@ -44,7 +44,7 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
   };
 
   return (
-    <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-center">
+    <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full max-w-2xl mx-auto text-center">
       <div className="h-12 w-12 mx-auto mb-4 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--destructive)] flex items-center justify-center">
         <svg
           className="w-6 h-6 text-[var(--destructive)]"

@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next";
 import { useShareForm } from "@/hooks/useShareForm";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
+import PasswordField from "./shareComponents/PasswordField";
+import ShareOptions from "./shareComponents/ShareOptions";
+import ShortcutHint from "./shareComponents/ShortcutHint";
+import { FIELD_FOCUS } from "./shareComponents/fieldStyles";
+import { useShareSummary } from "@/hooks/useShareSummary";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
 import ViewLimitSettings from "./shareComponents/ViewLimitSettings";
 import ShareSuccess from "./shareComponents/ShareSuccess";
@@ -51,9 +56,22 @@ const LinkShare: React.FC = () => {
     setSuccess,
     successSlug,
     setSuccessSlug,
+    successSummary,
+    setSuccessSummary,
+    clearSuccess,
     computeExpiresAt,
     resetAfterSuccess,
   } = useShareForm({ canSubmit: () => !!url.trim() && !urlError });
+
+  const { summary, fullSummary } = useShareSummary("linkshare", {
+    expiresDays,
+    neverExpires,
+    hasViewLimit,
+    maxViews,
+    hasPassword: !!password.trim(),
+  });
+  const urlId = React.useId();
+  const urlErrorId = `${urlId}-error`;
 
   const handleUrlChange = (value: string) => {
     setUrl(value);
@@ -105,6 +123,7 @@ const LinkShare: React.FC = () => {
           setSuccessSlug(linkShare.slug);
         } else if (linkShare?.id) setSuccess(`${window.location.origin}/l/${linkShare.id}`);
         else setSuccess(t("linkshare.created", "Share created"));
+        setSuccessSummary(fullSummary);
         setUrl("");
         resetAfterSuccess();
         setUrlError(null);
@@ -127,7 +146,7 @@ const LinkShare: React.FC = () => {
       skeleton={<ShareFormSkeleton />}
       className="w-full"
     >
-      <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
+      <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
         <div className="flex items-center gap-4 mb-6">
           <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
             <svg
@@ -157,25 +176,30 @@ const LinkShare: React.FC = () => {
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
           {/* URL input */}
           <div className="space-y-2">
-            <label htmlFor="url" className="block text-sm font-medium text-[var(--foreground)]">
+            <label htmlFor={urlId} className="block text-sm font-medium text-[var(--foreground)]">
               {t("linkshare.label_url", "URL to share")}&nbsp;
-              <span className="text-[var(--destructive)]">*</span>
+              <span className="text-[var(--destructive)]" aria-hidden="true">
+                *
+              </span>
             </label>
             <div className="relative">
               <input
-                id="url"
+                id={urlId}
                 type="url"
                 placeholder={t("linkshare.placeholder_url", "https://example.com/my-page")}
                 value={url}
                 onChange={(e) => handleUrlChange(e.target.value)}
                 required
-                className={`w-full bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 focus:outline-none focus:border-[var(--foreground)] pr-10 ${
+                aria-invalid={!!urlError}
+                aria-describedby={urlError ? urlErrorId : undefined}
+                className={`w-full bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 pr-10 ${FIELD_FOCUS} ${
                   urlError ? "border-[var(--destructive)]" : ""
                 }`}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 {url && isValidUrl(url) && (
                   <svg
+                    aria-hidden="true"
                     className="w-5 h-5 text-[var(--success)]"
                     fill="none"
                     stroke="currentColor"
@@ -191,33 +215,51 @@ const LinkShare: React.FC = () => {
                 )}
               </div>
             </div>
-            {urlError && <p className="text-xs text-[var(--destructive)] mt-1">{urlError}</p>}
+            {urlError && (
+              <p id={urlErrorId} className="text-xs text-[var(--destructive)] mt-1">
+                {urlError}
+              </p>
+            )}
           </div>
 
-          <ExpirationSettings
-            expiresDays={expiresDays}
-            setExpiresDays={setExpiresDays}
-            neverExpires={neverExpires}
-            setNeverExpires={setNeverExpires}
-            translationPrefix="linkshare"
-          />
-
-          <ViewLimitSettings
-            hasViewLimit={hasViewLimit}
-            setHasViewLimit={setHasViewLimit}
-            maxViews={maxViews}
-            setMaxViews={setMaxViews}
-            translationPrefix="linkshare"
-          />
-
-          <AdvancedSettings
-            slug={slug}
-            setSlug={setSlug}
+          <PasswordField
             password={password}
             setPassword={setPassword}
-            slugPrefix="/l/"
-            translationPrefix="linkshare"
+            label={t("linkshare.password_protect", "Password protection")}
+            placeholder={t(
+              "linkshare.password_placeholder",
+              "Optional - leave empty for open access"
+            )}
+            help={t(
+              "linkshare.password_help",
+              "Visitors must enter this password to open the link."
+            )}
           />
+
+          <ShareOptions translationPrefix="linkshare" summary={summary}>
+            <ExpirationSettings
+              expiresDays={expiresDays}
+              setExpiresDays={setExpiresDays}
+              neverExpires={neverExpires}
+              setNeverExpires={setNeverExpires}
+              translationPrefix="linkshare"
+            />
+
+            <ViewLimitSettings
+              hasViewLimit={hasViewLimit}
+              setHasViewLimit={setHasViewLimit}
+              maxViews={maxViews}
+              setMaxViews={setMaxViews}
+              translationPrefix="linkshare"
+            />
+
+            <AdvancedSettings
+              slug={slug}
+              setSlug={setSlug}
+              slugPrefix="/l/"
+              translationPrefix="linkshare"
+            />
+          </ShareOptions>
 
           <SubmitButton
             loading={loading}
@@ -227,24 +269,20 @@ const LinkShare: React.FC = () => {
             iconPath="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
           />
 
-          {!loading && url.trim() && !urlError && (
-            <p className="text-xs text-[var(--foreground-muted)] text-center mt-2">
-              {t("linkshare.shortcut", "Tip:")}{" "}
-              <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
-                Ctrl
-              </kbd>{" "}
-              +{" "}
-              <kbd className="px-1 py-0.5 bg-[var(--surface)] border border-[var(--border)] rounded text-xs">
-                Enter
-              </kbd>{" "}
-              {t("linkshare.shortcut_tail", "to create quickly")}
-            </p>
-          )}
+          {!loading && url.trim() && !urlError && <ShortcutHint translationPrefix="linkshare" />}
         </form>
 
         {error && <ShareError error={error} translationPrefix="linkshare" />}
 
-        {success && <ShareSuccess url={success} slug={successSlug} translationPrefix="linkshare" />}
+        {success && (
+          <ShareSuccess
+            url={success}
+            slug={successSlug}
+            translationPrefix="linkshare"
+            summary={successSummary}
+            onNewShare={clearSuccess}
+          />
+        )}
       </div>
     </SkeletonTransition>
   );

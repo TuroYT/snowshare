@@ -20,21 +20,23 @@
     "admin_desc": "Panel administracyjny",
     "theme_dark": "Tryb ciemny",
     "theme_light": "Tryb jasny",
-    "theme_system": "Automatyczny"
+    "theme_system": "Automatyczny",
+    "toggle_theme": "Zmień motyw",
+    "open_menu": "Otwórz menu"
   },
   "loading": "Ładowanie...",
   "pasteshare": {
     "title": "Udostępnianie kodu",
     "description": "Udostępniaj fragmenty tekstu łatwo i bezpiecznie.",
-    "share_code_title": "Udostępnij kod",
-    "share_code_description": "Twórz i udostępniaj fragmenty kodu",
+    "share_code_title": "Udostępnij tekst",
+    "share_code_description": "Twórz i udostępniaj tekst lub fragmenty kodu",
     "locked_title": "Udostępnianie kodu jest zablokowane",
     "locked_message": "Musisz być zalogowany, aby udostępniać kod."
   },
   "pasteshare_ui": {
     "label_title": "Tytuł",
     "label_language": "Język",
-    "label_expiration": "Wygasa",
+    "label_expiration": "Wygasa po",
     "label_password": "Hasło (opcjonalnie)",
     "placeholder_password": "Zostaw puste dla otwartego dostępu",
     "submit": "Utwórz wklejkę",
@@ -42,7 +44,7 @@
     "expiration_7_days": "7 dni",
     "expiration_30_days": "30 dni",
     "expiration_custom": "Niestandardowy",
-    "advanced": "Ustawienia zaawansowane (opcjonalne)",
+    "advanced": "Więcej opcji",
     "login_for_more": "Zaloguj się, aby uzyskać dłuższy czas przechowywania lub brak wygaśnięcia",
     "language_placeholder": "Wybierz język",
     "custom_slug": "Własny link",
@@ -57,22 +59,26 @@
     "network_error": "Błąd sieci — nie można utworzyć wklejki",
     "success_title": "Wklejka utworzona pomyślnie!",
     "error_title": "Błąd",
-    "copied": "✓ Skopiowano do schowka",
+    "copied": "Skopiowano do schowka",
     "copy_title": "Kopiuj link",
     "qr_info": "Zeskanuj ten kod QR, aby uzyskać dostęp do wklejki",
-    "view_limit": "Limit wyświetleń",
+    "view_limit": "Ogranicz liczbę wyświetleń",
     "view_limit_desc": "Wklejka wygasa po określonej liczbie wyświetleń",
     "views": "wyświetlenia",
     "view_limit_info": "Ta wklejka wygaśnie po {{count}} wyświetleniu/ach",
     "password_placeholder": "Zostaw puste dla otwartego dostępu",
     "shortcut": "Wskazówka:",
-    "shortcut_tail": "aby utworzyć szybko"
+    "shortcut_tail": "aby utworzyć szybko",
+    "password_help": "Wymagane do odczytu tekstu, który jest też nim szyfrowany.",
+    "language_plain": "Zwykły tekst",
+    "placeholder_code": "Wpisz lub wklej tutaj tekst lub kod"
   },
   "fileshare": {
     "title": "Udostępnianie plików",
     "description": "Udostępniaj pliki łatwo i bezpiecznie.",
     "subtitle": "Łatwo przesyłaj i udostępniaj pliki",
-    "drag_drop": "Przeciągnij i upuść plik tutaj",
+    "drag_drop": "Przeciągnij i upuść pliki lub foldery tutaj",
+    "partial_share": "{{added}} z {{total}} plików dodano do linku udostępniania. Spróbuj ponownie wysłać pozostałe pliki.",
     "click_to_select": "lub kliknij, aby wybrać plik",
     "file_selected": "Wybrano plik:",
     "file_size": "Rozmiar:",
@@ -91,17 +97,17 @@
     "download_link": "Link do pobrania:",
     "creation_error": "Błąd tworzenia udostępnienia",
     "network_error": "Błąd sieci — nie można utworzyć udostępnienia",
-    "advanced": "Ustawienia zaawansowane (opcjonalne)",
+    "advanced": "Więcej opcji",
     "custom_slug": "Własny link",
     "password_protect": "Ochrona hasłem",
-    "validity_label": "Czas ważności",
+    "validity_label": "Wygasa po",
     "never_expires": "Brak wygaśnięcia",
     "never_expires_desc": "Ten plik będzie dostępny bezterminowo",
     "days": "dni",
     "login_for_more": "Zaloguj się, aby uzyskać dłuższy okres przechowywania (do {{max}} dni) lub brak wygaśnięcia i większe pliki (do {{maxSize}}{{unit}})",
     "slug_hint": "Tylko litery, cyfry, myślniki i podkreślenia",
     "password_placeholder": "Zostaw puste dla otwartego dostępu",
-    "copied": "✓ Skopiowano do schowka",
+    "copied": "Skopiowano do schowka",
     "copy_title": "Kopiuj link",
     "note": "Notatka",
     "note_placeholder": "Opcjonalnie - dodaj notatkę lub opis wyświetlany obok pliku",
@@ -128,13 +134,15 @@
     "select_folder": "Wybierz folder",
     "selected_files": "Wybrane pliki",
     "total_size": "Całkowity",
-    "view_limit": "Limit wyświetleń/pobrań",
+    "view_limit": "Ogranicz wyświetlenia i pobrania",
     "view_limit_desc": "Udostępnienie wygasa po określonej liczbie wyświetleń lub pobrań",
     "views": "wyświetlenia",
     "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach lub pobraniu/ach",
     "total_size_too_large": "Łączny rozmiar przekracza limit (maks. {{max}} {{unit}})",
     "file": "Plik",
-    "or_click": "lub kliknij, aby wybrać"
+    "or_click": "lub kliknij, aby wybrać",
+    "password_help": "Odwiedzający muszą podać to hasło, aby pobrać pliki.",
+    "remove_file": "Usuń {{name}}"
   },
   "file_download": {
     "loading_error": "Błąd ładowania informacji",
@@ -168,8 +176,7 @@
   },
   "home": {
     "title": "Witamy w SnowShare",
-    "description": "Udostępniaj pliki, kod i linki - łatwo i bezpiecznie.",
-    "eyebrow": "Bezpieczne udostępnianie"
+    "description": "Udostępniaj pliki, kod i linki - łatwo i bezpiecznie."
   },
   "tabs": {
     "linkshare": "Link",
@@ -190,7 +197,7 @@
     "never_expires_desc": "Ten link będzie aktywny bezterminowo",
     "days": "dni",
     "login_for_more": "Zaloguj się, aby uzyskać dłuższy okres (do {{max}} dni) lub brak wygaśnięcia",
-    "advanced": "Ustawienia zaawansowane (opcjonalne)",
+    "advanced": "Więcej opcji",
     "custom_slug": "Własny link",
     "slug_hint": "Tylko litery, cyfry, myślniki i podkreślenia",
     "password_protect": "Ochrona hasłem",
@@ -200,11 +207,11 @@
     "error_title": "Błąd",
     "success_title": "Link utworzony pomyślnie!",
     "copy_title": "Kopiuj link",
-    "validity_label": "Czas ważności",
+    "validity_label": "Wygasa po",
     "submit": "Utwórz udostępniony link",
     "creating": "Tworzenie...",
     "creation_error": "Błąd tworzenia udostępnienia",
-    "copied": "✓ Skopiowano do schowka",
+    "copied": "Skopiowano do schowka",
     "placeholder_slug": "moj-wlasny-link",
     "qr_info": "Zeskanuj ten kod QR, aby przejść do linku",
     "duration_never": "Ten link nigdy nie wygaśnie",
@@ -217,10 +224,11 @@
     "duration_in_x_years": "Ten link wygaśnie za {{count}} rok/lat",
     "locked_title": "Udostępnianie linków jest zablokowane",
     "locked_message": "Musisz być zalogowany, aby udostępniać linki.",
-    "view_limit": "Limit wyświetleń/pobrań",
+    "view_limit": "Ogranicz liczbę wyświetleń",
     "view_limit_desc": "Udostępnienie wygasa po określonej liczbie wyświetleń",
     "views": "wyświetlenia",
-    "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach"
+    "view_limit_info": "To udostępnienie wygaśnie po {{count}} wyświetleniu/ach",
+    "password_help": "Odwiedzający muszą podać to hasło, aby otworzyć link."
   },
   "footer": {
     "made_with": "Stworzone z",
@@ -929,5 +937,14 @@
     "protected_paste": "Paste chroniony hasłem",
     "unavailable": "To udostępnienie nie jest już dostępne",
     "shared_via": "Udostępnione przez {{appName}}"
+  },
+  "shareform": {
+    "show_password": "Pokaż hasło",
+    "hide_password": "Ukryj hasło",
+    "summary_views": "maks. {{count}} wyświetleń",
+    "summary_password": "Chronione hasłem",
+    "new_share": "Nowe udostępnienie",
+    "key_ctrl": "Ctrl",
+    "key_enter": "Enter"
   }
 }

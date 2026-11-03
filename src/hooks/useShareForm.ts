@@ -43,6 +43,7 @@ export function useShareForm(options: UseShareFormOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [successSlug, setSuccessSlug] = useState<string>("");
+  const [successSummary, setSuccessSummary] = useState("");
 
   // Keep the latest canSubmit/loading in refs so the keydown listener can be
   // registered once instead of re-bound on every render.
@@ -88,6 +89,13 @@ export function useShareForm(options: UseShareFormOptions = {}) {
     setMaxViews(1);
   };
 
+  /** Dismisses the success panel so a new share can be created. */
+  const clearSuccess = () => {
+    setSuccess(null);
+    setSuccessSlug("");
+    setSuccessSummary("");
+  };
+
   return {
     isAuthenticated,
     authLoading,
@@ -114,6 +122,9 @@ export function useShareForm(options: UseShareFormOptions = {}) {
     setSuccess,
     successSlug,
     setSuccessSlug,
+    successSummary,
+    setSuccessSummary,
+    clearSuccess,
     computeExpiresAt,
     resetAfterSuccess,
   };
