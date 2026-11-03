@@ -20,21 +20,23 @@
     "admin_desc": "Administration panel",
     "theme_dark": "Dark mode",
     "theme_light": "Light mode",
-    "theme_system": "System"
+    "theme_system": "System",
+    "toggle_theme": "Toggle theme",
+    "open_menu": "Open menu"
   },
   "loading": "Loading...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Share your text snippets securely and easily.",
-    "share_code_title": "Share code",
-    "share_code_description": "Create and share your code snippets",
+    "share_code_title": "Share text",
+    "share_code_description": "Create and share text or code snippets",
     "locked_title": "Paste sharing is locked",
     "locked_message": "You must be logged in to share code."
   },
   "pasteshare_ui": {
     "label_title": "Title",
     "label_language": "Language",
-    "label_expiration": "Expiration",
+    "label_expiration": "Expires after",
     "label_password": "Password (optional)",
     "placeholder_password": "Optional - leave empty for free access",
     "submit": "Create paste",
@@ -42,7 +44,7 @@
     "expiration_7_days": "7 days",
     "expiration_30_days": "30 days",
     "expiration_custom": "Custom",
-    "advanced": "Advanced settings (optional)",
+    "advanced": "More options",
     "login_for_more": "Sign in for longer durations or no expiration",
     "language_placeholder": "Select a language",
     "custom_slug": "Custom link",
@@ -57,22 +59,26 @@
     "network_error": "Network error — could not create paste",
     "success_title": "Paste created successfully!",
     "error_title": "Error",
-    "copied": "✓ Copied to clipboard",
+    "copied": "Copied to clipboard",
     "copy_title": "Copy link",
     "qr_info": "Scan this QR code to access the paste",
-    "view_limit": "View limit",
+    "view_limit": "Limit number of views",
     "view_limit_desc": "The paste will expire after a set number of views",
     "views": "views",
     "view_limit_info": "This paste will expire after {{count}} view(s)",
     "password_placeholder": "Optional - leave empty for free access",
     "shortcut": "Tip:",
-    "shortcut_tail": "to create quickly"
+    "shortcut_tail": "to create quickly",
+    "password_help": "Required to read the text, which is also encrypted with it.",
+    "language_plain": "Plain text",
+    "placeholder_code": "Type or paste your text or code here"
   },
   "fileshare": {
-    "title": "FileShare",
+    "title": "Share a file",
     "description": "Share your files securely and easily.",
     "subtitle": "Upload and share your files easily",
-    "drag_drop": "Drag and drop your file here",
+    "drag_drop": "Drag and drop files or folders here",
+    "partial_share": "{{added}} of {{total}} files were added to the share link. Retry to send the remaining files.",
     "click_to_select": "or click to select a file",
     "file_selected": "File selected:",
     "file_size": "Size:",
@@ -91,17 +97,17 @@
     "download_link": "Download link:",
     "creation_error": "Error creating share",
     "network_error": "Network error — could not create share",
-    "advanced": "Advanced settings (optional)",
+    "advanced": "More options",
     "custom_slug": "Custom link",
     "password_protect": "Password protection",
-    "validity_label": "Validity duration",
+    "validity_label": "Expires after",
     "never_expires": "No expiration",
     "never_expires_desc": "This file will remain available indefinitely",
     "days": "days",
     "login_for_more": "Sign in for longer durations (up to {{max}} days) or no expiration and larger files (up to {{maxSize}}{{unit}})",
     "slug_hint": "Letters, numbers, dashes and underscores only",
     "password_placeholder": "Optional - leave empty for free access",
-    "copied": "✓ Copied to clipboard",
+    "copied": "Copied to clipboard",
     "copy_title": "Copy link",
     "note": "Note",
     "note_placeholder": "Optional - add a note or description shown alongside the file",
@@ -128,13 +134,15 @@
     "select_folder": "Select Folder",
     "selected_files": "Selected Files",
     "total_size": "Total",
-    "view_limit": "View/download limit",
+    "view_limit": "Limit views and downloads",
     "view_limit_desc": "The share will expire after a set number of views or downloads",
     "views": "views",
     "view_limit_info": "This share will expire after {{count}} view(s)/download(s)",
     "total_size_too_large": "Total size exceeds limit (max {{max}} {{unit}})",
     "file": "File",
-    "or_click": "or click to select"
+    "or_click": "or click to select",
+    "password_help": "Visitors must enter this password to download the files.",
+    "remove_file": "Remove {{name}}"
   },
   "file_download": {
     "loading_error": "Error loading information",
@@ -168,8 +176,7 @@
   },
   "home": {
     "title": "Welcome to SnowShare",
-    "description": "Share your files, code and URLs securely and easily.",
-    "eyebrow": "Secure sharing"
+    "description": "Share your files, code and URLs securely and easily."
   },
   "tabs": {
     "linkshare": "Link",
@@ -190,7 +197,7 @@
     "never_expires_desc": "This link will remain active indefinitely",
     "days": "days",
     "login_for_more": "Sign in for longer durations (up to {{max}} days) or no expiration",
-    "advanced": "Advanced settings (optional)",
+    "advanced": "More options",
     "custom_slug": "Custom link",
     "slug_hint": "Letters, numbers, dashes and underscores only",
     "password_protect": "Password protection",
@@ -200,11 +207,11 @@
     "error_title": "Error",
     "success_title": "Link created successfully!",
     "copy_title": "Copy link",
-    "validity_label": "Validity duration",
+    "validity_label": "Expires after",
     "submit": "Create shared link",
     "creating": "Creating...",
     "creation_error": "Error creating share",
-    "copied": "✓ Copied to clipboard",
+    "copied": "Copied to clipboard",
     "placeholder_slug": "my-custom-link",
     "qr_info": "Scan this QR code to access the link",
     "duration_never": "This link will never expire",
@@ -217,10 +224,11 @@
     "duration_in_x_years": "This link will expire in {{count}} year(s)",
     "locked_title": "Link sharing is locked",
     "locked_message": "You must be logged in to share links.",
-    "view_limit": "View/download limit",
+    "view_limit": "Limit number of views",
     "view_limit_desc": "The share will expire after a set number of views",
     "views": "views",
-    "view_limit_info": "This share will expire after {{count}} view(s)"
+    "view_limit_info": "This share will expire after {{count}} view(s)",
+    "password_help": "Visitors must enter this password to open the link."
   },
   "footer": {
     "made_with": "Made with",
@@ -380,7 +388,8 @@
     "success_update_verify_email": "Profile updated. Please check your new email address to verify it.",
     "placeholder_protected_url": "Protected link: re-enter the URL to change it",
     "placeholder_password_keep": "Leave empty to keep the current password",
-    "remove_password": "Remove password"
+    "remove_password": "Remove password",
+    "placeholder_protected_paste": "Protected paste: re-enter the content to change it"
   },
   "apikeys": {
     "title": "API Keys",
@@ -882,7 +891,9 @@
       "link_password_required_for_url_change": "Enter a password (current or new) to change the destination of a protected link.",
       "too_many_files": "Too many files in a single upload.",
       "s3_bucket_required": "Bucket name is required",
-      "email_required": "Email is required"
+      "email_required": "Email is required",
+      "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
+      "paste_password_required_for_content_change": "Enter a password (current or new) to change the content of a protected paste."
     },
     "file_protected": "Protected file",
     "file_count": "{{count}} files",
@@ -929,5 +940,14 @@
     "protected_paste": "Password-protected paste",
     "unavailable": "This share is no longer available",
     "shared_via": "Shared via {{appName}}"
+  },
+  "shareform": {
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "summary_views": "{{count}} view(s) max",
+    "summary_password": "Password protected",
+    "new_share": "New share",
+    "key_ctrl": "Ctrl",
+    "key_enter": "Enter"
   }
 }

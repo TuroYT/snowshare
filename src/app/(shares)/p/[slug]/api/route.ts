@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { logShareAccess } from "@/lib/access-log";
+import { decrypt } from "@/lib/crypto-link";
 import {
   accessDeniedResponse,
   checkShareAvailability,
@@ -15,6 +16,7 @@ const PASTE_SELECT = {
   id: true,
   type: true,
   paste: true,
+  pasteEncrypted: true,
   pastelanguage: true,
   password: true,
   createdAt: true,
@@ -36,8 +38,21 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-/** Counts the view, logs the access and returns the paste content. */
-async function servePaste(request: NextRequest, share: PasteShare) {
+/**
+ * Counts the view, logs the access and returns the paste content, decrypted with the
+ * (already verified) password when it is stored encrypted.
+ */
+async function servePaste(request: NextRequest, share: PasteShare, password?: string) {
+  let paste = share.paste;
+  if (share.pasteEncrypted && paste) {
+    try {
+      paste = decrypt(paste, password ?? "");
+    } catch (error) {
+      console.error("Failed to decrypt paste content:", error);
+      return internalError(request);
+    }
+  }
+
   if (!(await consumeView(share.id))) {
     return apiError(request, ErrorCode.SHARE_EXPIRED);
   }
@@ -47,7 +62,7 @@ async function servePaste(request: NextRequest, share: PasteShare) {
   return jsonResponse({
     success: true,
     data: {
-      paste: share.paste,
+      paste,
       language: share.pastelanguage,
       slug: share.slug,
       createdAt: share.createdAt,
@@ -150,7 +165,7 @@ export async function POST(
     const denied = await verifySharePassword(request, share, password);
     if (denied) return accessDeniedResponse(request, denied);
 
-    return servePaste(request, share);
+    return servePaste(request, share, password);
   } catch (error) {
     console.error("Error verifying paste password:", error);
     return internalError(request);

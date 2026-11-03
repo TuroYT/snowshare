@@ -20,21 +20,23 @@
     "admin_desc": "Panel de administración",
     "theme_dark": "Modo oscuro",
     "theme_light": "Modo claro",
-    "theme_system": "Automático"
+    "theme_system": "Automático",
+    "toggle_theme": "Cambiar de tema",
+    "open_menu": "Abrir menú"
   },
   "loading": "Cargando...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Comparte tus fragmentos de texto de forma segura y fácil.",
-    "share_code_title": "Compartir código",
-    "share_code_description": "Crea y comparte tus fragmentos de código",
+    "share_code_title": "Compartir texto",
+    "share_code_description": "Crea y comparte texto o fragmentos de código",
     "locked_title": "Compartir código está bloqueado",
     "locked_message": "Debes iniciar sesión para compartir código."
   },
   "pasteshare_ui": {
     "label_title": "Título",
     "label_language": "Lenguaje",
-    "label_expiration": "Expiración",
+    "label_expiration": "Caduca tras",
     "label_password": "Contraseña (opcional)",
     "placeholder_password": "Opcional - déjalo vacío para acceso libre",
     "submit": "Crear paste",
@@ -42,7 +44,7 @@
     "expiration_7_days": "7 días",
     "expiration_30_days": "30 días",
     "expiration_custom": "Personalizado",
-    "advanced": "Configuración avanzada (opcional)",
+    "advanced": "Más opciones",
     "login_for_more": "Inicia sesión para duraciones más largas o sin expiración",
     "language_placeholder": "Selecciona un lenguaje",
     "custom_slug": "Enlace personalizado",
@@ -57,22 +59,26 @@
     "network_error": "Error de red — no se pudo crear el paste",
     "success_title": "¡Paste creado con éxito!",
     "error_title": "Error",
-    "copied": "✓ Copiado al portapapeles",
+    "copied": "Copiado al portapapeles",
     "copy_title": "Copiar enlace",
     "qr_info": "Escanea este código QR para acceder al paste",
-    "view_limit": "Límite de vistas",
+    "view_limit": "Limitar el número de visitas",
     "view_limit_desc": "El paste expirará después de un número definido de vistas",
     "views": "vistas",
     "view_limit_info": "Este paste expirará después de {{count}} vista(s)",
     "password_placeholder": "Opcional - déjalo vacío para acceso libre",
     "shortcut": "Consejo:",
-    "shortcut_tail": "para crear rápidamente"
+    "shortcut_tail": "para crear rápidamente",
+    "password_help": "Necesaria para leer el texto, que también se cifra con ella.",
+    "language_plain": "Texto sin formato",
+    "placeholder_code": "Escribe o pega aquí tu texto o código"
   },
   "fileshare": {
-    "title": "FileShare",
+    "title": "Compartir un archivo",
     "description": "Comparte tus archivos de forma segura y fácil.",
     "subtitle": "Sube y comparte tus archivos fácilmente",
-    "drag_drop": "Arrastra y suelta tu archivo aquí",
+    "drag_drop": "Arrastra y suelta archivos o carpetas aquí",
+    "partial_share": "{{added}} de {{total}} archivos se añadieron al enlace para compartir. Vuelve a enviar los archivos restantes.",
     "click_to_select": "o haz clic para seleccionar un archivo",
     "file_selected": "Archivo seleccionado:",
     "file_size": "Tamaño:",
@@ -91,17 +97,17 @@
     "download_link": "Enlace de descarga:",
     "creation_error": "Error al crear el compartido",
     "network_error": "Error de red — no se pudo crear el compartido",
-    "advanced": "Configuración avanzada (opcional)",
+    "advanced": "Más opciones",
     "custom_slug": "Enlace personalizado",
     "password_protect": "Protección con contraseña",
-    "validity_label": "Duración de validez",
+    "validity_label": "Caduca tras",
     "never_expires": "Nunca expira",
     "never_expires_desc": "Este archivo permanecerá disponible indefinidamente",
     "days": "días",
     "login_for_more": "Inicia sesión para duraciones más largas (hasta {{max}} días) o sin expiración y archivos más grandes (hasta {{maxSize}}{{unit}})",
     "slug_hint": "Solo letras, números, guiones y guiones bajos",
     "password_placeholder": "Opcional - déjalo vacío para acceso libre",
-    "copied": "✓ Copiado al portapapeles",
+    "copied": "Copiado al portapapeles",
     "copy_title": "Copiar enlace",
     "note": "Nota",
     "note_placeholder": "Opcional - añade una nota o descripción que se mostrará junto al archivo",
@@ -124,7 +130,7 @@
     "select_folder": "Seleccionar carpeta",
     "selected_files": "Archivos seleccionados",
     "total_size": "Total",
-    "view_limit": "Límite de vistas/descargas",
+    "view_limit": "Limitar vistas y descargas",
     "view_limit_desc": "El compartido expirará después de un número definido de vistas o descargas",
     "views": "vistas",
     "view_limit_info": "Este compartido expirará después de {{count}} vista(s)/descarga(s)",
@@ -134,7 +140,9 @@
     "quota_info": "Cuota: {{used}} MB / {{total}} MB utilizados",
     "quota_remaining": "{{remaining}} MB disponibles",
     "quota_exceeded": "Cuota excedida",
-    "quota_warning": "Advertencia: ha utilizado el {{percent}}% de su cuota"
+    "quota_warning": "Advertencia: ha utilizado el {{percent}}% de su cuota",
+    "password_help": "Los visitantes deberán introducir esta contraseña para descargar los archivos.",
+    "remove_file": "Quitar {{name}}"
   },
   "file_download": {
     "loading_error": "Error al cargar la información",
@@ -168,8 +176,7 @@
   },
   "home": {
     "title": "Bienvenido a SnowShare",
-    "description": "Comparte tus archivos, código y URLs de forma segura y fácil.",
-    "eyebrow": "Compartir seguro"
+    "description": "Comparte tus archivos, código y URLs de forma segura y fácil."
   },
   "tabs": {
     "linkshare": "Enlace",
@@ -190,7 +197,7 @@
     "never_expires_desc": "Este enlace permanecerá activo indefinidamente",
     "days": "días",
     "login_for_more": "Inicia sesión para duraciones más largas (hasta {{max}} días) o sin expiración",
-    "advanced": "Configuración avanzada (opcional)",
+    "advanced": "Más opciones",
     "custom_slug": "Enlace personalizado",
     "slug_hint": "Solo letras, números, guiones y guiones bajos",
     "password_protect": "Protección con contraseña",
@@ -200,11 +207,11 @@
     "error_title": "Error",
     "success_title": "¡Enlace creado con éxito!",
     "copy_title": "Copiar enlace",
-    "validity_label": "Duración de validez",
+    "validity_label": "Caduca tras",
     "submit": "Crear enlace compartido",
     "creating": "Creando...",
     "creation_error": "Error al crear el compartido",
-    "copied": "✓ Copiado al portapapeles",
+    "copied": "Copiado al portapapeles",
     "placeholder_slug": "mi-enlace-personalizado",
     "qr_info": "Escanea este código QR para acceder al enlace",
     "duration_never": "Este enlace nunca expirará",
@@ -217,10 +224,11 @@
     "duration_in_x_years": "Este enlace expirará en {{count}} año(s)",
     "locked_title": "Compartir enlaces está bloqueado",
     "locked_message": "Debes iniciar sesión para compartir enlaces.",
-    "view_limit": "Límite de vistas/descargas",
+    "view_limit": "Limitar el número de visitas",
     "view_limit_desc": "El compartido expirará después de un número definido de vistas",
     "views": "vistas",
-    "view_limit_info": "Este compartido expirará después de {{count}} vista(s)"
+    "view_limit_info": "Este compartido expirará después de {{count}} vista(s)",
+    "password_help": "Los visitantes deberán introducir esta contraseña para abrir el enlace."
   },
   "footer": {
     "made_with": "Hecho con",
@@ -380,7 +388,8 @@
     "success_update_verify_email": "Perfil actualizado. Revisa tu nueva dirección de correo para verificarla.",
     "placeholder_protected_url": "Enlace protegido: vuelve a introducir la URL para cambiarla",
     "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
-    "remove_password": "Quitar la contraseña"
+    "remove_password": "Quitar la contraseña",
+    "placeholder_protected_paste": "Paste protegido: vuelve a introducir el contenido para cambiarlo"
   },
   "apikeys": {
     "title": "Claves API",
@@ -882,7 +891,9 @@
       "link_password_required_for_url_change": "Introduce una contraseña (actual o nueva) para cambiar el destino de un enlace protegido.",
       "too_many_files": "Demasiados archivos en una sola subida.",
       "s3_bucket_required": "El nombre del bucket es obligatorio",
-      "email_required": "El correo electrónico es obligatorio"
+      "email_required": "El correo electrónico es obligatorio",
+      "paste_content_required_for_password_change": "Vuelve a introducir el contenido para cambiar o quitar la contraseña de un paste protegido.",
+      "paste_password_required_for_content_change": "Introduce una contraseña (actual o nueva) para cambiar el contenido de un paste protegido."
     },
     "file_protected": "Archivo protegido",
     "file_count": "{{count}} archivos",
@@ -929,5 +940,14 @@
     "protected_paste": "Paste protegido con contraseña",
     "unavailable": "Este enlace compartido ya no está disponible",
     "shared_via": "Compartido mediante {{appName}}"
+  },
+  "shareform": {
+    "show_password": "Mostrar contraseña",
+    "hide_password": "Ocultar contraseña",
+    "summary_views": "{{count}} vista(s) máx.",
+    "summary_password": "Protegido con contraseña",
+    "new_share": "Compartir otro",
+    "key_ctrl": "Ctrl",
+    "key_enter": "Intro"
   }
 }

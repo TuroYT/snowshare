@@ -20,21 +20,23 @@
     "admin_desc": "Admin-Bereich",
     "theme_dark": "Dunkler Modus",
     "theme_light": "Heller Modus",
-    "theme_system": "Automatisch"
+    "theme_system": "Automatisch",
+    "toggle_theme": "Design wechseln",
+    "open_menu": "Menü öffnen"
   },
   "loading": "Lädt...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Teilen Sie Ihre Textausschnitte sicher und einfach.",
-    "share_code_title": "Code teilen",
-    "share_code_description": "Erstellen und teilen Sie Ihre Code-Snippets",
+    "share_code_title": "Text teilen",
+    "share_code_description": "Erstellen und teilen Sie Text oder Code-Snippets",
     "locked_title": "Code-Freigabe ist gesperrt",
     "locked_message": "Sie müssen angemeldet sein, um Code zu teilen."
   },
   "pasteshare_ui": {
     "label_title": "Titel",
     "label_language": "Sprache",
-    "label_expiration": "Ablauf",
+    "label_expiration": "Läuft ab nach",
     "label_password": "Passwort (optional)",
     "placeholder_password": "Optional - leer lassen für freien Zugang",
     "submit": "Paste erstellen",
@@ -42,7 +44,7 @@
     "expiration_7_days": "7 Tage",
     "expiration_30_days": "30 Tage",
     "expiration_custom": "Benutzerdefiniert",
-    "advanced": "Erweiterte Einstellungen (optional)",
+    "advanced": "Weitere Optionen",
     "login_for_more": "Melden Sie sich an für längere Zeiträume oder kein Ablauf",
     "language_placeholder": "Wählen Sie eine Sprache",
     "custom_slug": "Benutzerdefinierter Link",
@@ -57,22 +59,26 @@
     "network_error": "Netzwerkfehler — Paste konnte nicht erstellt werden",
     "success_title": "Paste erfolgreich erstellt!",
     "error_title": "Fehler",
-    "copied": "✓ In die Zwischenablage kopiert",
+    "copied": "In die Zwischenablage kopiert",
     "copy_title": "Link kopieren",
     "qr_info": "Scannen Sie diesen QR-Code, um auf den Paste zuzugreifen",
-    "view_limit": "Ansichtslimit",
+    "view_limit": "Anzahl der Aufrufe begrenzen",
     "view_limit_desc": "Der Paste läuft nach einer festgelegten Anzahl von Ansichten ab",
     "views": "Ansichten",
     "view_limit_info": "Dieser Paste läuft nach {{count}} Ansicht(en) ab",
     "password_placeholder": "Optional - leer lassen für freien Zugang",
     "shortcut": "Tipp:",
-    "shortcut_tail": "zum schnellen Erstellen"
+    "shortcut_tail": "zum schnellen Erstellen",
+    "password_help": "Zum Lesen des Textes erforderlich; der Text wird damit auch verschlüsselt.",
+    "language_plain": "Klartext",
+    "placeholder_code": "Text oder Code hier eingeben oder einfügen"
   },
   "fileshare": {
-    "title": "FileShare",
+    "title": "Datei teilen",
     "description": "Teilen Sie Ihre Dateien sicher und einfach.",
     "subtitle": "Laden Sie Ihre Dateien hoch und teilen Sie sie einfach",
-    "drag_drop": "Ziehen Sie Ihre Datei hierher",
+    "drag_drop": "Dateien oder Ordner hierher ziehen",
+    "partial_share": "{{added}} von {{total}} Dateien wurden dem Freigabelink hinzugefügt. Senden Sie die übrigen Dateien erneut.",
     "click_to_select": "oder klicken Sie, um eine Datei auszuwählen",
     "file_selected": "Datei ausgewählt:",
     "file_size": "Größe:",
@@ -91,17 +97,17 @@
     "download_link": "Download-Link:",
     "creation_error": "Fehler beim Erstellen der Freigabe",
     "network_error": "Netzwerkfehler — Freigabe konnte nicht erstellt werden",
-    "advanced": "Erweiterte Einstellungen (optional)",
+    "advanced": "Weitere Optionen",
     "custom_slug": "Benutzerdefinierter Link",
     "password_protect": "Passwortschutz",
-    "validity_label": "Gültigkeitsdauer",
+    "validity_label": "Läuft ab nach",
     "never_expires": "Kein Ablauf",
     "never_expires_desc": "Diese Datei bleibt unbegrenzt verfügbar",
     "days": "Tage",
     "login_for_more": "Melden Sie sich an für längere Zeiträume (bis zu {{max}} Tage) oder kein Ablauf und größere Dateien (bis zu {{maxSize}}{{unit}})",
     "slug_hint": "Nur Buchstaben, Zahlen, Bindestriche und Unterstriche",
     "password_placeholder": "Optional - leer lassen für freien Zugang",
-    "copied": "✓ In Zwischenablage kopiert",
+    "copied": "In Zwischenablage kopiert",
     "copy_title": "Link kopieren",
     "note": "Notiz",
     "note_placeholder": "Optional - Notiz oder Beschreibung, die neben der Datei angezeigt wird",
@@ -124,7 +130,7 @@
     "select_folder": "Ordner auswählen",
     "selected_files": "Ausgewählte Dateien",
     "total_size": "Gesamt",
-    "view_limit": "Ansichts-/Downloadlimit",
+    "view_limit": "Aufrufe und Downloads begrenzen",
     "view_limit_desc": "Die Freigabe läuft nach einer festgelegten Anzahl von Ansichten oder Downloads ab",
     "views": "Ansichten",
     "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en)/Download(s) ab",
@@ -134,7 +140,9 @@
     "quota_info": "Kontingent: {{used}} MB / {{total}} MB verwendet",
     "quota_remaining": "{{remaining}} MB verfügbar",
     "quota_exceeded": "Kontingent überschritten",
-    "quota_warning": "Warnung: Sie haben {{percent}}% Ihres Kontingents verwendet"
+    "quota_warning": "Warnung: Sie haben {{percent}}% Ihres Kontingents verwendet",
+    "password_help": "Besucher müssen dieses Passwort eingeben, um die Dateien herunterzuladen.",
+    "remove_file": "{{name}} entfernen"
   },
   "file_download": {
     "loading_error": "Fehler beim Laden der Informationen",
@@ -168,8 +176,7 @@
   },
   "home": {
     "title": "Willkommen bei SnowShare",
-    "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach.",
-    "eyebrow": "Sicheres Teilen"
+    "description": "Teilen Sie Ihre Dateien, Ihren Code und Ihre URLs sicher und einfach."
   },
   "tabs": {
     "linkshare": "Link",
@@ -190,7 +197,7 @@
     "never_expires_desc": "Dieser Link bleibt unbegrenzt aktiv",
     "days": "Tage",
     "login_for_more": "Melden Sie sich an für längere Zeiträume (bis zu {{max}} Tage) oder kein Ablauf",
-    "advanced": "Erweiterte Einstellungen (optional)",
+    "advanced": "Weitere Optionen",
     "custom_slug": "Benutzerdefinierter Link",
     "slug_hint": "Nur Buchstaben, Zahlen, Bindestriche und Unterstriche",
     "password_protect": "Passwortschutz",
@@ -200,11 +207,11 @@
     "error_title": "Fehler",
     "success_title": "Link erfolgreich erstellt!",
     "copy_title": "Link kopieren",
-    "validity_label": "Gültigkeitsdauer",
+    "validity_label": "Läuft ab nach",
     "submit": "Geteilten Link erstellen",
     "creating": "Wird erstellt...",
     "creation_error": "Fehler beim Erstellen der Freigabe",
-    "copied": "✓ In Zwischenablage kopiert",
+    "copied": "In Zwischenablage kopiert",
     "placeholder_slug": "mein-benutzerdefinierter-link",
     "qr_info": "Scannen Sie diesen QR-Code, um auf den Link zuzugreifen",
     "duration_never": "Dieser Link wird nie ablaufen",
@@ -217,10 +224,11 @@
     "duration_in_x_years": "Dieser Link wird in {{count}} Jahr(en) ablaufen",
     "locked_title": "Link-Freigabe ist gesperrt",
     "locked_message": "Sie müssen angemeldet sein, um Links zu teilen.",
-    "view_limit": "Ansichts-/Downloadlimit",
+    "view_limit": "Anzahl der Aufrufe begrenzen",
     "view_limit_desc": "Die Freigabe läuft nach einer festgelegten Anzahl von Ansichten ab",
     "views": "Ansichten",
-    "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en) ab"
+    "view_limit_info": "Diese Freigabe läuft nach {{count}} Ansicht(en) ab",
+    "password_help": "Besucher müssen dieses Passwort eingeben, um den Link zu öffnen."
   },
   "footer": {
     "made_with": "Made with",
@@ -380,7 +388,8 @@
     "success_update_verify_email": "Profil aktualisiert. Bitte prüfe deine neue E-Mail-Adresse, um sie zu bestätigen.",
     "placeholder_protected_url": "Geschützter Link: URL erneut eingeben, um sie zu ändern",
     "placeholder_password_keep": "Leer lassen, um das aktuelle Passwort beizubehalten",
-    "remove_password": "Passwort entfernen"
+    "remove_password": "Passwort entfernen",
+    "placeholder_protected_paste": "Geschützter Paste: Inhalt erneut eingeben, um ihn zu ändern"
   },
   "apikeys": {
     "title": "API-Schlüssel",
@@ -882,7 +891,9 @@
       "link_password_required_for_url_change": "Gib ein Passwort (aktuell oder neu) ein, um das Ziel eines geschützten Links zu ändern.",
       "too_many_files": "Zu viele Dateien in einem einzigen Upload.",
       "s3_bucket_required": "Der Bucket-Name ist erforderlich",
-      "email_required": "E-Mail-Adresse ist erforderlich"
+      "email_required": "E-Mail-Adresse ist erforderlich",
+      "paste_content_required_for_password_change": "Gib den Inhalt erneut ein, um das Passwort eines geschützten Pastes zu ändern oder zu entfernen.",
+      "paste_password_required_for_content_change": "Gib ein Passwort (aktuell oder neu) ein, um den Inhalt eines geschützten Pastes zu ändern."
     },
     "file_protected": "Geschützte Datei",
     "file_count": "{{count}} Dateien",
@@ -929,5 +940,14 @@
     "protected_paste": "Passwortgeschützter Paste",
     "unavailable": "Diese Freigabe ist nicht mehr verfügbar",
     "shared_via": "Geteilt über {{appName}}"
+  },
+  "shareform": {
+    "show_password": "Passwort anzeigen",
+    "hide_password": "Passwort verbergen",
+    "summary_views": "max. {{count}} Aufruf(e)",
+    "summary_password": "Passwortgeschützt",
+    "new_share": "Neue Freigabe",
+    "key_ctrl": "Strg",
+    "key_enter": "Eingabe"
   }
 }

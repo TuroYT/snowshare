@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Button } from "@/components/ui";
 
 interface SubmitButtonProps {
   loading: boolean;
@@ -20,11 +21,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
 }) => {
   return (
     <div className="pt-2">
-      <button
-        type="submit"
-        disabled={disabled}
-        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-[var(--radius)] font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <Button type="submit" disabled={disabled} className="w-full gap-2 px-6 py-3 font-medium">
         {loading ? (
           <>
             <svg
@@ -57,7 +54,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
             {submitText}
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 };

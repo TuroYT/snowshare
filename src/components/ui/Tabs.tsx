@@ -23,10 +23,29 @@ export function Tabs({
     () => ({ active: value, onChange: onValueChange }),
     [value, onValueChange]
   );
+  // Arrow keys / Home / End move focus and select the tab (automatic activation).
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const tabs = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]'));
+    const i = tabs.indexOf(document.activeElement as HTMLElement);
+    if (i < 0) return;
+    const targets: Record<string, number> = {
+      ArrowRight: (i + 1) % tabs.length,
+      ArrowLeft: (i - 1 + tabs.length) % tabs.length,
+      Home: 0,
+      End: tabs.length - 1,
+    };
+    const next = targets[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    tabs[next].focus();
+    tabs[next].click();
+  };
+
   return (
     <Ctx.Provider value={ctxValue}>
       <div
         role="tablist"
+        onKeyDown={handleKeyDown}
         className={cn(
           "flex border-b border-[var(--border)] overflow-x-auto scrollbar-hide",
           className
@@ -47,6 +66,8 @@ export function Tab({ value, children }: Readonly<{ value: string; children: Rea
       role="tab"
       id={`tab-${value}`}
       aria-selected={isActive}
+      aria-controls={isActive ? `tabpanel-${value}` : undefined}
+      tabIndex={isActive ? 0 : -1}
       onClick={() => onChange(value)}
       className={cn(
         "px-4 py-2 text-sm transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] border-b-2 -mb-px",

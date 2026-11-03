@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import type { Extension } from "@codemirror/state";
 import { StreamLanguage } from "@codemirror/language";
@@ -57,6 +58,7 @@ const basicSetup = {
 };
 
 const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false }) => {
+  const { t } = useTranslation();
   const [value, setValue] = React.useState(code);
   const [extensions, setExtensions] = React.useState<Extension[]>([]);
   const [theme, setTheme] = React.useState<Extension | undefined>(undefined);
@@ -88,7 +90,9 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
     loadTheme()
       .then((m) => {
         if (!cancelled) {
-          setTheme(m.atomoneInit({ settings: { caret: "#c6c6c6", fontFamily: "monospace" } }));
+          setTheme(
+            m.atomoneInit({ settings: { caret: "var(--primary)", fontFamily: "monospace" } })
+          );
         }
       })
       .catch((error) => {
@@ -105,6 +109,8 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
         <CodeMirror
           value={value}
           height="100%"
+          minHeight="320px"
+          placeholder={t("pasteshare_ui.placeholder_code", "Type or paste your text or code here")}
           width="100%"
           readOnly={readOnly}
           basicSetup={basicSetup}

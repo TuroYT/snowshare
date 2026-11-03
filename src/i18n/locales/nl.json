@@ -20,21 +20,23 @@
     "admin_desc": "Beheerpaneel",
     "theme_dark": "Donkere modus",
     "theme_light": "Lichte modus",
-    "theme_system": "Automatisch"
+    "theme_system": "Automatisch",
+    "toggle_theme": "Thema wisselen",
+    "open_menu": "Menu openen"
   },
   "loading": "Laden...",
   "pasteshare": {
     "title": "PasteShare",
     "description": "Deel je tekstfragmenten veilig en eenvoudig.",
-    "share_code_title": "Code delen",
-    "share_code_description": "Maak en deel je codefragmenten",
+    "share_code_title": "Tekst delen",
+    "share_code_description": "Maak en deel tekst of codefragmenten",
     "locked_title": "Code delen is vergrendeld",
     "locked_message": "Je moet ingelogd zijn om code te delen."
   },
   "pasteshare_ui": {
     "label_title": "Titel",
     "label_language": "Taal",
-    "label_expiration": "Vervaldatum",
+    "label_expiration": "Verloopt na",
     "label_password": "Wachtwoord (optioneel)",
     "placeholder_password": "Optioneel - leeg laten voor vrije toegang",
     "submit": "Paste aanmaken",
@@ -42,7 +44,7 @@
     "expiration_7_days": "7 dagen",
     "expiration_30_days": "30 dagen",
     "expiration_custom": "Aangepast",
-    "advanced": "Geavanceerde instellingen (optioneel)",
+    "advanced": "Meer opties",
     "login_for_more": "Log in voor langere looptijden of geen vervaldatum",
     "language_placeholder": "Selecteer een taal",
     "custom_slug": "Aangepaste link",
@@ -57,22 +59,26 @@
     "network_error": "Netwerkfout — kon paste niet aanmaken",
     "success_title": "Paste succesvol aangemaakt!",
     "error_title": "Fout",
-    "copied": "✓ Gekopieerd naar klembord",
+    "copied": "Gekopieerd naar klembord",
     "copy_title": "Link kopiëren",
     "qr_info": "Scan deze QR-code om de paste te openen",
-    "view_limit": "Weergavelimiet",
+    "view_limit": "Aantal weergaven beperken",
     "view_limit_desc": "De paste verloopt na een ingesteld aantal weergaves",
     "views": "weergaves",
     "view_limit_info": "Deze paste verloopt na {{count}} weergave(s)",
     "password_placeholder": "Optioneel - leeg laten voor vrije toegang",
     "shortcut": "Tip:",
-    "shortcut_tail": "om snel aan te maken"
+    "shortcut_tail": "om snel aan te maken",
+    "password_help": "Nodig om de tekst te lezen; de tekst wordt er ook mee versleuteld.",
+    "language_plain": "Platte tekst",
+    "placeholder_code": "Typ of plak hier je tekst of code"
   },
   "fileshare": {
-    "title": "FileShare",
+    "title": "Bestand delen",
     "description": "Deel je bestanden veilig en eenvoudig.",
     "subtitle": "Upload en deel je bestanden eenvoudig",
-    "drag_drop": "Sleep je bestand hierheen",
+    "drag_drop": "Sleep bestanden of mappen hierheen",
+    "partial_share": "{{added}} van {{total}} bestanden zijn aan de deellink toegevoegd. Probeer de resterende bestanden opnieuw te versturen.",
     "click_to_select": "of klik om een bestand te selecteren",
     "file_selected": "Bestand geselecteerd:",
     "file_size": "Grootte:",
@@ -91,17 +97,17 @@
     "download_link": "Downloadlink:",
     "creation_error": "Fout bij aanmaken van share",
     "network_error": "Netwerkfout — kon share niet aanmaken",
-    "advanced": "Geavanceerde instellingen (optioneel)",
+    "advanced": "Meer opties",
     "custom_slug": "Aangepaste link",
     "password_protect": "Wachtwoordbeveiliging",
-    "validity_label": "Geldigheidsduur",
+    "validity_label": "Verloopt na",
     "never_expires": "Geen vervaldatum",
     "never_expires_desc": "Dit bestand blijft onbeperkt beschikbaar",
     "days": "dagen",
     "login_for_more": "Log in voor langere looptijden (tot {{max}} dagen), geen vervaldatum en grotere bestanden (tot {{maxSize}}{{unit}})",
     "slug_hint": "Alleen letters, cijfers, streepjes en underscores",
     "password_placeholder": "Optioneel - leeg laten voor vrije toegang",
-    "copied": "✓ Gekopieerd naar klembord",
+    "copied": "Gekopieerd naar klembord",
     "copy_title": "Link kopiëren",
     "note": "Notitie",
     "note_placeholder": "Optioneel - voeg een notitie of beschrijving toe die naast het bestand wordt getoond",
@@ -128,13 +134,15 @@
     "select_folder": "Selecteer map",
     "selected_files": "Geselecteerde bestanden",
     "total_size": "Totaal",
-    "view_limit": "Weergave-/downloadlimiet",
+    "view_limit": "Weergaven en downloads beperken",
     "view_limit_desc": "De share verloopt na een ingesteld aantal weergaves of downloads",
     "views": "weergaves",
     "view_limit_info": "Deze share verloopt na {{count}} weergave(s)/download(s)",
     "total_size_too_large": "De totale grootte overschrijdt de limiet (max. {{max}} {{unit}})",
     "file": "Bestand",
-    "or_click": "of klik om te selecteren"
+    "or_click": "of klik om te selecteren",
+    "password_help": "Bezoekers moeten dit wachtwoord invoeren om de bestanden te downloaden.",
+    "remove_file": "{{name}} verwijderen"
   },
   "file_download": {
     "loading_error": "Fout bij laden van informatie",
@@ -168,8 +176,7 @@
   },
   "home": {
     "title": "Welkom bij SnowShare",
-    "description": "Deel je bestanden, code en URL's veilig en eenvoudig.",
-    "eyebrow": "Veilig delen"
+    "description": "Deel je bestanden, code en URL's veilig en eenvoudig."
   },
   "tabs": {
     "linkshare": "Link",
@@ -190,7 +197,7 @@
     "never_expires_desc": "Deze link blijft onbeperkt actief",
     "days": "dagen",
     "login_for_more": "Log in voor langere looptijden (tot {{max}} dagen) of geen vervaldatum",
-    "advanced": "Geavanceerde instellingen (optioneel)",
+    "advanced": "Meer opties",
     "custom_slug": "Aangepaste link",
     "slug_hint": "Alleen letters, cijfers, streepjes en underscores",
     "password_protect": "Wachtwoordbeveiliging",
@@ -200,11 +207,11 @@
     "error_title": "Fout",
     "success_title": "Link succesvol aangemaakt!",
     "copy_title": "Link kopiëren",
-    "validity_label": "Geldigheidsduur",
+    "validity_label": "Verloopt na",
     "submit": "Gedeelde link aanmaken",
     "creating": "Aanmaken...",
     "creation_error": "Fout bij aanmaken van share",
-    "copied": "✓ Gekopieerd naar klembord",
+    "copied": "Gekopieerd naar klembord",
     "placeholder_slug": "mijn-aangepaste-link",
     "qr_info": "Scan deze QR-code om de link te openen",
     "duration_never": "Deze link verloopt nooit",
@@ -217,10 +224,11 @@
     "duration_in_x_years": "Deze link verloopt over {{count}} jaar",
     "locked_title": "Links delen is vergrendeld",
     "locked_message": "Je moet ingelogd zijn om links te delen.",
-    "view_limit": "Weergave-/downloadlimiet",
+    "view_limit": "Aantal weergaven beperken",
     "view_limit_desc": "De share verloopt na een ingesteld aantal weergaves",
     "views": "weergaves",
-    "view_limit_info": "Deze share verloopt na {{count}} weergave(s)"
+    "view_limit_info": "Deze share verloopt na {{count}} weergave(s)",
+    "password_help": "Bezoekers moeten dit wachtwoord invoeren om de link te openen."
   },
   "footer": {
     "made_with": "Gemaakt met",
@@ -380,7 +388,8 @@
     "success_update_verify_email": "Profiel bijgewerkt. Controleer je nieuwe e-mailadres om het te verifiëren.",
     "placeholder_protected_url": "Beveiligde link: voer de URL opnieuw in om deze te wijzigen",
     "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
-    "remove_password": "Wachtwoord verwijderen"
+    "remove_password": "Wachtwoord verwijderen",
+    "placeholder_protected_paste": "Beveiligde paste: voer de inhoud opnieuw in om deze te wijzigen"
   },
   "apikeys": {
     "title": "API-sleutels",
@@ -882,7 +891,9 @@
       "link_password_required_for_url_change": "Voer een wachtwoord (huidig of nieuw) in om de bestemming van een beveiligde link te wijzigen.",
       "too_many_files": "Te veel bestanden in één upload.",
       "s3_bucket_required": "De bucketnaam is verplicht",
-      "email_required": "E-mailadres is verplicht"
+      "email_required": "E-mailadres is verplicht",
+      "paste_content_required_for_password_change": "Voer de inhoud opnieuw in om het wachtwoord van een beveiligde paste te wijzigen of te verwijderen.",
+      "paste_password_required_for_content_change": "Voer een wachtwoord (huidig of nieuw) in om de inhoud van een beveiligde paste te wijzigen."
     },
     "file_protected": "Beveiligd bestand",
     "file_count": "{{count}} bestanden",
@@ -929,5 +940,14 @@
     "protected_paste": "Met wachtwoord beveiligde paste",
     "unavailable": "Deze share is niet meer beschikbaar",
     "shared_via": "Gedeeld via {{appName}}"
+  },
+  "shareform": {
+    "show_password": "Wachtwoord tonen",
+    "hide_password": "Wachtwoord verbergen",
+    "summary_views": "max. {{count}} weergave(n)",
+    "summary_password": "Met wachtwoord beveiligd",
+    "new_share": "Nog een delen",
+    "key_ctrl": "Ctrl",
+    "key_enter": "Enter"
   }
 }

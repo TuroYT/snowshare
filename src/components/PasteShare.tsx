@@ -17,9 +17,7 @@ interface PasteShareProps {
 const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsumed }) => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const [code, setCode] = React.useState(`function helloWorld() {
-    console.log("Hello, world!");
-  }`);
+  const [code, setCode] = React.useState("");
   const [language, setLanguage] = React.useState("javascript");
   const { allowAnonPasteShare, loading: settingsLoading } = useShareSettings();
 
@@ -35,38 +33,11 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
       <LockedShare type="paste" isLoading={false} isLocked={true} />
     ) : (
       <div className="w-full max-w-full overflow-hidden text-left">
-        {/* Header with icon */}
-        <div className="flex items-center gap-4 mb-6 lg:hidden">
-          <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
-            <svg
-              className="w-6 h-6 text-[var(--primary)]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-              />
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-[var(--foreground)]">
-              {t("pasteshare.share_code_title")}
-            </h2>
-            <p className="text-sm text-[var(--foreground-muted)]">
-              {t("pasteshare.share_code_description")}
-            </p>
-          </div>
-        </div>
-
         <div className="flex flex-col lg:flex-row gap-6 w-full max-w-full flex-container-safe">
           {/* Large code editor */}
           <div className="flex-1 min-w-0 max-w-full flex-container-safe">
-            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] min-h-[60vh] lg:min-h-[80vh]">
-              <div className="hidden lg:flex items-center gap-4 mb-6">
+            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
+              <div className="flex items-center gap-4 mb-6">
                 <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-[var(--primary)]"
@@ -84,10 +55,13 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-[var(--foreground)]">
-                    {t("pasteshare.share_code_title")}
+                    {t("pasteshare.share_code_title", "Share text")}
                   </h2>
                   <p className="text-sm text-[var(--foreground-muted)]">
-                    {t("pasteshare.share_code_description")}
+                    {t(
+                      "pasteshare.share_code_description",
+                      "Create and share text or code snippets"
+                    )}
                   </p>
                 </div>
               </div>
@@ -99,8 +73,13 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
 
           {/* Form on the right on desktop, at the bottom on mobile */}
           <div className="w-full lg:w-[32rem] lg:flex-shrink-0 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto flex-container-safe">
-            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)]">
-              <ManageCodeBlock code={code} language={language} onLanguageChange={setLanguage} />
+            <div className="bg-[var(--surface)] p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
+              <ManageCodeBlock
+                code={code}
+                language={language}
+                onLanguageChange={setLanguage}
+                onNewShare={() => setCode("")}
+              />
             </div>
           </div>
         </div>
