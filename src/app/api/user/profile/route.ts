@@ -24,6 +24,7 @@ type ProfileUpdateData = {
   emailVerified?: Date | null;
   password?: string;
   defaultTab?: "linkshare" | "pasteshare" | "fileshare";
+  notifyOnAccess?: boolean;
 };
 
 /** Validates and applies the display name and default tab, or returns an error response. */
@@ -162,6 +163,7 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         isAdmin: true,
         defaultTab: true,
+        notifyOnAccess: true,
       },
     });
 
@@ -186,7 +188,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { name, email, currentPassword, newPassword, defaultTab } = data;
+    const { name, email, currentPassword, newPassword, defaultTab, notifyOnAccess } = data;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -200,6 +202,13 @@ export async function PATCH(request: NextRequest) {
 
     const profileError = applyNameAndTab(request, name, defaultTab, updateData);
     if (profileError) return profileError;
+
+    if (notifyOnAccess !== undefined) {
+      if (typeof notifyOnAccess !== "boolean") {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
+      updateData.notifyOnAccess = notifyOnAccess;
+    }
 
     // Password-based accounts must re-authenticate before changing email or password
     const emailChanged = email !== undefined && email !== user.email;
@@ -238,6 +247,7 @@ export async function PATCH(request: NextRequest) {
         image: true,
         createdAt: true,
         defaultTab: true,
+        notifyOnAccess: true,
       },
     });
 

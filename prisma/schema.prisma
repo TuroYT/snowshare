@@ -56,6 +56,8 @@ model User {
   isAdmin       Boolean    @default(false)
   ssoAutoLink   Boolean    @default(false)
   defaultTab    DefaultTab @default(linkshare)
+  /// E-mail the owner when one of their shares is opened (at most once per share per hour)
+  notifyOnAccess Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
   shares        Share[]
@@ -104,6 +106,8 @@ model Share {
   isBulk        Boolean    @default(false)
   maxViews      Int?
   viewCount     Int        @default(0)
+  /// Last access notification e-mailed to the owner (throttle, see notifyShareOwner)
+  lastAccessNotifiedAt DateTime?
   files         ShareFile[]
   accessLogs    ShareAccessLog[]
 

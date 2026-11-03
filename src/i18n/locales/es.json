@@ -380,7 +380,9 @@
     "success_update_verify_email": "Perfil actualizado. Revisa tu nueva dirección de correo para verificarla.",
     "placeholder_protected_url": "Enlace protegido: vuelve a introducir la URL para cambiarla",
     "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
-    "remove_password": "Quitar la contraseña"
+    "remove_password": "Quitar la contraseña",
+    "notify_on_access": "Avisarme por correo cuando se abra uno de mis enlaces compartidos",
+    "notify_on_access_desc": "Como máximo un correo por elemento compartido y por hora. Requiere que el administrador haya configurado el correo."
   },
   "apikeys": {
     "title": "Claves API",

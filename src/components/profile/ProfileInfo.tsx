@@ -11,6 +11,7 @@ type User = {
   email: string;
   createdAt: string;
   defaultTab?: string;
+  notifyOnAccess?: boolean;
 };
 
 type ProfileInfoProps = {
@@ -23,6 +24,7 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
   const [name, setName] = useState(user.name || "");
   const [email, setEmail] = useState(user.email);
   const [defaultTab, setDefaultTab] = useState(user.defaultTab || "linkshare");
+  const [notifyOnAccess, setNotifyOnAccess] = useState(user.notifyOnAccess ?? false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,7 +57,8 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
         currentPassword?: string;
         newPassword?: string;
         defaultTab?: string;
-      } = { name, email, defaultTab };
+        notifyOnAccess?: boolean;
+      } = { name, email, defaultTab, notifyOnAccess };
 
       // Changing the email or the password requires the current password (credentials accounts)
       if (currentPassword) {
@@ -173,6 +176,26 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
               <option value="fileshare">{t("profile.default_tab_fileshare")}</option>
             </select>
           </div>
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notifyOnAccess}
+              onChange={(e) => setNotifyOnAccess(e.target.checked)}
+              className="mt-1 accent-[var(--primary)]"
+            />
+            <span>
+              <span className="block text-sm font-medium text-[var(--foreground)]">
+                {t("profile.notify_on_access", "E-mail me when one of my shares is opened")}
+              </span>
+              <span className="block text-xs text-[var(--muted)]">
+                {t(
+                  "profile.notify_on_access_desc",
+                  "At most one e-mail per share per hour. Requires e-mail to be configured by the administrator."
+                )}
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="border-t border-[var(--border)] pt-6">
