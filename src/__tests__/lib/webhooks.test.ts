@@ -14,6 +14,8 @@ const settings = getSettingsCached as jest.Mock;
 const findUnique = prisma.share.findUnique as jest.Mock;
 const fetchMock = jest.fn();
 
+const SIGNING_SECRET = crypto.randomBytes(16).toString("hex");
+
 const share = {
   id: "s1",
   slug: "abc",
@@ -47,7 +49,10 @@ describe("emitShareEvent", () => {
   });
 
   it("POSTs a signed JSON event", async () => {
-    settings.mockResolvedValue({ webhookUrl: "https://hooks.example.com", webhookSecret: "k" });
+    settings.mockResolvedValue({
+      webhookUrl: "https://hooks.example.com",
+      webhookSecret: SIGNING_SECRET,
+    });
     await emitShareEvent("share.created", share);
 
     const [url, init] = fetchMock.mock.calls[0];
@@ -55,9 +60,10 @@ describe("emitShareEvent", () => {
     const body = JSON.parse(init.body);
     expect(body.event).toBe("share.created");
     expect(body.share).toMatchObject({ slug: "abc", url: "https://share.example.com/f/abc" });
-    const expected = "sha256=" + crypto.createHmac("sha256", "k").update(init.body).digest("hex");
+    const expected =
+      "sha256=" + crypto.createHmac("sha256", SIGNING_SECRET).update(init.body).digest("hex");
     expect(init.headers["X-SnowShare-Signature"]).toBe(expected);
-    expect(signWebhookBody("k", init.body)).toBe(expected);
+    expect(signWebhookBody(SIGNING_SECRET, init.body)).toBe(expected);
   });
 
   it("looks the share up by id and never throws on network errors", async () => {

@@ -77,8 +77,8 @@ export async function emitShareEvent(event: ShareWebhookEvent, shareOrId: Webhoo
       redirect: "manual",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) console.error(`Webhook ${event} answered ${res.status}`);
+    if (!res.ok) console.error("Webhook answered with an error:", event, res.status);
   } catch (error) {
-    console.error(`Webhook ${event} failed:`, error);
+    console.error("Webhook failed:", event, error);
   }
 }
