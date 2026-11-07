@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { emitShareEvent } from "@/lib/webhooks";
 import { mkdir } from "node:fs/promises";
 import { authenticateApiRequest } from "@/lib/api-auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest) {
       await rollbackShare(share.id);
       throw error;
     }
+    void emitShareEvent("share.created", share);
 
     return NextResponse.json(
       {

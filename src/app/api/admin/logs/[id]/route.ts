@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { emitShareEvent } from "@/lib/webhooks";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -36,7 +37,8 @@ export async function DELETE(
 
     await deleteShareFiles(share);
 
-    await prisma.share.delete({ where: { id: share.id } });
+    const deleted = await prisma.share.delete({ where: { id: share.id } });
+    void emitShareEvent("share.deleted", deleted);
 
     return NextResponse.json({ success: true });
   } catch (error) {
