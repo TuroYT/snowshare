@@ -4,7 +4,7 @@
 
 const mockPrisma = {
   settings: { findFirst: jest.fn() },
-  user: { findUnique: jest.fn(), update: jest.fn() },
+  user: { findUnique: jest.fn(), updateMany: jest.fn() },
   oAuthProvider: { findMany: jest.fn() },
 };
 jest.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
@@ -42,6 +42,7 @@ describe("credentials authorize with TOTP", () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockPrisma.user.updateMany.mockResolvedValue({ count: 1 });
     resetRateLimit("login", "10.0.0.1:a@b.c");
     mockPrisma.user.findUnique.mockResolvedValue({
       id: "u1",
@@ -74,10 +75,21 @@ describe("credentials authorize with TOTP", () => {
       email: "a@b.c",
       name: null,
     });
-    expect(mockPrisma.user.update).toHaveBeenCalledWith({
-      where: { id: "u1" },
+    expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "u1",
+        OR: [{ totpLastCounter: null }, { totpLastCounter: { lt: expect.any(Number) } }],
+      },
       data: { totpLastCounter: expect.any(Number) },
     });
+  });
+
+  it("refuses a code whose time step was claimed by a concurrent sign-in", async () => {
+    mockPrisma.user.updateMany.mockResolvedValueOnce({ count: 0 });
+    const code = totpCode(SECRET, totpCounter());
+    await expect(authorize({ email: "a@b.c", password: "pw", totp: code }, req)).rejects.toThrow(
+      "TotpInvalid"
+    );
   });
 
   it("does not reveal TOTP state on a wrong password", async () => {

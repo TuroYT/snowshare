@@ -321,10 +321,18 @@ export async function getDynamicProviders() {
               recordRateLimitHit("login", limitKey);
               throw new Error("TotpInvalid");
             }
-            await prisma.user.update({
-              where: { id: user.id },
+            // Claim the time step atomically: two concurrent sign-ins can't replay one code
+            const claimed = await prisma.user.updateMany({
+              where: {
+                id: user.id,
+                OR: [{ totpLastCounter: null }, { totpLastCounter: { lt: counter } }],
+              },
               data: { totpLastCounter: counter },
             });
+            if (claimed.count === 0) {
+              recordRateLimitHit("login", limitKey);
+              throw new Error("TotpInvalid");
+            }
           }
 
           resetRateLimit("login", limitKey);
