@@ -15,7 +15,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 export const revalidate = 0; // Disable caching for metadata
 
-const SUPPORTED_LOCALES = ["en", "fr", "es", "de", "pl", "nl"];
+const SUPPORTED_LOCALES = ["en", "fr", "es", "de", "pl", "nl", "it"];
 
 const geistSans = GeistSans;
 const geistMono = GeistMono;

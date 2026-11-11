@@ -78,6 +78,7 @@
     "description": "Condividi i tuoi file in modo sicuro e semplice.",
     "subtitle": "Carica e condividi facilmente i tuoi file",
     "drag_drop": "Trascina e rilascia qui il tuo file",
+    "partial_share": "Sono stati aggiunti {{added}} su {{total}} file al link condiviso. Riprova per inviare i file rimanenti.",
     "click_to_select": "oppure fai clic per selezionare un file",
     "file_selected": "File selezionato:",
     "file_size": "Dimensione:",
@@ -140,7 +141,6 @@
     "total_size_too_large": "La dimensione totale supera il limite (massimo {{max}} {{unit}})",
     "file": "File",
     "or_click": "oppure click per selezionare",
-    "partial_share": "Sono stati aggiunti {{added}} su {{total}} file al link condiviso. Riprova per inviare i file rimanenti.",
     "password_help": "I visitatori dovranno inserire questa password per scaricare i file.",
     "remove_file": "Rimuovi {{name}}"
   },
@@ -285,7 +285,9 @@
     "signin_link": "Accedi",
     "signup_link": "Registrati",
     "signin_with": "Accedi con",
-    "error_too_many_attempts": "Troppi tentativi di accesso non riusciti. Riprova più tardi."
+    "error_too_many_attempts": "Troppi tentativi di accesso non riusciti. Riprova più tardi.",
+    "error_totp_invalid": "Codice di autenticazione non valido.",
+    "totp_label": "Codice di autenticazione"
   },
   "profile": {
     "title": "Il mio profilo",
@@ -765,6 +767,13 @@
       "paste_excerpt": "Mostra estratti dei testi",
       "paste_excerpt_desc": "Includi le prime righe dei testi pubblici senza limite di visualizzazioni nelle anteprime dei link.",
       "paste_excerpt_warning": "Le anteprime vengono salvate dalle app di messaggistica che le recuperano."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare invia un evento JSON in POST a questo URL quando una condivisione viene creata, aperta o eliminata. Lascia vuoto per disattivare.",
+      "url": "URL del webhook",
+      "secret": "Segreto di firma (facoltativo)",
+      "secret_hint": "Inviato come X-SnowShare-Signature: sha256=<HMAC-SHA256 del corpo>"
     }
   },
   "paste_view": {
@@ -942,12 +951,24 @@
     "shared_via": "Condiviso tramite {{appName}}"
   },
   "shareform": {
-    "hide_password": "Nascondi password",
-    "key_ctrl": "Ctrl",
-    "key_enter": "Invio",
-    "new_share": "Nuova condivisione",
     "show_password": "Mostra password",
+    "hide_password": "Nascondi password",
+    "summary_views": "{{count}} visualizzazione(i) max",
     "summary_password": "Protetto da password",
-    "summary_views": "{{count}} visualizzazione(i) max"
+    "new_share": "Nuova condivisione",
+    "key_ctrl": "Ctrl",
+    "key_enter": "Invio"
+  },
+  "totp": {
+    "title": "Autenticazione a due fattori",
+    "enabled_desc": "Attiva: l’accesso con password richiede anche un codice dalla tua app.",
+    "disabled_desc": "Richiedi un codice da un’app di autenticazione (Aegis, Google Authenticator, 1Password…) quando accedi con la password.",
+    "setup": "Configura",
+    "scan": "Scansiona questo codice QR con la tua app, poi inserisci il codice che mostra.",
+    "manual": "Oppure inserisci manualmente questa chiave:",
+    "enable": "Attiva",
+    "disable": "Disattiva",
+    "code_label": "Codice di autenticazione",
+    "error": "Qualcosa è andato storto."
   }
 }
