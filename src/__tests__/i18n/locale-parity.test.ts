@@ -9,7 +9,7 @@ import path from "path";
 
 const LOCALES_DIR = path.join(__dirname, "..", "..", "i18n", "locales");
 const REFERENCE_LOCALE = "en";
-const LOCALES = ["en", "fr", "es", "de", "nl", "pl"];
+const LOCALES = ["en", "fr", "es", "de", "nl", "pl", "it"];
 
 type LocaleTree = { [key: string]: string | LocaleTree };
 

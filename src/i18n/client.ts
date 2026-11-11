@@ -9,6 +9,7 @@ import es from "./locales/es.json";
 import de from "./locales/de.json";
 import pl from "./locales/pl.json";
 import nl from "./locales/nl.json";
+import it from "./locales/it.json";
 
 export const languages = [
   { code: "fr", label: "🇫🇷 FR" },
@@ -17,6 +18,7 @@ export const languages = [
   { code: "de", label: "🇩🇪 DE" },
   { code: "pl", label: "🇵🇱 PL" },
   { code: "nl", label: "🇳🇱 NL" },
+  { code: "it", label: "🇮🇹 IT" },
 ] as const;
 
 const translationResources = {
@@ -26,6 +28,7 @@ const translationResources = {
   de,
   pl,
   nl,
+  it,
 };
 
 const resources = Object.fromEntries(

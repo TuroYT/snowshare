@@ -40,6 +40,8 @@ describe("detectLocaleFromHeaders", () => {
   });
 
   it("falls back to a supported default without any hint", () => {
-    expect(["en", "fr", "es", "de", "pl", "nl"]).toContain(detectLocaleFromHeaders(new Headers()));
+    expect(["en", "fr", "es", "de", "pl", "nl", "it"]).toContain(
+      detectLocaleFromHeaders(new Headers())
+    );
   });
 });
