@@ -42,7 +42,5 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "https-sonar-sheephost-fr",
     "projectKey": "TuroYT_snowshare_4db21712-11b7-4dfd-96ba-6cfd0c472d4e"
-  },
-  "i18n-ally.localesPaths": ["src/i18n", "src/i18n/locales", "src/__tests__/i18n"],
-  "i18n-ally.keystyle": "nested"
+  }
 }
