@@ -285,7 +285,9 @@
     "signin_link": "Iniciar sesión",
     "signup_link": "Registrarse",
     "signin_with": "Iniciar sesión con",
-    "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde."
+    "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde.",
+    "error_totp_invalid": "Código de autenticación no válido.",
+    "totp_label": "Código de autenticación"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -765,6 +767,13 @@
       "paste_excerpt": "Mostrar extractos de pastes",
       "paste_excerpt_desc": "Incluye las primeras líneas de los pastes públicos sin límite de vistas en las vistas previas.",
       "paste_excerpt_warning": "Los extractos quedan almacenados en las aplicaciones de mensajería que obtienen la vista previa."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare envía un evento JSON por POST a esta URL cuando se crea, abre o elimina un elemento compartido. Déjalo vacío para desactivarlo.",
+      "url": "URL del webhook",
+      "secret": "Secreto de firma (opcional)",
+      "secret_hint": "Se envía como X-SnowShare-Signature: sha256=<HMAC-SHA256 del cuerpo>"
     }
   },
   "paste_view": {
@@ -949,5 +958,17 @@
     "new_share": "Compartir otro",
     "key_ctrl": "Ctrl",
     "key_enter": "Intro"
+  },
+  "totp": {
+    "title": "Autenticación en dos pasos",
+    "enabled_desc": "Activada: al iniciar sesión con contraseña también se pide un código de tu aplicación.",
+    "disabled_desc": "Pedir un código de una aplicación de autenticación (Aegis, Google Authenticator, 1Password…) al iniciar sesión con contraseña.",
+    "setup": "Configurar",
+    "scan": "Escanea este código QR con tu aplicación y luego introduce el código que muestra.",
+    "manual": "O introduce esta clave manualmente:",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "code_label": "Código de autenticación",
+    "error": "Algo salió mal."
   }
 }

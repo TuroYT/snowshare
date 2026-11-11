@@ -285,7 +285,9 @@
     "signin_link": "Zaloguj się",
     "signup_link": "Zarejestruj się",
     "signin_with": "Zaloguj się przez",
-    "error_too_many_attempts": "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie później."
+    "error_too_many_attempts": "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie później.",
+    "error_totp_invalid": "Nieprawidłowy kod uwierzytelniający.",
+    "totp_label": "Kod uwierzytelniający"
   },
   "profile": {
     "title": "Mój profil",
@@ -765,6 +767,13 @@
       "paste_excerpt": "Pokazuj fragmenty paste'ów",
       "paste_excerpt_desc": "Dodaje pierwsze linie publicznych paste'ów bez limitu wyświetleń do podglądów linków.",
       "paste_excerpt_warning": "Fragmenty są przechowywane przez komunikatory, które pobierają podgląd."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare wysyła zdarzenie JSON metodą POST na ten adres, gdy udostępnienie zostanie utworzone, otwarte lub usunięte. Pozostaw puste, aby wyłączyć.",
+      "url": "Adres URL webhooka",
+      "secret": "Sekret podpisu (opcjonalnie)",
+      "secret_hint": "Wysyłany jako X-SnowShare-Signature: sha256=<HMAC-SHA256 treści>"
     }
   },
   "paste_view": {
@@ -949,5 +958,17 @@
     "new_share": "Nowe udostępnienie",
     "key_ctrl": "Ctrl",
     "key_enter": "Enter"
+  },
+  "totp": {
+    "title": "Uwierzytelnianie dwuskładnikowe",
+    "enabled_desc": "Włączone: logowanie hasłem wymaga też kodu z aplikacji.",
+    "disabled_desc": "Wymagaj kodu z aplikacji uwierzytelniającej (Aegis, Google Authenticator, 1Password…) przy logowaniu hasłem.",
+    "setup": "Skonfiguruj",
+    "scan": "Zeskanuj ten kod QR w aplikacji, a następnie wpisz wyświetlony kod.",
+    "manual": "Lub wpisz ten klucz ręcznie:",
+    "enable": "Włącz",
+    "disable": "Wyłącz",
+    "code_label": "Kod uwierzytelniający",
+    "error": "Coś poszło nie tak."
   }
 }

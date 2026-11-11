@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { emitShareEvent } from "@/lib/webhooks";
 import { mkdir } from "node:fs/promises";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -117,6 +118,7 @@ export async function POST(req: NextRequest) {
       await rollbackShare(share.id);
       throw error;
     }
+    void emitShareEvent("share.created", share);
 
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
 

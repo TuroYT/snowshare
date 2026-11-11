@@ -285,7 +285,9 @@
     "signin_link": "Inloggen",
     "signup_link": "Registreren",
     "signin_with": "Inloggen met",
-    "error_too_many_attempts": "Te veel mislukte aanmeldpogingen. Probeer het later opnieuw."
+    "error_too_many_attempts": "Te veel mislukte aanmeldpogingen. Probeer het later opnieuw.",
+    "error_totp_invalid": "Ongeldige authenticatiecode.",
+    "totp_label": "Authenticatiecode"
   },
   "profile": {
     "title": "Mijn profiel",
@@ -765,6 +767,13 @@
       "paste_excerpt": "Paste-fragmenten tonen",
       "paste_excerpt_desc": "Neemt de eerste regels van openbare pastes zonder weergavelimiet op in linkvoorbeelden.",
       "paste_excerpt_warning": "Fragmenten worden opgeslagen door de berichtenapps die het voorbeeld ophalen."
+    },
+    "webhooks": {
+      "title": "Webhook",
+      "description": "SnowShare stuurt een JSON-gebeurtenis via POST naar deze URL wanneer een share wordt aangemaakt, geopend of verwijderd. Leeg laten om uit te schakelen.",
+      "url": "Webhook-URL",
+      "secret": "Ondertekeningsgeheim (optioneel)",
+      "secret_hint": "Verzonden als X-SnowShare-Signature: sha256=<HMAC-SHA256 van de body>"
     }
   },
   "paste_view": {
@@ -949,5 +958,17 @@
     "new_share": "Nog een delen",
     "key_ctrl": "Ctrl",
     "key_enter": "Enter"
+  },
+  "totp": {
+    "title": "Tweestapsverificatie",
+    "enabled_desc": "Aan: inloggen met je wachtwoord vraagt ook om een code uit je app.",
+    "disabled_desc": "Vraag bij inloggen met wachtwoord om een code uit een authenticator-app (Aegis, Google Authenticator, 1Password…).",
+    "setup": "Instellen",
+    "scan": "Scan deze QR-code met je app en voer daarna de getoonde code in.",
+    "manual": "Of voer deze sleutel handmatig in:",
+    "enable": "Inschakelen",
+    "disable": "Uitschakelen",
+    "code_label": "Authenticatiecode",
+    "error": "Er ging iets mis."
   }
 }
