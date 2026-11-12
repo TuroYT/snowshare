@@ -49,7 +49,12 @@ jobs:
           else
             git add package.json
             git commit -m "chore: bump version to ${VERSION} [skip ci]"
-            git push origin "HEAD:${TARGET_BRANCH}"
+            # target_commitish is a commit SHA when the release was created on a commit
+            if git ls-remote --exit-code --heads origin "${TARGET_BRANCH}" >/dev/null; then
+              git push origin "HEAD:${TARGET_BRANCH}"
+            else
+              echo "${TARGET_BRANCH} is not a branch; only moving the tag"
+            fi
 
             # Fast-forward the release tag to the bump commit so the
             # auto-generated source tarball reflects the new package.json.
