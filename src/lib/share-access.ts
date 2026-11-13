@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/security";
 import { apiError, ErrorCode } from "@/lib/api-errors";
+import { DOWNLOAD_TOKEN_TTL_SECONDS } from "@/lib/share-constants";
 import { getClientIp } from "@/lib/getClientIp";
 import {
   getRetryAfter,
@@ -127,9 +128,7 @@ export async function consumeView(shareId: string): Promise<boolean> {
  */
 export type DownloadTokenPurpose = "download" | "access";
 
-// Long enough to start large downloads and seek in videos (Range requests reuse the token),
-// short enough to keep "burn after reading" shares meaningful
-export const DOWNLOAD_TOKEN_TTL_SECONDS = 15 * 60;
+export { DOWNLOAD_TOKEN_TTL_SECONDS };
 
 function getTokenSecret(): string {
   const secret = process.env.NEXTAUTH_SECRET;

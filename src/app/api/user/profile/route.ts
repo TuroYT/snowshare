@@ -72,6 +72,7 @@ async function checkCurrentPassword(
 async function applyEmailChange(
   request: NextRequest,
   email: unknown,
+  hasPassword: boolean,
   updateData: ProfileUpdateData
 ): Promise<boolean | NextResponse> {
   if (typeof email !== "string" || !isValidEmail(email)) {
@@ -91,8 +92,10 @@ async function applyEmailChange(
   const needsEmailVerification = !!(settings?.emailVerificationRequired && settings.smtpEnabled);
 
   updateData.email = email;
-  // A new address is unverified until proven otherwise
-  updateData.emailVerified = needsEmailVerification ? null : new Date();
+  // A new address is unverified until proven otherwise. Passwordless (SSO) accounts never get it
+  // for free: emailVerified makes them eligible for verified-email SSO auto-links (src/lib/auth.ts),
+  // so switching to someone else's address must not let their SSO sign-in land here.
+  updateData.emailVerified = needsEmailVerification || !hasPassword ? null : new Date();
   return needsEmailVerification;
 }
 
@@ -212,7 +215,7 @@ export async function PATCH(request: NextRequest) {
 
     // Email update
     if (emailChanged) {
-      const emailResult = await applyEmailChange(request, email, updateData);
+      const emailResult = await applyEmailChange(request, email, !!user.password, updateData);
       if (emailResult instanceof NextResponse) return emailResult;
       needsEmailVerification = emailResult;
     }

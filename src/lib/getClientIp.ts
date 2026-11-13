@@ -71,10 +71,20 @@ export function resolveClientIp(sources: {
  * used. Without it (plain `next dev`/`next start`), forwarding headers are the only source.
  */
 export function getClientIp(request: NextRequest): string {
-  const resolved = normalizeIp(request.headers.get(CLIENT_IP_HEADER));
+  return getClientIpFromHeaders((name) => request.headers.get(name));
+}
+
+/**
+ * Same as getClientIp() for callers that only have a header getter (e.g. the NextAuth
+ * `authorize()` request, whose headers are a plain object).
+ */
+export function getClientIpFromHeaders(
+  header: (name: string) => string | null | undefined
+): string {
+  const resolved = normalizeIp(header(CLIENT_IP_HEADER));
   if (resolved) return resolved;
   return resolveClientIp({
-    forwardedFor: request.headers.get("x-forwarded-for"),
-    realIp: request.headers.get("x-real-ip"),
+    forwardedFor: header("x-forwarded-for"),
+    realIp: header("x-real-ip"),
   });
 }

@@ -7,6 +7,7 @@ jest.mock("@/lib/prisma", () => ({
     share: {
       findMany: jest.fn(),
       deleteMany: jest.fn(),
+      fields: { maxViews: "maxViews" },
     },
     shareFile: {
       findMany: jest.fn(),
@@ -130,6 +131,32 @@ describe("cleanupExpiredShares", () => {
     const result = await cleanupExpiredShares();
 
     expect(result).toEqual({ deletedShares: 1, deletedFiles: 0 });
+  });
+
+  it("also selects shares out of views with no access during the download token lifetime", async () => {
+    const now = Date.now();
+    jest.useFakeTimers({ now });
+    try {
+      await cleanupExpiredShares();
+    } finally {
+      jest.useRealTimers();
+    }
+
+    expect(mockShareFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          OR: [
+            { expiresAt: { lt: new Date(now) } },
+            {
+              maxViews: { not: null },
+              viewCount: { gte: "maxViews" },
+              accessLogs: { none: { accessedAt: { gt: new Date(now - 15 * 60 * 1000) } } },
+            },
+          ],
+          id: { notIn: [] },
+        },
+      })
+    );
   });
 
   it("returns zero counts when no shares are expired", async () => {

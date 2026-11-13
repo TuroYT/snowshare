@@ -14,7 +14,7 @@ jest.mock("@/lib/settings", () => ({ getSettingsCached: jest.fn(async () => ({})
 
 import bcrypt from "bcryptjs";
 import { getAuthOptions } from "@/lib/auth";
-import { resetRateLimit } from "@/lib/rate-limit";
+import { getRemainingEvents, resetRateLimit } from "@/lib/rate-limit";
 import { sealTotpSecret, totpCode, totpCounter } from "@/lib/totp";
 
 type Authorize = (c: Record<string, string>, req: unknown) => Promise<unknown>;
@@ -94,5 +94,17 @@ describe("credentials authorize with TOTP", () => {
 
   it("does not reveal TOTP state on a wrong password", async () => {
     await expect(authorize({ email: "a@b.c", password: "nope" }, req)).resolves.toBeNull();
+  });
+
+  it("throttles failed logins per IP resolved by the custom server, not forwarded headers", async () => {
+    const serverReq = {
+      headers: { "x-snowshare-client-ip": "203.0.113.7", "x-forwarded-for": "10.9.9.9" },
+    };
+    resetRateLimit("login", "203.0.113.7:a@b.c");
+
+    await expect(authorize({ email: "a@b.c", password: "nope" }, serverReq)).resolves.toBeNull();
+
+    expect(getRemainingEvents("login", "203.0.113.7:a@b.c")).toBe(9);
+    expect(getRemainingEvents("login", "10.9.9.9:a@b.c")).toBe(10);
   });
 });
