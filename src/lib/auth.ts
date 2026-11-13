@@ -10,7 +10,7 @@ import { Provider } from "next-auth/providers/index";
 import { providerMap } from "@/lib/providers";
 import { isProviderEmailVerified } from "@/lib/oauth-email";
 import { cookies } from "next/headers";
-import { resolveClientIp } from "@/lib/getClientIp";
+import { getClientIpFromHeaders } from "@/lib/getClientIp";
 import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
 import { openTotpSecret, verifyTotp } from "@/lib/totp";
 
@@ -194,6 +194,52 @@ async function linkAccountWithToken(
   }
 }
 
+/**
+ * Whether an existing account may receive an unrequested link from a provider that vouches for
+ * its email. Anyone can register (or switch to) an address they do not own while email
+ * verification is off, so linking blindly would hand the real owner's SSO identity to that
+ * account ("pre-account takeover"). Hence:
+ * - no password: a password-holder could keep signing in alongside the real owner;
+ * - emailVerified set: by the verification link, or by a sign-in through a provider that vouches
+ *   for the email (see markEmailVerifiedByProvider). An unverified in-app email change clears it
+ *   (src/app/api/user/profile/route.ts).
+ * Other accounts link from the profile page (link token) or through the admin's ssoAutoLink flag.
+ */
+function canAutoLinkByVerifiedEmail(user: ExistingUserWithAccounts): boolean {
+  return !user.password && !!user.emailVerified;
+}
+
+async function getAzureTenantId(provider: string): Promise<string | null | undefined> {
+  if (provider !== "azure-ad") return null;
+  const config = await prisma.oAuthProvider.findUnique({
+    where: { name: "azure-ad" },
+    select: { tenantId: true },
+  });
+  return config?.tenantId;
+}
+
+/**
+ * Records that the user proved ownership of their email by signing in through a provider that
+ * vouches for it (makes the account eligible for verified-email auto-links).
+ */
+async function markEmailVerifiedByProvider(
+  user: { id: string; email?: string | null; emailVerified?: Date | null },
+  account: Account | null,
+  profile: Profile | undefined
+): Promise<void> {
+  if (!account || account.provider === "credentials" || !user.email || user.emailVerified) return;
+  try {
+    const tenantId = await getAzureTenantId(account.provider);
+    if (!isProviderEmailVerified(account, profile, user.email, tenantId)) return;
+    await prisma.user.updateMany({
+      where: { id: user.id, email: user.email, emailVerified: null },
+      data: { emailVerified: new Date() },
+    });
+  } catch (error) {
+    console.error("SSO sign-in: failed to record the provider-verified email:", error);
+  }
+}
+
 async function handleExistingUserSignIn(
   existingUser: ExistingUserWithAccounts,
   account: Account,
@@ -215,17 +261,10 @@ async function handleExistingUserSignIn(
     return autoLinkSsoAccount(existingUser, account);
   }
 
-  // Unrequested link on a provider-verified email: only while sign-up is open
-  if (!settings || settings.allowSignin) {
-    const azureTenantId =
-      account.provider === "azure-ad"
-        ? (
-            await prisma.oAuthProvider.findUnique({
-              where: { name: "azure-ad" },
-              select: { tenantId: true },
-            })
-          )?.tenantId
-        : null;
+  // Unrequested link on a provider-verified email: only while sign-up is open, and only to an
+  // account whose email ownership was proven (see canAutoLinkByVerifiedEmail)
+  if ((!settings || settings.allowSignin) && canAutoLinkByVerifiedEmail(existingUser)) {
+    const azureTenantId = await getAzureTenantId(account.provider);
     if (isProviderEmailVerified(account, profile, email, azureTenantId)) {
       return autoLinkSsoAccount(existingUser, account);
     }
@@ -270,14 +309,11 @@ export async function getDynamicProviders() {
             return null;
           }
 
-          // Throttle failed logins per client IP + email to slow down brute force
-          const header = (name: string): string | undefined => {
+          // Throttle failed logins per client IP + email to slow down brute force. The IP
+          // resolved by server.js from the socket comes first, like in getClientIp()
+          const clientIp = getClientIpFromHeaders((name) => {
             const value = req?.headers?.[name];
             return Array.isArray(value) ? value.join(",") : value;
-          };
-          const clientIp = resolveClientIp({
-            forwardedFor: header("x-forwarded-for"),
-            realIp: header("x-real-ip"),
           });
           const limitKey = `${clientIp}:${credentials.email.toLowerCase()}`;
           if (getRetryAfter("login", limitKey) > 0) {
@@ -373,30 +409,45 @@ export async function getDynamicProviders() {
   return providers;
 }
 
+/**
+ * Whether next-auth's default cookie names carry the __Secure-/__Host- prefixes. Same rule as
+ * getToken() (proxy.ts, server.js) and the static authOptions: NEXTAUTH_URL on https.
+ */
+function usesSecureCookiePrefix(): boolean {
+  return process.env.NEXTAUTH_URL?.startsWith("https://") ?? !!process.env.VERCEL;
+}
+
+/**
+ * Cookies for a cross-origin iframe: they must be SameSite=None; Secure, otherwise the browser
+ * blocks them. The names stay next-auth's defaults: every other session reader (static
+ * authOptions, getToken) looks the session cookie up under those names.
+ */
+export function crossSiteCookies(): NonNullable<NextAuthOptions["cookies"]> {
+  const secure = usesSecureCookiePrefix();
+  const prefix = secure ? "__Secure-" : "";
+  return {
+    sessionToken: {
+      name: `${prefix}next-auth.session-token`,
+      options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
+    },
+    callbackUrl: {
+      name: `${prefix}next-auth.callback-url`,
+      options: { sameSite: "none", path: "/", secure: true },
+    },
+    csrfToken: {
+      name: `${secure ? "__Host-" : ""}next-auth.csrf-token`,
+      options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
+    },
+  };
+}
+
 export async function getAuthOptions(): Promise<NextAuthOptions> {
   const providers = await getDynamicProviders();
 
   const settings = await getSettingsCached();
   const allowIframeEmbedding = settings?.allowIframeEmbedding ?? false;
 
-  // When embedded in a cross-origin iframe, cookies must be SameSite=None; Secure
-  // otherwise the browser blocks them and authentication fails.
-  const cookiesConfig: NextAuthOptions["cookies"] = allowIframeEmbedding
-    ? {
-        sessionToken: {
-          name: "next-auth.session-token",
-          options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
-        },
-        callbackUrl: {
-          name: "next-auth.callback-url",
-          options: { sameSite: "none", path: "/", secure: true },
-        },
-        csrfToken: {
-          name: "next-auth.csrf-token",
-          options: { httpOnly: true, sameSite: "none", path: "/", secure: true },
-        },
-      }
-    : undefined;
+  const cookiesConfig = allowIframeEmbedding ? crossSiteCookies() : undefined;
 
   return {
     adapter: PrismaAdapter(prisma),
@@ -462,6 +513,13 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
     events: {
       async linkAccount({ user, account }) {
         console.log(`Account ${account.provider} linked to user ${user.id}`);
+      },
+      async signIn({ user, account, profile }) {
+        await markEmailVerifiedByProvider(
+          user as { id: string; email?: string | null; emailVerified?: Date | null },
+          account,
+          profile
+        );
       },
     },
     pages: {

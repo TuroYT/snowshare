@@ -276,6 +276,16 @@ describe("/api/user/profile", () => {
         expect(mockVerifyPassword).not.toHaveBeenCalled();
       });
 
+      it("leaves the new email of an account without a password unverified", async () => {
+        mockFindUnique
+          .mockResolvedValueOnce({ ...passwordUser, password: null })
+          .mockResolvedValueOnce(null);
+        const res = await PATCH(makeRequest({ email: "new@example.com" }));
+        expect(res.status).toBe(200);
+        // A verified email makes the account eligible for SSO auto-links (src/lib/auth.ts)
+        expect(mockUpdate.mock.calls[0][0].data.emailVerified).toBeNull();
+      });
+
       it("does not re-authenticate when the email is unchanged", async () => {
         const res = await PATCH(makeRequest({ email: "alice@example.com", name: "Alice B" }));
         expect(res.status).toBe(200);

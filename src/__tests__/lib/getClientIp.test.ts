@@ -2,7 +2,7 @@
  * Tests for getClientIp utility (getClientIp.ts)
  */
 
-import { getClientIp, resolveClientIp } from "@/lib/getClientIp";
+import { getClientIp, getClientIpFromHeaders, resolveClientIp } from "@/lib/getClientIp";
 import { NextRequest } from "next/server";
 
 function makeRequest(headers: Record<string, string>): NextRequest {
@@ -141,5 +141,20 @@ describe("getClientIp with the custom server header", () => {
       "x-forwarded-for": "1.2.3.4",
     });
     expect(getClientIp(request)).toBe("192.0.2.50");
+  });
+});
+
+describe("getClientIpFromHeaders", () => {
+  it("should prefer the IP resolved by server.js over forwarding headers", () => {
+    const headers: Record<string, string> = {
+      "x-snowshare-client-ip": "203.0.113.7",
+      "x-forwarded-for": "10.0.0.1",
+    };
+    expect(getClientIpFromHeaders((name) => headers[name])).toBe("203.0.113.7");
+  });
+
+  it("should fall back to forwarding headers without the server header", () => {
+    const headers: Record<string, string> = { "x-forwarded-for": "10.0.0.1" };
+    expect(getClientIpFromHeaders((name) => headers[name])).toBe("10.0.0.1");
   });
 });
