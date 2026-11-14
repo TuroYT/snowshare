@@ -32,6 +32,7 @@ jobs:
         run: |
           docker run --rm \
             --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -e SEMGREP_APP_TOKEN \
             -e GITHUB_TOKEN \
             -e GITHUB_REPOSITORY \
