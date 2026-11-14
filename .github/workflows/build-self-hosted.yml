@@ -16,7 +16,7 @@ concurrency:
 jobs:
   lint:
     name: Lint
-    runs-on: [self-hosted]
+    runs-on: pitlane
     if: github.event.pull_request.draft == false
     timeout-minutes: 15
     steps:
@@ -24,7 +24,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
-          cache: npm
       - run: npm ci
       - run: npx prisma generate
       - run: npm run lint
@@ -32,7 +31,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: [self-hosted]
+    runs-on: pitlane
     if: github.event.pull_request.draft == false
     timeout-minutes: 15
     steps:
@@ -40,14 +39,13 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
-          cache: npm
       - run: npm ci
       - run: npm test -- --ci --coverage --coverageReporters=text-summary
 
   build:
     name: Build
     needs: [lint, test]
-    runs-on: [self-hosted]
+    runs-on: pitlane
     if: github.event.pull_request.draft == false
     timeout-minutes: 15
     steps:
@@ -55,6 +53,5 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "24"
-          cache: npm
       - run: npm ci
       - run: npm run build

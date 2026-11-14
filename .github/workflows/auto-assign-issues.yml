@@ -7,7 +7,7 @@ on:
 jobs:
   auto-assign:
     name: Auto assign issue to creator
-    runs-on: [self-hosted]
+    runs-on: pitlane
     timeout-minutes: 5
     permissions:
       issues: write
