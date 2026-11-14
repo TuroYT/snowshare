@@ -16,7 +16,7 @@ concurrency:
 jobs:
   semgrep:
     name: Semgrep Scan
-    runs-on: [self-hosted]
+    runs-on: pitlane
     if: github.event.pull_request.draft == false
     timeout-minutes: 20
     permissions:

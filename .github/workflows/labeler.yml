@@ -7,7 +7,7 @@ on:
 jobs:
   label:
     name: Apply labels
-    runs-on: [self-hosted]
+    runs-on: pitlane
     timeout-minutes: 5
     permissions:
       contents: read
