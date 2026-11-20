@@ -343,7 +343,7 @@ export default function Navigation() {
             <button
               onClick={cycleTheme}
               className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
-              aria-label="Toggle theme"
+              aria-label={t("nav.toggle_theme", "Toggle theme")}
             >
               {themeIcon}
             </button>
@@ -383,7 +383,7 @@ export default function Navigation() {
           <button
             className="sm:hidden p-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
             onClick={() => setMobileOpen(true)}
-            aria-label="Open menu"
+            aria-label={t("nav.open_menu", "Open menu")}
           >
             <Menu className="w-5 h-5" />
           </button>

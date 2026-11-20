@@ -14,7 +14,7 @@ concurrency:
 jobs:
   sonarqube:
     name: SonarQube Scan
-    runs-on: [self-hosted]
+    runs-on: pitlane
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -23,7 +23,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-          cache: npm
       - run: npm ci
       - run: npx jest --coverage --coverageReporters=lcov
       - uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0

@@ -72,6 +72,11 @@ function getS3Client(config: S3Config): S3Client {
         },
       }),
     forcePathStyle: !!config.endpoint,
+    // S3-compatible servers (Garage, MinIO, R2...) reject the SDK's default CRC32 checksums on streamed multipart uploads
+    ...(config.endpoint && {
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
+    }),
   });
   globalForS3.__snowshareS3Client = { fingerprint, client };
   return client;

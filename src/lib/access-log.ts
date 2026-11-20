@@ -4,6 +4,7 @@ import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { getRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
 import { sendAccessNotificationEmail } from "@/lib/email";
+import { emitShareEvent } from "@/lib/webhooks";
 
 const SHARE_PREFIX = { FILE: "f", PASTE: "p", URL: "l" } as const;
 
@@ -81,4 +82,5 @@ export async function logShareAccess(request: NextRequest, shareId: string) {
   } catch (error) {
     console.error("Failed to send share access notification:", error);
   }
+  await emitShareEvent("share.accessed", shareId);
 }

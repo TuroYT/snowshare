@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/Input";
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [totp, setTotp] = useState("");
+  const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(true);
@@ -90,13 +92,19 @@ export default function SignIn() {
       const result = await signIn("credentials", {
         email,
         password,
+        ...(needsTotp && { totp }),
         redirect: false,
         // Without it next-auth uses the current URL as callbackUrl and reports any
         // leftover ?error= (e.g. from a refused SSO attempt) as a failed sign-in.
         callbackUrl: "/",
       });
 
-      if (result?.error === "EmailNotVerified") {
+      if (result?.error === "TotpRequired") {
+        setNeedsTotp(true);
+      } else if (result?.error === "TotpInvalid") {
+        setTotp("");
+        setError(t("auth.error_totp_invalid", "Invalid authentication code."));
+      } else if (result?.error === "EmailNotVerified") {
         setError(t("auth.error_email_not_verified"));
       } else if (result?.error === "TooManyAttempts") {
         setError(
@@ -157,6 +165,18 @@ export default function SignIn() {
               placeholder={t("auth.password_placeholder") as string}
               required
             />
+            {needsTotp && (
+              <Input
+                label={t("auth.totp_label", "Authentication code")}
+                value={totp}
+                onChange={(e) => setTotp(e.target.value)}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                placeholder="123456"
+                required
+              />
+            )}
             <Button type="submit" isLoading={loading} className="w-full">
               {t("auth.signin_button", "Sign in")}
             </Button>

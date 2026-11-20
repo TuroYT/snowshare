@@ -13,6 +13,9 @@ import { formatBytes, convertFromMB } from "@/lib/formatSize";
 import type { FileWithPath } from "@/lib/client/file-drop";
 import LockedShare from "./shareComponents/LockedShare";
 import ExpirationSettings from "./shareComponents/ExpirationSettings";
+import PasswordField from "./shareComponents/PasswordField";
+import ShareOptions from "./shareComponents/ShareOptions";
+import { useShareSummary } from "@/hooks/useShareSummary";
 import AdvancedSettings from "./shareComponents/AdvancedSettings";
 import ViewLimitSettings from "./shareComponents/ViewLimitSettings";
 import ShareSuccess from "./shareComponents/ShareSuccess";
@@ -69,9 +72,20 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     setSuccess,
     successSlug,
     setSuccessSlug,
+    successSummary,
+    setSuccessSummary,
+    clearSuccess,
     computeExpiresAt,
     resetAfterSuccess,
   } = useShareForm({ canSubmit: () => files.length > 0 });
+
+  const { summary, fullSummary } = useShareSummary("fileshare", {
+    expiresDays,
+    neverExpires,
+    hasViewLimit,
+    maxViews,
+    hasPassword: !!password.trim(),
+  });
 
   const { startUpload } = useTusUpload();
 
@@ -132,6 +146,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     if (shareSlug) {
       setSuccess(`${window.location.origin}/f/${shareSlug}`);
       setSuccessSlug(shareSlug);
+      setSuccessSummary(fullSummary);
     }
     setFiles([]);
     resetAfterSuccess();
@@ -308,9 +323,26 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
             },
             onError: (message) => {
               fileErrored = true;
-              setError(`${t("fileshare.file", "File")} ${index + 1}: ${message}`);
+              const fileError = `${t("fileshare.file", "File")} ${index + 1}: ${message}`;
               setLoading(false);
               setUploadProgress(0);
+              if (!shareSlug) {
+                setError(fileError);
+                return;
+              }
+              // Files before this one are already stored under the share link: keep that link
+              // and leave only the files still to send selected, so a retry does not duplicate them.
+              setError(
+                `${fileError} ${t(
+                  "fileshare.partial_share",
+                  "{{added}} of {{total}} files were added to the share link. Retry to send the remaining files.",
+                  { added: index, total: files.length }
+                )}`
+              );
+              setSuccess(`${window.location.origin}/f/${shareSlug}`);
+              setSuccessSlug(shareSlug);
+              setSuccessSummary(fullSummary);
+              setFiles(files.slice(index));
             },
           });
 
@@ -348,7 +380,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
       });
 
   return (
-    <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] shadow-[var(--shadow-md)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
+    <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full max-w-2xl mx-auto text-left">
       <div className="flex items-center gap-4 mb-6">
         <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
           <svg
@@ -388,7 +420,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
         />
 
         {/* Upload Progress */}
-        {loading && uploadProgress > 0 && (
+        {loading && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-[var(--foreground)]">
               <span>{t("fileshare.uploading", "Uploading...")}</span>
@@ -398,48 +430,66 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
                 })}
               </span>
             </div>
-            <div className="w-full bg-[var(--surface)] rounded-full h-3">
+            <div
+              role="progressbar"
+              aria-label={t("fileshare.uploading", "Uploading...")}
+              aria-valuenow={uploadProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="w-full bg-[var(--border)] rounded-full h-3"
+            >
               <div
-                className="h-3 rounded-full transition-all duration-300"
-                style={{
-                  width: `${uploadProgress}%`,
-                  background: "var(--primary)",
-                }}
+                className="h-3 rounded-full transition-all duration-300 bg-[var(--primary)]"
+                style={{ width: `${uploadProgress}%` }}
               />
             </div>
           </div>
         )}
 
-        <ExpirationSettings
-          expiresDays={expiresDays}
-          setExpiresDays={setExpiresDays}
-          neverExpires={neverExpires}
-          setNeverExpires={setNeverExpires}
-          translationPrefix="fileshare"
-          loginForMoreParams={{
-            maxSize: convertFromMB(maxFileSizeAuth / (1024 * 1024), useGiBForAuth),
-            unit: useGiBForAuth ? "GiB" : "MiB",
-          }}
-        />
-
-        <ViewLimitSettings
-          hasViewLimit={hasViewLimit}
-          setHasViewLimit={setHasViewLimit}
-          maxViews={maxViews}
-          setMaxViews={setMaxViews}
-          translationPrefix="fileshare"
-        />
-
-        <AdvancedSettings
-          slug={slug}
-          setSlug={setSlug}
+        <PasswordField
           password={password}
           setPassword={setPassword}
-          slugPrefix="/f/"
-          translationPrefix="fileshare"
-          note={note}
-          setNote={setNote}
+          label={t("fileshare.password_protect", "Password protection")}
+          placeholder={t(
+            "fileshare.password_placeholder",
+            "Optional - leave empty for open access"
+          )}
+          help={t(
+            "fileshare.password_help",
+            "Visitors must enter this password to download the files."
+          )}
         />
+
+        <ShareOptions translationPrefix="fileshare" summary={summary}>
+          <ExpirationSettings
+            expiresDays={expiresDays}
+            setExpiresDays={setExpiresDays}
+            neverExpires={neverExpires}
+            setNeverExpires={setNeverExpires}
+            translationPrefix="fileshare"
+            loginForMoreParams={{
+              maxSize: convertFromMB(maxFileSizeAuth / (1024 * 1024), useGiBForAuth),
+              unit: useGiBForAuth ? "GiB" : "MiB",
+            }}
+          />
+
+          <ViewLimitSettings
+            hasViewLimit={hasViewLimit}
+            setHasViewLimit={setHasViewLimit}
+            maxViews={maxViews}
+            setMaxViews={setMaxViews}
+            translationPrefix="fileshare"
+          />
+
+          <AdvancedSettings
+            slug={slug}
+            setSlug={setSlug}
+            slugPrefix="/f/"
+            translationPrefix="fileshare"
+            note={note}
+            setNote={setNote}
+          />
+        </ShareOptions>
 
         <SubmitButton
           loading={loading}
@@ -452,7 +502,15 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
       {error && <ShareError error={error} translationPrefix="fileshare" />}
 
-      {success && <ShareSuccess url={success} slug={successSlug} translationPrefix="fileshare" />}
+      {success && (
+        <ShareSuccess
+          url={success}
+          slug={successSlug}
+          translationPrefix="fileshare"
+          summary={successSummary}
+          onNewShare={clearSuccess}
+        />
+      )}
     </div>
   );
 };

@@ -16,7 +16,7 @@ concurrency:
 jobs:
   semgrep:
     name: Semgrep Scan
-    runs-on: [self-hosted]
+    runs-on: pitlane
     if: github.event.pull_request.draft == false
     timeout-minutes: 20
     permissions:
@@ -32,6 +32,7 @@ jobs:
         run: |
           docker run --rm \
             --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
             -e SEMGREP_APP_TOKEN \
             -e GITHUB_TOKEN \
             -e GITHUB_REPOSITORY \

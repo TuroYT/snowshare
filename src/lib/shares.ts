@@ -15,6 +15,7 @@ import {
 } from "@/lib/constants";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
+import { emitShareEvent } from "@/lib/webhooks";
 import {
   hashPassword,
   isValidSlug,
@@ -215,6 +216,7 @@ export async function createLinkShare(params: CreateLinkShareParams): Promise<Sh
   });
 
   lookupIpGeolocation(context.ip);
+  void emitShareEvent("share.created", share);
   return { share };
 }
 
@@ -277,7 +279,8 @@ export async function createPasteShare(
     if (anonError) return anonError;
   }
 
-  // Hash password
+  // Encrypt the content with the plaintext password, then hash the password
+  const storedPaste = password ? encrypt(paste, password) : paste;
   if (password) {
     password = await hashPassword(password);
   }
@@ -291,7 +294,8 @@ export async function createPasteShare(
 
   const share = await prisma.share.create({
     data: {
-      paste,
+      paste: storedPaste,
+      pasteEncrypted: !!password,
       pastelanguage: pastelanguage as pasteType,
       expiresAt,
       slug,
@@ -304,6 +308,7 @@ export async function createPasteShare(
   });
 
   lookupIpGeolocation(context.ip);
+  void emitShareEvent("share.created", share);
   return { share };
 }
 

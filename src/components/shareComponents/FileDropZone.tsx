@@ -2,11 +2,12 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui";
 import { collectDroppedFiles, type FileWithPath } from "@/lib/client/file-drop";
 
 interface FileDropZoneProps {
   files: FileWithPath[];
-  setFiles: (files: FileWithPath[]) => void;
+  setFiles: React.Dispatch<React.SetStateAction<FileWithPath[]>>;
   setError: (error: string | null) => void;
   totalSize: number;
   formatFileSize: (bytes: number) => string;
@@ -34,33 +35,38 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
 }) => {
   const { t } = useTranslation();
   const [dragOver, setDragOver] = React.useState(false);
+  const labelId = React.useId();
+
+  /** Adds files to the current selection, skipping the ones already selected. */
+  const addFiles = (incoming: FileWithPath[]) => {
+    setFiles((current) => {
+      const seen = new Set(current.map(fileKey));
+      return [...current, ...incoming.filter((f) => !seen.has(fileKey(f)) && seen.add(fileKey(f)))];
+    });
+    setError(null);
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (selectedFiles) {
-      const fileList: FileWithPath[] = Array.from(selectedFiles).map((file) => ({
-        file,
-        relativePath: file.name,
-      }));
-      setFiles(fileList);
-      setError(null);
+      addFiles(Array.from(selectedFiles).map((file) => ({ file, relativePath: file.name })));
     }
+    // Allow picking the same file again after removing it
+    e.target.value = "";
   };
 
   const handleDirectorySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (selectedFiles) {
-      const fileList: FileWithPath[] = Array.from(selectedFiles).map((file) => {
-        const fullPath =
-          (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
-        return {
+      addFiles(
+        Array.from(selectedFiles).map((file) => ({
           file,
-          relativePath: fullPath,
-        };
-      });
-      setFiles(fileList);
-      setError(null);
+          relativePath:
+            (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name,
+        }))
+      );
     }
+    e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -71,10 +77,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
     if (!items) return;
 
     collectDroppedFiles(items)
-      .then((allFiles) => {
-        setFiles(allFiles);
-        setError(null);
-      })
+      .then(addFiles)
       .catch((error) => {
         console.error("FileDropZone drop handling error:", error);
         setError(t("fileshare.network_error", "Network error — could not create share"));
@@ -92,19 +95,51 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
   };
 
   const removeFile = (key: string) => {
-    setFiles(files.filter((f) => fileKey(f) !== key));
+    setFiles((current) => current.filter((f) => fileKey(f) !== key));
   };
+
+  const pickerButtons = (primary: boolean) => (
+    <div className="flex gap-2 justify-center flex-wrap">
+      <Button
+        type="button"
+        variant={primary ? "primary" : "secondary"}
+        className="min-h-11"
+        onClick={(e) => {
+          e.stopPropagation();
+          fileInputRef.current?.click();
+        }}
+      >
+        {t("fileshare.select_files", "Select Files")}
+      </Button>
+      <Button
+        type="button"
+        variant="secondary"
+        className="min-h-11"
+        onClick={(e) => {
+          e.stopPropagation();
+          dirInputRef.current?.click();
+        }}
+      >
+        {t("fileshare.select_folder", "Select Folder")}
+      </Button>
+    </div>
+  );
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-[var(--foreground)]">
+      <p id={labelId} className="block text-sm font-medium text-[var(--foreground)]">
         {t("fileshare.file_selected", "File to share")}&nbsp;
-        <span className="text-[var(--destructive)]">*</span>
-      </label>
+        <span className="text-[var(--destructive)]" aria-hidden="true">
+          *
+        </span>
+      </p>
 
       {files.length === 0 ? (
         <div
-          className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center transition-colors duration-200 ${
+          role="group"
+          aria-labelledby={labelId}
+          onClick={() => fileInputRef.current?.click()}
+          className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center transition-colors duration-200 cursor-pointer ${
             dragOver
               ? "border-[var(--secondary)] bg-[var(--surface-hover)]"
               : "border-[var(--border)] hover:bg-[var(--surface-hover)]"
@@ -115,6 +150,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
         >
           <div className="flex flex-col items-center gap-3">
             <svg
+              aria-hidden="true"
               className="w-12 h-12 text-[var(--foreground-muted)]"
               fill="none"
               stroke="currentColor"
@@ -135,34 +171,13 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
                 {t("fileshare.or_click", "or click to select")}
               </p>
             </div>
-            <div className="flex gap-2 justify-center flex-wrap">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-                className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-md transition-colors text-sm"
-              >
-                {t("fileshare.select_files", "Select Files")}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  dirInputRef.current?.click();
-                }}
-                className="px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--secondary-hover)] text-white rounded-md transition-colors text-sm"
-              >
-                {t("fileshare.select_folder", "Select Folder")}
-              </button>
-            </div>
+            {pickerButtons(true)}
             <p className="text-xs text-[var(--foreground-muted)]">{maxSizeHint}</p>
           </div>
         </div>
       ) : (
         <div className="bg-[var(--surface)] p-4 rounded-[var(--radius)] border border-[var(--border)]">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h3 className="font-medium text-[var(--foreground)]">
               {t("fileshare.selected_files", "Selected Files")} ({files.length})
             </h3>
@@ -184,13 +199,23 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
                     {formatFileSize(fileWithPath.file.size)}
                   </p>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => removeFile(fileKey(fileWithPath))}
-                  className="ml-2 text-[var(--destructive)] hover:opacity-80 transition-opacity"
+                  aria-label={t("fileshare.remove_file", "Remove {{name}}", {
+                    name: fileWithPath.relativePath,
+                  })}
                   title={t("common.remove", "Remove")}
+                  className="ml-2 min-h-11 min-w-11 p-0 text-[var(--destructive)] hover:text-[var(--destructive)]"
                 >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -198,10 +223,11 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
                       d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                </button>
+                </Button>
               </div>
             ))}
           </div>
+          <div className="mt-3">{pickerButtons(false)}</div>
         </div>
       )}
 

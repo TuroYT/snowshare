@@ -4,7 +4,7 @@
 
 type MockPrisma = {
   settings: { findFirst: jest.Mock };
-  user: { findUnique: jest.Mock; update: jest.Mock };
+  user: { findUnique: jest.Mock; update: jest.Mock; updateMany: jest.Mock };
   account: { create: jest.Mock; findFirst: jest.Mock };
   verificationToken: { findFirst: jest.Mock; delete: jest.Mock };
   oAuthProvider: { findMany: jest.Mock; findUnique: jest.Mock };
@@ -13,7 +13,7 @@ type MockPrisma = {
 
 const mockPrisma: MockPrisma = {
   settings: { findFirst: jest.fn() },
-  user: { findUnique: jest.fn(), update: jest.fn() },
+  user: { findUnique: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
   account: { create: jest.fn(), findFirst: jest.fn() },
   verificationToken: { findFirst: jest.fn(), delete: jest.fn() },
   oAuthProvider: { findMany: jest.fn(), findUnique: jest.fn() },
@@ -255,9 +255,12 @@ describe("signIn callback - SSO auto-link", () => {
       `h.${Buffer.from(JSON.stringify(claims)).toString("base64url")}.s`;
 
     beforeEach(() => {
+      // Passwordless account whose email was proven (verification link or a vouching provider)
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: "u1",
         email: "user@example.com",
+        password: null,
+        emailVerified: new Date("2026-01-01"),
         ssoAutoLink: false,
         accounts: [],
       });
@@ -293,6 +296,44 @@ describe("signIn callback - SSO auto-link", () => {
           data: expect.objectContaining({ userId: "u1", provider: "google" }),
         })
       );
+    });
+
+    it("does not auto-link to an account that has a password (pre-account takeover)", async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: "u1",
+        email: "user@example.com",
+        password: "$2a$12$hash",
+        emailVerified: new Date("2026-01-01"),
+        ssoAutoLink: false,
+        accounts: [],
+      });
+
+      const result = await runSignIn(
+        { ...mockAccount, provider: "google", providerAccountId: "g-1" },
+        { email: "user@example.com", email_verified: true }
+      );
+
+      expect(result).toBe("/auth/signin?error=OAuthAccountNotLinked");
+      expect(prisma.account.create).not.toHaveBeenCalled();
+    });
+
+    it("does not auto-link to a passwordless account whose email was never proven", async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: "u1",
+        email: "user@example.com",
+        password: null,
+        emailVerified: null,
+        ssoAutoLink: false,
+        accounts: [],
+      });
+
+      const result = await runSignIn(
+        { ...mockAccount, provider: "google", providerAccountId: "g-1" },
+        { email: "user@example.com", email_verified: true }
+      );
+
+      expect(result).toBe("/auth/signin?error=OAuthAccountNotLinked");
+      expect(prisma.account.create).not.toHaveBeenCalled();
     });
 
     it("does not auto-link a verified email when sign-up (allowSignin) is disabled", async () => {
@@ -406,5 +447,56 @@ describe("signIn callback - SSO auto-link", () => {
       expect(prisma.account.create).toHaveBeenCalled();
       expect(prisma.verificationToken.delete).toHaveBeenCalled();
     });
+  });
+});
+
+describe("signIn event - provider-verified email", () => {
+  const googleAccount = { ...mockAccount, provider: "google", providerAccountId: "g-1" };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (prisma.settings.findFirst as jest.Mock).mockResolvedValue({ allowSignin: true });
+    (prisma.oAuthProvider.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.user.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
+  });
+
+  async function runEvent(user: object, account: object | null, profile?: object) {
+    const options = await getAuthOptions();
+    await options.events!.signIn!({
+      user: user as never,
+      account: account as never,
+      profile: profile as never,
+      isNewUser: true,
+    });
+  }
+
+  it("records the email as verified when the provider vouches for it", async () => {
+    await runEvent({ id: "u1", email: "user@example.com", emailVerified: null }, googleAccount, {
+      email: "user@example.com",
+      email_verified: true,
+    });
+
+    expect(prisma.user.updateMany).toHaveBeenCalledWith({
+      where: { id: "u1", email: "user@example.com", emailVerified: null },
+      data: { emailVerified: expect.any(Date) },
+    });
+  });
+
+  it("leaves the email unverified when the provider does not vouch for it", async () => {
+    await runEvent({ id: "u1", email: "user@example.com", emailVerified: null }, googleAccount, {
+      email: "user@example.com",
+      email_verified: false,
+    });
+
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("ignores credentials sign-ins", async () => {
+    await runEvent(
+      { id: "u1", email: "user@example.com", emailVerified: null },
+      { provider: "credentials", type: "credentials", providerAccountId: "u1" }
+    );
+
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
   });
 });

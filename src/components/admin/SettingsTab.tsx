@@ -20,6 +20,7 @@ import QuotasSection from "./QuotasSection";
 import ExpirationSection from "./ExpirationSection";
 import EmbedsSection from "./EmbedsSection";
 import S3StorageSection from "./S3StorageSection";
+import WebhooksSection from "./WebhooksSection";
 
 interface Settings {
   id: number;
@@ -57,6 +58,8 @@ interface Settings {
   s3Bucket: string | null;
   s3AccessKeyId: string | null;
   s3SecretAccessKey: string | null;
+  webhookUrl: string | null;
+  webhookSecret: string | null;
 }
 
 function mapSettingsWithDefaults(data: Settings): Settings {
@@ -89,6 +92,8 @@ function mapSettingsWithDefaults(data: Settings): Settings {
     s3Bucket: data.s3Bucket ?? null,
     s3AccessKeyId: data.s3AccessKeyId ?? null,
     s3SecretAccessKey: data.s3SecretAccessKey ?? null,
+    webhookUrl: data.webhookUrl ?? null,
+    webhookSecret: data.webhookSecret ?? null,
   };
 }
 
@@ -226,6 +231,8 @@ export default function SettingsTab() {
           <SmtpSection settings={settings} onChange={patchSettings} />
 
           <S3StorageSection settings={settings} onChange={patchSettings} />
+
+          <WebhooksSection settings={settings} onChange={patchSettings} />
 
           <div className="flex justify-end">
             <button

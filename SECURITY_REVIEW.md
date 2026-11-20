@@ -40,11 +40,11 @@ listed under **Open items**. The 2026-09 audit found and fixed the issues below.
 ## Open items (not addressed, need larger changes)
 
 1. **CSP allows `'unsafe-inline'` and `'unsafe-eval'`** in `script-src` (`src/proxy.ts`). Removing them requires nonces across the rendering pipeline.
-2. **Paste content is stored in plaintext** even for password-protected pastes (links are encrypted). Encrypting pastes changes the storage format.
+2. **Password-protected pastes created before `add_paste_encryption`** stay in plaintext (new ones are encrypted with the share password, like links; `Share.pasteEncrypted`). They are encrypted once the owner sets a password again.
 3. **No explicit CSRF tokens** on custom state-changing endpoints; protection relies on `SameSite=Lax` session cookies and JSON bodies.
 4. **Rate limits and upload metadata are per process** (in memory). Running several instances needs a shared store (e.g. Redis).
 5. **Account-link cookie is `SameSite=Lax`**: OAuth providers that call back with a cross-site POST (`response_mode=form_post`) cannot complete an explicit account link.
-6. **Paste encryption, audit of third-party OAuth issuers and `pg_trgm` for admin search** remain out of scope.
+6. **Audit of third-party OAuth issuers and `pg_trgm` for admin search** remain out of scope.
 
 ## Security positives
 

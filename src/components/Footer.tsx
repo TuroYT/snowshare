@@ -32,7 +32,15 @@ export default function Footer() {
           <span>{t("footer.rights", "All rights reserved.")}</span>
           <span className="hidden sm:inline">·</span>
           <span>
-            {t("footer.powered_by", "Powered by")} {branding.appName}
+            {t("footer.powered_by", "Powered by")}{" "}
+            <a
+              href="https://github.com/TuroYT/snowshare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[var(--foreground-muted)] transition-colors"
+            >
+              SnowShare
+            </a>
           </span>
         </div>
         <nav className="flex flex-wrap items-center gap-4 justify-center">
