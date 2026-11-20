@@ -7,15 +7,18 @@ jest.mock("@/lib/prisma", () => ({
 }));
 jest.mock("@/lib/email", () => ({ sendAccessNotificationEmail: jest.fn() }));
 jest.mock("@/lib/ip-geolocation", () => ({ lookupIpGeolocation: jest.fn() }));
+jest.mock("@/lib/settings", () => ({ getSettingsCached: jest.fn() }));
 
 import { notifyShareOwner } from "@/lib/access-log";
 import { prisma } from "@/lib/prisma";
 import { sendAccessNotificationEmail } from "@/lib/email";
 import { resetRateLimit } from "@/lib/rate-limit";
+import { getSettingsCached } from "@/lib/settings";
 
 const findUnique = prisma.share.findUnique as jest.Mock;
 const updateMany = prisma.share.updateMany as jest.Mock;
 const send = sendAccessNotificationEmail as jest.Mock;
+const settings = getSettingsCached as jest.Mock;
 
 describe("notifyShareOwner", () => {
   beforeEach(() => {
@@ -23,6 +26,7 @@ describe("notifyShareOwner", () => {
     resetRateLimit("accessNotification", "u1");
     updateMany.mockResolvedValue({ count: 1 });
     send.mockResolvedValue(true);
+    settings.mockResolvedValue({ emailVerificationRequired: false, smtpEnabled: true });
     process.env.NEXTAUTH_URL = "https://share.example.com";
   });
 
@@ -83,5 +87,35 @@ describe("notifyShareOwner", () => {
       where: { id: "s1", lastAccessNotifiedAt: at },
       data: { lastAccessNotifiedAt: null },
     });
+  });
+
+  describe("when the instance requires verified e-mail addresses", () => {
+    beforeEach(() =>
+      settings.mockResolvedValue({ emailVerificationRequired: true, smtpEnabled: true })
+    );
+
+    it("does not notify an owner whose address is not verified", async () => {
+      findUnique.mockResolvedValue({
+        ...optedIn,
+        owner: { ...optedIn.owner, emailVerified: null },
+      });
+      expect(await notifyShareOwner("s1")).toBe(false);
+      expect(send).not.toHaveBeenCalled();
+      // The hourly slot was not claimed either
+      expect(updateMany).not.toHaveBeenCalled();
+    });
+
+    it("notifies an owner whose address is verified", async () => {
+      findUnique.mockResolvedValue({
+        ...optedIn,
+        owner: { ...optedIn.owner, emailVerified: new Date("2026-10-01T00:00:00Z") },
+      });
+      expect(await notifyShareOwner("s1")).toBe(true);
+    });
+  });
+
+  it("does not look at verification when the instance does not require it", async () => {
+    findUnique.mockResolvedValue({ ...optedIn, owner: { ...optedIn.owner, emailVerified: null } });
+    expect(await notifyShareOwner("s1")).toBe(true);
   });
 });

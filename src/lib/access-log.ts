@@ -5,6 +5,7 @@ import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import { getRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
 import { sendAccessNotificationEmail } from "@/lib/email";
 import { emitShareEvent } from "@/lib/webhooks";
+import { getSettingsCached } from "@/lib/settings";
 
 const SHARE_PREFIX = { FILE: "f", PASTE: "p", URL: "l" } as const;
 
@@ -21,10 +22,15 @@ export async function notifyShareOwner(shareId: string, accessedAt = new Date())
       slug: true,
       type: true,
       ownerId: true,
-      owner: { select: { email: true, notifyOnAccess: true } },
+      owner: { select: { email: true, emailVerified: true, notifyOnAccess: true } },
     },
   });
   if (!share?.ownerId || !share.owner?.notifyOnAccess) return false;
+  // When the instance requires verified addresses, an account created with someone else's
+  // e-mail must not be able to send them notifications
+  const settings = await getSettingsCached();
+  const requiresVerifiedEmail = !!(settings?.emailVerificationRequired && settings.smtpEnabled);
+  if (requiresVerifiedEmail && !share.owner.emailVerified) return false;
   // Check the owner budget first so an exhausted budget never burns this share's hourly slot
   if (getRetryAfter("accessNotification", share.ownerId) > 0) return false;
 
