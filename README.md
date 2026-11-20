@@ -242,6 +242,10 @@ Pull requests are welcome. Have a look at [CONTRIBUTING.md](CONTRIBUTING.md) and
 
 SnowShare sends anonymous usage statistics to [Plausible](https://plausible.io/): no cookies, no personal data. Set `TELEMETRY=false` to turn it off, or use `PLAUSIBLE_DOMAIN` and `PLAUSIBLE_HOST` to send the data to your own Plausible instance.
 
+## CI runs on Pitlane
+
+SnowShare's CI runs on [Pitlane](https://turoyt.github.io/pitlane/), a GitHub Actions runner made by the same author. Each job gets a fresh runner on your own Docker host, while Docker layers, package caches and toolchains stay on disk. On a private monorepo, CI went from about 6 min 30 on GitHub-hosted runners to about 3 min. It is one binary with a web UI, and it needs no Kubernetes. Once it is installed, set `runs-on: pitlane` in your workflows; the [docs](https://turoyt.github.io/pitlane/) have the two-minute setup.
+
 ## Star history
 
 [![Star History Chart](https://api.star-history.com/svg?repos=TuroYT/snowshare&type=date&legend=top-left)](https://www.star-history.com/#TuroYT/snowshare&type=date&legend=top-left)
