@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/getClientIp";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
-import { getRetryAfter, recordRateLimitHit } from "@/lib/rate-limit";
+import { getRetryAfter, recordRateLimitHit, refundRateLimitHit } from "@/lib/rate-limit";
 import { sendAccessNotificationEmail } from "@/lib/email";
 import { emitShareEvent } from "@/lib/webhooks";
 import { getSettingsCached } from "@/lib/settings";
@@ -57,7 +57,10 @@ export async function notifyShareOwner(shareId: string, accessedAt = new Date())
   const shareUrl = `${baseUrl}/${SHARE_PREFIX[share.type]}/${share.slug}`;
   try {
     if (await sendAccessNotificationEmail(share.owner.email, shareUrl, accessedAt)) return true;
+    // The sender confirmed it sent nothing (e.g. SMTP is off): don't charge the owner's budget
+    refundRateLimitHit("accessNotification", share.ownerId);
   } catch (error) {
+    // An error may come after the message left, so the budget stays charged
     console.error("Failed to send share access notification:", error);
   }
   // Not sent: free the slot so the next access can retry

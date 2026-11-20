@@ -4,8 +4,10 @@
 
 import {
   consumeRateLimit,
+  getRemainingEvents,
   getRetryAfter,
   recordRateLimitHit,
+  refundRateLimitHit,
   resetRateLimit,
   RATE_LIMITS,
 } from "@/lib/rate-limit";
@@ -53,5 +55,24 @@ describe("rate limiter", () => {
     const { limit } = RATE_LIMITS.register;
     for (let i = 0; i < limit; i++) expect(consumeRateLimit("register", "ip")).toBe(0);
     expect(consumeRateLimit("register", "ip")).toBeGreaterThan(0);
+  });
+});
+
+describe("refundRateLimitHit", () => {
+  beforeEach(() => resetRateLimit("login", "refund"));
+
+  it("gives back one counted event", () => {
+    for (let i = 0; i < RATE_LIMITS.login.limit; i++) recordRateLimitHit("login", "refund");
+    expect(getRetryAfter("login", "refund")).toBeGreaterThan(0);
+    refundRateLimitHit("login", "refund");
+    expect(getRetryAfter("login", "refund")).toBe(0);
+  });
+
+  it("does nothing for an unknown key and never goes below zero", () => {
+    refundRateLimitHit("login", "refund");
+    recordRateLimitHit("login", "refund");
+    refundRateLimitHit("login", "refund");
+    refundRateLimitHit("login", "refund");
+    expect(getRemainingEvents("login", "refund")).toBe(RATE_LIMITS.login.limit);
   });
 });

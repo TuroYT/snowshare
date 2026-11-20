@@ -107,6 +107,17 @@ export function recordRateLimitHit(scope: RateLimitScope, key: string): void {
 }
 
 /**
+ * Gives back one event counted by recordRateLimitHit, for an action that turned out not to
+ * have happened (e.g. an e-mail that was never sent).
+ */
+export function refundRateLimitHit(scope: RateLimitScope, key: string): void {
+  const bucket = getBucket(scope, key, Date.now());
+  if (!bucket) return;
+  if (bucket.count <= 1) store.delete(`${scope}:${key}`);
+  else bucket.count -= 1;
+}
+
+/**
  * Counts one event and returns the retry delay in seconds when the limit is now exceeded,
  * or 0 when the event is allowed. Use for actions that are limited regardless of outcome.
  */
