@@ -4,6 +4,7 @@ import * as path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { deleteShareFiles } from "@/lib/storage";
 import { getUploadDir } from "@/lib/constants";
+import { DOWNLOAD_TOKEN_TTL_SECONDS } from "@/lib/share-constants";
 
 function getTusTempDir(): string {
   return path.join(getUploadDir(), ".tus-temp");
@@ -17,12 +18,35 @@ const TUS_TEMP_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 // their database row.
 const ORPHAN_GRACE_MS = 60 * 60 * 1000; // 1 hour
 
+// Shares out of views are kept while a download token issued for their last view may still be
+// in use (downloads, Range requests and previews reuse it), then deleted like expired ones.
+const EXHAUSTED_GRACE_MS = DOWNLOAD_TOKEN_TTL_SECONDS * 1000;
+
 const EXPIRED_BATCH_SIZE = 100;
 
+/**
+ * Shares that can no longer be opened: past their expiration date, or out of views
+ * ("burn after reading") with no access during the last EXHAUSTED_GRACE_MS.
+ */
+function unavailableSharesWhere(now: Date) {
+  const lastAccessCutoff = new Date(now.getTime() - EXHAUSTED_GRACE_MS);
+  return {
+    OR: [
+      { expiresAt: { lt: now } },
+      {
+        maxViews: { not: null },
+        viewCount: { gte: prisma.share.fields.maxViews },
+        accessLogs: { none: { accessedAt: { gt: lastAccessCutoff } } },
+      },
+    ],
+  };
+}
+
 async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedFiles: number }> {
-  console.log("🧹 Cleaning expired shares...");
+  console.log("🧹 Cleaning expired and exhausted shares...");
 
   const now = new Date();
+  const unavailable = unavailableSharesWhere(now);
   let deletedShares = 0;
   let deletedFiles = 0;
   // Shares whose files could not be deleted are kept (retried next run) and skipped here
@@ -31,7 +55,7 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
   // Process in batches so memory stays flat however many shares expired
   for (;;) {
     const batch = await prisma.share.findMany({
-      where: { expiresAt: { lt: now }, id: { notIn: failedIds } },
+      where: { ...unavailable, id: { notIn: failedIds } },
       select: {
         id: true,
         slug: true,
@@ -63,7 +87,9 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
     }
   }
 
-  console.log(`✅ Expired shares: ${deletedShares} DB record(s), ${deletedFiles} file(s) deleted`);
+  console.log(
+    `✅ Expired/exhausted shares: ${deletedShares} DB record(s), ${deletedFiles} file(s) deleted`
+  );
 
   return { deletedShares, deletedFiles };
 }
@@ -186,8 +212,8 @@ async function runCleanup(): Promise<void> {
 
     console.log("");
     console.log("📊 Summary:");
-    console.log(`   - ${expired.deletedShares} expired share(s) removed from DB`);
-    console.log(`   - ${expired.deletedFiles} expired share file(s) deleted`);
+    console.log(`   - ${expired.deletedShares} expired/exhausted share(s) removed from DB`);
+    console.log(`   - ${expired.deletedFiles} expired/exhausted share file(s) deleted`);
     console.log(`   - ${abandoned.deletedFiles} abandoned tus upload(s) deleted`);
     console.log(`   - ${orphans.deletedFiles} orphan file(s) deleted`);
   } catch (error) {

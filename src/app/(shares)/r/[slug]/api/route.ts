@@ -14,6 +14,7 @@ import { getUploadLimits } from "@/lib/quota-shared";
 import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { accessDeniedResponse, verifySharePassword } from "@/lib/share-access";
 import { normalizeRelativePath, validateFilePath } from "@/lib/bulk-upload-utils";
+import { emitShareEvent } from "@/lib/webhooks";
 import { receiveMultipart, removeTempFiles, type ReceivedFile } from "@/lib/multipart-upload";
 import {
   createFileShareRecord,
@@ -119,6 +120,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       { isBulk: true }
     );
     await storeBulkFiles(share.id, entries);
+    void emitShareEvent("share.created", share);
 
     return NextResponse.json({ data: { fileCount: files.length } }, { status: 201 });
   } catch (error) {

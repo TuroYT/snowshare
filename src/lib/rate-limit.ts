@@ -29,6 +29,8 @@ export const RATE_LIMITS = {
   apiKey: { limit: 30, windowMs: 60 * 1000 },
   /** Submissions to upload requests, per IP */
   reverseShareUpload: { limit: 30, windowMs: 60 * 60 * 1000 },
+  /** Wrong two-factor codes when enabling/disabling it, per user */
+  totpVerify: { limit: 10, windowMs: 15 * 60 * 1000 },
 } satisfies Record<string, RateLimitRule>;
 
 export type RateLimitScope = keyof typeof RATE_LIMITS;

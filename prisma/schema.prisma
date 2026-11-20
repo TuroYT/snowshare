@@ -56,6 +56,11 @@ model User {
   isAdmin       Boolean    @default(false)
   ssoAutoLink   Boolean    @default(false)
   defaultTab    DefaultTab @default(linkshare)
+  /// TOTP secret, encrypted with NEXTAUTH_SECRET; set (but not enabled) during setup
+  totpSecret      String?
+  totpEnabled     Boolean  @default(false)
+  /// Last accepted TOTP time step (replay protection)
+  totpLastCounter Int?
   accounts      Account[]
   sessions      Session[]
   shares        Share[]
@@ -94,6 +99,8 @@ model Share {
   /// Size in bytes of a single-file share (bulk shares store sizes on ShareFile)
   size          BigInt?
   paste         String?
+  /// Paste content encrypted with the share password (password-protected pastes)
+  pasteEncrypted Boolean   @default(false)
   pastelanguage pasteType?
   urlOriginal   String?
   slug          String     @unique
@@ -212,6 +219,10 @@ model Settings {
   s3Bucket          String?
   s3AccessKeyId     String?
   s3SecretAccessKey String?
+
+  // Webhook: share events POSTed as JSON, signed with HMAC-SHA256 when a secret is set
+  webhookUrl    String?
+  webhookSecret String?
 }
 
 model CustomLink {

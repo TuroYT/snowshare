@@ -11,6 +11,7 @@ export const USER_SHARE_SELECT = {
   filePath: true,
   isBulk: true,
   paste: true,
+  pasteEncrypted: true,
   pastelanguage: true,
   urlOriginal: true,
   password: true,
@@ -30,10 +31,20 @@ type UserShareRow = Prisma.ShareGetPayload<{ select: typeof USER_SHARE_SELECT }>
  * - `hasPassword` replaces `password`
  * - `fileName` replaces `filePath` (storage key is `<shareId>_<originalName>`)
  * - `urlOriginal` is null for password-protected links (it is stored encrypted)
+ * - `paste` is null for encrypted pastes
  */
-export function toUserShare({ _count, password, filePath, urlOriginal, ...share }: UserShareRow) {
+export function toUserShare({
+  _count,
+  password,
+  filePath,
+  urlOriginal,
+  paste,
+  pasteEncrypted,
+  ...share
+}: UserShareRow) {
   return {
     ...share,
+    paste: pasteEncrypted ? null : paste,
     hasPassword: !!password,
     fileName: filePath ? filePath.split("_").slice(1).join("_") : null,
     urlOriginal: password ? null : urlOriginal,

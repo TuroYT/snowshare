@@ -11,6 +11,7 @@ import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 import ApiKeysSection from "@/components/ApiKeysSection";
 import ReverseSharesSection from "@/components/profile/ReverseSharesSection";
+import TwoFactorSection from "@/components/profile/TwoFactorSection";
 import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
@@ -181,7 +182,12 @@ const ProfilePage = () => {
         </div>
 
         <div>
-          {activeTab === "profile" && user && <ProfileInfo user={user} onUpdate={setUser} />}
+          {activeTab === "profile" && user && (
+            <>
+              <ProfileInfo user={user} onUpdate={setUser} />
+              <TwoFactorSection />
+            </>
+          )}
 
           {activeTab === "shares" && (
             <>

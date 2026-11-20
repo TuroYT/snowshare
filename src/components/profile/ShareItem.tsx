@@ -48,7 +48,8 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
       expiresAt: editForm.expiresAt ? new Date(editForm.expiresAt).toISOString() : null,
     };
     if (share.type === "PASTE") {
-      update.paste = editForm.paste;
+      // Encrypted pastes come back without content: only send it when re-entered
+      if (share.paste !== null || editForm.paste) update.paste = editForm.paste;
       update.pastelanguage = editForm.pastelanguage;
     }
     if (share.type === "URL" && editForm.urlOriginal) {
@@ -306,6 +307,14 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
                 </label>
                 <textarea
                   value={editForm.paste || ""}
+                  placeholder={
+                    share.paste === null
+                      ? t(
+                          "profile.placeholder_protected_paste",
+                          "Protected paste: re-enter the content to change it"
+                        )
+                      : undefined
+                  }
                   onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
                   className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] font-mono"
                   rows={4}

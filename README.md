@@ -154,13 +154,14 @@ The rest is optional:
 | `AUTH_TRUST_HOST`            |             | Set to `true` behind a reverse proxy                                  |
 | `TRUSTED_PROXY_COUNT`        | `1`         | Number of reverse proxies in front of SnowShare                       |
 | `PORT`                       | `3000`      | Port the server listens on                                            |
+| `METRICS_TOKEN`              |             | Enables Prometheus metrics at `/api/metrics` with a Bearer token      |
 | `UPLOAD_DIR`                 | `./uploads` | Absolute path for local file storage, ignored when `S3_BUCKET` is set |
 | `S3_BUCKET`                  |             | Setting it switches file storage to S3                                |
 | `S3_REGION`                  | `us-east-1` |                                                                       |
 | `S3_ACCESS_KEY_ID`           |             |                                                                       |
 | `S3_SECRET_ACCESS_KEY`       |             |                                                                       |
 | `S3_ENDPOINT`                |             | For S3-compatible services (MinIO, Garage, R2...)                     |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | `en`        | Fallback language: `en`, `fr`, `es`, `de`, `nl` or `pl`               |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | `en`        | Fallback language: `en`, `fr`, `es`, `de`, `it`, `nl` or `pl`         |
 | `TELEMETRY`                  | `true`      | `false` turns analytics off                                           |
 | `PLAUSIBLE_DOMAIN`           |             | Use your own Plausible site                                           |
 | `PLAUSIBLE_HOST`             |             | URL of your own Plausible instance                                    |
@@ -181,7 +182,28 @@ Uploaded files are in `/app/uploads` unless you use S3, and the database is in t
 
 ## API
 
-The REST API lives under `/api/v1` and uses API keys, which you create from your profile page. Each instance serves its own docs at `/api-docs`, and the OpenAPI spec at `/api/v1/openapi.json`.
+The REST API lives under `/api/v1` and uses API keys, which you create from your profile page. Each instance serves its own docs at `/api-docs`, and the OpenAPI spec at `/api/v1/openapi.json`. Right after creating a key, the profile page also offers ShareX custom uploader files (`.sxcu`) for files and for the URL shortener.
+
+### Webhooks
+
+An admin can set a webhook URL (and an optional signing secret) under Admin → Settings. SnowShare then POSTs a JSON event for `share.created`, `share.accessed` and `share.deleted`:
+
+```json
+{
+  "event": "share.created",
+  "timestamp": "2026-10-28T12:00:00.000Z",
+  "share": {
+    "id": "…",
+    "slug": "abc",
+    "type": "FILE",
+    "url": "https://share.example.com/f/abc",
+    "ownerId": "…",
+    "expiresAt": null
+  }
+}
+```
+
+With a secret, the `X-SnowShare-Signature` header is `sha256=` followed by the hex HMAC-SHA256 of the raw body. Delivery is best effort: one attempt, 5 s timeout, no retries.
 
 ## Development
 

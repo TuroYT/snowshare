@@ -11,8 +11,9 @@ import es from "@/i18n/locales/es.json";
 import de from "@/i18n/locales/de.json";
 import pl from "@/i18n/locales/pl.json";
 import nl from "@/i18n/locales/nl.json";
+import it from "@/i18n/locales/it.json";
 
-export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "pl", "nl"] as const;
+export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "pl", "nl", "it"] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 const DEFAULT_LOCALE = resolveDefaultLocale(SUPPORTED_LOCALES) as SupportedLocale;
@@ -24,6 +25,7 @@ const translations: Record<string, Record<string, unknown>> = {
   de,
   pl,
   nl,
+  it,
 };
 
 /**

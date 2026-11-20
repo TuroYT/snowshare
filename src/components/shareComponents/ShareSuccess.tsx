@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { useFetch } from "@/hooks/useFetch";
 import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui";
+import { FIELD_FOCUS } from "./fieldStyles";
 
 // qrcode.react is only needed once a share was successfully created, so load
 // it on demand instead of bundling it with the share forms.
@@ -23,6 +25,10 @@ interface ShareSuccessProps {
   slug: string;
   /** i18n prefix for translation keys (e.g. "linkshare", "fileshare") */
   translationPrefix: string;
+  /** One-line recap of the options of the created share (expiration, views, password) */
+  summary?: string;
+  /** When provided, shows a button that dismisses this panel to start a new share */
+  onNewShare?: () => void;
 }
 
 function isValidEmail(email: string): boolean {
@@ -42,7 +48,13 @@ function parseRecipients(raw: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefix }) => {
+const ShareSuccess: React.FC<ShareSuccessProps> = ({
+  url,
+  slug,
+  translationPrefix,
+  summary,
+  onNewShare,
+}) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [qrSize, setQrSize] = useState<number>(150);
@@ -127,6 +139,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
       <div className="flex-1 min-w-0">
         <h4 className="text-sm font-medium text-[var(--success)] mb-2 flex items-center gap-2">
           <svg
+            aria-hidden="true"
             className="w-4 h-4 flex-shrink-0"
             fill="none"
             stroke="currentColor"
@@ -151,21 +164,22 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
             >
               {url}
             </a>
-            {copied && (
-              <p className="text-xs text-[var(--success)] mt-2">
-                {t(`${translationPrefix}.copied`, "✓ Copied to clipboard")}
-              </p>
-            )}
+            <p aria-live="polite" className="text-xs text-[var(--success)] mt-2 empty:hidden">
+              {copied ? t(`${translationPrefix}.copied`, "Copied to clipboard") : ""}
+            </p>
           </div>
           <div className="flex-shrink-0 flex items-start gap-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => copyToClipboard(url)}
-              className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)] rounded-[var(--radius)] transition-colors"
+              aria-label={t(`${translationPrefix}.copy_title`, "Copy link")}
               title={t(`${translationPrefix}.copy_title`, "Copy link")}
+              className="min-h-11 min-w-11 p-2"
             >
               {copied ? (
                 <svg
+                  aria-hidden="true"
                   className="w-4 h-4 text-[var(--success)]"
                   fill="none"
                   stroke="currentColor"
@@ -179,7 +193,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                   />
                 </svg>
               ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -188,9 +208,10 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                   />
                 </svg>
               )}
-            </button>
+            </Button>
           </div>
         </div>
+        {summary && <p className="mt-2 text-xs text-[var(--foreground-muted)]">{summary}</p>}
 
         {/* Email sending section — only shown when SMTP is enabled, user is logged in, and slug is available */}
         {emailEnabled && isAuthenticated && !!slug && (
@@ -215,17 +236,19 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                   "share_email.recipients_placeholder",
                   "alice@example.com, bob@example.com"
                 )}
-                className="flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-[var(--radius)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
+                className={`flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-[var(--radius)] transition-colors ${FIELD_FOCUS}`}
                 disabled={emailStatus === "sending"}
               />
-              <button
+              <Button
+                type="button"
                 onClick={handleSendEmail}
                 disabled={emailStatus === "sending" || !recipientsRaw.trim()}
-                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto min-h-11 gap-2"
               >
                 {emailStatus === "sending" ? (
                   <>
                     <svg
+                      aria-hidden="true"
                       className="animate-spin h-4 w-4"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -249,7 +272,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                   </>
                 ) : (
                   <>
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      aria-hidden="true"
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -260,7 +289,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
                     {t("share_email.send_button", "Send")}
                   </>
                 )}
-              </button>
+              </Button>
             </div>
             {emailError && <p className="mt-2 text-xs text-[var(--destructive)]">{emailError}</p>}
             {emailStatus === "success" && (
@@ -281,6 +310,11 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({ url, slug, translationPrefi
             </div>
           </div>
         </div>
+        {onNewShare && (
+          <Button type="button" variant="secondary" onClick={onNewShare} className="mt-4 w-full">
+            {t("shareform.new_share", "New share")}
+          </Button>
+        )}
       </div>
     </output>
   );

@@ -113,9 +113,6 @@ export default function Home() {
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         {/* Hero */}
         <div className="mb-10">
-          <p className="text-xs uppercase tracking-widest text-[var(--foreground-subtle)] mb-3">
-            {t("home.eyebrow", "Secure sharing")}
-          </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)] mb-3">
             {branding.appName}
           </h1>
@@ -130,7 +127,13 @@ export default function Home() {
         </Tabs>
 
         {/* Content */}
-        <div key={activeTab} className="animate-fade-in-up">
+        <div
+          key={activeTab}
+          role="tabpanel"
+          id={`tabpanel-${activeTab}`}
+          aria-labelledby={`tab-${activeTab}`}
+          className="animate-fade-in-up"
+        >
           {activeTab === "linkshare" && <LinkShare />}
           {activeTab === "pasteshare" && (
             <PasteShare

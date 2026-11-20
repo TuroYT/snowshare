@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
 import WarningModal from "@/components/admin/WarningModal";
+import { downloadShareXConfig } from "@/lib/sharex";
 
 interface ApiKey {
   id: string;
@@ -174,6 +175,23 @@ export default function ApiKeysSection() {
                 className="px-3 py-2 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 {copied ? t("apikeys.copied", "Copied!") : t("apikeys.copy", "Copy")}
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-[var(--muted)]">
+                {t("apikeys.sharex_label", "ShareX:")}
+              </span>
+              <button
+                onClick={() => downloadShareXConfig(window.location.origin, revealedToken, "files")}
+                className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+              >
+                {t("apikeys.sharex_files", "Download file uploader")}
+              </button>
+              <button
+                onClick={() => downloadShareXConfig(window.location.origin, revealedToken, "links")}
+                className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+              >
+                {t("apikeys.sharex_links", "Download URL shortener")}
               </button>
             </div>
             <button
