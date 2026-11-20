@@ -29,6 +29,8 @@ export const RATE_LIMITS = {
   apiKey: { limit: 30, windowMs: 60 * 1000 },
   /** Submissions to upload requests, per IP */
   reverseShareUpload: { limit: 30, windowMs: 60 * 60 * 1000 },
+  /** Access notification e-mails, per share owner (the per-share hourly throttle is in the DB) */
+  accessNotification: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** Wrong two-factor codes when enabling/disabling it, per user */
   totpVerify: { limit: 10, windowMs: 15 * 60 * 1000 },
 } satisfies Record<string, RateLimitRule>;

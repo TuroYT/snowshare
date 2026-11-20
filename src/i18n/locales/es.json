@@ -392,6 +392,8 @@
     "placeholder_password_keep": "Déjalo vacío para mantener la contraseña actual",
     "remove_password": "Quitar la contraseña",
     "tab_requests": "Solicitudes de archivos",
+    "notify_on_access": "Avisarme por correo cuando se abra uno de mis enlaces compartidos",
+    "notify_on_access_desc": "Como máximo un correo por elemento compartido y por hora. Requiere que el administrador haya configurado el correo.",
     "placeholder_protected_paste": "Paste protegido: vuelve a introducir el contenido para cambiarlo"
   },
   "apikeys": {

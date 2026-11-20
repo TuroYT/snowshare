@@ -392,6 +392,8 @@
     "placeholder_password_keep": "Pozostaw puste, aby zachować obecne hasło",
     "remove_password": "Usuń hasło",
     "tab_requests": "Prośby o pliki",
+    "notify_on_access": "Powiadom mnie e-mailem, gdy ktoś otworzy jeden z moich udostępnień",
+    "notify_on_access_desc": "Najwyżej jeden e-mail na udostępnienie na godzinę. Wymaga skonfigurowania poczty przez administratora.",
     "placeholder_protected_paste": "Chronione wklejenie: wpisz treść ponownie, aby ją zmienić"
   },
   "apikeys": {

@@ -392,7 +392,9 @@
     "placeholder_password_keep": "Lascia vuoto per mantenere la password attuale",
     "remove_password": "Rimuovi password",
     "placeholder_protected_paste": "Condivisione protetta: inserisci nuovamente il contenuto per modificarlo",
-    "tab_requests": "Richieste di caricamento"
+    "tab_requests": "Richieste di caricamento",
+    "notify_on_access": "Avvisami via e-mail quando una delle mie condivisioni viene aperta",
+    "notify_on_access_desc": "Al massimo un'e-mail per condivisione all'ora. Richiede che l'amministratore abbia configurato l'e-mail."
   },
   "apikeys": {
     "title": "Chiavi API",

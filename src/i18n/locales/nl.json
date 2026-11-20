@@ -392,6 +392,8 @@
     "placeholder_password_keep": "Laat leeg om het huidige wachtwoord te behouden",
     "remove_password": "Wachtwoord verwijderen",
     "tab_requests": "Uploadverzoeken",
+    "notify_on_access": "Stuur me een e-mail wanneer een van mijn shares wordt geopend",
+    "notify_on_access_desc": "Maximaal één e-mail per share per uur. Vereist dat de beheerder e-mail heeft ingesteld.",
     "placeholder_protected_paste": "Beveiligde paste: voer de inhoud opnieuw in om deze te wijzigen"
   },
   "apikeys": {
