@@ -84,4 +84,24 @@ describe("notifyShareOwner", () => {
       data: { lastAccessNotifiedAt: null },
     });
   });
+
+  it("does not use the owner budget when the e-mail is not sent (SMTP disabled)", async () => {
+    findUnique.mockResolvedValue(optedIn);
+    send.mockResolvedValue(false);
+    for (let i = 0; i < 25; i++) expect(await notifyShareOwner(`s${i}`)).toBe(false);
+    // Once SMTP is enabled the owner still has the whole budget
+    send.mockResolvedValue(true);
+    for (let i = 0; i < 20; i++) expect(await notifyShareOwner(`t${i}`)).toBe(true);
+    expect(await notifyShareOwner("t99")).toBe(false);
+  });
+
+  it("keeps the owner budget charged when sending throws", async () => {
+    findUnique.mockResolvedValue(optedIn);
+    send.mockRejectedValue(new Error("smtp down"));
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    for (let i = 0; i < 20; i++) await notifyShareOwner(`s${i}`);
+    send.mockResolvedValue(true);
+    expect(await notifyShareOwner("s99")).toBe(false);
+    expect(send).toHaveBeenCalledTimes(20);
+  });
 });
