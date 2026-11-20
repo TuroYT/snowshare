@@ -34,6 +34,10 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState<
     "profile" | "shares" | "requests" | "accounts" | "apikeys" | "accesslogs"
   >("profile");
+  // Once opened, the upload requests section stays mounted (hidden) so a create or delete in
+  // flight always refreshes the list the user sees
+  const [requestsOpened, setRequestsOpened] = useState(false);
+  if (activeTab === "requests" && !requestsOpened) setRequestsOpened(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -200,7 +204,11 @@ const ProfilePage = () => {
             </>
           )}
 
-          {activeTab === "requests" && <ReverseSharesSection />}
+          {requestsOpened && (
+            <div hidden={activeTab !== "requests"}>
+              <ReverseSharesSection />
+            </div>
+          )}
 
           {activeTab === "accounts" && <ConnectedAccounts />}
 
