@@ -43,40 +43,74 @@ function positiveIntOrNull(value: unknown): number | null | false {
   return Number.isInteger(n) && n > 0 && n <= MAX_DB_INT ? n : false;
 }
 
+type Parsed<T> = { errorCode: ErrorCode; value?: undefined } | { errorCode?: undefined; value: T };
+
+const ok = <T>(value: T): Parsed<T> => ({ value });
+const fail = (errorCode: ErrorCode): Parsed<never> => ({ errorCode });
+
+function parseName(raw: unknown): Parsed<string> {
+  const name = typeof raw === "string" ? raw.trim() : "";
+  return !name || name.length > MAX_REVERSE_SHARE_NAME_LENGTH
+    ? fail(ErrorCode.INVALID_REQUEST)
+    : ok(name);
+}
+
+function parseSlug(raw: unknown): Parsed<string | null> {
+  const slug = typeof raw === "string" && raw.trim() ? raw.trim() : null;
+  return slug && !isValidSlug(slug) ? fail(ErrorCode.SLUG_INVALID) : ok(slug);
+}
+
+function parsePassword(raw: unknown): Parsed<string | null> {
+  const password = typeof raw === "string" && raw.trim() ? raw.trim() : null;
+  if (
+    password &&
+    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
+  ) {
+    return fail(ErrorCode.PASSWORD_INVALID_LENGTH);
+  }
+  return ok(password);
+}
+
+function parseExpiry(raw: unknown, now: Date): Parsed<Date | null> {
+  if (!raw) return ok(null);
+  const expiresAt = new Date(raw as string);
+  if (Number.isNaN(expiresAt.getTime())) return fail(ErrorCode.INVALID_DATE_FORMAT);
+  return expiresAt <= now ? fail(ErrorCode.EXPIRATION_IN_PAST) : ok(expiresAt);
+}
+
+function parseLimit(raw: unknown): Parsed<number | null> {
+  const n = positiveIntOrNull(raw);
+  return n === false ? fail(ErrorCode.INVALID_REQUEST) : ok(n);
+}
+
 /** Validates the owner's input for a new upload request (password not hashed yet). */
 export function validateReverseShareInput(
   input: ReverseShareInput,
   now = new Date()
 ): ValidationResult {
-  const name = typeof input.name === "string" ? input.name.trim() : "";
-  if (!name || name.length > MAX_REVERSE_SHARE_NAME_LENGTH) {
-    return { errorCode: ErrorCode.INVALID_REQUEST };
-  }
+  const name = parseName(input.name);
+  if (name.errorCode) return { errorCode: name.errorCode };
+  const slug = parseSlug(input.slug);
+  if (slug.errorCode) return { errorCode: slug.errorCode };
+  const password = parsePassword(input.password);
+  if (password.errorCode) return { errorCode: password.errorCode };
+  const expiresAt = parseExpiry(input.expiresAt, now);
+  if (expiresAt.errorCode) return { errorCode: expiresAt.errorCode };
+  const maxUploads = parseLimit(input.maxUploads);
+  if (maxUploads.errorCode) return { errorCode: maxUploads.errorCode };
+  const maxSizeMB = parseLimit(input.maxSizeMB);
+  if (maxSizeMB.errorCode) return { errorCode: maxSizeMB.errorCode };
 
-  const slug = typeof input.slug === "string" && input.slug.trim() ? input.slug.trim() : null;
-  if (slug && !isValidSlug(slug)) return { errorCode: ErrorCode.SLUG_INVALID };
-
-  const password =
-    typeof input.password === "string" && input.password.trim() ? input.password.trim() : null;
-  if (
-    password &&
-    (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH)
-  ) {
-    return { errorCode: ErrorCode.PASSWORD_INVALID_LENGTH };
-  }
-
-  let expiresAt: Date | null = null;
-  if (input.expiresAt) {
-    expiresAt = new Date(input.expiresAt as string);
-    if (Number.isNaN(expiresAt.getTime())) return { errorCode: ErrorCode.INVALID_DATE_FORMAT };
-    if (expiresAt <= now) return { errorCode: ErrorCode.EXPIRATION_IN_PAST };
-  }
-
-  const maxUploads = positiveIntOrNull(input.maxUploads);
-  const maxSizeMB = positiveIntOrNull(input.maxSizeMB);
-  if (maxUploads === false || maxSizeMB === false) return { errorCode: ErrorCode.INVALID_REQUEST };
-
-  return { data: { name, slug, password, expiresAt, maxUploads, maxSizeMB } };
+  return {
+    data: {
+      name: name.value,
+      slug: slug.value,
+      password: password.value,
+      expiresAt: expiresAt.value,
+      maxUploads: maxUploads.value,
+      maxSizeMB: maxSizeMB.value,
+    },
+  };
 }
 
 /** Creates the upload request; a taken slug (custom or concurrent) is SLUG_ALREADY_TAKEN. */
