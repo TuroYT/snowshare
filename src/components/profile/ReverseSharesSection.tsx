@@ -236,7 +236,8 @@ export default function ReverseSharesSection() {
           <button
             type="button"
             onClick={refetch}
-            className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            disabled={creating || deleting}
+            className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors disabled:opacity-50"
           >
             {t("reverse_shares.retry", "Retry")}
           </button>
