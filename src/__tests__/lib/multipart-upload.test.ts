@@ -97,6 +97,43 @@ describe("receiveMultipart", () => {
     expect(fs.readdirSync(tempDir)).toEqual([]);
   });
 
+  it("rejects more text fields than allowed", async () => {
+    const body = multipartBody([
+      { name: "a", content: "1" },
+      { name: "b", content: "2" },
+      { name: "c", content: "3" },
+      { name: "file", filename: "a.txt", content: "x" },
+    ]);
+
+    await expect(
+      withTimeout(receiveMultipart(makeRequest(body), { ...options(), maxFields: 2 }))
+    ).rejects.toMatchObject({ kind: "MALFORMED" });
+    expect(fs.readdirSync(tempDir)).toEqual([]);
+  });
+
+  it("accepts exactly the allowed number of text fields", async () => {
+    const body = multipartBody([
+      { name: "a", content: "1" },
+      { name: "b", content: "2" },
+    ]);
+
+    const { fields } = await withTimeout(
+      receiveMultipart(makeRequest(body), { ...options(), maxFields: 2 })
+    );
+    expect(fields).toEqual({ a: "1", b: "2" });
+  });
+
+  it("rejects text fields whose cumulated size is over the limit", async () => {
+    const body = multipartBody([
+      { name: "a", content: "x".repeat(60) },
+      { name: "b", content: "y".repeat(60) },
+    ]);
+
+    await expect(
+      withTimeout(receiveMultipart(makeRequest(body), { ...options(), maxFieldBytes: 100 }))
+    ).rejects.toMatchObject({ kind: "MALFORMED" });
+  });
+
   it("never keeps directory components from the client filename", async () => {
     const body = multipartBody([{ name: "file", filename: "../../evil.txt", content: "x" }]);
 

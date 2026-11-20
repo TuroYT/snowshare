@@ -973,7 +973,9 @@
     "copied": "Copié !",
     "copy_link": "Copier le lien",
     "delete": "Supprimer",
-    "confirm_delete": "Supprimer cette demande de dépôt ? Les fichiers déjà reçus restent dans vos partages."
+    "confirm_delete": "Supprimer cette demande de dépôt ? Les fichiers déjà reçus restent dans vos partages.",
+    "error_load": "Impossible de charger vos demandes de dépôt.",
+    "retry": "Réessayer"
   },
   "reverse_upload": {
     "not_found": "Ce lien de dépôt n'existe pas.",

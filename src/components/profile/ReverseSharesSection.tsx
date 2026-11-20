@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
 import WarningModal from "@/components/admin/WarningModal";
@@ -17,12 +17,24 @@ interface ReverseShare {
   createdAt: string;
 }
 
+/** "YYYY-MM-DD" from a date input -> end of that day in the user's timezone, as ISO. */
+function endOfLocalDay(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day, 23, 59, 59).toISOString();
+}
+
 const inputClass =
   "w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]";
 
 export default function ReverseSharesSection() {
   const { t } = useTranslation();
-  const { data, loading, refetch } = useFetch<{ data: ReverseShare[] }>("/api/user/reverse-shares");
+  const {
+    data,
+    loading,
+    error: loadError,
+    refetch,
+  } = useFetch<{ data: ReverseShare[] }>("/api/user/reverse-shares");
+  const id = useId();
   const items = data?.data ?? [];
   const [form, setForm] = useState({
     name: "",
@@ -50,7 +62,7 @@ export default function ReverseSharesSection() {
         body: JSON.stringify({
           name: form.name.trim(),
           password: form.password || undefined,
-          expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : undefined,
+          expiresAt: form.expiresAt ? endOfLocalDay(form.expiresAt) : undefined,
           maxUploads: form.maxUploads || undefined,
           maxSizeMB: form.maxSizeMB || undefined,
         }),
@@ -120,10 +132,14 @@ export default function ReverseSharesSection() {
 
       <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-[var(--muted)] mb-1">
+          <label
+            htmlFor={`${id}-name`}
+            className="block text-xs font-medium text-[var(--muted)] mb-1"
+          >
             {t("reverse_shares.label_name", "Name shown to senders")}
           </label>
           <input
+            id={`${id}-name`}
             className={inputClass}
             value={form.name}
             onChange={set("name")}
@@ -132,10 +148,14 @@ export default function ReverseSharesSection() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[var(--muted)] mb-1">
+          <label
+            htmlFor={`${id}-expiresAt`}
+            className="block text-xs font-medium text-[var(--muted)] mb-1"
+          >
             {t("reverse_shares.label_expiry", "Expiration (optional)")}
           </label>
           <input
+            id={`${id}-expiresAt`}
             type="date"
             className={inputClass}
             value={form.expiresAt}
@@ -143,10 +163,14 @@ export default function ReverseSharesSection() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[var(--muted)] mb-1">
+          <label
+            htmlFor={`${id}-password`}
+            className="block text-xs font-medium text-[var(--muted)] mb-1"
+          >
             {t("reverse_shares.label_password", "Password (optional)")}
           </label>
           <input
+            id={`${id}-password`}
             type="password"
             className={inputClass}
             value={form.password}
@@ -155,10 +179,14 @@ export default function ReverseSharesSection() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[var(--muted)] mb-1">
+          <label
+            htmlFor={`${id}-maxUploads`}
+            className="block text-xs font-medium text-[var(--muted)] mb-1"
+          >
             {t("reverse_shares.label_max_uploads", "Max submissions (optional)")}
           </label>
           <input
+            id={`${id}-maxUploads`}
             type="number"
             min={1}
             className={inputClass}
@@ -167,10 +195,14 @@ export default function ReverseSharesSection() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[var(--muted)] mb-1">
+          <label
+            htmlFor={`${id}-maxSizeMB`}
+            className="block text-xs font-medium text-[var(--muted)] mb-1"
+          >
             {t("reverse_shares.label_max_size", "Max size per submission, MB (optional)")}
           </label>
           <input
+            id={`${id}-maxSizeMB`}
             type="number"
             min={1}
             className={inputClass}
@@ -181,7 +213,7 @@ export default function ReverseSharesSection() {
         <div className="sm:col-span-2 flex justify-end">
           <button
             type="submit"
-            disabled={creating || !form.name.trim()}
+            disabled={creating || loading || !form.name.trim()}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             style={{ background: "var(--primary)", color: "#fff" }}
           >
@@ -195,12 +227,24 @@ export default function ReverseSharesSection() {
       {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
 
       {loading && <p className="text-sm text-[var(--muted)]">{t("loading", "Loading...")}</p>}
-      {!loading && items.length === 0 && (
+      {!loading && loadError && (
+        <div className="flex flex-wrap items-center gap-3 text-sm text-red-400">
+          <p>{t("reverse_shares.error_load", "Could not load your upload requests.")}</p>
+          <button
+            type="button"
+            onClick={refetch}
+            className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+          >
+            {t("reverse_shares.retry", "Retry")}
+          </button>
+        </div>
+      )}
+      {!loading && !loadError && items.length === 0 && (
         <p className="text-sm text-[var(--muted)]">
           {t("reverse_shares.empty", "No upload requests yet.")}
         </p>
       )}
-      {!loading && items.length > 0 && (
+      {!loading && !loadError && items.length > 0 && (
         <div className="space-y-3">
           {items.map((rs) => (
             <div

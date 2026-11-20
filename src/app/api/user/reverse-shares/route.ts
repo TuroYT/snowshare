@@ -35,11 +35,15 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return apiError(request, ErrorCode.AUTHENTICATION_REQUIRED);
 
-    let body: Record<string, unknown>;
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
       return apiError(request, ErrorCode.INVALID_JSON);
+    }
+    // JSON.parse also accepts null, arrays and primitives
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return apiError(request, ErrorCode.INVALID_REQUEST);
     }
 
     const validated = validateReverseShareInput(body);

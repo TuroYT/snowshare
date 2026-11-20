@@ -973,7 +973,9 @@
     "copied": "Gekopieerd!",
     "copy_link": "Link kopiëren",
     "delete": "Verwijderen",
-    "confirm_delete": "Dit uploadverzoek verwijderen? Al ontvangen bestanden blijven bij je shares."
+    "confirm_delete": "Dit uploadverzoek verwijderen? Al ontvangen bestanden blijven bij je shares.",
+    "error_load": "Je uploadverzoeken konden niet worden geladen.",
+    "retry": "Opnieuw proberen"
   },
   "reverse_upload": {
     "not_found": "Deze uploadlink bestaat niet.",

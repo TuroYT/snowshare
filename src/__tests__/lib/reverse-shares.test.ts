@@ -3,14 +3,16 @@
  */
 
 import { ErrorCode } from "@/lib/api-errors";
+import { prisma } from "@/lib/prisma";
 import {
   isReverseShareOpen,
+  releaseReverseShareSlot,
   toOwnerReverseShare,
   toPublicReverseShare,
   validateReverseShareInput,
 } from "@/lib/reverse-shares";
 
-jest.mock("@/lib/prisma", () => ({ prisma: {} }));
+jest.mock("@/lib/prisma", () => ({ prisma: { $executeRaw: jest.fn() } }));
 
 const now = new Date("2026-10-28T12:00:00Z");
 
@@ -36,6 +38,18 @@ describe("validateReverseShareInput", () => {
     );
     expect(validateReverseShareInput({ name: "x", maxSizeMB: "1.5" }, now).errorCode).toBe(
       ErrorCode.INVALID_REQUEST
+    );
+  });
+
+  it("rejects limits that do not fit a database integer", () => {
+    expect(validateReverseShareInput({ name: "x", maxUploads: 2147483648 }, now).errorCode).toBe(
+      ErrorCode.INVALID_REQUEST
+    );
+    expect(validateReverseShareInput({ name: "x", maxSizeMB: 2147483648 }, now).errorCode).toBe(
+      ErrorCode.INVALID_REQUEST
+    );
+    expect(validateReverseShareInput({ name: "x", maxUploads: 2147483647 }, now).errorCode).toBe(
+      undefined
     );
   });
 
@@ -85,5 +99,26 @@ describe("reverse share views", () => {
     expect(isReverseShareOpen({ ...row, uploadCount: 2 }, now)).toBe(false);
     expect(isReverseShareOpen({ ...row, expiresAt: now }, now)).toBe(false);
     expect(isReverseShareOpen({ ...row, maxUploads: null, uploadCount: 99 }, now)).toBe(true);
+  });
+});
+
+describe("releaseReverseShareSlot", () => {
+  const executeRaw = prisma.$executeRaw as unknown as jest.Mock;
+
+  beforeEach(() => executeRaw.mockReset());
+
+  it("retries after a transient database failure", async () => {
+    executeRaw.mockRejectedValueOnce(new Error("blip")).mockResolvedValueOnce(1);
+    await releaseReverseShareSlot("r1");
+    expect(executeRaw).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives up and logs after a few failed attempts", async () => {
+    const log = jest.spyOn(console, "error").mockImplementation(() => {});
+    executeRaw.mockRejectedValue(new Error("down"));
+    await expect(releaseReverseShareSlot("r1")).resolves.toBeUndefined();
+    expect(executeRaw).toHaveBeenCalledTimes(3);
+    expect(log).toHaveBeenCalledTimes(1);
+    log.mockRestore();
   });
 });

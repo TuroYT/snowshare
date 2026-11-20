@@ -973,7 +973,9 @@
     "copied": "Kopiert!",
     "copy_link": "Link kopieren",
     "delete": "Löschen",
-    "confirm_delete": "Diese Upload-Anfrage löschen? Bereits empfangene Dateien bleiben in deinen Freigaben."
+    "confirm_delete": "Diese Upload-Anfrage löschen? Bereits empfangene Dateien bleiben in deinen Freigaben.",
+    "error_load": "Ihre Upload-Anfragen konnten nicht geladen werden.",
+    "retry": "Erneut versuchen"
   },
   "reverse_upload": {
     "not_found": "Dieser Upload-Link existiert nicht.",

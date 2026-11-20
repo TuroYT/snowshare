@@ -973,7 +973,9 @@
     "copied": "¡Copiado!",
     "copy_link": "Copiar enlace",
     "delete": "Eliminar",
-    "confirm_delete": "¿Eliminar esta solicitud? Los archivos ya recibidos se quedan en tus elementos compartidos."
+    "confirm_delete": "¿Eliminar esta solicitud? Los archivos ya recibidos se quedan en tus elementos compartidos.",
+    "error_load": "No se pudieron cargar tus solicitudes de subida.",
+    "retry": "Reintentar"
   },
   "reverse_upload": {
     "not_found": "Este enlace de envío no existe.",

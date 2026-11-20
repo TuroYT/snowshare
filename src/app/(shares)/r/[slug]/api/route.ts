@@ -15,7 +15,12 @@ import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { accessDeniedResponse, verifySharePassword } from "@/lib/share-access";
 import { normalizeRelativePath, validateFilePath } from "@/lib/bulk-upload-utils";
 import { emitShareEvent } from "@/lib/webhooks";
-import { receiveMultipart, removeTempFiles, type ReceivedFile } from "@/lib/multipart-upload";
+import {
+  MultipartError,
+  receiveMultipart,
+  removeTempFiles,
+  type ReceivedFile,
+} from "@/lib/multipart-upload";
 import {
   createFileShareRecord,
   MAX_NOTE_LENGTH,
@@ -77,10 +82,8 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   // Senders are anonymous: the admin's anonymous per-file limit and IP quota apply
   const limits = await getUploadLimits(clientIp, false);
-  const maxTotalBytes = Math.min(
-    limits.remainingQuotaBytes,
-    rs.maxSizeMB ? rs.maxSizeMB * BYTES_PER_MB : Number.POSITIVE_INFINITY
-  );
+  const requestCapBytes = rs.maxSizeMB ? rs.maxSizeMB * BYTES_PER_MB : Number.POSITIVE_INFINITY;
+  const maxTotalBytes = Math.min(limits.remainingQuotaBytes, requestCapBytes);
   if (maxTotalBytes <= 0) {
     return apiErrorWithStatus(request, ErrorCode.IP_QUOTA_EXCEEDED, 429, {
       quota: limits.ipQuotaMB,
@@ -126,6 +129,17 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (error) {
     await removeTempFiles(files);
     await releaseReverseShareSlot(rs.id);
+    // When the owner's cap (not the sender's IP quota) was hit, report that cap
+    if (
+      error instanceof MultipartError &&
+      error.kind === "TOTAL_TOO_LARGE" &&
+      rs.maxSizeMB &&
+      requestCapBytes <= limits.remainingQuotaBytes
+    ) {
+      return apiErrorWithStatus(request, ErrorCode.FILE_TOO_LARGE, 413, {
+        maxSizeMB: rs.maxSizeMB,
+      });
+    }
     return uploadErrorResponse(request, error, limits);
   }
 }

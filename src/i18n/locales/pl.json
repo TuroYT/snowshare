@@ -973,7 +973,9 @@
     "copied": "Skopiowano!",
     "copy_link": "Kopiuj link",
     "delete": "Usuń",
-    "confirm_delete": "Usunąć tę prośbę? Otrzymane już pliki pozostaną w Twoich udostępnieniach."
+    "confirm_delete": "Usunąć tę prośbę? Otrzymane już pliki pozostaną w Twoich udostępnieniach.",
+    "error_load": "Nie udało się wczytać Twoich próśb o przesłanie plików.",
+    "retry": "Spróbuj ponownie"
   },
   "reverse_upload": {
     "not_found": "Ten link do przesyłania nie istnieje.",

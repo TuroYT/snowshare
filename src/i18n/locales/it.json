@@ -994,7 +994,9 @@
     "copied": "Copiato!",
     "copy_link": "Copia link",
     "delete": "Elimina",
-    "confirm_delete": "Eliminare questa richiesta di caricamento? I file già ricevuti restano tra le tue condivisioni."
+    "confirm_delete": "Eliminare questa richiesta di caricamento? I file già ricevuti restano tra le tue condivisioni.",
+    "error_load": "Impossibile caricare le tue richieste di caricamento.",
+    "retry": "Riprova"
   },
   "reverse_upload": {
     "not_found": "Questo link di caricamento non esiste.",

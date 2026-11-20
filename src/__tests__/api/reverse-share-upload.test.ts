@@ -35,7 +35,7 @@ jest.mock("@/lib/reverse-shares", () => ({
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUploadLimits } from "@/lib/quota-shared";
-import { receiveMultipart } from "@/lib/multipart-upload";
+import { MultipartError, receiveMultipart } from "@/lib/multipart-upload";
 import { createFileShareRecord, storeBulkFiles } from "@/lib/upload-share";
 import { claimReverseShareSlot, releaseReverseShareSlot } from "@/lib/reverse-shares";
 import { resetRateLimit } from "@/lib/rate-limit";
@@ -128,6 +128,27 @@ describe("POST /r/:slug/api", () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
     expect((await POST(req(), params)).status).toBe(500);
     expect(release).toHaveBeenCalledWith("r1");
+  });
+
+  it("reports the owner's size cap, not the IP quota, when it is exceeded", async () => {
+    findUnique.mockResolvedValue(rs);
+    receive.mockRejectedValue(new MultipartError("TOTAL_TOO_LARGE"));
+    const res = await POST(req(), params);
+    expect(res.status).toBe(413);
+    expect((await res.json()).error).toBe("api.errors.file_too_large");
+    expect(release).toHaveBeenCalledWith("r1");
+  });
+
+  it("reports the IP quota when it is the limit that was exceeded", async () => {
+    findUnique.mockResolvedValue({ ...rs, maxSizeMB: 50 });
+    (getUploadLimits as jest.Mock).mockResolvedValue({
+      maxFileSizeBytes: 100 * 1024 * 1024,
+      remainingQuotaBytes: 1024 * 1024,
+      ipQuotaBytes: 100 * 1024 * 1024,
+      ipQuotaMB: 100,
+    });
+    receive.mockRejectedValue(new MultipartError("TOTAL_TOO_LARGE"));
+    expect((await POST(req(), params)).status).toBe(429);
   });
 
   it("returns 410 when the last slot was taken concurrently", async () => {

@@ -12,6 +12,8 @@ import type { NextRequest } from "next/server";
  * temporary file on disk, so request bodies are never buffered in memory.
  */
 
+const DEFAULT_MAX_FIELD_BYTES = 1024 * 1024;
+
 export interface ReceivedFile {
   /** Form field name of the file part */
   fieldName: string;
@@ -32,6 +34,10 @@ export interface ReceiveMultipartOptions {
   maxTotalBytes: number;
   /** Maximum number of files */
   maxFiles: number;
+  /** Maximum number of text fields (default: 2 per file plus 20 options) */
+  maxFields?: number;
+  /** Maximum cumulated size of all text fields, kept in memory (default: 1 MiB) */
+  maxFieldBytes?: number;
   /** Only file parts whose field name passes this filter are kept (others are drained) */
   acceptFile?: (fieldName: string) => boolean;
 }
@@ -86,13 +92,20 @@ export async function receiveMultipart(
   const files: ReceivedFile[] = [];
   const writes: Promise<void>[] = [];
   let totalBytes = 0;
+  let fieldBytes = 0;
+  const maxFieldBytes = options.maxFieldBytes ?? DEFAULT_MAX_FIELD_BYTES;
   let failure: MultipartError | null = null;
 
   let busboy: Busboy.Busboy;
   try {
     busboy = Busboy({
       headers: Object.fromEntries(request.headers),
-      limits: { files: options.maxFiles + 1, fieldSize: 1024 * 1024 },
+      limits: {
+        files: options.maxFiles + 1,
+        fieldSize: DEFAULT_MAX_FIELD_BYTES,
+        // "fieldsLimit" fires when one more field than this arrives
+        fields: options.maxFields ?? options.maxFiles * 2 + 20,
+      },
     });
   } catch (error) {
     throw new MultipartError("MALFORMED", { cause: error });
@@ -116,8 +129,17 @@ export async function receiveMultipart(
   };
 
   busboy.on("field", (name, value) => {
+    if (failure) return;
+    fieldBytes += Buffer.byteLength(name) + Buffer.byteLength(value);
+    if (fieldBytes > maxFieldBytes) {
+      fail(new MultipartError("MALFORMED"));
+      return;
+    }
     fields[name] = value;
   });
+
+  // Busboy silently drops fields past the limit: refuse the request instead
+  busboy.on("fieldsLimit", () => fail(new MultipartError("MALFORMED")));
 
   busboy.on("file", (fieldName, stream, info) => {
     if (failure || (options.acceptFile && !options.acceptFile(fieldName)) || !info.filename) {

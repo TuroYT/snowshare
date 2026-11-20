@@ -34,10 +34,13 @@ type ValidationResult =
       };
     };
 
+/** Largest value of a PostgreSQL INTEGER column */
+const MAX_DB_INT = 2147483647;
+
 function positiveIntOrNull(value: unknown): number | null | false {
   if (value === undefined || value === null || value === "") return null;
   const n = Number(value);
-  return Number.isInteger(n) && n > 0 ? n : false;
+  return Number.isInteger(n) && n > 0 && n <= MAX_DB_INT ? n : false;
 }
 
 /** Validates the owner's input for a new upload request (password not hashed yet). */
@@ -143,10 +146,22 @@ export async function claimReverseShareSlot(id: string): Promise<boolean> {
   return updated === 1;
 }
 
-/** Gives back a slot reserved for a submission that failed. */
+const RELEASE_ATTEMPTS = 3;
+
+/**
+ * Gives back a slot reserved for a submission that failed. Retried a few times so a short
+ * database failure does not leave the slot taken; a persistent failure is logged.
+ */
 export async function releaseReverseShareSlot(id: string): Promise<void> {
-  await prisma.$executeRaw`
-    UPDATE "ReverseShare" SET "uploadCount" = GREATEST("uploadCount" - 1, 0) WHERE "id" = ${id}`.catch(
-    (error: unknown) => console.error("Failed to release upload request slot:", error)
-  );
+  for (let attempt = 1; attempt <= RELEASE_ATTEMPTS; attempt++) {
+    try {
+      await prisma.$executeRaw`
+        UPDATE "ReverseShare" SET "uploadCount" = GREATEST("uploadCount" - 1, 0) WHERE "id" = ${id}`;
+      return;
+    } catch (error) {
+      if (attempt === RELEASE_ATTEMPTS) {
+        console.error("Failed to release upload request slot:", error);
+      }
+    }
+  }
 }

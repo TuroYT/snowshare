@@ -973,7 +973,9 @@
     "copied": "Copied!",
     "copy_link": "Copy link",
     "delete": "Delete",
-    "confirm_delete": "Delete this upload request? Files already received stay in your shares."
+    "confirm_delete": "Delete this upload request? Files already received stay in your shares.",
+    "error_load": "Could not load your upload requests.",
+    "retry": "Retry"
   },
   "reverse_upload": {
     "not_found": "This upload link does not exist.",
