@@ -8,10 +8,12 @@ import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import type { NextRequest } from "next/server";
 import { apiErrorWithStatus, ErrorCode, internalError, type ErrorParams } from "@/lib/api-errors";
-import { MultipartError } from "@/lib/multipart-upload";
+import { MultipartError, type ReceivedFile } from "@/lib/multipart-upload";
+import { generateSafeFilename } from "@/lib/files";
+import { getMimeType } from "@/lib/mime-types";
 import { getUploadDir, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/lib/constants";
 import { getSettingsCached } from "@/lib/settings";
-import { isS3Enabled, uploadToStorage } from "@/lib/storage";
+import { deleteShareFiles, isS3Enabled, uploadToStorage } from "@/lib/storage";
 import { lookupIpGeolocation } from "@/lib/ip-geolocation";
 import {
   generateRandomSlug,
@@ -228,6 +230,40 @@ export async function moveToStorage(tempPath: string, key: string): Promise<void
     return;
   }
   await rename(tempPath, path.join(getUploadDir(), key));
+}
+
+/**
+ * Moves received files into storage and records them on a bulk share. On failure, removes the
+ * stored files and the share row, then rethrows.
+ */
+export async function storeBulkFiles(
+  shareId: string,
+  entries: { file: ReceivedFile; relativePath: string }[]
+): Promise<void> {
+  const stored: { filePath: string }[] = [];
+  try {
+    const rows = [];
+    for (const { file, relativePath } of entries) {
+      const key = generateSafeFilename(file.filename, shareId, { unique: true });
+      await moveToStorage(file.tempPath, key);
+      stored.push({ filePath: key });
+      rows.push({
+        shareId,
+        filePath: key,
+        originalName: file.filename,
+        relativePath,
+        size: BigInt(file.size),
+        mimeType:
+          file.mimeType !== "application/octet-stream" ? file.mimeType : getMimeType(file.filename),
+      });
+    }
+    await prisma.shareFile.createMany({ data: rows });
+  } catch (error) {
+    // Leave nothing behind: stored files, then the share row
+    await deleteShareFiles({ files: stored });
+    await rollbackShare(shareId);
+    throw error;
+  }
 }
 
 /** Deletes a share created for an upload that could not be finalized. */

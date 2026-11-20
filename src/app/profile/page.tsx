@@ -10,6 +10,7 @@ import ProfileStats from "@/components/profile/ProfileStats";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 import ApiKeysSection from "@/components/ApiKeysSection";
+import ReverseSharesSection from "@/components/profile/ReverseSharesSection";
 import TwoFactorSection from "@/components/profile/TwoFactorSection";
 import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
@@ -31,8 +32,12 @@ const ProfilePage = () => {
   const [shares, setShares] = useState<UserShare[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "profile" | "shares" | "accounts" | "apikeys" | "accesslogs"
+    "profile" | "shares" | "requests" | "accounts" | "apikeys" | "accesslogs"
   >("profile");
+  // Once opened, the upload requests section stays mounted (hidden) so a create or delete in
+  // flight always refreshes the list the user sees
+  const [requestsOpened, setRequestsOpened] = useState(false);
+  if (activeTab === "requests" && !requestsOpened) setRequestsOpened(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -159,6 +164,7 @@ const ProfilePage = () => {
             {[
               { key: "profile", label: t("profile.tab_profile", "Profile") },
               { key: "shares", label: t("profile.tab_shares", "Shares") },
+              { key: "requests", label: t("profile.tab_requests", "Upload requests") },
               { key: "accounts", label: t("profile.tab_accounts", "Linked accounts") },
               { key: "apikeys", label: t("profile.tab_apikeys", "API Keys") },
               { key: "accesslogs", label: t("profile.tab_accesslogs", "Access Logs") },
@@ -196,6 +202,12 @@ const ProfilePage = () => {
                 onUpdate={handleUpdateShare}
               />
             </>
+          )}
+
+          {requestsOpened && (
+            <div hidden={activeTab !== "requests"}>
+              <ReverseSharesSection />
+            </div>
           )}
 
           {activeTab === "accounts" && <ConnectedAccounts />}

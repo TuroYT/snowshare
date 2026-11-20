@@ -392,6 +392,7 @@
     "placeholder_password_keep": "Lascia vuoto per mantenere la password attuale",
     "remove_password": "Rimuovi password",
     "placeholder_protected_paste": "Condivisione protetta: inserisci nuovamente il contenuto per modificarlo",
+    "tab_requests": "Richieste di caricamento",
     "notify_on_access": "Avvisami via e-mail quando una delle mie condivisioni viene aperta",
     "notify_on_access_desc": "Al massimo un'e-mail per condivisione all'ora. Richiede che l'amministratore abbia configurato l'e-mail."
   },
@@ -972,5 +973,40 @@
     "disable": "Disattiva",
     "code_label": "Codice di autenticazione",
     "error": "Qualcosa è andato storto."
+  },
+  "reverse_shares": {
+    "title": "Richieste di caricamento",
+    "description": "Crea un link con cui chiunque, anche senza account, può inviarti dei file. Ogni invio compare tra le tue condivisioni.",
+    "label_name": "Nome mostrato a chi invia",
+    "placeholder_name": "es. Foto del matrimonio",
+    "label_expiry": "Scadenza (facoltativa)",
+    "label_password": "Password (facoltativa)",
+    "label_max_uploads": "Numero massimo di invii (facoltativo)",
+    "label_max_size": "Dimensione massima per invio, MB (facoltativa)",
+    "creating": "Creazione in corso...",
+    "create_button": "Crea link",
+    "error_create": "Impossibile creare la richiesta.",
+    "error_delete": "Impossibile eliminare la richiesta.",
+    "empty": "Nessuna richiesta di caricamento.",
+    "submissions": "Invii: {{count}}",
+    "expires": "Scade",
+    "protected": "Protetta da password",
+    "copied": "Copiato!",
+    "copy_link": "Copia link",
+    "delete": "Elimina",
+    "confirm_delete": "Eliminare questa richiesta di caricamento? I file già ricevuti restano tra le tue condivisioni.",
+    "error_load": "Impossibile caricare le tue richieste di caricamento.",
+    "retry": "Riprova"
+  },
+  "reverse_upload": {
+    "not_found": "Questo link di caricamento non esiste.",
+    "error_send": "Impossibile inviare i file.",
+    "heading": "Invia file",
+    "closed": "Questo link di caricamento è chiuso.",
+    "sent": "Inviato! File ricevuti: {{count}}",
+    "send_more": "Invia altri file",
+    "files": "File",
+    "message_placeholder": "Messaggio (facoltativo)",
+    "send": "Invia"
   }
 }

@@ -3,22 +3,17 @@ import { emitShareEvent } from "@/lib/webhooks";
 import { mkdir } from "node:fs/promises";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { getClientIp } from "@/lib/getClientIp";
 import { getUploadDir } from "@/lib/constants";
 import { apiErrorWithStatus, ErrorCode } from "@/lib/api-errors";
 import { getUploadLimits } from "@/lib/quota-shared";
-import { generateSafeFilename } from "@/lib/files";
-import { getMimeType } from "@/lib/mime-types";
-import { deleteShareFiles } from "@/lib/storage";
 import { normalizeRelativePath, validateFilePath } from "@/lib/bulk-upload-utils";
 import { receiveMultipart, removeTempFiles, type ReceivedFile } from "@/lib/multipart-upload";
 import {
   assertFileUploadAllowed,
   createFileShareRecord,
-  moveToStorage,
   resolveUploadOptions,
-  rollbackShare,
+  storeBulkFiles,
   uploadErrorResponse,
   UploadError,
   type UploadContext,
@@ -92,32 +87,7 @@ export async function POST(req: NextRequest) {
 
     const share = await createFileShareRecord(options, context, { isBulk: true });
 
-    const stored: { filePath: string }[] = [];
-    try {
-      const rows = [];
-      for (const { file, relativePath } of entries) {
-        const key = generateSafeFilename(file.filename, share.id, { unique: true });
-        await moveToStorage(file.tempPath, key);
-        stored.push({ filePath: key });
-        rows.push({
-          shareId: share.id,
-          filePath: key,
-          originalName: file.filename,
-          relativePath,
-          size: BigInt(file.size),
-          mimeType:
-            file.mimeType !== "application/octet-stream"
-              ? file.mimeType
-              : getMimeType(file.filename),
-        });
-      }
-      await prisma.shareFile.createMany({ data: rows });
-    } catch (error) {
-      // Leave nothing behind: stored files, then the share row
-      await deleteShareFiles({ files: stored });
-      await rollbackShare(share.id);
-      throw error;
-    }
+    await storeBulkFiles(share.id, entries);
     void emitShareEvent("share.created", share);
 
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
