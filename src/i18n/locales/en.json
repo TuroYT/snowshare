@@ -391,6 +391,8 @@
     "placeholder_protected_url": "Protected link: re-enter the URL to change it",
     "placeholder_password_keep": "Leave empty to keep the current password",
     "remove_password": "Remove password",
+    "notify_on_access": "E-mail me when one of my shares is opened",
+    "notify_on_access_desc": "At most one e-mail per share per hour. Requires e-mail to be configured by the administrator.",
     "placeholder_protected_paste": "Protected paste: re-enter the content to change it"
   },
   "apikeys": {

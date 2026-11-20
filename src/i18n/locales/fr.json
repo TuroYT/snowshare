@@ -391,6 +391,8 @@
     "placeholder_protected_url": "Lien protégé : saisissez à nouveau l'URL pour la modifier",
     "placeholder_password_keep": "Laissez vide pour conserver le mot de passe actuel",
     "remove_password": "Retirer le mot de passe",
+    "notify_on_access": "M'avertir par e-mail quand un de mes partages est ouvert",
+    "notify_on_access_desc": "Au plus un e-mail par partage et par heure. Nécessite que l'administrateur ait configuré l'envoi d'e-mails.",
     "placeholder_protected_paste": "Paste protégée : ressaisissez le contenu pour le modifier"
   },
   "apikeys": {

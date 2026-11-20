@@ -391,6 +391,8 @@
     "placeholder_protected_url": "Geschützter Link: URL erneut eingeben, um sie zu ändern",
     "placeholder_password_keep": "Leer lassen, um das aktuelle Passwort beizubehalten",
     "remove_password": "Passwort entfernen",
+    "notify_on_access": "Mich per E-Mail benachrichtigen, wenn eine meiner Freigaben geöffnet wird",
+    "notify_on_access_desc": "Höchstens eine E-Mail pro Freigabe und Stunde. Erfordert, dass der Administrator den E-Mail-Versand eingerichtet hat.",
     "placeholder_protected_paste": "Geschützter Paste: Inhalt erneut eingeben, um ihn zu ändern"
   },
   "apikeys": {
