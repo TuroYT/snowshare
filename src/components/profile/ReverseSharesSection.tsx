@@ -44,6 +44,7 @@ export default function ReverseSharesSection() {
     maxSizeMB: "",
   });
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<string | null>(null);
@@ -83,6 +84,7 @@ export default function ReverseSharesSection() {
   };
 
   const handleDelete = async (id: string) => {
+    setDeleting(true);
     try {
       const res = await fetch(`/api/user/reverse-shares/${id}`, { method: "DELETE" });
       if (res.ok) refetch();
@@ -91,6 +93,7 @@ export default function ReverseSharesSection() {
       console.error("Failed to delete upload request:", err);
       setError(t("reverse_shares.error_delete", "Could not delete the request."));
     } finally {
+      setDeleting(false);
       setToDelete(null);
     }
   };
@@ -213,7 +216,7 @@ export default function ReverseSharesSection() {
         <div className="sm:col-span-2 flex justify-end">
           <button
             type="submit"
-            disabled={creating || loading || !form.name.trim()}
+            disabled={creating || deleting || loading || !form.name.trim()}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             style={{ background: "var(--primary)", color: "#fff" }}
           >
@@ -275,7 +278,8 @@ export default function ReverseSharesSection() {
                 </button>
                 <button
                   onClick={() => setToDelete(rs.id)}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
+                  disabled={creating || deleting}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                 >
                   {t("reverse_shares.delete", "Delete")}
                 </button>
