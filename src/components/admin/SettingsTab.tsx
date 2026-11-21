@@ -63,39 +63,45 @@ interface Settings {
   webhookSecret: string | null;
 }
 
+// Fallback for every setting the API may return as null or leave out
+const SETTING_DEFAULTS = {
+  allowSignin: true,
+  disableCredentialsLogin: false,
+  allowAnonFileShare: true,
+  allowAnonLinkShare: true,
+  allowAnonPasteShare: true,
+  defaultExpirationDays: 30,
+  allowIframeEmbedding: false,
+  socialEmbedsEnabled: true,
+  embedPasteExcerpt: false,
+  captchaEnabled: false,
+  captchaProvider: null,
+  captchaSiteKey: null,
+  captchaSecretKey: null,
+  smtpEnabled: false,
+  smtpHost: null,
+  smtpPort: 587,
+  smtpUser: null,
+  smtpPassword: null,
+  smtpFrom: null,
+  smtpSecure: false,
+  emailVerificationRequired: false,
+  s3Enabled: false,
+  s3Endpoint: null,
+  s3Region: null,
+  s3Bucket: null,
+  s3AccessKeyId: null,
+  s3SecretAccessKey: null,
+  webhookUrl: null,
+  webhookSecret: null,
+} satisfies Partial<Settings>;
+
 function mapSettingsWithDefaults(data: Settings): Settings {
-  return {
-    ...data,
-    allowSignin: data.allowSignin ?? true,
-    disableCredentialsLogin: data.disableCredentialsLogin ?? false,
-    allowAnonFileShare: data.allowAnonFileShare ?? true,
-    allowAnonLinkShare: data.allowAnonLinkShare ?? true,
-    allowAnonPasteShare: data.allowAnonPasteShare ?? true,
-    defaultExpirationDays: data.defaultExpirationDays ?? 30,
-    allowIframeEmbedding: data.allowIframeEmbedding ?? false,
-    socialEmbedsEnabled: data.socialEmbedsEnabled ?? true,
-    embedPasteExcerpt: data.embedPasteExcerpt ?? false,
-    captchaEnabled: data.captchaEnabled ?? false,
-    captchaProvider: data.captchaProvider ?? null,
-    captchaSiteKey: data.captchaSiteKey ?? null,
-    captchaSecretKey: data.captchaSecretKey ?? null,
-    smtpEnabled: data.smtpEnabled ?? false,
-    smtpHost: data.smtpHost ?? null,
-    smtpPort: data.smtpPort ?? 587,
-    smtpUser: data.smtpUser ?? null,
-    smtpPassword: data.smtpPassword ?? null,
-    smtpFrom: data.smtpFrom ?? null,
-    smtpSecure: data.smtpSecure ?? false,
-    emailVerificationRequired: data.emailVerificationRequired ?? false,
-    s3Enabled: data.s3Enabled ?? false,
-    s3Endpoint: data.s3Endpoint ?? null,
-    s3Region: data.s3Region ?? null,
-    s3Bucket: data.s3Bucket ?? null,
-    s3AccessKeyId: data.s3AccessKeyId ?? null,
-    s3SecretAccessKey: data.s3SecretAccessKey ?? null,
-    webhookUrl: data.webhookUrl ?? null,
-    webhookSecret: data.webhookSecret ?? null,
-  };
+  const result: Settings = { ...data };
+  for (const key of Object.keys(SETTING_DEFAULTS) as (keyof typeof SETTING_DEFAULTS)[]) {
+    Object.assign(result, { [key]: data[key] ?? SETTING_DEFAULTS[key] });
+  }
+  return result;
 }
 
 export default function SettingsTab() {

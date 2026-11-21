@@ -84,26 +84,32 @@ function SkeletonSection({ fields }: Readonly<{ fields: number }>) {
   );
 }
 
+// Settings that fall back to their default when the API returns an empty value
+const DEFAULTED_KEYS = [
+  "appName",
+  "appDescription",
+  "primaryColor",
+  "primaryHover",
+  "primaryDark",
+  "secondaryColor",
+  "secondaryHover",
+  "secondaryDark",
+  "backgroundColor",
+  "surfaceColor",
+  "textColor",
+  "textMuted",
+  "borderColor",
+  "fontFamily",
+] as const;
+
+// Settings that stay null when unset
+const OPTIONAL_KEYS = ["logoUrl", "faviconUrl", "backgroundImageUrl"] as const;
+
 function mapBrandingFromApi(s: Record<string, string | null>): BrandingSettings {
-  return {
-    appName: s.appName || DEFAULT_SETTINGS.appName,
-    appDescription: s.appDescription || DEFAULT_SETTINGS.appDescription,
-    logoUrl: s.logoUrl || null,
-    faviconUrl: s.faviconUrl || null,
-    primaryColor: s.primaryColor || DEFAULT_SETTINGS.primaryColor,
-    primaryHover: s.primaryHover || DEFAULT_SETTINGS.primaryHover,
-    primaryDark: s.primaryDark || DEFAULT_SETTINGS.primaryDark,
-    secondaryColor: s.secondaryColor || DEFAULT_SETTINGS.secondaryColor,
-    secondaryHover: s.secondaryHover || DEFAULT_SETTINGS.secondaryHover,
-    secondaryDark: s.secondaryDark || DEFAULT_SETTINGS.secondaryDark,
-    backgroundColor: s.backgroundColor || DEFAULT_SETTINGS.backgroundColor,
-    backgroundImageUrl: s.backgroundImageUrl || null,
-    surfaceColor: s.surfaceColor || DEFAULT_SETTINGS.surfaceColor,
-    textColor: s.textColor || DEFAULT_SETTINGS.textColor,
-    textMuted: s.textMuted || DEFAULT_SETTINGS.textMuted,
-    borderColor: s.borderColor || DEFAULT_SETTINGS.borderColor,
-    fontFamily: s.fontFamily || DEFAULT_SETTINGS.fontFamily,
-  };
+  const result: BrandingSettings = { ...DEFAULT_SETTINGS };
+  for (const key of DEFAULTED_KEYS) result[key] = s[key] || DEFAULT_SETTINGS[key];
+  for (const key of OPTIONAL_KEYS) result[key] = s[key] || null;
+  return result;
 }
 
 export default function BrandingTab() {
