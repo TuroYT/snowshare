@@ -63,7 +63,15 @@ export default function CreateUserDialog({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t("admin.users.create_user")} size="sm">
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        // A pending request would otherwise reset or close a dialog reopened in the meantime
+        if (!loading) onClose();
+      }}
+      title={t("admin.users.create_user")}
+      size="sm"
+    >
       {error && (
         <Alert variant="danger" className="mb-4">
           {error}

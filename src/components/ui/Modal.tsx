@@ -12,7 +12,7 @@ interface ModalProps {
 }
 
 const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])';
 
 export default function Modal({
   isOpen,
@@ -41,7 +41,10 @@ export default function Modal({
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       const active = document.activeElement;
-      if (e.shiftKey && (active === first || !dialogRef.current.contains(active))) {
+      if (
+        e.shiftKey &&
+        (active === first || active === dialogRef.current || !dialogRef.current.contains(active))
+      ) {
         e.preventDefault();
         last.focus();
       } else if (!e.shiftKey && (active === last || !dialogRef.current.contains(active))) {

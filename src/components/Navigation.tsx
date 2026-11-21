@@ -323,7 +323,14 @@ export default function Navigation() {
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setProfileOpen(false);
+      if (e.key !== "Escape") return;
+      // Focus is inside the dropdown: closing it would unmount the focused link, so hand
+      // focus back to the trigger (the first button of the wrapper).
+      const root = profileRef.current;
+      if (root?.contains(document.activeElement)) {
+        root.querySelector<HTMLButtonElement>("button")?.focus();
+      }
+      setProfileOpen(false);
     };
     document.addEventListener("mousedown", handler);
     document.addEventListener("keydown", onKeyDown);

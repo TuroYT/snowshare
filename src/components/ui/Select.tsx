@@ -34,7 +34,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             "focus:outline-none focus:border-[var(--foreground)]",
             "transition-colors duration-100",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            error && "border-[var(--destructive)] focus:border-[var(--destructive)]",
+            error &&
+              "border-[var(--destructive)] focus:border-[var(--destructive)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--destructive)_35%,transparent)]",
             className
           )}
           {...props}

@@ -1,8 +1,10 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Spinner } from "@/components/ui/Spinner";
 
 export default function LoadingScreen() {
+  const { t } = useTranslation();
   return (
     <div
       role="status"
@@ -10,6 +12,7 @@ export default function LoadingScreen() {
       style={{ animation: "fadeOut 0.6s ease-out 2s forwards" }}
     >
       <Spinner className="w-16 h-16" />
+      <span className="sr-only">{t("loading", "Loading...")}</span>
       <style>{`
         @keyframes fadeOut {
           from { opacity: 1; }

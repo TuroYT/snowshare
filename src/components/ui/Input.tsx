@@ -9,7 +9,8 @@ const fieldStyles = (error?: string) =>
     "focus:outline-none focus:border-[var(--foreground)]",
     "placeholder:text-[var(--foreground-subtle)]",
     "transition-colors duration-100",
-    error && "border-[var(--destructive)] focus:border-[var(--destructive)]",
+    error &&
+      "border-[var(--destructive)] focus:border-[var(--destructive)] focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--destructive)_35%,transparent)]",
     "disabled:opacity-50 disabled:cursor-not-allowed"
   );
 
