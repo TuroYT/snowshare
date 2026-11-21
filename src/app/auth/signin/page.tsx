@@ -23,7 +23,9 @@ export default function SignIn() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
-  const messageParam = searchParams.get("message");
+  // Only known notice codes are shown: never render free text taken from the URL.
+  const noticeKey =
+    searchParams.get("notice") === "account_created" ? "auth.success_account_created" : null;
   const { t } = useTranslation();
   const { branding } = useTheme();
 
@@ -143,10 +145,10 @@ export default function SignIn() {
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
 
-        {/* Notice passed by signup/setup (?message=...) */}
-        {messageParam && !error && (
+        {/* Notice passed by signup/setup (?notice=account_created) */}
+        {noticeKey && !error && (
           <Alert variant="success" className="mb-4">
-            {messageParam}
+            {t(noticeKey)}
           </Alert>
         )}
 

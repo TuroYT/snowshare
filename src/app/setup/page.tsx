@@ -81,9 +81,7 @@ export default function Setup() {
           router.push("/");
         } else {
           // If auto-login failed, redirect to sign-in with a message
-          router.push(
-            `/auth/signin?message=${encodeURIComponent(t("auth.success_account_created"))}`
-          );
+          router.push("/auth/signin?notice=account_created");
         }
       } else {
         setError(data.error || t("auth.error_generic").replace(" : ", ""));

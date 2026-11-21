@@ -234,9 +234,7 @@ export default function SignUp() {
         if (signInResult?.ok) {
           router.push("/");
         } else {
-          router.push(
-            `/auth/signin?message=${encodeURIComponent(t("auth.success_account_created"))}`
-          );
+          router.push("/auth/signin?notice=account_created");
         }
       } else {
         setError(data.error || t("auth.error_generic").replace(" : ", ""));
