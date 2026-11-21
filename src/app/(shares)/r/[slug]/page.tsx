@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
-import { Button, Input, Spinner, Textarea } from "@/components/ui";
+import { Alert, Button, Input, Spinner, Textarea } from "@/components/ui";
+import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
 import { formatBytes } from "@/lib/formatSize";
 
 interface RequestInfo {
@@ -79,14 +80,12 @@ export default function UploadRequestPage() {
       <main className="flex-1 flex items-start justify-center px-4 py-12">
         <div className="w-full max-w-lg space-y-4">
           {loading && (
-            <div className="flex justify-center py-12">
+            <div role="status" aria-label={t("loading")} className="flex justify-center py-12">
               <Spinner size="lg" />
             </div>
           )}
 
-          {!loading && !info && (
-            <p className="text-center py-12 text-[var(--foreground-muted)]">{error}</p>
-          )}
+          {!loading && !info && <ShareUnavailable message={error} />}
 
           {info && (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4">
@@ -100,18 +99,18 @@ export default function UploadRequestPage() {
               </div>
 
               {!info.isOpen && (
-                <p className="text-sm text-[var(--foreground-muted)]">
+                <Alert variant="warning">
                   {t("reverse_upload.closed", "This upload link is closed.")}
-                </p>
+                </Alert>
               )}
 
               {info.isOpen && sentCount !== null && (
                 <div className="space-y-3">
-                  <p className="text-sm text-green-400">
+                  <Alert variant="success">
                     {t("reverse_upload.sent", "Sent! Files received: {{count}}", {
                       count: sentCount,
                     })}
-                  </p>
+                  </Alert>
                   <Button variant="secondary" size="sm" onClick={() => setSentCount(null)}>
                     {t("reverse_upload.send_more", "Send more files")}
                   </Button>
@@ -128,7 +127,7 @@ export default function UploadRequestPage() {
                       type="file"
                       multiple
                       onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-                      className="block w-full text-sm text-[var(--foreground-muted)]"
+                      className="block w-full text-sm text-[var(--foreground-muted)] file:mr-3 file:cursor-pointer file:rounded-[var(--radius)] file:border file:border-[var(--border)] file:bg-[var(--surface)] file:px-3 file:py-1.5 file:text-sm file:text-[var(--foreground)] hover:file:bg-[var(--surface-hover)]"
                     />
                   </label>
                   {files.length > 0 && (
@@ -141,6 +140,7 @@ export default function UploadRequestPage() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder={t("reverse_upload.message_placeholder", "Message (optional)")}
+                    aria-label={t("reverse_upload.message_placeholder", "Message (optional)")}
                     maxLength={1500}
                     rows={3}
                   />
@@ -150,9 +150,11 @@ export default function UploadRequestPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={t("file_download.password_placeholder")}
+                      aria-label={t("file_download.password_placeholder")}
+                      autoComplete="current-password"
                     />
                   )}
-                  {error && <p className="text-sm text-red-400">{error}</p>}
+                  {error && <Alert variant="danger">{error}</Alert>}
                   <Button
                     type="submit"
                     isLoading={sending}

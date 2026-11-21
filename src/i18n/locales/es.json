@@ -5,7 +5,9 @@
     "edit": "Editar",
     "delete": "Eliminar",
     "confirm": "Confirmar",
-    "remove": "Quitar"
+    "remove": "Quitar",
+    "close": "Cerrar",
+    "copy_failed": "No se pudo copiar. Seleccione el texto y cópielo manualmente."
   },
   "nav": {
     "hello": "Hola, {{email}}",
@@ -601,7 +603,8 @@
       "s3_test": "Probar conexión",
       "s3_testing": "Probando…",
       "s3_test_success": "Conexión exitosa.",
-      "s3_test_error": "Conexión fallida: {{error}}"
+      "s3_test_error": "Conexión fallida: {{error}}",
+      "s3_network_error": "Error de red"
     },
     "quotas": {
       "title": "Cuotas de Carga",
@@ -665,7 +668,8 @@
         "city": "Ciudad",
         "unknown": "Desconocido",
         "not_resolved": "Datos de geolocalizacion no disponibles"
-      }
+      },
+      "views_title": "{{count}}/{{max}} vistas"
     },
     "branding": {
       "section_identity": "Identidad de la Aplicación",
@@ -728,7 +732,10 @@
       "font_family_hint": "La fuente utilizada globalmente en toda la aplicación",
       "accent_colors_label": "Colores de acento",
       "accent_colors_hint": "Usados para botones, enlaces y estados de foco. Seleccionar un preset anula estos valores.",
-      "background_image_error": "No se pudo cargar la imagen. Compruebe que la URL apunta a una imagen válida."
+      "background_image_error": "No se pudo cargar la imagen. Compruebe que la URL apunta a una imagen válida.",
+      "logo_preview_alt": "Vista previa del logotipo",
+      "favicon_preview_alt": "Vista previa del favicon",
+      "background_preview_alt": "Vista previa del fondo"
     },
     "email_templates": {
       "title": "Plantillas de correo",
@@ -777,7 +784,8 @@
       "url": "URL del webhook",
       "secret": "Secreto de firma (opcional)",
       "secret_hint": "Se envía como X-SnowShare-Signature: sha256=<HMAC-SHA256 del cuerpo>"
-    }
+    },
+    "version_loading": "cargando..."
   },
   "paste_view": {
     "title": "Paste",
@@ -942,7 +950,8 @@
     "pdf_load_error": "Error al cargar el PDF",
     "previous_page": "Página anterior",
     "page_of": "Página {{current}} de {{total}}",
-    "next_page": "Página siguiente"
+    "next_page": "Página siguiente",
+    "supported_formats_list": "Imágenes (jpg, png, gif, webp), documentos (pdf), vídeos (mp4, webm, ogg)"
   },
   "embed": {
     "file": "Archivo",
@@ -1008,5 +1017,8 @@
     "disable": "Desactivar",
     "code_label": "Código de autenticación",
     "error": "Algo salió mal."
+  },
+  "api_docs": {
+    "title": "Referencia de la API"
   }
 }

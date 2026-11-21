@@ -5,7 +5,9 @@
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "confirm": "Bestätigen",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "close": "Schließen",
+    "copy_failed": "Kopieren nicht möglich. Markieren Sie den Text und kopieren Sie ihn manuell."
   },
   "nav": {
     "hello": "Hallo, {{email}}",
@@ -601,7 +603,8 @@
       "s3_test": "Verbindung testen",
       "s3_testing": "Teste…",
       "s3_test_success": "Verbindung erfolgreich.",
-      "s3_test_error": "Verbindung fehlgeschlagen: {{error}}"
+      "s3_test_error": "Verbindung fehlgeschlagen: {{error}}",
+      "s3_network_error": "Netzwerkfehler"
     },
     "quotas": {
       "title": "Upload-Quoten",
@@ -665,7 +668,8 @@
         "city": "Stadt",
         "unknown": "Unbekannt",
         "not_resolved": "Geolokalisierungsdaten nicht verfügbar"
-      }
+      },
+      "views_title": "{{count}}/{{max}} Aufrufe"
     },
     "branding": {
       "section_identity": "App-Identität",
@@ -728,7 +732,10 @@
       "font_family_hint": "Die Schriftart, die global in der gesamten Anwendung verwendet wird",
       "accent_colors_label": "Akzentfarben",
       "accent_colors_hint": "Für Schaltflächen, Links und Fokuszustände. Ein Preset überschreibt diese Werte.",
-      "background_image_error": "Bild konnte nicht geladen werden. Stellen Sie sicher, dass die URL auf ein gültiges Bild verweist."
+      "background_image_error": "Bild konnte nicht geladen werden. Stellen Sie sicher, dass die URL auf ein gültiges Bild verweist.",
+      "logo_preview_alt": "Logo-Vorschau",
+      "favicon_preview_alt": "Favicon-Vorschau",
+      "background_preview_alt": "Hintergrund-Vorschau"
     },
     "email_templates": {
       "title": "E-Mail-Vorlagen",
@@ -777,7 +784,8 @@
       "url": "Webhook-URL",
       "secret": "Signaturschlüssel (optional)",
       "secret_hint": "Wird als X-SnowShare-Signature: sha256=<HMAC-SHA256 des Inhalts> gesendet"
-    }
+    },
+    "version_loading": "wird geladen..."
   },
   "paste_view": {
     "title": "Paste",
@@ -942,7 +950,8 @@
     "pdf_load_error": "PDF konnte nicht geladen werden",
     "previous_page": "Vorherige Seite",
     "page_of": "Seite {{current}} von {{total}}",
-    "next_page": "Nächste Seite"
+    "next_page": "Nächste Seite",
+    "supported_formats_list": "Bilder (jpg, png, gif, webp), Dokumente (pdf), Videos (mp4, webm, ogg)"
   },
   "embed": {
     "file": "Datei",
@@ -1008,5 +1017,8 @@
     "disable": "Deaktivieren",
     "code_label": "Authentifizierungscode",
     "error": "Etwas ist schiefgelaufen."
+  },
+  "api_docs": {
+    "title": "API-Referenz"
   }
 }

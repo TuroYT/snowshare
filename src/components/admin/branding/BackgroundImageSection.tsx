@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
+import { Input, Spinner } from "@/components/ui";
 
 interface BackgroundImageSectionProps {
   backgroundImageUrl: string | null;
@@ -16,22 +17,20 @@ export default function BackgroundImageSection({
   const { t } = useTranslation();
 
   return (
-    <div className="p-4 bg-[var(--surface-hover)] rounded-[var(--radius-lg)] border border-[var(--border)]">
+    <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
       <h4 className="text-sm font-semibold text-[var(--foreground)] mb-4">
         {t("admin.branding.background_image_url", "Background image")}
       </h4>
-      <input
+      <Input
+        aria-label={t("admin.branding.background_image_url", "Background image")}
         type="url"
         value={backgroundImageUrl || ""}
         onChange={(e) => onChange("backgroundImageUrl", e.target.value || null)}
-        className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-[var(--radius)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--foreground)]"
         placeholder="https://example.com/background.jpg"
+        helperText={t("admin.branding.background_image_url_hint")}
       />
-      <p className="text-xs text-[var(--foreground-muted)] mt-1">
-        {t("admin.branding.background_image_url_hint")}
-      </p>
       {backgroundImageUrl && (
-        <div className="mt-3 p-2 bg-[var(--surface)] rounded-[var(--radius)] border border-[var(--border)]">
+        <div className="mt-3 p-2 rounded-[var(--radius)] border border-[var(--border)]">
           <p className="text-xs text-[var(--foreground-muted)] mb-2">
             {t("admin.branding.background_image_preview")}
           </p>
@@ -56,16 +55,25 @@ function BackgroundImagePreview({ url }: Readonly<{ url: string }>) {
 
   if (status === "loading") {
     return (
-      <div className="w-full h-32 rounded-lg flex items-center justify-center bg-[var(--surface)]/30">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--primary)]"></div>
+      <div className="w-full h-32 rounded-[var(--radius)] flex items-center justify-center bg-[var(--surface-hover)]">
+        <Spinner size="lg" />
       </div>
     );
   }
 
   if (status === "error") {
     return (
-      <div className="w-full h-32 rounded-lg flex flex-col items-center justify-center bg-red-900/20 border border-red-800/50 text-red-400 text-sm gap-2">
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div
+        className="w-full h-32 rounded-[var(--radius)] flex flex-col items-center justify-center bg-[color-mix(in_srgb,var(--destructive)_8%,transparent)] border border-[color-mix(in_srgb,var(--destructive)_30%,transparent)] text-[var(--destructive-text)] text-sm gap-2 px-3 text-center"
+        role="alert"
+      >
+        <svg
+          className="h-6 w-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -82,10 +90,10 @@ function BackgroundImagePreview({ url }: Readonly<{ url: string }>) {
   }
 
   return (
-    <div className="relative w-full h-32 rounded-lg overflow-hidden">
+    <div className="relative w-full h-32 rounded-[var(--radius)] overflow-hidden">
       <Image
         src={url}
-        alt="Background preview"
+        alt={t("admin.branding.background_preview_alt")}
         fill
         className="object-cover"
         onError={() => setStatus("error")}

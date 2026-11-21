@@ -8,9 +8,12 @@ import dynamic from "next/dynamic";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
+import { Spinner, Tabs, Tab } from "@/components/ui";
 import UpdateNotification, { VersionInfo } from "@/components/admin/UpdateNotification";
 
-type Tab = "users" | "settings" | "branding" | "logs" | "oauth" | "email";
+type AdminTab = "users" | "settings" | "branding" | "logs" | "oauth" | "email";
+
+const TAB_KEYS: readonly AdminTab[] = ["users", "settings", "branding", "oauth", "email", "logs"];
 
 const TabLoadingFallback = () => (
   <div className="space-y-4 w-full">
@@ -46,7 +49,7 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("users");
+  const [activeTab, setActiveTab] = useState<AdminTab>("users");
 
   const checkAdminStatus = useCallback(async () => {
     try {
@@ -85,8 +88,8 @@ export default function AdminPage() {
         <Navigation />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            <p className="mt-4">{t("admin.loading")}</p>
+            <Spinner className="w-10 h-10 mx-auto" />
+            <p className="mt-4 text-[var(--foreground-muted)]">{t("admin.loading")}</p>
           </div>
         </div>
         <Footer />
@@ -100,12 +103,13 @@ export default function AdminPage() {
         <Navigation />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
-            <div className="inline-block rounded-full p-3 bg-red-600/10 border border-red-600/20 mb-4">
+            <div className="inline-block rounded-full p-3 bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] border border-[color-mix(in_srgb,var(--destructive)_25%,transparent)] mb-4">
               <svg
-                className="w-12 h-12 text-red-500"
+                className="w-12 h-12 text-[var(--destructive-text)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -115,7 +119,7 @@ export default function AdminPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold mb-2">{t("admin.error_access_denied")}</h1>
+            <h1 className="text-2xl font-semibold mb-2">{t("admin.error_access_denied")}</h1>
           </div>
         </div>
         <Footer />
@@ -130,8 +134,8 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-4xl font-bold text-[var(--foreground)] mb-2">
-              {t("admin.title")} - v{versionInfo?.currentVersion ?? "loading..."}
+            <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-2">
+              {t("admin.title")} - v{versionInfo?.currentVersion ?? t("admin.version_loading")}
             </h1>
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
           </div>
@@ -140,24 +144,25 @@ export default function AdminPage() {
           <UpdateNotification versionInfo={versionInfo} setVersionInfo={setVersionInfo} />
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 border-b border-[var(--border)]/50 overflow-x-auto scrollbar-hide">
-            {(["users", "settings", "branding", "oauth", "email", "logs"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 font-medium transition-all whitespace-nowrap shrink-0 border-b-2 ${
-                  activeTab === tab
-                    ? "border-blue-500 text-[var(--primary)]"
-                    : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-                }`}
-              >
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as AdminTab)}
+            className="mb-6"
+          >
+            {TAB_KEYS.map((tab) => (
+              <Tab key={tab} value={tab}>
                 {tab === "oauth" ? "OAuth / SSO" : t(`admin.tabs.${tab}`)}
-              </button>
+              </Tab>
             ))}
-          </div>
+          </Tabs>
 
           {/* Tab Content */}
-          <div className="bg-[var(--surface)] bg-opacity-95 border border-[var(--border)]/50 rounded-2xl p-6">
+          <div
+            role="tabpanel"
+            id={`tabpanel-${activeTab}`}
+            aria-labelledby={`tab-${activeTab}`}
+            className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6"
+          >
             {activeTab === "users" && <UsersTab />}
             {activeTab === "settings" && <SettingsTab />}
             {activeTab === "branding" && <BrandingTab />}

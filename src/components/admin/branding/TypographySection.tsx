@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Select } from "@/components/ui";
 import { AVAILABLE_FONTS } from "@/contexts/ThemeContext";
 
 interface TypographySectionProps {
@@ -17,48 +18,26 @@ export default function TypographySection({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="h-8 w-8 rounded-lg bg-amber-600/20 border border-amber-700/50 flex items-center justify-center">
-          <svg
-            className="w-4 h-4 text-amber-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h8m-8 6h16"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-[var(--foreground)]">
-          {t("admin.branding.section_typography")}
-        </h3>
-      </div>
+      <h3 className="text-lg font-semibold text-[var(--foreground)]">
+        {t("admin.branding.section_typography")}
+      </h3>
 
-      <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-        <label className="text-sm text-[var(--foreground)] block mb-2">
-          {t("admin.branding.font_family")}
-        </label>
-        <select
+      <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
+        <Select
+          label={t("admin.branding.font_family")}
           value={fontFamily}
           onChange={(e) => onChange("fontFamily", e.target.value)}
-          className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+          helperText={t("admin.branding.font_family_hint")}
         >
           {AVAILABLE_FONTS.map((font) => (
             <option key={font.id} value={font.id}>
               {font.name}
             </option>
           ))}
-        </select>
-        <p className="text-xs text-[var(--foreground-muted)] mt-1">
-          {t("admin.branding.font_family_hint")}
-        </p>
+        </Select>
 
         {/* Font Preview */}
-        <div className="mt-4 p-4 bg-[var(--surface)]/50 rounded-lg border border-[var(--border)]/50">
+        <div className="mt-4 p-4 rounded-[var(--radius)] border border-[var(--border)]">
           <p className="text-xs text-[var(--foreground-muted)] mb-2">
             {t("admin.branding.preview")}
           </p>
@@ -102,7 +81,7 @@ function FontPreview({ fontFamily }: Readonly<{ fontFamily: string }>) {
       <p className="text-sm text-[var(--foreground-muted)]">
         ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789
       </p>
-      <div className="flex gap-4 text-sm text-[var(--foreground)]">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--foreground)]">
         <span className="font-light">Light</span>
         <span className="font-normal">Regular</span>
         <span className="font-medium">Medium</span>

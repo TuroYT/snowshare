@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
+import { Alert, Badge, Button, Input } from "@/components/ui";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import CreateUserDialog from "./CreateUserDialog";
 import WarningModal from "./WarningModal";
@@ -105,10 +106,7 @@ export default function UsersTab() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="rounded-xl p-4 border border-[var(--border)]/50 bg-[var(--surface)]/20"
-          >
+          <div key={i} className="rounded-[var(--radius-lg)] p-4 border border-[var(--border)]">
             <WaveSkeleton variant="text" width={96} height={18} sx={{ mb: 1 }} />
             <WaveSkeleton variant="text" width={64} height={40} />
           </div>
@@ -118,7 +116,7 @@ export default function UsersTab() {
       {[0, 1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)]/50 bg-[var(--surface)]/20"
+          className="flex items-center justify-between p-4 rounded-[var(--radius-lg)] border border-[var(--border)]"
         >
           <div>
             <WaveSkeleton variant="text" width={160} height={22} />
@@ -152,60 +150,42 @@ export default function UsersTab() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div
-            className="border border-[var(--primary-dark)]/30 rounded-xl p-4"
-            style={{
-              background:
-                "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.1), rgb(from var(--primary-dark) r g b / 0.1))",
-            }}
-          >
+          <div className="border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
             <div className="text-sm text-[var(--foreground-muted)]">
               {t("admin.users.total_users")}
             </div>
-            <div className="text-3xl font-bold text-[var(--primary)] mt-1">{totalUsers}</div>
+            <div className="text-3xl font-semibold text-[var(--foreground)] mt-1">{totalUsers}</div>
           </div>
-          <div
-            className="border border-[var(--secondary-dark)]/30 rounded-xl p-4"
-            style={{
-              background:
-                "linear-gradient(to bottom right, rgb(from var(--secondary) r g b / 0.1), rgb(from var(--secondary-dark) r g b / 0.1))",
-            }}
-          >
+          <div className="border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
             <div className="text-sm text-[var(--foreground-muted)]">
               {t("admin.users.admin_users")}
             </div>
-            <div className="text-3xl font-bold text-[var(--secondary)] mt-1">{adminUsers}</div>
+            <div className="text-3xl font-semibold text-[var(--foreground)] mt-1">{adminUsers}</div>
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-600/10 border border-red-700/30 rounded-xl p-4 text-red-400">
-            {error}
-          </div>
-        )}
+        {error && <Alert variant="danger">{error}</Alert>}
 
         {/* Search and Create Button */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <input
+          <Input
             type="text"
             placeholder={t("admin.users.search_placeholder")}
+            aria-label={t("admin.users.search_placeholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            className="flex-1"
           />
-          <button
-            onClick={() => setShowCreateDialog(true)}
-            className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-dark)] rounded-lg text-white font-medium transition-colors whitespace-nowrap sm:shrink-0"
-          >
+          <Button onClick={() => setShowCreateDialog(true)} className="sm:shrink-0">
             {t("admin.users.add_user")}
-          </button>
+          </Button>
         </div>
 
         {/* Users Table */}
-        <div className="overflow-x-auto rounded-lg border border-[var(--border)]/50">
+        <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border)]">
           <table className="w-full">
             <thead>
-              <tr className="bg-[var(--surface)]/30 border-b border-[var(--border)]/50">
+              <tr className="bg-[var(--surface-hover)] border-b border-[var(--border)]">
                 <th className="px-6 py-3 text-left text-sm font-semibold text-[var(--foreground)]">
                   {t("admin.users.table_headers.email")}
                 </th>
@@ -226,7 +206,7 @@ export default function UsersTab() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700/50">
+            <tbody className="divide-y divide-[var(--border)]">
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-[var(--foreground-muted)]">
@@ -235,21 +215,18 @@ export default function UsersTab() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-[var(--surface)]/20 transition-colors">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-[var(--surface-hover)] transition-colors duration-100"
+                  >
                     <td className="px-6 py-3 text-sm text-[var(--foreground)]">{user.email}</td>
                     <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
                       {user.name || "-"}
                     </td>
                     <td className="px-6 py-3 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.isAdmin
-                            ? "bg-yellow-600/20 border border-yellow-700/50 text-yellow-400"
-                            : "bg-[var(--surface)]/50 border border-[var(--border)]/50 text-[var(--foreground-muted)]"
-                        }`}
-                      >
+                      <Badge variant={user.isAdmin ? "warning" : "muted"}>
                         {user.isAdmin ? t("admin.users.role_admin") : t("admin.users.role_user")}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
                       {user._count.shares}
@@ -258,27 +235,24 @@ export default function UsersTab() {
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-3 text-sm">
-                      <div className="flex gap-2">
-                        {!user.isAdmin ? (
-                          <button
-                            onClick={() => requestAction(user.id, "promote")}
-                            disabled={actionLoading === user.id}
-                            className="px-2 py-1 bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-700/50 rounded text-xs text-yellow-400 transition-colors disabled:opacity-50"
-                          >
-                            {actionLoading === user.id ? "..." : t("admin.users.action_make_admin")}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => requestAction(user.id, "demote")}
-                            disabled={actionLoading === user.id}
-                            className="px-2 py-1 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-700/50 rounded text-xs text-orange-400 transition-colors disabled:opacity-50"
-                          >
-                            {actionLoading === user.id
-                              ? "..."
-                              : t("admin.users.action_remove_admin")}
-                          </button>
-                        )}
-                        <button
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() =>
+                            requestAction(user.id, user.isAdmin ? "demote" : "promote")
+                          }
+                          disabled={actionLoading === user.id}
+                        >
+                          {actionLoading === user.id
+                            ? "..."
+                            : user.isAdmin
+                              ? t("admin.users.action_remove_admin")
+                              : t("admin.users.action_make_admin")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
                           onClick={() =>
                             requestAction(
                               user.id,
@@ -290,21 +264,21 @@ export default function UsersTab() {
                             "admin.users.sso_link_hint",
                             "Link the user's SSO account automatically on their next SSO sign-in"
                           )}
-                          className="px-2 py-1 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-700/50 rounded text-xs text-blue-400 transition-colors disabled:opacity-50"
                         >
                           {actionLoading === user.id
                             ? "..."
                             : user.ssoAutoLink
                               ? t("admin.users.action_disable_sso_link", "Cancel SSO link")
                               : t("admin.users.action_enable_sso_link", "Allow SSO link")}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="danger-outline"
                           onClick={() => requestAction(user.id, "delete")}
                           disabled={actionLoading === user.id}
-                          className="px-2 py-1 bg-red-600/20 hover:bg-red-600/30 border border-red-700/50 rounded text-xs text-red-400 transition-colors disabled:opacity-50"
                         >
                           {actionLoading === user.id ? "..." : t("admin.users.action_delete")}
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

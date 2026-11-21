@@ -5,7 +5,9 @@
     "edit": "Bewerken",
     "delete": "Verwijderen",
     "confirm": "Bevestigen",
-    "remove": "Verwijderen"
+    "remove": "Verwijderen",
+    "close": "Sluiten",
+    "copy_failed": "Kopiëren mislukt. Selecteer de tekst en kopieer hem handmatig."
   },
   "nav": {
     "hello": "Hallo, {{email}}",
@@ -601,7 +603,8 @@
       "s3_test": "Verbinding testen",
       "s3_testing": "Testen…",
       "s3_test_success": "Verbinding geslaagd.",
-      "s3_test_error": "Verbinding mislukt: {{error}}"
+      "s3_test_error": "Verbinding mislukt: {{error}}",
+      "s3_network_error": "Netwerkfout"
     },
     "quotas": {
       "title": "Uploadquota",
@@ -665,7 +668,8 @@
         "city": "Stad",
         "unknown": "Onbekend",
         "not_resolved": "Geolocatiegegevens niet beschikbaar"
-      }
+      },
+      "views_title": "{{count}}/{{max}} weergaven"
     },
     "branding": {
       "section_identity": "App-identiteit",
@@ -728,7 +732,10 @@
       "font_family_hint": "Het lettertype dat globaal in de hele applicatie wordt gebruikt",
       "accent_colors_label": "Accentkleuren",
       "accent_colors_hint": "Gebruikt voor knoppen, links en focusstatussen. Een preset overschrijft deze waarden.",
-      "background_image_error": "Kan afbeelding niet laden. Controleer of de URL naar een geldige afbeelding verwijst."
+      "background_image_error": "Kan afbeelding niet laden. Controleer of de URL naar een geldige afbeelding verwijst.",
+      "logo_preview_alt": "Voorbeeld van het logo",
+      "favicon_preview_alt": "Voorbeeld van het favicon",
+      "background_preview_alt": "Voorbeeld van de achtergrond"
     },
     "email_templates": {
       "title": "E-mailsjablonen",
@@ -777,7 +784,8 @@
       "url": "Webhook-URL",
       "secret": "Ondertekeningsgeheim (optioneel)",
       "secret_hint": "Verzonden als X-SnowShare-Signature: sha256=<HMAC-SHA256 van de body>"
-    }
+    },
+    "version_loading": "laden..."
   },
   "paste_view": {
     "title": "Paste",
@@ -942,7 +950,8 @@
     "pdf_load_error": "PDF laden mislukt",
     "previous_page": "Vorige pagina",
     "page_of": "Pagina {{current}} van {{total}}",
-    "next_page": "Volgende pagina"
+    "next_page": "Volgende pagina",
+    "supported_formats_list": "Afbeeldingen (jpg, png, gif, webp), documenten (pdf), video’s (mp4, webm, ogg)"
   },
   "embed": {
     "file": "Bestand",
@@ -1008,5 +1017,8 @@
     "disable": "Uitschakelen",
     "code_label": "Authenticatiecode",
     "error": "Er ging iets mis."
+  },
+  "api_docs": {
+    "title": "API-referentie"
   }
 }

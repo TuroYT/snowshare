@@ -70,7 +70,7 @@ export function Tab({ value, children }: Readonly<{ value: string; children: Rea
       tabIndex={isActive ? 0 : -1}
       onClick={() => onChange(value)}
       className={cn(
-        "px-4 py-2 text-sm transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] border-b-2 -mb-px",
+        "px-4 py-2 text-sm whitespace-nowrap shrink-0 transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] border-b-2 -mb-px",
         isActive
           ? "border-[var(--primary)] text-[var(--foreground)] font-medium"
           : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"

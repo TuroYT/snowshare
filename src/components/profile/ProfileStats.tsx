@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Card } from "@/components/ui";
 
 type Share = {
   id: string;
@@ -31,7 +32,13 @@ export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
       label: t("profile.stats_total"),
       value: totalShares,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -46,7 +53,13 @@ export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
       label: t("profile.stats_files"),
       value: fileShares,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -61,7 +74,13 @@ export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
       label: t("profile.stats_pastes"),
       value: pasteShares,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -76,7 +95,13 @@ export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
       label: t("profile.stats_links"),
       value: urlShares,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -85,23 +110,35 @@ export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
           />
         </svg>
       ),
-      color: "text-emerald-400",
+      color: "text-[var(--success-text)]",
     },
     {
       label: t("profile.stats_active"),
       value: activeShares,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       ),
-      color: "text-emerald-400",
+      color: "text-[var(--success-text)]",
     },
     {
       label: t("profile.stats_expired"),
       value: expiredShares,
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -110,29 +147,28 @@ export default function ProfileStats({ shares }: Readonly<ProfileStatsProps>) {
           />
         </svg>
       ),
-      color: "text-red-400",
+      color: "text-[var(--destructive-text)]",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
       {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4"
-        >
+        <Card key={stat.label} className="p-4 min-w-0">
           <div className="flex flex-col items-center text-center gap-3">
             <div
-              className={`h-12 w-12 rounded-xl border flex items-center justify-center ${stat.color}`}
+              className={`h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center ${stat.color}`}
             >
               {stat.icon}
             </div>
-            <div>
-              <p className="text-2xl font-bold text-[var(--foreground)]">{stat.value}</p>
-              <p className="text-xs text-[var(--foreground-muted)] mt-1">{stat.label}</p>
+            <div className="min-w-0">
+              <p className="text-2xl font-semibold text-[var(--foreground)]">{stat.value}</p>
+              <p className="text-xs text-[var(--foreground-muted)] mt-1 break-words">
+                {stat.label}
+              </p>
             </div>
           </div>
-        </div>
+        </Card>
       ))}
     </div>
   );

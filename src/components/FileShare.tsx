@@ -384,6 +384,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
       <div className="flex items-center gap-4 mb-6">
         <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
           <svg
+            aria-hidden="true"
             className="w-6 h-6 text-[var(--primary)]"
             fill="none"
             stroke="currentColor"
@@ -398,7 +399,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">
+          <h2 className="text-xl font-semibold text-[var(--foreground)]">
             {t("fileshare.title", "Share a file")}
           </h2>
           <p className="text-sm text-[var(--foreground-muted)]">
@@ -439,7 +440,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
               className="w-full bg-[var(--border)] rounded-full h-3"
             >
               <div
-                className="h-3 rounded-full transition-all duration-300 bg-[var(--primary)]"
+                className="h-3 rounded-full transition-[width] duration-300 bg-[var(--primary)]"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

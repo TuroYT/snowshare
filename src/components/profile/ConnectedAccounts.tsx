@@ -6,6 +6,7 @@ import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { providerIcons } from "@/lib/providers-icons";
 import { useFetch } from "@/hooks/useFetch";
+import { Alert, Badge, Button, Card, Modal } from "@/components/ui";
 
 type Account = {
   id: string;
@@ -19,6 +20,23 @@ type AvailableProvider = {
   name: string;
   displayName?: string;
 };
+
+const DISMISS_BUTTON_CLASS =
+  "shrink-0 -my-1.5 -mr-1.5 h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,currentColor_12%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-current";
+
+function DismissIcon() {
+  return (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
 
 export default function ConnectedAccounts() {
   const { t } = useTranslation();
@@ -109,15 +127,6 @@ export default function ConnectedAccounts() {
     }
   };
 
-  useEffect(() => {
-    if (!deleteDialogOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setDeleteDialogOpen(false);
-    };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [deleteDialogOpen]);
-
   const handleDeleteClick = (account: Account) => {
     setAccountToDelete(account);
     setDeleteDialogOpen(true);
@@ -140,7 +149,6 @@ export default function ConnectedAccounts() {
       if (res.ok) {
         refetchAccounts();
         setSuccess(t("profile.accounts.unlink_success"));
-        setDeleteDialogOpen(false);
       } else {
         const data = await res.json();
         setError(data.error || t("profile.accounts.error_unlink"));
@@ -150,6 +158,7 @@ export default function ConnectedAccounts() {
       setError(t("profile.accounts.error_unlink"));
     } finally {
       setDeleting(false);
+      setDeleteDialogOpen(false);
       setAccountToDelete(null);
     }
   };
@@ -164,7 +173,7 @@ export default function ConnectedAccounts() {
   };
 
   const skeleton = (
-    <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+    <Card>
       <div className="flex items-center gap-4 mb-6">
         <WaveSkeleton variant="rounded" width={48} height={48} sx={{ flexShrink: 0 }} />
         <div>
@@ -177,7 +186,7 @@ export default function ConnectedAccounts() {
         {[0, 1].map((i) => (
           <div
             key={i}
-            className="flex items-center justify-between p-4 border border-[var(--border)] rounded-xl bg-[var(--surface)]/50"
+            className="flex items-center justify-between p-4 border border-[var(--border)] rounded-[var(--radius)]"
           >
             <div className="flex items-center gap-3">
               <WaveSkeleton variant="circular" width={24} height={24} />
@@ -198,20 +207,21 @@ export default function ConnectedAccounts() {
           ))}
         </div>
       </div>
-    </div>
+    </Card>
   );
 
   return (
     <SkeletonTransition loading={loading} skeleton={skeleton}>
       <>
-        <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+        <Card>
           <div className="flex items-center gap-4 mb-6">
-            <div className="h-12 w-12 rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/10 flex items-center justify-center">
+            <div className="h-12 w-12 shrink-0 rounded-[var(--radius)] border border-[var(--primary)]/30 bg-[var(--primary)]/10 flex items-center justify-center">
               <svg
                 className="w-6 h-6 text-[var(--primary)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -221,8 +231,8 @@ export default function ConnectedAccounts() {
                 />
               </svg>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-[var(--foreground)]">
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold text-[var(--foreground)]">
                 {t("profile.accounts.title")}
               </h2>
               <p className="text-sm text-[var(--foreground-muted)]">
@@ -232,14 +242,15 @@ export default function ConnectedAccounts() {
           </div>
 
           {displayError && (
-            <div className="p-4 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 mb-4">
+            <Alert variant="danger" className="p-4 mb-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0">
                   <svg
-                    className="w-5 h-5 flex-shrink-0 mt-0.5"
+                    className="w-5 h-5 shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -248,30 +259,33 @@ export default function ConnectedAccounts() {
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-sm">{displayError}</p>
+                  <p className="min-w-0 break-words">{displayError}</p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     setError(null);
                     clearAccountsError();
                   }}
-                  className="text-sm hover:opacity-70"
+                  className={DISMISS_BUTTON_CLASS}
+                  aria-label={t("common.close", "Close")}
                 >
-                  ✕
+                  <DismissIcon />
                 </button>
               </div>
-            </div>
+            </Alert>
           )}
 
           {success && (
-            <div className="p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 mb-4">
+            <Alert variant="success" className="p-4 mb-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0">
                   <svg
-                    className="w-5 h-5 flex-shrink-0 mt-0.5"
+                    className="w-5 h-5 shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -280,13 +294,18 @@ export default function ConnectedAccounts() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <p className="text-sm">{success}</p>
+                  <p className="min-w-0 break-words">{success}</p>
                 </div>
-                <button onClick={() => setSuccess(null)} className="text-sm hover:opacity-70">
-                  ✕
+                <button
+                  type="button"
+                  onClick={() => setSuccess(null)}
+                  className={DISMISS_BUTTON_CLASS}
+                  aria-label={t("common.close", "Close")}
+                >
+                  <DismissIcon />
                 </button>
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Accounts */}
@@ -303,10 +322,10 @@ export default function ConnectedAccounts() {
                 {accounts.map((account) => (
                   <div
                     key={account.id}
-                    className="flex items-center justify-between p-4 border border-[var(--border)] rounded-xl bg-[var(--surface)]/50"
+                    className="flex items-center justify-between gap-3 p-4 border border-[var(--border)] rounded-[var(--radius)]"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="text-[var(--primary)]">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="text-[var(--primary)] shrink-0" aria-hidden="true">
                         {providerIcons[account.provider] || (
                           <svg
                             className="w-5 h-5"
@@ -323,18 +342,19 @@ export default function ConnectedAccounts() {
                           </svg>
                         )}
                       </div>
-                      <div>
-                        <p className="font-medium text-[var(--foreground)]">
+                      <div className="min-w-0">
+                        <p className="font-medium text-[var(--foreground)] break-words">
                           {getProviderDisplayName(account.provider)}
                         </p>
-                        <p className="text-xs text-[var(--foreground-muted)]">
+                        <p className="text-xs text-[var(--foreground-muted)] break-all">
                           {account.providerAccountId}
                         </p>
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => handleDeleteClick(account)}
-                      className="p-2 hover:bg-red-900/30 hover:text-red-400 text-[var(--foreground-muted)] rounded-lg transition-colors"
+                      className="shrink-0 h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] hover:text-[var(--destructive-text)] transition-colors duration-100"
                       aria-label={t("profile.accounts.unlink")}
                     >
                       <svg
@@ -342,6 +362,7 @@ export default function ConnectedAccounts() {
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
                       >
                         <path
                           strokeLinecap="round"
@@ -364,13 +385,15 @@ export default function ConnectedAccounts() {
             </h3>
             <div className="flex flex-wrap gap-2">
               {availableProviders.map((provider) => (
-                <button
+                <Button
                   key={provider.id}
+                  type="button"
+                  variant="secondary"
+                  className="gap-2"
                   onClick={() => handleLinkAccount(provider.name)}
                   disabled={isProviderLinked(provider.name)}
-                  className="px-3 py-2 rounded-lg text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
-                  <span className="text-[var(--primary)]">
+                  <span className="text-[var(--primary)]" aria-hidden="true">
                     {providerIcons[provider.name] || (
                       <svg
                         className="w-4 h-4"
@@ -389,11 +412,9 @@ export default function ConnectedAccounts() {
                   </span>
                   {provider.displayName || provider.name}
                   {isProviderLinked(provider.name) && (
-                    <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/30 text-[var(--primary-hover)]">
-                      {t("profile.accounts.linked")}
-                    </span>
+                    <Badge variant="success">{t("profile.accounts.linked")}</Badge>
                   )}
-                </button>
+                </Button>
               ))}
               {availableProviders.length === 0 && (
                 <p className="text-sm text-[var(--foreground-muted)]">
@@ -402,69 +423,41 @@ export default function ConnectedAccounts() {
               )}
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Unlink confirmation dialog */}
-        {deleteDialogOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-            <button
+        <Modal
+          isOpen={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          title={t("profile.accounts.confirm_unlink")}
+          size="sm"
+        >
+          <p className="text-sm text-[var(--foreground-muted)] mb-6">
+            {t("profile.accounts.confirm_unlink_message", {
+              provider: accountToDelete ? getProviderDisplayName(accountToDelete.provider) : "",
+            })}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button
               type="button"
-              tabIndex={-1}
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full cursor-default"
+              variant="secondary"
+              className="flex-1"
               onClick={() => setDeleteDialogOpen(false)}
-            />
-            <div className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-[var(--foreground)] mb-3">
-                {t("profile.accounts.confirm_unlink")}
-              </h3>
-              <p className="text-[var(--foreground-muted)] mb-6">
-                {t("profile.accounts.confirm_unlink_message", {
-                  provider: accountToDelete ? getProviderDisplayName(accountToDelete.provider) : "",
-                })}
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteDialogOpen(false)}
-                  disabled={deleting}
-                  className="px-3 py-2 rounded-lg text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors flex-1"
-                >
-                  {t("common.cancel")}
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  disabled={deleting}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm font-medium border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                >
-                  {deleting ? (
-                    <svg
-                      className="animate-spin h-5 w-5 mx-auto"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
-                    t("profile.accounts.unlink")
-                  )}
-                </button>
-              </div>
-            </div>
+              disabled={deleting}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="danger-outline"
+              className="flex-1"
+              onClick={handleDeleteConfirm}
+              isLoading={deleting}
+            >
+              {t("profile.accounts.unlink")}
+            </Button>
           </div>
-        )}
+        </Modal>
       </>
     </SkeletonTransition>
   );

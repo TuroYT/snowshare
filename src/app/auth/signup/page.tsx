@@ -9,6 +9,8 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Spinner } from "@/components/ui/Spinner";
+import { Alert } from "@/components/ui/Alert";
 
 declare global {
   interface Window {
@@ -141,8 +143,12 @@ export default function SignUp() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
-          <p className="mt-4 text-sm text-[var(--foreground-muted)]" suppressHydrationWarning>
+          <Spinner size="lg" className="mx-auto" />
+          <p
+            role="status"
+            className="mt-4 text-sm text-[var(--foreground-muted)]"
+            suppressHydrationWarning
+          >
             {t("loading")}
           </p>
         </div>
@@ -165,7 +171,7 @@ export default function SignUp() {
           </p>
           <Link
             href="/auth/signin"
-            className="inline-flex items-center justify-center w-full px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors"
+            className="inline-flex items-center justify-center w-full px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] focus-visible:ring-[var(--primary)]"
           >
             {t("nav.signin")}
           </Link>
@@ -228,9 +234,7 @@ export default function SignUp() {
         if (signInResult?.ok) {
           router.push("/");
         } else {
-          router.push(
-            `/auth/signin?message=${encodeURIComponent(t("auth.success_account_created"))}`
-          );
+          router.push("/auth/signin?notice=account_created");
         }
       } else {
         setError(data.error || t("auth.error_generic").replace(" : ", ""));
@@ -256,7 +260,11 @@ export default function SignUp() {
         </div>
 
         {/* Error message */}
-        {error && <p className="mb-4 text-sm text-[var(--destructive)] text-center">{error}</p>}
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input

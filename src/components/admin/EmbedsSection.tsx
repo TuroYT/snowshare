@@ -33,14 +33,14 @@ export default function EmbedsSection({ settings, onChange }: Readonly<Props>) {
           description={t("admin.embeds.paste_excerpt_desc")}
           extra={
             settings.embedPasteExcerpt && (
-              <p className="text-xs text-yellow-400 mt-1">
+              <p className="text-xs text-[var(--warning-text)] mt-1">
                 {t("admin.embeds.paste_excerpt_warning")}
               </p>
             )
           }
           checked={settings.embedPasteExcerpt}
           onChange={() => onChange({ embedPasteExcerpt: !settings.embedPasteExcerpt })}
-          activeColor="bg-yellow-500"
+          activeColor="bg-[var(--warning)]"
         />
       )}
     </div>

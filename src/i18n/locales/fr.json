@@ -5,7 +5,9 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "confirm": "Confirmer",
-    "remove": "Retirer"
+    "remove": "Retirer",
+    "close": "Fermer",
+    "copy_failed": "Copie impossible. Sélectionnez le texte et copiez-le manuellement."
   },
   "nav": {
     "hello": "Bonjour, {{email}}",
@@ -601,7 +603,8 @@
       "s3_test": "Tester la connexion",
       "s3_testing": "Test en cours…",
       "s3_test_success": "Connexion réussie.",
-      "s3_test_error": "Échec de la connexion : {{error}}"
+      "s3_test_error": "Échec de la connexion : {{error}}",
+      "s3_network_error": "Erreur réseau"
     },
     "quotas": {
       "title": "Quotas d'upload",
@@ -665,7 +668,8 @@
         "city": "Ville",
         "unknown": "Inconnu",
         "not_resolved": "Donnees de geolocalisation indisponibles"
-      }
+      },
+      "views_title": "{{count}}/{{max}} vues"
     },
     "branding": {
       "section_identity": "Identité de l'application",
@@ -728,7 +732,10 @@
       "font_family_hint": "La police utilisée globalement dans toute l'application",
       "accent_colors_label": "Couleurs d'accent",
       "accent_colors_hint": "Utilisées pour les boutons, liens et états de focus. Sélectionner un preset remplace ces valeurs.",
-      "background_image_error": "Impossible de charger l'image. Vérifiez que l'URL pointe vers une image valide."
+      "background_image_error": "Impossible de charger l'image. Vérifiez que l'URL pointe vers une image valide.",
+      "logo_preview_alt": "Aperçu du logo",
+      "favicon_preview_alt": "Aperçu du favicon",
+      "background_preview_alt": "Aperçu de l’arrière-plan"
     },
     "email_templates": {
       "title": "Modèles d'e-mail",
@@ -777,7 +784,8 @@
       "url": "URL du webhook",
       "secret": "Secret de signature (optionnel)",
       "secret_hint": "Envoyé dans X-SnowShare-Signature : sha256=<HMAC-SHA256 du corps>"
-    }
+    },
+    "version_loading": "chargement..."
   },
   "paste_view": {
     "title": "Paste",
@@ -942,7 +950,8 @@
     "pdf_load_error": "Échec du chargement du PDF",
     "previous_page": "Page précédente",
     "page_of": "Page {{current}} sur {{total}}",
-    "next_page": "Page suivante"
+    "next_page": "Page suivante",
+    "supported_formats_list": "Images (jpg, png, gif, webp), documents (pdf), vidéos (mp4, webm, ogg)"
   },
   "embed": {
     "file": "Fichier",
@@ -1008,5 +1017,8 @@
     "disable": "Désactiver",
     "code_label": "Code d'authentification",
     "error": "Une erreur est survenue."
+  },
+  "api_docs": {
+    "title": "Référence de l’API"
   }
 }

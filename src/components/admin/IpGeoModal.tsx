@@ -82,11 +82,13 @@ export default function IpGeoModal({ isOpen, onClose, ip, geoData }: Readonly<Ip
         </div>
 
         {/* Detail rows */}
-        <div className="bg-[var(--background)] rounded-lg border border-[var(--border)] divide-y divide-[var(--border)]">
+        <div className="rounded-[var(--radius)] border border-[var(--border)] divide-y divide-[var(--border)]">
           {rows.map((row) => (
-            <div key={row.label} className="flex justify-between items-center px-4 py-3">
+            <div key={row.label} className="flex justify-between items-center gap-3 px-4 py-3">
               <span className="text-sm text-[var(--foreground-muted)]">{row.label}</span>
-              <span className="text-sm font-medium text-[var(--foreground)]">{row.value}</span>
+              <span className="text-sm font-medium text-[var(--foreground)] text-right break-words min-w-0">
+                {row.value}
+              </span>
             </div>
           ))}
         </div>

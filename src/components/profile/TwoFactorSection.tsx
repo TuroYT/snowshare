@@ -4,11 +4,9 @@ import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
+import { Alert, Button, Card, Input } from "@/components/ui";
 
 const QRCodeSVG = dynamic(() => import("qrcode.react").then((m) => m.QRCodeSVG), { ssr: false });
-
-const inputClass =
-  "w-40 px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm tracking-widest focus:outline-none focus:border-[var(--primary)]";
 
 export default function TwoFactorSection() {
   const { t } = useTranslation();
@@ -53,27 +51,27 @@ export default function TwoFactorSection() {
   };
 
   const codeInput = (
-    <input
-      inputMode="numeric"
-      autoComplete="one-time-code"
-      maxLength={7}
-      value={code}
-      onChange={(e) => setCode(e.target.value)}
-      placeholder="123456"
-      aria-label={t("totp.code_label", "Authentication code")}
-      className={inputClass}
-    />
+    <div className="w-40">
+      <Input
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        maxLength={7}
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="123456"
+        aria-label={t("totp.code_label", "Authentication code")}
+        className="tracking-widest"
+      />
+    </div>
   );
-  const buttonClass =
-    "px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50";
 
   return (
-    <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6 mt-6 space-y-4">
+    <Card className="mt-6 space-y-4">
       <div>
         <h3 className="text-lg font-medium text-[var(--foreground)]">
           {t("totp.title", "Two-factor authentication")}
         </h3>
-        <p className="text-sm text-[var(--muted)]">
+        <p className="text-sm text-[var(--foreground-muted)]">
           {data.enabled
             ? t(
                 "totp.enabled_desc",
@@ -87,14 +85,9 @@ export default function TwoFactorSection() {
       </div>
 
       {!data.enabled && !setup && (
-        <button
-          onClick={async () => setSetup(await post({ action: "setup" }))}
-          disabled={busy}
-          className={buttonClass}
-          style={{ background: "var(--primary)", color: "#fff" }}
-        >
+        <Button onClick={async () => setSetup(await post({ action: "setup" }))} disabled={busy}>
           {t("totp.setup", "Set up")}
-        </button>
+        </Button>
       )}
 
       {!data.enabled && setup && (
@@ -102,23 +95,19 @@ export default function TwoFactorSection() {
           <p className="text-sm text-[var(--foreground)]">
             {t("totp.scan", "Scan this QR code with your app, then enter the code it shows.")}
           </p>
-          <div className="inline-block bg-white p-2 rounded-lg">
+          {/* QR codes need a light background to stay scannable in the dark theme */}
+          <div className="inline-block bg-white p-2 rounded-[var(--radius)]">
             <QRCodeSVG value={setup.otpauthUrl} size={160} />
           </div>
-          <p className="text-xs text-[var(--muted)] break-all">
+          <p className="text-xs text-[var(--foreground-muted)] break-all">
             {t("totp.manual", "Or enter this key manually:")}{" "}
             <code className="font-mono">{setup.secret}</code>
           </p>
           <div className="flex flex-wrap gap-2 items-center">
             {codeInput}
-            <button
-              onClick={() => confirm("enable")}
-              disabled={busy || !code}
-              className={buttonClass}
-              style={{ background: "var(--primary)", color: "#fff" }}
-            >
+            <Button onClick={() => confirm("enable")} disabled={busy || !code}>
               {t("totp.enable", "Turn on")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -126,17 +115,17 @@ export default function TwoFactorSection() {
       {data.enabled && (
         <div className="flex flex-wrap gap-2 items-center">
           {codeInput}
-          <button
+          <Button
+            variant="danger-outline"
             onClick={() => confirm("disable")}
             disabled={busy || !code}
-            className={`${buttonClass} border border-red-500/40 text-red-400 hover:bg-red-500/10`}
           >
             {t("totp.disable", "Turn off")}
-          </button>
+          </Button>
         </div>
       )}
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
-    </div>
+      {error && <Alert variant="danger">{error}</Alert>}
+    </Card>
   );
 }

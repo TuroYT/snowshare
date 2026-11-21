@@ -49,21 +49,15 @@ const WaveSkeleton = ({ variant = "text", width, height, className, sx }: WaveSk
 
   return (
     <div
-      className={cn("relative overflow-hidden bg-[var(--surface-hover)] animate-pulse", className)}
+      className={cn("overflow-hidden bg-[var(--surface-hover)] animate-pulse", className)}
+      aria-hidden="true"
       style={{
         width: typeof width === "number" ? `${width}px` : width,
         height: typeof height === "number" ? `${height}px` : height,
         borderRadius,
         ...(sx ? muiSxToStyle(sx) : {}),
       }}
-    >
-      <div
-        className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite]"
-        style={{
-          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
-        }}
-      />
-    </div>
+    />
   );
 };
 

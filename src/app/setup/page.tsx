@@ -7,6 +7,8 @@ import { useTranslation } from "react-i18next";
 import { signIn, SignInResponse } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Spinner } from "@/components/ui/Spinner";
+import { Alert } from "@/components/ui/Alert";
 
 export default function Setup() {
   const [email, setEmail] = useState("");
@@ -79,9 +81,7 @@ export default function Setup() {
           router.push("/");
         } else {
           // If auto-login failed, redirect to sign-in with a message
-          router.push(
-            `/auth/signin?message=${encodeURIComponent(t("auth.success_account_created"))}`
-          );
+          router.push("/auth/signin?notice=account_created");
         }
       } else {
         setError(data.error || t("auth.error_generic").replace(" : ", ""));
@@ -97,8 +97,12 @@ export default function Setup() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
-          <p className="mt-4 text-sm text-[var(--foreground-muted)]" suppressHydrationWarning>
+          <Spinner size="lg" className="mx-auto" />
+          <p
+            role="status"
+            className="mt-4 text-sm text-[var(--foreground-muted)]"
+            suppressHydrationWarning
+          >
             {t("loading")}
           </p>
         </div>
@@ -124,7 +128,11 @@ export default function Setup() {
         </div>
 
         {/* Error message */}
-        {error && <p className="mb-4 text-sm text-[var(--destructive)] text-center">{error}</p>}
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input

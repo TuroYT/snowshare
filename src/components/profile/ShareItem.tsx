@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui";
+import { Badge, Button, Input, Select, Textarea, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 import ShareAccessLogsModal from "@/components/profile/ShareAccessLogsModal";
 import WarningModal from "@/components/admin/WarningModal";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
@@ -19,13 +20,365 @@ const TYPE_PREFIX: Record<UserShare["type"], string> = {
   URL: "/l/",
 };
 
+const iconBtn =
+  "h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100";
+
+const TYPE_ICON_PATH: Record<UserShare["type"], string> = {
+  FILE: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+  PASTE: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4",
+  URL: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1",
+};
+
+const TYPE_ICON_CLASS: Record<UserShare["type"], string> = {
+  FILE: "text-[var(--foreground-muted)]",
+  PASTE: "text-[var(--primary)]",
+  URL: "text-[var(--success-text)]",
+};
+
+function ShareTypeIcon({ type }: Readonly<{ type: UserShare["type"] }>) {
+  return (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.8}
+        d={TYPE_ICON_PATH[type]}
+      />
+    </svg>
+  );
+}
+
+type EditForm = {
+  paste: string;
+  pastelanguage: string;
+  urlOriginal: string;
+  newPassword: string;
+  removePassword: boolean;
+  expiresAt: string;
+};
+
+function buildShareUpdate(share: UserShare, editForm: EditForm): UserShareUpdate {
+  const update: UserShareUpdate = {
+    expiresAt: editForm.expiresAt ? new Date(editForm.expiresAt).toISOString() : null,
+  };
+  if (share.type === "PASTE") {
+    // Encrypted pastes come back without content: only send it when re-entered
+    if (share.paste !== null || editForm.paste) update.paste = editForm.paste;
+    update.pastelanguage = editForm.pastelanguage;
+  }
+  if (share.type === "URL" && editForm.urlOriginal) {
+    update.urlOriginal = editForm.urlOriginal;
+  }
+  if (editForm.removePassword) {
+    update.password = null;
+  } else if (editForm.newPassword) {
+    update.password = editForm.newPassword;
+  }
+  return update;
+}
+
+function ShareEditForm({
+  share,
+  editForm,
+  setEditForm,
+  onSave,
+  onCancel,
+}: Readonly<{
+  share: UserShare;
+  editForm: EditForm;
+  setEditForm: (form: EditForm) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}>) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-4 border-t border-[var(--border)] p-4 sm:p-5">
+      {share.type === "PASTE" && (
+        <>
+          <Textarea
+            label={t("profile.label_content")}
+            value={editForm.paste || ""}
+            placeholder={
+              share.paste === null
+                ? t(
+                    "profile.placeholder_protected_paste",
+                    "Protected paste: re-enter the content to change it"
+                  )
+                : undefined
+            }
+            onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
+            className="font-mono"
+            rows={4}
+          />
+          <Select
+            label={t("profile.label_language")}
+            value={editForm.pastelanguage || "PLAINTEXT"}
+            onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
+          >
+            <option value="PLAINTEXT">Plain Text</option>
+            <option value="JAVASCRIPT">JavaScript</option>
+            <option value="TYPESCRIPT">TypeScript</option>
+            <option value="PYTHON">Python</option>
+            <option value="JAVA">Java</option>
+            <option value="PHP">PHP</option>
+            <option value="GO">Go</option>
+            <option value="POWERSHELL">PowerShell</option>
+            <option value="HTML">HTML</option>
+            <option value="CSS">CSS</option>
+            <option value="SQL">SQL</option>
+            <option value="JSON">JSON</option>
+            <option value="MARKDOWN">Markdown</option>
+          </Select>
+        </>
+      )}
+
+      {share.type === "URL" && (
+        <Input
+          type="url"
+          label={t("profile.label_url")}
+          value={editForm.urlOriginal}
+          placeholder={
+            share.hasPassword
+              ? t(
+                  "profile.placeholder_protected_url",
+                  "Protected link: re-enter the URL to change it"
+                )
+              : undefined
+          }
+          onChange={(e) => setEditForm({ ...editForm, urlOriginal: e.target.value })}
+        />
+      )}
+
+      <div>
+        <Input
+          type="text"
+          label={t("profile.label_password")}
+          value={editForm.newPassword}
+          disabled={editForm.removePassword}
+          onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
+          placeholder={
+            share.hasPassword
+              ? t("profile.placeholder_password_keep", "Leave empty to keep the current password")
+              : t("profile.placeholder_password_optional")
+          }
+        />
+        {share.hasPassword && (
+          <label className="mt-2 flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
+            <input
+              type="checkbox"
+              checked={editForm.removePassword}
+              onChange={(e) => setEditForm({ ...editForm, removePassword: e.target.checked })}
+              className="shrink-0 accent-[var(--primary)]"
+            />
+            {t("profile.remove_password", "Remove password")}
+          </label>
+        )}
+      </div>
+
+      <Input
+        type="datetime-local"
+        label={t("profile.label_expiration")}
+        value={(() => {
+          if (!editForm.expiresAt) return "";
+          const d = new Date(editForm.expiresAt);
+          if (Number.isNaN(d.getTime())) return "";
+          return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        })()}
+        onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
+      />
+
+      <div className="flex gap-2 pt-1">
+        <Button type="button" className="flex-1" onClick={onSave}>
+          {t("profile.save")}
+        </Button>
+        <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
+          {t("profile.cancel")}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ShareBadges({
+  share,
+  isExpired,
+  isViewLimitReached,
+}: Readonly<{ share: UserShare; isExpired: boolean; isViewLimitReached: boolean }>) {
+  const { t } = useTranslation();
+  return (
+    <>
+      {isExpired && <Badge variant="danger">{t("profile.stats_expired", "Expired")}</Badge>}
+      {isViewLimitReached && !isExpired && (
+        <Badge variant="danger">{t("profile.view_limit_reached", "View Limit Reached")}</Badge>
+      )}
+      {share.hasPassword && <Badge variant="warning">{t("profile.protected", "Protected")}</Badge>}
+    </>
+  );
+}
+
+function ShareTargetPreview({ share }: Readonly<{ share: UserShare }>) {
+  return (
+    <div className="mt-1.5 text-sm text-[var(--foreground-muted)] truncate">
+      {share.type === "FILE" && share.fileName && <span>{share.fileName}</span>}
+      {share.type === "PASTE" && (
+        <span className="font-mono text-xs">{share.paste?.substring(0, 100)}</span>
+      )}
+      {share.type === "URL" && share.urlOriginal && <span>{share.urlOriginal}</span>}
+    </div>
+  );
+}
+
+function ShareMeta({
+  share,
+  isExpired,
+  isViewLimitReached,
+  onShowLogs,
+}: Readonly<{
+  share: UserShare;
+  isExpired: boolean;
+  isViewLimitReached: boolean;
+  onShowLogs: () => void;
+}>) {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--foreground-muted)]">
+      <span>
+        {t("profile.created_on")} {new Date(share.createdAt).toLocaleDateString()}
+      </span>
+      <span className="text-[var(--border-hover)]" aria-hidden="true">
+        ·
+      </span>
+      <button
+        type="button"
+        onClick={onShowLogs}
+        className="hover:text-[var(--foreground)] transition-colors duration-100 underline-offset-2 hover:underline"
+      >
+        {t("profile.access_count", "{{count}} accesses", { count: share.accessCount ?? 0 })}
+      </button>
+      {share.maxViews != null && (
+        <>
+          <span className="text-[var(--border-hover)]" aria-hidden="true">
+            ·
+          </span>
+          <span className={isViewLimitReached ? "text-[var(--destructive-text)]" : ""}>
+            {share.viewCount}/{share.maxViews} {t("profile.views")}
+          </span>
+        </>
+      )}
+      {share.expiresAt && (
+        <>
+          <span className="text-[var(--border-hover)]" aria-hidden="true">
+            ·
+          </span>
+          <span className={isExpired ? "text-[var(--destructive-text)]" : ""}>
+            {isExpired ? t("profile.stats_expired", "Expired") : t("profile.expires_on")}{" "}
+            {new Date(share.expiresAt).toLocaleDateString()}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ShareActions({
+  share,
+  onShowLogs,
+  onEdit,
+  onDelete,
+}: Readonly<{
+  share: UserShare;
+  onShowLogs: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}>) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-0.5 shrink-0">
+      <button
+        type="button"
+        onClick={onShowLogs}
+        className={iconBtn}
+        title={t("profile.view_logs", "View access logs")}
+        aria-label={t("profile.view_logs", "View access logs")}
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      </button>
+      {share.type !== "FILE" && (
+        <button
+          type="button"
+          onClick={onEdit}
+          className={iconBtn}
+          title={t("profile.edit")}
+          aria-label={t("profile.edit")}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--destructive-text)] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] transition-colors duration-100"
+        title={t("profile.delete")}
+        aria-label={t("profile.delete")}
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareItemProps>) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [editForm, setEditForm] = useState({
+  const [editForm, setEditForm] = useState<EditForm>({
     paste: share.paste ?? "",
     pastelanguage: share.pastelanguage ?? "PLAINTEXT",
     // Protected links are stored encrypted: the owner re-enters the URL to change it
@@ -44,87 +397,22 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
   };
 
   const handleUpdate = () => {
-    const update: UserShareUpdate = {
-      expiresAt: editForm.expiresAt ? new Date(editForm.expiresAt).toISOString() : null,
-    };
-    if (share.type === "PASTE") {
-      // Encrypted pastes come back without content: only send it when re-entered
-      if (share.paste !== null || editForm.paste) update.paste = editForm.paste;
-      update.pastelanguage = editForm.pastelanguage;
-    }
-    if (share.type === "URL" && editForm.urlOriginal) {
-      update.urlOriginal = editForm.urlOriginal;
-    }
-    if (editForm.removePassword) {
-      update.password = null;
-    } else if (editForm.newPassword) {
-      update.password = editForm.newPassword;
-    }
-    onUpdate(share.id, update);
+    onUpdate(share.id, buildShareUpdate(share, editForm));
     setIsEditing(false);
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${path}`);
+  const copyToClipboard = async () => {
+    if (!(await copyText(`${window.location.origin}${path}`))) {
+      toast.error(t("common.copy_failed"));
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
-  };
-
-  const getTypeIcon = () => {
-    switch (share.type) {
-      case "FILE":
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.8}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        );
-      case "PASTE":
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.8}
-              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-            />
-          </svg>
-        );
-      case "URL":
-        return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.8}
-              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-            />
-          </svg>
-        );
-    }
-  };
-
-  const getTypeIconClass = () => {
-    switch (share.type) {
-      case "FILE":
-        return "bg-[var(--secondary)]/10 border-[var(--secondary-dark)]/30 text-[var(--secondary)]";
-      case "PASTE":
-        return "bg-[var(--primary)]/10 border-[var(--primary-dark)]/30 text-[var(--primary)]";
-      case "URL":
-        return "bg-emerald-500/10 border-emerald-700/30 text-emerald-400";
-    }
   };
 
   const isExpired = !!share.expiresAt && new Date(share.expiresAt) < new Date();
   const isViewLimitReached =
     share.maxViews !== null && share.maxViews !== undefined && share.viewCount >= share.maxViews;
-
-  const iconBtn =
-    "p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors";
 
   return (
     <div
@@ -142,9 +430,9 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
       <div className="flex items-start gap-3 p-4 sm:p-5">
         {/* Type icon */}
         <div
-          className={`mt-0.5 h-9 w-9 rounded-[var(--radius)] border flex items-center justify-center flex-shrink-0 ${getTypeIconClass()}`}
+          className={`mt-0.5 h-9 w-9 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center shrink-0 ${TYPE_ICON_CLASS[share.type]}`}
         >
-          {getTypeIcon()}
+          <ShareTypeIcon type={share.type} />
         </div>
 
         {/* Main */}
@@ -155,22 +443,24 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
               href={path}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors truncate"
+              className="font-mono text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors duration-100 truncate max-w-full"
             >
               {path}
             </a>
             <button
               onClick={copyToClipboard}
-              className={iconBtn + " !p-1"}
+              type="button"
+              className={`${iconBtn} -my-2`}
               title={t("profile.copy_link")}
               aria-label={t("profile.copy_link")}
             >
               {copied ? (
                 <svg
-                  className="w-3.5 h-3.5 text-[var(--success)]"
+                  className="w-3.5 h-3.5 text-[var(--success-text)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -180,7 +470,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
                   />
                 </svg>
               ) : (
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -190,250 +486,43 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
                 </svg>
               )}
             </button>
-            {isExpired && <Badge variant="danger">{t("profile.stats_expired", "Expired")}</Badge>}
-            {isViewLimitReached && !isExpired && (
-              <Badge variant="danger">
-                {t("profile.view_limit_reached", "View Limit Reached")}
-              </Badge>
-            )}
-            {share.hasPassword && (
-              <Badge variant="warning">{t("profile.protected", "Protected")}</Badge>
-            )}
+            <ShareBadges
+              share={share}
+              isExpired={isExpired}
+              isViewLimitReached={isViewLimitReached}
+            />
           </div>
 
           {/* Target preview */}
-          <div className="mt-1.5 text-sm text-[var(--foreground-muted)] truncate">
-            {share.type === "FILE" && share.fileName && <span>{share.fileName}</span>}
-            {share.type === "PASTE" && (
-              <span className="font-mono text-xs">{share.paste?.substring(0, 100)}</span>
-            )}
-            {share.type === "URL" && share.urlOriginal && <span>{share.urlOriginal}</span>}
-          </div>
+          <ShareTargetPreview share={share} />
 
-          {/* Meta line */}
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--foreground-muted)]">
-            <span>
-              {t("profile.created_on")} {new Date(share.createdAt).toLocaleDateString()}
-            </span>
-            <span className="text-[var(--border)]">·</span>
-            <button
-              onClick={() => setShowLogs(true)}
-              className="hover:text-[var(--foreground)] transition-colors underline-offset-2 hover:underline"
-            >
-              {t("profile.access_count", "{{count}} accesses", { count: share.accessCount ?? 0 })}
-            </button>
-            {share.maxViews != null && (
-              <>
-                <span className="text-[var(--border)]">·</span>
-                <span className={isViewLimitReached ? "text-[var(--destructive)]" : ""}>
-                  {share.viewCount}/{share.maxViews} {t("profile.views")}
-                </span>
-              </>
-            )}
-            {share.expiresAt && (
-              <>
-                <span className="text-[var(--border)]">·</span>
-                <span className={isExpired ? "text-[var(--destructive)]" : ""}>
-                  {isExpired ? t("profile.stats_expired", "Expired") : t("profile.expires_on")}{" "}
-                  {new Date(share.expiresAt).toLocaleDateString()}
-                </span>
-              </>
-            )}
-          </div>
+          <ShareMeta
+            share={share}
+            isExpired={isExpired}
+            isViewLimitReached={isViewLimitReached}
+            onShowLogs={() => setShowLogs(true)}
+          />
         </div>
 
         {/* Actions */}
         {!isEditing && (
-          <div className="flex items-center gap-0.5 flex-shrink-0">
-            <button
-              onClick={() => setShowLogs(true)}
-              className={iconBtn}
-              title={t("profile.view_logs", "View access logs")}
-              aria-label={t("profile.view_logs", "View access logs")}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </button>
-            {share.type !== "FILE" && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className={iconBtn}
-                title={t("profile.edit")}
-                aria-label={t("profile.edit")}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-              </button>
-            )}
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10 transition-colors"
-              title={t("profile.delete")}
-              aria-label={t("profile.delete")}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
-          </div>
+          <ShareActions
+            share={share}
+            onShowLogs={() => setShowLogs(true)}
+            onEdit={() => setIsEditing(true)}
+            onDelete={() => setShowDeleteConfirm(true)}
+          />
         )}
       </div>
 
-      {/* Edit form */}
       {isEditing && (
-        <div className="space-y-4 border-t border-[var(--border)] p-4 sm:p-5">
-          {share.type === "PASTE" && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                  {t("profile.label_content")}
-                </label>
-                <textarea
-                  value={editForm.paste || ""}
-                  placeholder={
-                    share.paste === null
-                      ? t(
-                          "profile.placeholder_protected_paste",
-                          "Protected paste: re-enter the content to change it"
-                        )
-                      : undefined
-                  }
-                  onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
-                  className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] font-mono"
-                  rows={4}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                  {t("profile.label_language")}
-                </label>
-                <select
-                  value={editForm.pastelanguage || "PLAINTEXT"}
-                  onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
-                  className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] appearance-none"
-                >
-                  <option value="PLAINTEXT">Plain Text</option>
-                  <option value="JAVASCRIPT">JavaScript</option>
-                  <option value="TYPESCRIPT">TypeScript</option>
-                  <option value="PYTHON">Python</option>
-                  <option value="JAVA">Java</option>
-                  <option value="PHP">PHP</option>
-                  <option value="GO">Go</option>
-                  <option value="POWERSHELL">PowerShell</option>
-                  <option value="HTML">HTML</option>
-                  <option value="CSS">CSS</option>
-                  <option value="SQL">SQL</option>
-                  <option value="JSON">JSON</option>
-                  <option value="MARKDOWN">Markdown</option>
-                </select>
-              </div>
-            </>
-          )}
-
-          {share.type === "URL" && (
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                {t("profile.label_url")}
-              </label>
-              <input
-                type="url"
-                value={editForm.urlOriginal}
-                placeholder={
-                  share.hasPassword
-                    ? t(
-                        "profile.placeholder_protected_url",
-                        "Protected link: re-enter the URL to change it"
-                      )
-                    : undefined
-                }
-                onChange={(e) => setEditForm({ ...editForm, urlOriginal: e.target.value })}
-                className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.label_password")}
-            </label>
-            <input
-              type="text"
-              value={editForm.newPassword}
-              disabled={editForm.removePassword}
-              onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
-              className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-              placeholder={
-                share.hasPassword
-                  ? t(
-                      "profile.placeholder_password_keep",
-                      "Leave empty to keep the current password"
-                    )
-                  : t("profile.placeholder_password_optional")
-              }
-            />
-            {share.hasPassword && (
-              <label className="mt-2 flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
-                <input
-                  type="checkbox"
-                  checked={editForm.removePassword}
-                  onChange={(e) => setEditForm({ ...editForm, removePassword: e.target.checked })}
-                />
-                {t("profile.remove_password", "Remove password")}
-              </label>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.label_expiration")}
-            </label>
-            <input
-              type="datetime-local"
-              value={(() => {
-                if (!editForm.expiresAt) return "";
-                const d = new Date(editForm.expiresAt);
-                if (Number.isNaN(d.getTime())) return "";
-                return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-                  .toISOString()
-                  .slice(0, 16);
-              })()}
-              onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
-              className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-            />
-          </div>
-
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={handleUpdate}
-              className="px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white transition-colors flex-1 bg-[var(--primary)] hover:bg-[var(--primary-hover)]"
-            >
-              {t("profile.save")}
-            </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-4 py-2 rounded-[var(--radius)] text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors flex-1"
-            >
-              {t("profile.cancel")}
-            </button>
-          </div>
-        </div>
+        <ShareEditForm
+          share={share}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          onSave={handleUpdate}
+          onCancel={() => setIsEditing(false)}
+        />
       )}
 
       <ShareAccessLogsModal

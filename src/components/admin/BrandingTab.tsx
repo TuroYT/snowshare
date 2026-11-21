@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "@/components/ui/Toast";
+import { Alert, Button } from "@/components/ui";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { useTranslation } from "react-i18next";
@@ -71,7 +72,7 @@ function SkeletonSection({ fields }: Readonly<{ fields: number }>) {
         <WaveSkeleton variant="rounded" width={32} height={32} />
         <WaveSkeleton variant="text" width={160} height={26} />
       </div>
-      <div className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+      <div className="space-y-4 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
         {fieldIds.map((id) => (
           <div key={id}>
             <WaveSkeleton variant="text" width={120} height={18} sx={{ mb: 1 }} />
@@ -83,26 +84,32 @@ function SkeletonSection({ fields }: Readonly<{ fields: number }>) {
   );
 }
 
+// Settings that fall back to their default when the API returns an empty value
+const DEFAULTED_KEYS = [
+  "appName",
+  "appDescription",
+  "primaryColor",
+  "primaryHover",
+  "primaryDark",
+  "secondaryColor",
+  "secondaryHover",
+  "secondaryDark",
+  "backgroundColor",
+  "surfaceColor",
+  "textColor",
+  "textMuted",
+  "borderColor",
+  "fontFamily",
+] as const;
+
+// Settings that stay null when unset
+const OPTIONAL_KEYS = ["logoUrl", "faviconUrl", "backgroundImageUrl"] as const;
+
 function mapBrandingFromApi(s: Record<string, string | null>): BrandingSettings {
-  return {
-    appName: s.appName || DEFAULT_SETTINGS.appName,
-    appDescription: s.appDescription || DEFAULT_SETTINGS.appDescription,
-    logoUrl: s.logoUrl || null,
-    faviconUrl: s.faviconUrl || null,
-    primaryColor: s.primaryColor || DEFAULT_SETTINGS.primaryColor,
-    primaryHover: s.primaryHover || DEFAULT_SETTINGS.primaryHover,
-    primaryDark: s.primaryDark || DEFAULT_SETTINGS.primaryDark,
-    secondaryColor: s.secondaryColor || DEFAULT_SETTINGS.secondaryColor,
-    secondaryHover: s.secondaryHover || DEFAULT_SETTINGS.secondaryHover,
-    secondaryDark: s.secondaryDark || DEFAULT_SETTINGS.secondaryDark,
-    backgroundColor: s.backgroundColor || DEFAULT_SETTINGS.backgroundColor,
-    backgroundImageUrl: s.backgroundImageUrl || null,
-    surfaceColor: s.surfaceColor || DEFAULT_SETTINGS.surfaceColor,
-    textColor: s.textColor || DEFAULT_SETTINGS.textColor,
-    textMuted: s.textMuted || DEFAULT_SETTINGS.textMuted,
-    borderColor: s.borderColor || DEFAULT_SETTINGS.borderColor,
-    fontFamily: s.fontFamily || DEFAULT_SETTINGS.fontFamily,
-  };
+  const result: BrandingSettings = { ...DEFAULT_SETTINGS };
+  for (const key of DEFAULTED_KEYS) result[key] = s[key] || DEFAULT_SETTINGS[key];
+  for (const key of OPTIONAL_KEYS) result[key] = s[key] || null;
+  return result;
 }
 
 export default function BrandingTab() {
@@ -262,7 +269,7 @@ export default function BrandingTab() {
           <WaveSkeleton variant="rounded" width={32} height={32} />
           <WaveSkeleton variant="text" width={160} height={26} />
         </div>
-        <div className="p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 space-y-4">
+        <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)] space-y-4">
           <div className="flex gap-2 flex-wrap">
             {[0, 1, 2, 3].map((i) => (
               <WaveSkeleton key={i} variant="rounded" width={80} height={32} />
@@ -321,30 +328,23 @@ export default function BrandingTab() {
         <CustomLinksSection />
 
         {/* Info Box */}
-        <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg text-[var(--primary-hover)] text-sm">
+        <Alert variant="info">
           <p className="font-medium mb-2">💡 {t("admin.branding.info_title")}</p>
           <ul className="space-y-1 text-xs">
             <li>• {t("admin.branding.info_1")}</li>
             <li>• {t("admin.branding.info_2")}</li>
             <li>• {t("admin.branding.info_3")}</li>
           </ul>
-        </div>
+        </Alert>
 
         {/* Action Buttons */}
-        <div className="flex justify-between">
-          <button
-            onClick={handleResetDefaults}
-            className="px-4 py-2 bg-[var(--surface)]/50 hover:bg-[var(--surface)] text-[var(--foreground)] rounded-lg font-medium transition-all"
-          >
+        <div className="flex flex-wrap justify-between gap-3">
+          <Button type="button" variant="secondary" onClick={handleResetDefaults}>
             {t("admin.branding.reset_defaults")}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-6 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors disabled:opacity-50"
-          >
+          </Button>
+          <Button type="button" onClick={handleSave} disabled={saving} className="px-6">
             {saving ? t("admin.settings.saving") : t("admin.settings.save")}
-          </button>
+          </Button>
         </div>
       </div>
     </SkeletonTransition>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/components/ui/Toast";
 import WarningModal from "@/components/admin/WarningModal";
+import { Button, Input } from "@/components/ui";
 
 interface CustomLink {
   id: string;
@@ -122,50 +123,27 @@ export default function CustomLinksSection() {
 
       <form
         onSubmit={handleAddLink}
-        className="space-y-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50"
+        className="space-y-4 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]"
       >
-        <div>
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-            {t("admin.links.label_name")}
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder={t("admin.links.placeholder_name")}
-            className={`w-full px-3 py-2 bg-[var(--surface)]/50 border rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 ${
-              errors.name
-                ? "border-red-500 focus:ring-red-500"
-                : "border-[var(--border)]/50 focus:ring-[var(--primary)]"
-            }`}
-          />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-        </div>
+        <Input
+          label={t("admin.links.label_name")}
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder={t("admin.links.placeholder_name")}
+          error={errors.name || undefined}
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-            {t("admin.links.label_url")}
-          </label>
-          <input
-            type="text"
-            value={formData.url}
-            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-            placeholder={t("admin.links.placeholder_url")}
-            className={`w-full px-3 py-2 bg-[var(--surface)]/50 border rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 ${
-              errors.url
-                ? "border-red-500 focus:ring-red-500"
-                : "border-[var(--border)]/50 focus:ring-[var(--primary)]"
-            }`}
-          />
-          {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
-        </div>
+        <Input
+          label={t("admin.links.label_url")}
+          type="text"
+          value={formData.url}
+          onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+          placeholder={t("admin.links.placeholder_url")}
+          error={errors.url || undefined}
+        />
 
-        <button
-          type="submit"
-          className="px-4 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors"
-        >
-          {t("admin.links.button_add")}
-        </button>
+        <Button type="submit">{t("admin.links.button_add")}</Button>
       </form>
 
       {/* Links List */}
@@ -175,7 +153,7 @@ export default function CustomLinksSection() {
         </h4>
 
         {customLinks.length === 0 ? (
-          <div className="p-4 text-center bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+          <div className="p-4 text-center rounded-[var(--radius)] border border-[var(--border)]">
             <p className="text-[var(--foreground-muted)]">{t("admin.links.no_links")}</p>
           </div>
         ) : (
@@ -183,7 +161,7 @@ export default function CustomLinksSection() {
             {customLinks.map((link) => (
               <div
                 key={link.id}
-                className="p-3 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50 flex items-center justify-between hover:border-[var(--border)] transition-colors"
+                className="p-3 rounded-[var(--radius)] border border-[var(--border)] flex items-center justify-between gap-3 hover:border-[var(--border-hover)] transition-colors duration-100"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-[var(--foreground)] font-medium text-sm truncate">
@@ -193,17 +171,25 @@ export default function CustomLinksSection() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-[var(--primary)] hover:text-[var(--primary-hover)] truncate block"
+                    className="text-xs text-[var(--foreground-muted)] underline underline-offset-2 hover:text-[var(--foreground)] truncate block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
                   >
                     {link.url}
                   </a>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setLinkToDelete(link.id)}
-                  className="ml-3 px-2 py-1 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors text-sm"
+                  className="shrink-0 inline-flex items-center justify-center w-9 h-9 text-[var(--destructive-text)] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] rounded-[var(--radius)] transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--destructive)]"
                   title={t("admin.links.button_delete")}
+                  aria-label={t("admin.links.button_delete")}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

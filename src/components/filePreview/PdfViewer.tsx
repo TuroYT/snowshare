@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -44,9 +46,10 @@ export default function PdfViewer({ fileUrl }: Readonly<PdfViewerProps>) {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-900/20 border border-red-800 mb-4">
+          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] border border-[color-mix(in_srgb,var(--destructive)_30%,transparent)] mb-4">
             <svg
-              className="h-8 w-8 text-red-400"
+              aria-hidden="true"
+              className="h-8 w-8 text-[var(--destructive-text)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -59,7 +62,9 @@ export default function PdfViewer({ fileUrl }: Readonly<PdfViewerProps>) {
               />
             </svg>
           </div>
-          <p className="text-red-400">{error}</p>
+          <p role="alert" className="text-sm text-[var(--destructive-text)]">
+            {error}
+          </p>
         </div>
       </div>
     );
@@ -68,15 +73,16 @@ export default function PdfViewer({ fileUrl }: Readonly<PdfViewerProps>) {
   return (
     <div className="flex flex-col h-full">
       {loading && (
-        <div className="flex items-center justify-center h-full min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
-            <p className="text-[var(--foreground-muted)]">{t("loading", "Loading")}...</p>
-          </div>
+        <div
+          role="status"
+          className="flex flex-col items-center justify-center gap-3 h-full min-h-[400px]"
+        >
+          <Spinner size="lg" />
+          <p className="text-sm text-[var(--foreground-muted)]">{t("loading", "Loading...")}</p>
         </div>
       )}
 
-      <div className="flex-1 overflow-auto bg-[var(--background)] rounded-lg flex items-center justify-center p-4">
+      <div className="flex-1 overflow-auto bg-[var(--background)] rounded-[var(--radius)] flex items-center justify-center p-4">
         <Document
           file={fileUrl}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -88,21 +94,29 @@ export default function PdfViewer({ fileUrl }: Readonly<PdfViewerProps>) {
             pageNumber={pageNumber}
             renderTextLayer={true}
             renderAnnotationLayer={true}
-            className="shadow-lg"
+            className="border border-[var(--border)]"
             width={Math.min(window.innerWidth * 0.8, 800)}
           />
         </Document>
       </div>
 
       {numPages > 0 && (
-        <div className="flex items-center justify-center gap-4 py-4 bg-[var(--surface)] rounded-b-lg border-t border-[var(--border)]">
-          <button
+        <div className="flex items-center justify-center gap-4 py-4 bg-[var(--surface)] border-t border-[var(--border)]">
+          <Button
+            type="button"
+            variant="secondary"
             onClick={goToPrevPage}
             disabled={pageNumber <= 1}
-            className="px-4 py-2 bg-[var(--primary)] text-white rounded-md hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="min-h-10 min-w-10 px-2"
             aria-label={t("file_preview.previous_page", "Previous page")}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -110,25 +124,33 @@ export default function PdfViewer({ fileUrl }: Readonly<PdfViewerProps>) {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-          </button>
+          </Button>
 
-          <span className="text-[var(--foreground)] font-medium">
+          <span className="text-sm text-[var(--foreground)] font-medium">
             {t("file_preview.page_of", "Page {{current}} of {{total}}", {
               current: pageNumber,
               total: numPages,
             })}
           </span>
 
-          <button
+          <Button
+            type="button"
+            variant="secondary"
             onClick={goToNextPage}
             disabled={pageNumber >= numPages}
-            className="px-4 py-2 bg-[var(--primary)] text-white rounded-md hover:bg-[var(--primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="min-h-10 min-w-10 px-2"
             aria-label={t("file_preview.next_page", "Next page")}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button>
+          </Button>
         </div>
       )}
     </div>

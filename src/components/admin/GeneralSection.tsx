@@ -46,7 +46,9 @@ export default function GeneralSection({
         description={t("admin.settings.disable_credentials_login_desc")}
         extra={
           !hasActiveSSO && (
-            <p className="text-xs text-red-400 mt-1">{t("admin.settings.no_sso_active")}</p>
+            <p className="text-xs text-[var(--destructive-text)] mt-1">
+              {t("admin.settings.no_sso_active")}
+            </p>
           )
         }
         checked={settings.disableCredentialsLogin}
@@ -89,14 +91,14 @@ export default function GeneralSection({
         description={t("admin.settings.allow_iframe_embedding_desc")}
         extra={
           settings.allowIframeEmbedding && (
-            <p className="text-xs text-yellow-400 mt-1">
+            <p className="text-xs text-[var(--warning-text)] mt-1">
               {t("admin.settings.allow_iframe_embedding_warning")}
             </p>
           )
         }
         checked={settings.allowIframeEmbedding}
         onChange={() => onChange({ allowIframeEmbedding: !settings.allowIframeEmbedding })}
-        activeColor="bg-yellow-500"
+        activeColor="bg-[var(--warning)]"
       />
     </div>
   );

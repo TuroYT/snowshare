@@ -24,7 +24,9 @@ import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
-import { Badge, Button, Input, Spinner } from "@/components/ui";
+import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
+import { Badge, Button, Input, Spinner, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 
 function escapeHtml(text: string): string {
   return text
@@ -117,13 +119,15 @@ const PasteViewPage = () => {
     };
   }, []);
 
-  const handleCopy = () => {
-    if (pasteData?.paste) {
-      navigator.clipboard.writeText(pasteData.paste);
-      setCopied(true);
-      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
-      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
+  const handleCopy = async () => {
+    if (!pasteData?.paste) return;
+    if (!(await copyText(pasteData.paste))) {
+      toast.error(t("common.copy_failed"));
+      return;
     }
+    setCopied(true);
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    copiedTimeoutRef.current = setTimeout(() => setCopied(false), 1500);
   };
 
   const handlePasswordSuccess = (data: PasteData) => {
@@ -156,15 +160,15 @@ const PasteViewPage = () => {
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-10">
         {/* Loading state */}
         {loading && (
-          <div className="flex justify-center py-12">
+          <div role="status" aria-label={t("loading")} className="flex justify-center py-12">
             <Spinner size="lg" />
           </div>
         )}
 
         {/* Error state (non-password) */}
         {error && !loading && !requiresPassword && (
-          <div className="text-center py-12">
-            <p className="text-[var(--foreground-muted)]">{error}</p>
+          <div className="max-w-lg mx-auto">
+            <ShareUnavailable message={error} />
           </div>
         )}
 
@@ -178,7 +182,7 @@ const PasteViewPage = () => {
           <>
             {/* Header */}
             <div className="flex items-start justify-between mb-6 gap-4">
-              <div>
+              <div className="min-w-0">
                 <Badge variant="muted" className="mb-2">
                   {t("paste_view.title")}
                 </Badge>
@@ -186,7 +190,13 @@ const PasteViewPage = () => {
                   {t("paste_view.content_title")}
                 </h1>
               </div>
-              <Button variant="secondary" size="sm" onClick={handleCopy}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCopy}
+                aria-live="polite"
+                className="shrink-0"
+              >
                 {copied ? t("paste_view.copied") : t("paste_view.copy")}
               </Button>
             </div>
@@ -196,7 +206,7 @@ const PasteViewPage = () => {
               <div className="p-4">
                 {pasteData.language?.toLowerCase() === "markdown" ? (
                   <div
-                    className="rounded p-4 text-sm overflow-x-auto prose max-w-none"
+                    className="rounded-[var(--radius)] p-4 text-sm overflow-x-auto prose max-w-none"
                     style={{ background: "var(--input)", color: "var(--foreground)" }}
                   >
                     <ReactMarkdown>{pasteData.paste}</ReactMarkdown>
@@ -204,13 +214,12 @@ const PasteViewPage = () => {
                 ) : (
                   // Content from Prism.js is sanitized via escapeHtml before highlighting
                   <pre
-                    className={`rounded p-4 text-sm overflow-x-auto whitespace-pre-wrap language-${pasteData.language?.toLowerCase()}`}
-                    style={{ background: "var(--input)", color: "var(--foreground)" }}
+                    className={`!rounded-[var(--radius)] !m-0 !p-4 text-sm overflow-x-auto whitespace-pre-wrap break-words language-${pasteData.language?.toLowerCase()}`}
                     dangerouslySetInnerHTML={{ __html: highlighted || escapeHtml(pasteData.paste) }}
                   />
                 )}
 
-                <div className="mt-2 text-xs flex justify-between items-center text-[var(--foreground-muted)]">
+                <div className="mt-2 text-xs flex flex-wrap justify-between items-center gap-x-4 gap-y-1 text-[var(--foreground-muted)]">
                   <span>
                     {t("paste_view.language")} : {pasteData.language || t("paste_view.plain_text")}
                   </span>
@@ -296,6 +305,8 @@ const ProtectedForm: React.FC<{ slug: string; onSuccess: (data: PasteData) => vo
           label={t("paste_view.password_label")}
           placeholder={t("paste_view.password_placeholder")}
           error={error || undefined}
+          autoComplete="current-password"
+          autoFocus
           required
           disabled={loading}
         />

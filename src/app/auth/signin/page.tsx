@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -22,6 +23,9 @@ export default function SignIn() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
+  // Only known notice codes are shown: never render free text taken from the URL.
+  const noticeKey =
+    searchParams.get("notice") === "account_created" ? "auth.success_account_created" : null;
   const { t } = useTranslation();
   const { branding } = useTheme();
 
@@ -141,8 +145,19 @@ export default function SignIn() {
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
 
+        {/* Notice passed by signup/setup (?notice=account_created) */}
+        {noticeKey && !error && (
+          <Alert variant="success" className="mb-4">
+            {t(noticeKey)}
+          </Alert>
+        )}
+
         {/* Error message */}
-        {error && <p className="mb-4 text-sm text-[var(--destructive)] text-center">{error}</p>}
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
         {/* Credentials form */}
         {!disableCredentialsLogin && (
