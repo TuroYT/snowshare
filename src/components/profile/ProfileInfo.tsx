@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
 import { toast } from "@/components/ui/Toast";
+import { Alert, Button, Card, Input, Select } from "@/components/ui";
 
 type User = {
   id: string;
@@ -101,21 +102,38 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
     }
   };
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/user/export");
+      if (!res.ok) throw new Error("Failed to export user data");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ??
+        "snowshare-export.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export profile data:", err);
+      toast.error(t("profile.export_error"));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+    <Card>
       <div className="flex items-center gap-4 mb-6">
-        <div
-          className="h-12 w-12 rounded-xl border border-[var(--primary-dark)]/50 flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(to bottom right, rgb(from var(--primary) r g b / 0.2), rgb(from var(--primary-dark) r g b / 0.2))",
-          }}
-        >
+        <div className="h-12 w-12 shrink-0 rounded-[var(--radius)] border border-[var(--primary)]/30 bg-[var(--primary)]/10 flex items-center justify-center">
           <svg
             className="w-6 h-6 text-[var(--primary)]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -125,70 +143,55 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
             />
           </svg>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-[var(--foreground)]">{t("profile.info_title")}</h2>
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-[var(--foreground)]">
+            {t("profile.info_title")}
+          </h2>
           <p className="text-sm text-[var(--foreground-muted)]">{t("profile.info_subtitle")}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.label_name")}
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-              placeholder={t("profile.placeholder_name")}
-            />
-          </div>
+          <Input
+            type="text"
+            label={t("profile.label_name")}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("profile.placeholder_name")}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.label_email")} <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-              required
-            />
-          </div>
+          <Input
+            type="email"
+            label={`${t("profile.label_email")} *`}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.default_tab")}
-            </label>
-            <p className="text-xs text-[var(--foreground-muted)] mb-2">
-              {t("profile.default_tab_desc")}
-            </p>
-            <select
-              value={defaultTab}
-              onChange={(e) => setDefaultTab(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-            >
-              <option value="linkshare">{t("profile.default_tab_linkshare")}</option>
-              <option value="pasteshare">{t("profile.default_tab_pasteshare")}</option>
-              <option value="fileshare">{t("profile.default_tab_fileshare")}</option>
-            </select>
-          </div>
+          <Select
+            label={t("profile.default_tab")}
+            helperText={t("profile.default_tab_desc")}
+            value={defaultTab}
+            onChange={(e) => setDefaultTab(e.target.value)}
+          >
+            <option value="linkshare">{t("profile.default_tab_linkshare")}</option>
+            <option value="pasteshare">{t("profile.default_tab_pasteshare")}</option>
+            <option value="fileshare">{t("profile.default_tab_fileshare")}</option>
+          </Select>
 
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={notifyOnAccess}
               onChange={(e) => setNotifyOnAccess(e.target.checked)}
-              className="mt-1 accent-[var(--primary)]"
+              className="mt-1 shrink-0 accent-[var(--primary)]"
             />
-            <span>
+            <span className="min-w-0">
               <span className="block text-sm font-medium text-[var(--foreground)]">
                 {t("profile.notify_on_access", "E-mail me when one of my shares is opened")}
               </span>
-              <span className="block text-xs text-[var(--muted)]">
+              <span className="block text-xs text-[var(--foreground-muted)]">
                 {t(
                   "profile.notify_on_access_desc",
                   "At most one e-mail per share per hour. Requires e-mail to be configured by the administrator."
@@ -205,6 +208,7 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -217,55 +221,42 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
           </h3>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                {t("profile.label_current_password")}
-              </label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-                placeholder={t("profile.placeholder_password")}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                {t("profile.label_new_password")}
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-                placeholder={t("profile.placeholder_password")}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                {t("profile.label_confirm_password")}
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-                placeholder={t("profile.placeholder_password")}
-              />
-            </div>
+            <Input
+              type="password"
+              label={t("profile.label_current_password")}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder={t("profile.placeholder_password")}
+              autoComplete="current-password"
+            />
+            <Input
+              type="password"
+              label={t("profile.label_new_password")}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder={t("profile.placeholder_password")}
+              autoComplete="new-password"
+            />
+            <Input
+              type="password"
+              label={t("profile.label_confirm_password")}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t("profile.placeholder_password")}
+              autoComplete="new-password"
+            />
           </div>
         </div>
 
         {message && (
-          <div className="p-4 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
+          <Alert variant="success" className="p-4">
             <div className="flex items-start gap-3">
               <svg
-                className="w-5 h-5 flex-shrink-0 mt-0.5"
+                className="w-5 h-5 shrink-0 mt-0.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -274,19 +265,20 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              <p className="text-sm">{message}</p>
+              <p className="min-w-0 break-words">{message}</p>
             </div>
-          </div>
+          </Alert>
         )}
 
         {error && (
-          <div className="p-4 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400">
+          <Alert variant="danger" className="p-4">
             <div className="flex items-start gap-3">
               <svg
-                className="w-5 h-5 flex-shrink-0 mt-0.5"
+                className="w-5 h-5 shrink-0 mt-0.5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -295,111 +287,33 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <p className="text-sm">{error}</p>
+              <p className="min-w-0 break-words">{error}</p>
             </div>
-          </div>
+          </Alert>
         )}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 w-full"
-          style={{ background: "var(--primary)", color: "#fff" }}
-        >
-          {saving ? (
-            <>
-              <svg
-                className="animate-spin w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              {t("profile.saving")}
-            </>
-          ) : (
-            t("profile.save_changes")
-          )}
-        </button>
+        <Button type="submit" className="w-full" isLoading={saving}>
+          {saving ? t("profile.saving") : t("profile.save_changes")}
+        </Button>
       </form>
 
       <div className="border-t border-[var(--border)] mt-6 pt-6">
         <h3 className="text-lg font-medium text-[var(--foreground)] mb-1 flex items-center gap-2">
-          <Download className="w-5 h-5 text-[var(--secondary)]" />
+          <Download className="w-5 h-5 text-[var(--secondary)]" aria-hidden="true" />
           {t("profile.export_title")}
         </h3>
         <p className="text-sm text-[var(--foreground-muted)] mb-4">{t("profile.export_desc")}</p>
-        <button
-          type="button"
-          disabled={exporting}
-          onClick={async () => {
-            setExporting(true);
-            try {
-              const res = await fetch("/api/user/export");
-              if (!res.ok) throw new Error("Failed to export user data");
-              const blob = await res.blob();
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download =
-                res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ??
-                "snowshare-export.json";
-              a.click();
-              URL.revokeObjectURL(url);
-            } catch (err) {
-              console.error("Failed to export profile data:", err);
-              toast.error(t("profile.export_error"));
-            } finally {
-              setExporting(false);
-            }
-          }}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors disabled:opacity-50"
-        >
+        <Button type="button" variant="secondary" isLoading={exporting} onClick={handleExport}>
           {exporting ? (
-            <>
-              <svg
-                className="animate-spin w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              {t("profile.export_downloading")}
-            </>
+            t("profile.export_downloading")
           ) : (
             <>
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 mr-2" aria-hidden="true" />
               {t("profile.export_button")}
             </>
           )}
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

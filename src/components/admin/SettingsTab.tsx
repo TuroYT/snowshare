@@ -7,6 +7,7 @@ import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import rehypeSanitize from "rehype-sanitize";
 import { toast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
   ssr: false,
@@ -169,7 +170,7 @@ export default function SettingsTab() {
           {[0, 1, 2].map((r) => (
             <div
               key={r}
-              className="flex items-center justify-between p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50"
+              className="flex items-center justify-between p-4 rounded-[var(--radius-lg)] border border-[var(--border)]"
             >
               <div className="flex-1 mr-8">
                 <WaveSkeleton variant="text" width={192} height={22} />
@@ -235,13 +236,9 @@ export default function SettingsTab() {
           <WebhooksSection settings={settings} onChange={patchSettings} />
 
           <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-6 py-2 text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)] rounded-[var(--radius)] font-medium transition-colors disabled:opacity-50"
-            >
+            <Button type="button" onClick={handleSave} disabled={saving} className="px-6">
               {saving ? t("admin.settings.saving") : t("admin.settings.save")}
-            </button>
+            </Button>
           </div>
         </div>
       )}

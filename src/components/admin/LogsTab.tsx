@@ -6,6 +6,7 @@ import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import IpGeoModal from "@/components/admin/IpGeoModal";
 import WarningModal from "@/components/admin/WarningModal";
 import { toast } from "@/components/ui/Toast";
+import { Alert, Badge, Button, Input } from "@/components/ui";
 
 interface IpGeoData {
   countryCode: string | null;
@@ -158,7 +159,13 @@ export default function LogsTab() {
     switch (type) {
       case "FILE":
         return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -169,7 +176,13 @@ export default function LogsTab() {
         );
       case "PASTE":
         return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -180,7 +193,13 @@ export default function LogsTab() {
         );
       case "URL":
         return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -194,16 +213,14 @@ export default function LogsTab() {
     }
   };
 
-  const getTypeBadgeColor = (type: string) => {
+  const getTypeBadgeVariant = (type: string) => {
     switch (type) {
       case "FILE":
-        return "bg-[var(--secondary)]/20 text-[var(--secondary)] border-purple-500/30";
+        return "info";
       case "PASTE":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "URL":
-        return "bg-[var(--primary)]/20 text-[var(--primary)] border-blue-500/30";
+        return "success";
       default:
-        return "bg-gray-500/20 text-[var(--foreground-muted)] border-gray-500/30";
+        return "muted";
     }
   };
 
@@ -248,18 +265,20 @@ export default function LogsTab() {
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1">
           <div className="relative">
-            <input
+            <Input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t("admin.logs.search_placeholder")}
-              className="w-full bg-[var(--surface)]/50 border border-[var(--border)] rounded-lg px-4 py-2 pl-10 text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+              aria-label={t("admin.logs.search_placeholder")}
+              className="pl-10"
             />
             <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)]"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)] pointer-events-none"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -272,36 +291,30 @@ export default function LogsTab() {
         </form>
 
         {/* Type Filter */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {["all", "FILE", "PASTE", "URL"].map((type) => (
-            <button
+            <Button
               key={type}
+              type="button"
+              variant={typeFilter === type ? "primary" : "secondary"}
+              aria-pressed={typeFilter === type}
               onClick={() => handleTypeChange(type)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                typeFilter === type
-                  ? "bg-[var(--primary)] text-white"
-                  : "bg-[var(--surface)]/50 text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--border)]"
-              }`}
             >
               {type === "all"
                 ? t("admin.logs.filter_all")
                 : t(`admin.logs.filter_${type.toLowerCase()}`)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
-      {fetchError && (
-        <div className="bg-red-600/10 border border-red-700/30 rounded-xl p-4 text-red-400">
-          {fetchError}
-        </div>
-      )}
+      {fetchError && <Alert variant="danger">{fetchError}</Alert>}
 
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[var(--border)]/50">
+            <tr className="border-b border-[var(--border)]">
               <th className="text-left py-3 px-4 text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">
                 {t("admin.logs.table.type")}
               </th>
@@ -330,7 +343,7 @@ export default function LogsTab() {
           </thead>
           <tbody
             key={loading ? "loading" : "loaded"}
-            className="animate-fade-in divide-y divide-gray-700/30"
+            className="animate-fade-in divide-y divide-[var(--border)]"
           >
             {loading &&
               skeletonRowIds.map((id) => (
@@ -381,21 +394,23 @@ export default function LogsTab() {
             {!loading &&
               logs.length > 0 &&
               logs.map((log) => (
-                <tr key={log.id} className="hover:bg-[var(--surface)]/30 transition-colors">
+                <tr
+                  key={log.id}
+                  className="hover:bg-[var(--surface-hover)] transition-colors duration-100"
+                >
                   <td className="py-3 px-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getTypeBadgeColor(log.type)}`}
-                    >
+                    <Badge variant={getTypeBadgeVariant(log.type)} className="gap-1.5">
                       {getTypeIcon(log.type)}
                       {log.type}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="py-3 px-4">
-                    <code className="text-sm text-[var(--foreground)] bg-[var(--surface)] px-2 py-1 rounded">
+                    <code className="text-sm text-[var(--foreground)] bg-[var(--surface-hover)] px-2 py-1 rounded">
                       <a
                         href={getTypeUrl(log.type, log.slug)}
                         target="_blank"
                         rel="noopener noreferrer"
+                        className="hover:underline rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
                       >
                         {log.slug}
                       </a>
@@ -423,14 +438,20 @@ export default function LogsTab() {
                     <div className="flex items-center gap-2">
                       {log.ipSource && (
                         <button
+                          type="button"
                           onClick={() => {
                             setSelectedGeoLog(log);
                             setGeoModalOpen(true);
                           }}
-                          className="cursor-pointer hover:scale-110 transition-transform"
+                          className="cursor-pointer rounded-sm hover:scale-110 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
                           title={
                             log.ipGeo?.status === "resolved"
                               ? log.ipGeo.countryName || ""
+                              : t("admin.logs.geo.unknown")
+                          }
+                          aria-label={
+                            log.ipGeo?.status === "resolved"
+                              ? log.ipGeo.countryName || t("admin.logs.geo.modal_title")
                               : t("admin.logs.geo.unknown")
                           }
                         >
@@ -460,29 +481,29 @@ export default function LogsTab() {
                     <div className="flex items-center gap-2 flex-wrap">
                       {isExpired(log.expiresAt) ||
                       isViewLimitReached(log.maxViews, log.viewCount) ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                          {t("admin.logs.expired")}
-                        </span>
+                        <Badge variant="danger">{t("admin.logs.expired")}</Badge>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                          {t("admin.logs.active")}
-                        </span>
+                        <Badge variant="success">{t("admin.logs.active")}</Badge>
                       )}
                       {log.maxViews && (
-                        <span
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                          title={`${log.viewCount}/${log.maxViews} views`}
-                        >
-                          👁️ {log.viewCount}/{log.maxViews}
+                        <span title={`${log.viewCount}/${log.maxViews} views`}>
+                          <Badge variant="info">
+                            👁️ {log.viewCount}/{log.maxViews}
+                          </Badge>
                         </span>
                       )}
                       {log.hasPassword && (
-                        <span title={t("admin.logs.password_protected")}>
+                        <span
+                          role="img"
+                          title={t("admin.logs.password_protected")}
+                          aria-label={t("admin.logs.password_protected")}
+                        >
                           <svg
-                            className="w-4 h-4 text-yellow-500"
+                            className="w-4 h-4 text-[var(--warning-text)]"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
+                            aria-hidden="true"
                           >
                             <path
                               strokeLinecap="round"
@@ -496,19 +517,16 @@ export default function LogsTab() {
                     </div>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="danger-outline"
                       onClick={() => setLogToDelete(log)}
-                      disabled={deletingId === log.id}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-600/10 text-red-400 border border-red-500/30 hover:bg-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      isLoading={deletingId === log.id}
+                      className="gap-2"
                     >
                       {deletingId === log.id ? (
-                        <>
-                          <span
-                            className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"
-                            aria-hidden
-                          />
-                          {t("admin.logs.deleting")}
-                        </>
+                        t("admin.logs.deleting")
                       ) : (
                         <>
                           <svg
@@ -516,6 +534,7 @@ export default function LogsTab() {
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
+                            aria-hidden="true"
                           >
                             <path
                               strokeLinecap="round"
@@ -527,7 +546,7 @@ export default function LogsTab() {
                           {t("admin.logs.delete")}
                         </>
                       )}
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -537,7 +556,7 @@ export default function LogsTab() {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]/50">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--border)]">
           <div className="text-sm text-[var(--foreground-muted)]">
             {t("admin.logs.pagination_info", {
               start: (pagination.page - 1) * pagination.limit + 1,
@@ -546,23 +565,27 @@ export default function LogsTab() {
             })}
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
               disabled={pagination.page === 1}
-              className="px-3 py-1 rounded bg-[var(--surface)]/50 border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t("admin.logs.previous")}
-            </button>
-            <span className="px-3 py-1 text-[var(--foreground-muted)]">
+            </Button>
+            <span className="px-3 py-1.5 text-sm text-[var(--foreground-muted)]">
               {pagination.page} / {pagination.totalPages}
             </span>
-            <button
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
               disabled={pagination.page === pagination.totalPages}
-              className="px-3 py-1 rounded bg-[var(--surface)]/50 border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t("admin.logs.next")}
-            </button>
+            </Button>
           </div>
         </div>
       )}

@@ -12,4 +12,6 @@ export { Toaster, toast } from "./Toast";
 export { Switch } from "./Switch";
 export { Spinner } from "./Spinner";
 export { Badge } from "./Badge";
+export { Alert } from "./Alert";
+export type { AlertProps } from "./Alert";
 export { Tooltip } from "./Tooltip";

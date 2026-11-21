@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { Alert, Button, Input } from "@/components/ui";
 import { convertFromMB, convertToMB } from "@/lib/formatSize";
 
 export interface QuotasSectionSettings {
@@ -36,19 +37,18 @@ function QuotaInput({
 }: Readonly<QuotaInputProps>) {
   return (
     <div>
-      <label className="text-sm text-[var(--foreground)]">{label}</label>
-      <p className="text-xs text-[var(--foreground-muted)] mb-2">{hint}</p>
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <input
+      <div className="flex items-end gap-3">
+        <div className="flex-1 min-w-0">
+          <Input
+            label={label}
+            helperText={hint}
             type="number"
             value={value}
             onChange={(e) => onChange(Number.parseInt(e.target.value))}
-            className="w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             min="0"
           />
         </div>
-        <span className="text-sm text-[var(--foreground-muted)] whitespace-nowrap">{unit}</span>
+        <span className="text-sm text-[var(--foreground-muted)] pb-2">{unit}</span>
       </div>
       <p className="text-xs text-[var(--foreground-muted)] mt-1">{currentValueLabel}</p>
     </div>
@@ -57,10 +57,6 @@ function QuotaInput({
 
 interface QuotaGroupProps {
   title: string;
-  iconBg: string;
-  iconBorder: string;
-  iconColor: string;
-  iconPath: string;
   useGiB: boolean;
   onToggleUnit: () => void;
   maxUpload: number;
@@ -71,10 +67,6 @@ interface QuotaGroupProps {
 
 function QuotaGroup({
   title,
-  iconBg,
-  iconBorder,
-  iconColor,
-  iconPath,
   useGiB,
   onToggleUnit,
   maxUpload,
@@ -86,37 +78,22 @@ function QuotaGroup({
   const unit = useGiB ? "GiB" : "MiB";
 
   return (
-    <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-      <div className="flex items-center gap-2 mb-2 justify-between">
+    <div className="space-y-3 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
+      <div className="flex flex-wrap items-center gap-2 mb-2 justify-between">
+        <h4 className="text-[var(--foreground)] font-medium">{title}</h4>
         <div className="flex items-center gap-2">
-          <div
-            className={`h-6 w-6 rounded-lg ${iconBg} border ${iconBorder} flex items-center justify-center`}
-          >
-            <svg
-              className={`w-3 h-3 ${iconColor}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconPath} />
-            </svg>
-          </div>
-          <label className="text-[var(--foreground)] font-medium">{title}</label>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-[var(--foreground-muted)]">
+          <span className="text-sm text-[var(--foreground-muted)]">
             {t("admin.quotas.unit_format")}
-          </label>
-          <button
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
             onClick={onToggleUnit}
-            className={`px-3 py-1 rounded-lg font-medium transition-all ${
-              useGiB
-                ? "bg-[var(--secondary)] text-white"
-                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
-            }`}
+            aria-label={`${t("admin.quotas.unit_format")}: ${unit}`}
           >
             {unit}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -151,33 +128,10 @@ export default function QuotasSection({ settings, onChange }: Readonly<Props>) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/20 border border-[var(--primary-dark)]/50 flex items-center justify-center">
-          <svg
-            className="w-4 h-4 text-[var(--primary)]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-[var(--foreground)]">
-          {t("admin.quotas.title")}
-        </h3>
-      </div>
+      <h3 className="text-lg font-semibold text-[var(--foreground)]">{t("admin.quotas.title")}</h3>
 
       <QuotaGroup
         title={t("admin.quotas.section_anonymous")}
-        iconBg="bg-[var(--primary)]/20"
-        iconBorder="border-[var(--primary-dark)]/50"
-        iconColor="text-[var(--primary)]"
-        iconPath="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0z"
         useGiB={settings.useGiBForAnon}
         onToggleUnit={() => onChange({ useGiBForAnon: !settings.useGiBForAnon })}
         maxUpload={settings.anoMaxUpload}
@@ -188,10 +142,6 @@ export default function QuotasSection({ settings, onChange }: Readonly<Props>) {
 
       <QuotaGroup
         title={t("admin.quotas.section_authenticated")}
-        iconBg="bg-[var(--secondary)]/20"
-        iconBorder="border-[var(--secondary-dark)]/50"
-        iconColor="text-[var(--secondary)]"
-        iconPath="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         useGiB={settings.useGiBForAuth}
         onToggleUnit={() => onChange({ useGiBForAuth: !settings.useGiBForAuth })}
         maxUpload={settings.authMaxUpload}
@@ -200,13 +150,13 @@ export default function QuotasSection({ settings, onChange }: Readonly<Props>) {
         onChangeIp={(raw) => onChange({ authIpQuota: convertToMB(raw, settings.useGiBForAuth) })}
       />
 
-      <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary-dark)]/30 rounded-lg text-[var(--primary-hover)] text-sm">
-        <p className="font-medium mb-2">💡 Info</p>
+      <Alert variant="info">
+        <p className="font-medium mb-2">{t("admin.branding.info_title", "Info")}</p>
         <ul className="space-y-1 text-xs">
           <li>• {t("admin.quotas.max_file_size_hint")}</li>
           <li>• {t("admin.quotas.ip_quota_hint")}</li>
         </ul>
-      </div>
+      </Alert>
     </div>
   );
 }

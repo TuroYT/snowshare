@@ -129,7 +129,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
     <div className="space-y-2">
       <p id={labelId} className="block text-sm font-medium text-[var(--foreground)]">
         {t("fileshare.file_selected", "File to share")}&nbsp;
-        <span className="text-[var(--destructive)]" aria-hidden="true">
+        <span className="text-[var(--destructive-text)]" aria-hidden="true">
           *
         </span>
       </p>
@@ -139,7 +139,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
           role="group"
           aria-labelledby={labelId}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center transition-colors duration-200 cursor-pointer ${
+          className={`border-2 border-dashed rounded-[var(--radius)] p-6 text-center transition-colors duration-100 cursor-pointer ${
             dragOver
               ? "border-[var(--secondary)] bg-[var(--surface-hover)]"
               : "border-[var(--border)] hover:bg-[var(--surface-hover)]"
@@ -189,10 +189,13 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
             {files.map((fileWithPath) => (
               <div
                 key={fileKey(fileWithPath)}
-                className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded border border-[var(--border)]"
+                className="flex justify-between items-center py-2 px-3 bg-[var(--background)] rounded-[var(--radius)] border border-[var(--border)]"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate text-[var(--foreground)]">
+                  <p
+                    className="text-sm truncate text-[var(--foreground)]"
+                    title={fileWithPath.relativePath}
+                  >
                     {fileWithPath.relativePath}
                   </p>
                   <p className="text-xs text-[var(--foreground-muted)]">
@@ -207,7 +210,7 @@ const FileDropZone: React.FC<FileDropZoneProps> = ({
                     name: fileWithPath.relativePath,
                   })}
                   title={t("common.remove", "Remove")}
-                  className="ml-2 min-h-11 min-w-11 p-0 text-[var(--destructive)] hover:text-[var(--destructive)]"
+                  className="ml-2 min-h-11 min-w-11 p-0 text-[var(--destructive-text)] hover:text-[var(--destructive-text)] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)]"
                 >
                   <svg
                     className="h-5 w-5"

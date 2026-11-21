@@ -104,7 +104,7 @@ export default function Home() {
           localStorage.removeItem("defaultTab");
         }
       })
-      .catch(() => {});
+      .catch((error) => console.error("Failed to load default tab:", error));
   }, [status]);
 
   return (
@@ -113,7 +113,7 @@ export default function Home() {
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         {/* Hero */}
         <div className="mb-10">
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--foreground)] mb-3">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--foreground)] mb-3">
             {branding.appName}
           </h1>
           <p className="text-[var(--foreground-muted)] max-w-lg">{branding.appDescription}</p>

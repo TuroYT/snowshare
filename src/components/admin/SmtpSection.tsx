@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { FieldInput, Toggle, ToggleRow } from "./settings/primitives";
 
@@ -21,6 +22,8 @@ interface Props {
 
 export default function SmtpSection({ settings, onChange }: Readonly<Props>) {
   const { t } = useTranslation();
+  const secureLabelId = useId();
+  const verifyLabelId = useId();
 
   return (
     <div className="space-y-4">
@@ -36,7 +39,7 @@ export default function SmtpSection({ settings, onChange }: Readonly<Props>) {
       />
 
       {settings.smtpEnabled && (
-        <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+        <div className="space-y-3 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FieldInput
               label={t("admin.settings.smtp_host")}
@@ -74,11 +77,11 @@ export default function SmtpSection({ settings, onChange }: Readonly<Props>) {
               placeholder="noreply@example.com"
               hint={t("admin.settings.smtp_from_hint") as string}
             />
-            <div className="flex items-center justify-between gap-4 mt-6">
+            <div className="flex items-center justify-between gap-4 md:mt-6">
               <div className="flex-1 min-w-0">
-                <label className="text-sm font-medium text-[var(--foreground)]">
+                <span id={secureLabelId} className="text-sm font-medium text-[var(--foreground)]">
                   {t("admin.settings.smtp_secure")}
-                </label>
+                </span>
                 <p className="text-xs text-[var(--foreground-muted)] mt-1">
                   {t("admin.settings.smtp_secure_hint")}
                 </p>
@@ -86,16 +89,17 @@ export default function SmtpSection({ settings, onChange }: Readonly<Props>) {
               <Toggle
                 checked={settings.smtpSecure}
                 onChange={() => onChange({ smtpSecure: !settings.smtpSecure })}
+                labelledBy={secureLabelId}
               />
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[var(--border)]/30">
+          <div className="pt-2 border-t border-[var(--border)]">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <label className="text-[var(--foreground)] font-medium">
+                <span id={verifyLabelId} className="text-[var(--foreground)] font-medium">
                   {t("admin.settings.email_verification_required")}
-                </label>
+                </span>
                 <p className="text-sm text-[var(--foreground-muted)] mt-1">
                   {t("admin.settings.email_verification_required_desc")}
                 </p>
@@ -105,6 +109,7 @@ export default function SmtpSection({ settings, onChange }: Readonly<Props>) {
                 onChange={() =>
                   onChange({ emailVerificationRequired: !settings.emailVerificationRequired })
                 }
+                labelledBy={verifyLabelId}
               />
             </div>
           </div>

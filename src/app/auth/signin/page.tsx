@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Alert } from "@/components/ui/Alert";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -142,7 +143,11 @@ export default function SignIn() {
         </div>
 
         {/* Error message */}
-        {error && <p className="mb-4 text-sm text-[var(--destructive)] text-center">{error}</p>}
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
         {/* Credentials form */}
         {!disableCredentialsLogin && (

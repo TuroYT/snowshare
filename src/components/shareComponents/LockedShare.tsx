@@ -45,9 +45,10 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
 
   return (
     <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full max-w-2xl mx-auto text-center">
-      <div className="h-12 w-12 mx-auto mb-4 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--destructive)] flex items-center justify-center">
+      <div className="h-12 w-12 mx-auto mb-4 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center">
         <svg
-          className="w-6 h-6 text-[var(--destructive)]"
+          aria-hidden="true"
+          className="w-6 h-6 text-[var(--foreground-muted)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

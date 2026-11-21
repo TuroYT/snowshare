@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "danger-outline";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
 }
@@ -13,17 +13,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center font-medium transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] disabled:opacity-50 disabled:cursor-not-allowed";
 
     const variantStyles = {
       primary:
-        "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] focus-visible:ring-[var(--primary)] focus-visible:ring-offset-[var(--background)]",
+        "bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] focus-visible:ring-[var(--primary)]",
       secondary:
-        "bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-hover)]",
+        "bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-hover)] focus-visible:ring-[var(--foreground-muted)]",
       ghost:
-        "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)]",
+        "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] focus-visible:ring-[var(--foreground-muted)]",
       danger:
         "bg-[var(--destructive)] text-white hover:opacity-90 focus-visible:ring-[var(--destructive)]",
+      "danger-outline":
+        "border border-[color-mix(in_srgb,var(--destructive)_40%,transparent)] text-[var(--destructive-text)] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] focus-visible:ring-[var(--destructive)]",
     };
 
     const sizeStyles = {
@@ -37,6 +39,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
         disabled={disabled || isLoading}
+        aria-busy={isLoading || undefined}
         {...props}
       >
         {isLoading && (
@@ -45,6 +48,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"

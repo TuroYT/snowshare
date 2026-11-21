@@ -16,14 +16,15 @@ export default function SharesList({ shares, onDelete, onUpdate }: Readonly<Shar
 
   if (shares.length === 0) {
     return (
-      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-12 text-center">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] border border-[var(--border)] p-12 text-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-16 w-16 rounded-xl bg-[var(--surface-hover)] border border-[var(--border)]/50 flex items-center justify-center">
+          <div className="h-16 w-16 rounded-[var(--radius-lg)] bg-[var(--surface-hover)] border border-[var(--border)] flex items-center justify-center">
             <svg
               className="w-8 h-8 text-[var(--foreground-muted)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"

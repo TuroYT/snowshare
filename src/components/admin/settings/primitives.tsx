@@ -1,12 +1,15 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useId } from "react";
+import { Input } from "@/components/ui";
 
 interface ToggleProps {
   checked: boolean;
   onChange: () => void;
   activeColor?: string;
   disabled?: boolean;
+  /** id of the element that names this switch */
+  labelledBy?: string;
 }
 
 export function Toggle({
@@ -14,12 +17,17 @@ export function Toggle({
   onChange,
   activeColor = "bg-[var(--primary)]",
   disabled,
+  labelledBy,
 }: Readonly<ToggleProps>) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-labelledby={labelledBy}
       disabled={disabled}
       onClick={onChange}
-      className={`relative inline-flex shrink-0 h-8 w-14 items-center rounded-full transition-colors ${
+      className={`relative inline-flex shrink-0 h-8 w-14 items-center rounded-full transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] ${
         checked ? activeColor : "bg-[var(--border-hover)]"
       }${disabled ? " opacity-50 cursor-not-allowed" : " cursor-pointer"}`}
     >
@@ -51,16 +59,25 @@ export function ToggleRow({
   disabled,
   activeColor,
 }: Readonly<ToggleRowProps>) {
+  const labelId = useId();
   return (
-    <div className="flex items-center justify-between gap-4 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+    <div className="flex items-center justify-between gap-4 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
       <div className="flex-1 min-w-0">
-        <label className="text-[var(--foreground)] font-medium">{label}</label>
+        <span id={labelId} className="text-[var(--foreground)] font-medium">
+          {label}
+        </span>
         {description && (
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{description}</p>
         )}
         {extra}
       </div>
-      <Toggle checked={checked} onChange={onChange} disabled={disabled} activeColor={activeColor} />
+      <Toggle
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+        activeColor={activeColor}
+        labelledBy={labelId}
+      />
     </div>
   );
 }
@@ -85,17 +102,14 @@ export function FieldInput({
   min,
 }: Readonly<FieldInputProps>) {
   return (
-    <div>
-      <label className="text-sm font-medium text-[var(--foreground)]">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value || null)}
-        placeholder={placeholder}
-        min={min}
-        className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-      />
-      {hint && <p className="text-xs text-[var(--foreground-muted)] mt-1">{hint}</p>}
-    </div>
+    <Input
+      label={label}
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value || null)}
+      placeholder={placeholder}
+      min={min}
+      helperText={hint}
+    />
   );
 }

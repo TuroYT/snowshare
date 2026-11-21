@@ -150,6 +150,7 @@ const LinkShare: React.FC = () => {
         <div className="flex items-center gap-4 mb-6">
           <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
             <svg
+              aria-hidden="true"
               className="w-6 h-6 text-[var(--primary)]"
               fill="none"
               stroke="currentColor"
@@ -164,7 +165,7 @@ const LinkShare: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-[var(--foreground)]">
+            <h2 className="text-xl font-semibold text-[var(--foreground)]">
               {t("linkshare.title", "Share a link")}
             </h2>
             <p className="text-sm text-[var(--foreground-muted)]">
@@ -178,7 +179,7 @@ const LinkShare: React.FC = () => {
           <div className="space-y-2">
             <label htmlFor={urlId} className="block text-sm font-medium text-[var(--foreground)]">
               {t("linkshare.label_url", "URL to share")}&nbsp;
-              <span className="text-[var(--destructive)]" aria-hidden="true">
+              <span className="text-[var(--destructive-text)]" aria-hidden="true">
                 *
               </span>
             </label>
@@ -192,15 +193,15 @@ const LinkShare: React.FC = () => {
                 required
                 aria-invalid={!!urlError}
                 aria-describedby={urlError ? urlErrorId : undefined}
-                className={`w-full bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 pr-10 ${FIELD_FOCUS} ${
-                  urlError ? "border-[var(--destructive)]" : ""
+                className={`w-full bg-[var(--input)] border text-[var(--foreground)] text-sm rounded-[var(--radius)] px-3 py-2 pr-10 ${FIELD_FOCUS} ${
+                  urlError ? "border-[var(--destructive)]" : "border-[var(--border)]"
                 }`}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 {url && isValidUrl(url) && (
                   <svg
                     aria-hidden="true"
-                    className="w-5 h-5 text-[var(--success)]"
+                    className="w-5 h-5 text-[var(--success-text)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -216,7 +217,7 @@ const LinkShare: React.FC = () => {
               </div>
             </div>
             {urlError && (
-              <p id={urlErrorId} className="text-xs text-[var(--destructive)] mt-1">
+              <p id={urlErrorId} className="text-xs text-[var(--destructive-text)] mt-1">
                 {urlError}
               </p>
             )}

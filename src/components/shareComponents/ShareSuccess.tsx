@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { useFetch } from "@/hooks/useFetch";
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui";
+import { Button, Spinner } from "@/components/ui";
 import { FIELD_FOCUS } from "./fieldStyles";
 
 // qrcode.react is only needed once a share was successfully created, so load
@@ -137,7 +137,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
   return (
     <output className="block mt-6 bg-[var(--surface)] border border-[var(--success)] rounded-[var(--radius)] p-4">
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm font-medium text-[var(--success)] mb-2 flex items-center gap-2">
+        <h4 className="text-sm font-medium text-[var(--success-text)] mb-2 flex items-center gap-2">
           <svg
             aria-hidden="true"
             className="w-4 h-4 flex-shrink-0"
@@ -164,7 +164,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
             >
               {url}
             </a>
-            <p aria-live="polite" className="text-xs text-[var(--success)] mt-2 empty:hidden">
+            <p aria-live="polite" className="text-xs text-[var(--success-text)] mt-2 empty:hidden">
               {copied ? t(`${translationPrefix}.copied`, "Copied to clipboard") : ""}
             </p>
           </div>
@@ -180,7 +180,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
               {copied ? (
                 <svg
                   aria-hidden="true"
-                  className="w-4 h-4 text-[var(--success)]"
+                  className="w-4 h-4 text-[var(--success-text)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -236,7 +236,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
                   "share_email.recipients_placeholder",
                   "alice@example.com, bob@example.com"
                 )}
-                className={`flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] placeholder-[var(--foreground-muted)] rounded-[var(--radius)] transition-colors ${FIELD_FOCUS}`}
+                className={`flex-1 min-w-0 px-3 py-2 text-sm border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] rounded-[var(--radius)] transition-colors duration-100 ${FIELD_FOCUS}`}
                 disabled={emailStatus === "sending"}
               />
               <Button
@@ -247,27 +247,7 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
               >
                 {emailStatus === "sending" ? (
                   <>
-                    <svg
-                      aria-hidden="true"
-                      className="animate-spin h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+                    <Spinner size="sm" className="text-current" />
                     {t("share_email.sending", "Sending...")}
                   </>
                 ) : (
@@ -291,9 +271,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
                 )}
               </Button>
             </div>
-            {emailError && <p className="mt-2 text-xs text-[var(--destructive)]">{emailError}</p>}
+            {emailError && (
+              <p role="alert" className="mt-2 text-xs text-[var(--destructive-text)]">
+                {emailError}
+              </p>
+            )}
             {emailStatus === "success" && (
-              <p className="mt-2 text-xs text-[var(--success)]">
+              <p role="status" className="mt-2 text-xs text-[var(--success-text)]">
                 {t("share_email.success", "Email sent successfully!")}
               </p>
             )}

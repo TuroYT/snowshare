@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import { Select } from "@/components/ui";
 import { FieldInput, ToggleRow } from "./settings/primitives";
 
 export interface CaptchaSectionSettings {
@@ -32,21 +33,16 @@ export default function CaptchaSection({ settings, onChange }: Readonly<Props>) 
       />
 
       {settings.captchaEnabled && (
-        <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
-          <div>
-            <label className="text-sm font-medium text-[var(--foreground)]">
-              {t("admin.settings.captcha_provider")}
-            </label>
-            <select
-              value={settings.captchaProvider ?? ""}
-              onChange={(e) => onChange({ captchaProvider: e.target.value || null })}
-              className="mt-1 w-full px-3 py-2 bg-[var(--surface)]/50 border border-[var(--border)]/50 rounded-lg text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            >
-              <option value="">{t("admin.settings.captcha_provider_select")}</option>
-              <option value="recaptcha">Google reCAPTCHA v2</option>
-              <option value="turnstile">Cloudflare Turnstile</option>
-            </select>
-          </div>
+        <div className="space-y-3 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
+          <Select
+            label={t("admin.settings.captcha_provider")}
+            value={settings.captchaProvider ?? ""}
+            onChange={(e) => onChange({ captchaProvider: e.target.value || null })}
+          >
+            <option value="">{t("admin.settings.captcha_provider_select")}</option>
+            <option value="recaptcha">Google reCAPTCHA v2</option>
+            <option value="turnstile">Cloudflare Turnstile</option>
+          </Select>
 
           <FieldInput
             label={t("admin.settings.captcha_site_key")}

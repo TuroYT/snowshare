@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Spinner } from "@/components/ui";
+import { Badge, Button, Spinner } from "@/components/ui";
 
 function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
   if (countryCode?.length !== 2) return "❓";
@@ -40,11 +40,11 @@ const SHARE_PREFIX: Record<string, string> = {
   URL: "/l/",
 };
 
-const TYPE_BADGE: Record<string, string> = {
-  FILE: "bg-[var(--secondary)]/10 text-[var(--secondary)] border border-[var(--secondary-dark)]/40",
-  PASTE: "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary-dark)]/40",
-  URL: "bg-emerald-500/10 text-emerald-400 border border-emerald-700/40",
-};
+const TYPE_BADGE_VARIANT = {
+  FILE: "muted",
+  PASTE: "info",
+  URL: "success",
+} as const;
 
 function GeoCell({ geo }: Readonly<{ geo: IpGeo | null }>) {
   if (!geo || geo.status === "pending") {
@@ -60,7 +60,7 @@ function GeoCell({ geo }: Readonly<{ geo: IpGeo | null }>) {
       className="flex items-center gap-1.5 text-xs text-[var(--foreground)]"
       title={[geo.city, geo.stateProv, geo.countryName].filter(Boolean).join(", ")}
     >
-      <span>{flag}</span>
+      <span aria-hidden="true">{flag}</span>
       <span className="truncate max-w-[120px]">{location || geo.countryCode}</span>
     </span>
   );
@@ -88,7 +88,11 @@ export default function AccessLogTable({
 
   if (loading) {
     return (
-      <div className="flex justify-center py-10">
+      <div
+        className="flex justify-center py-10"
+        role="status"
+        aria-label={t("loading", "Loading...")}
+      >
         <Spinner size="lg" className="h-8 w-8" />
       </div>
     );
@@ -109,20 +113,35 @@ export default function AccessLogTable({
           <thead>
             <tr className="border-b border-[var(--border)] bg-[var(--surface-hover)]">
               {showShareColumn && (
-                <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium">
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium"
+                >
                   {t("profile.access_logs.col_share", "Share")}
                 </th>
               )}
-              <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium">
+              <th
+                scope="col"
+                className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium"
+              >
                 {t("profile.access_logs.col_ip", "IP")}
               </th>
-              <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden sm:table-cell">
+              <th
+                scope="col"
+                className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden sm:table-cell"
+              >
                 {t("profile.access_logs.col_location", "Location")}
               </th>
-              <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden lg:table-cell">
+              <th
+                scope="col"
+                className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium hidden lg:table-cell"
+              >
                 {t("profile.access_logs.col_user_agent", "User Agent")}
               </th>
-              <th className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium">
+              <th
+                scope="col"
+                className="px-4 py-3 text-left text-[var(--foreground-muted)] font-medium"
+              >
                 {t("profile.access_logs.col_date", "Date")}
               </th>
             </tr>
@@ -131,21 +150,17 @@ export default function AccessLogTable({
             {logs.map((log) => (
               <tr
                 key={log.id}
-                className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--surface-hover)] transition-colors"
+                className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--surface-hover)] transition-colors duration-100"
               >
                 {showShareColumn && (
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${TYPE_BADGE[log.share.type]}`}
-                      >
-                        {log.share.type}
-                      </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={TYPE_BADGE_VARIANT[log.share.type]}>{log.share.type}</Badge>
                       <a
                         href={`${SHARE_PREFIX[log.share.type]}${log.share.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[var(--primary)] hover:underline font-mono text-xs"
+                        className="text-[var(--foreground)] hover:text-[var(--primary)] hover:underline font-mono text-xs"
                       >
                         {log.share.slug}
                       </a>
@@ -176,27 +191,29 @@ export default function AccessLogTable({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-1">
-          <button
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => onPageChange(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 text-sm rounded-[var(--radius)] border border-[var(--border)] text-[var(--foreground)] disabled:opacity-40 hover:bg-[var(--surface-hover)] transition-colors"
           >
             {t("profile.access_logs.prev", "Previous")}
-          </button>
+          </Button>
           <span className="text-sm text-[var(--foreground-muted)]">
             {t("profile.access_logs.page", "Page {{page}} / {{total}}", {
               page,
               total: totalPages,
             })}
           </span>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => onPageChange(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm rounded-[var(--radius)] border border-[var(--border)] text-[var(--foreground)] disabled:opacity-40 hover:bg-[var(--surface-hover)] transition-colors"
           >
             {t("profile.access_logs.next", "Next")}
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -40,6 +40,7 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
               <div className="flex items-center gap-4 mb-6">
                 <div className="h-12 w-12 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center">
                   <svg
+                    aria-hidden="true"
                     className="w-6 h-6 text-[var(--primary)]"
                     fill="none"
                     stroke="currentColor"
@@ -54,7 +55,7 @@ const PasteShare: React.FC<PasteShareProps> = ({ initialCode, onInitialCodeConsu
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-[var(--foreground)]">
+                  <h2 className="text-xl font-semibold text-[var(--foreground)]">
                     {t("pasteshare.share_code_title", "Share text")}
                   </h2>
                   <p className="text-sm text-[var(--foreground-muted)]">

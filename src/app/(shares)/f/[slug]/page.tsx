@@ -5,10 +5,10 @@ import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import Footer from "@/components/Footer";
-import Link from "next/link";
+import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
 import { formatBytes } from "@/lib/formatSize";
 import FilePreviewModal from "@/components/filePreview/FilePreviewModal";
-import { Button, Badge, Input, Spinner } from "@/components/ui";
+import { Button, Badge, Input, Spinner, Alert } from "@/components/ui";
 
 interface FileListItem {
   name: string;
@@ -56,6 +56,9 @@ function FilePasswordGate({
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder={t("file_download.password_placeholder")}
+        aria-label={t("file_download.password_placeholder")}
+        autoComplete="current-password"
+        autoFocus
         error={error || undefined}
       />
       <Button type="submit" isLoading={loading} className="w-full">
@@ -88,11 +91,11 @@ function BulkFileList({
       {files.map((f) => (
         <li
           key={f.path}
-          className="flex items-center justify-between py-2.5 gap-4 hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded transition-colors"
+          className="flex items-center justify-between py-1 gap-4 hover:bg-[var(--surface-hover)] -mx-2 px-2 rounded-[var(--radius)] transition-colors duration-100"
         >
           <button
             type="button"
-            className="min-w-0 flex-1 text-left cursor-pointer"
+            className="min-w-0 flex-1 text-left cursor-pointer py-1.5"
             aria-label={`${f.path}, ${formatFileSize(f.size)}`}
             onClick={() => onFileClick(f)}
           >
@@ -103,7 +106,7 @@ function BulkFileList({
           </button>
           <button
             type="button"
-            className="shrink-0 text-xs text-[var(--primary)] hover:underline"
+            className="shrink-0 px-2 py-2 -mr-2 text-xs text-[var(--primary)] hover:underline rounded-[var(--radius)]"
             onClick={(e) => {
               e.stopPropagation();
               onFileDownload(f);
@@ -360,31 +363,13 @@ export default function FileSharePage() {
         <div className="w-full max-w-lg">
           {/* Loading state */}
           {loadingInfo && (
-            <div className="flex justify-center py-12">
+            <div role="status" aria-label={t("loading")} className="flex justify-center py-12">
               <Spinner size="lg" />
             </div>
           )}
 
           {/* Error state when no file info */}
-          {!loadingInfo && !fileInfo && error && (
-            <div className="text-center py-12 space-y-4">
-              <p className="text-[var(--foreground-muted)]">{error}</p>
-              <Link
-                href="/"
-                className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
-              >
-                <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-                {t("file_download.back_to_home")}
-              </Link>
-            </div>
-          )}
+          {!loadingInfo && !fileInfo && error && <ShareUnavailable message={error} />}
 
           {/* File header */}
           {fileInfo && (
@@ -424,7 +409,11 @@ export default function FileSharePage() {
           {fileInfo && (!fileInfo.requiresPassword || passwordSubmitted) && (
             <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4">
               {/* Error message inside download area */}
-              {error && <p className="text-sm text-[var(--destructive)]">{error}</p>}
+              {error && (
+                <Alert variant="danger" className="break-words">
+                  {error}
+                </Alert>
+              )}
 
               {/* Note / description */}
               {fileInfo.note && (

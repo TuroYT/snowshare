@@ -5,7 +5,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "confirm": "Confirm",
-    "remove": "Remove"
+    "remove": "Remove",
+    "close": "Close"
   },
   "nav": {
     "hello": "Hello, {{email}}",

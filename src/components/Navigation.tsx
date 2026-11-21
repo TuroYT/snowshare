@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { User, Settings, LogOut, Menu, X, Sun, Moon, Monitor } from "lucide-react";
@@ -36,15 +36,18 @@ function ProfileDropdown({
   return (
     <div ref={profileRef} className="relative">
       <button
+        type="button"
         onClick={() => setProfileOpen(!profileOpen)}
-        className="w-8 h-8 rounded-full bg-[var(--primary)] text-white text-xs font-semibold overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+        aria-label={t("nav.profile", "My Profile")}
+        aria-expanded={profileOpen}
+        className="w-9 h-9 rounded-full bg-[var(--primary)] text-white text-xs font-semibold overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] focus-visible:ring-[var(--primary)]"
       >
         {session?.user?.image ? (
           <Image
             src={session.user.image}
             alt=""
-            width={32}
-            height={32}
+            width={36}
+            height={36}
             className="object-cover w-full h-full"
           />
         ) : (
@@ -59,7 +62,7 @@ function ProfileDropdown({
           <Link
             href="/profile"
             onClick={() => setProfileOpen(false)}
-            className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
           >
             <User className="w-4 h-4 text-[var(--foreground-muted)]" />
             {t("nav.profile", "My Profile")}
@@ -68,7 +71,7 @@ function ProfileDropdown({
             <Link
               href="/admin"
               onClick={() => setProfileOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+              className="flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
             >
               <Settings className="w-4 h-4 text-[var(--foreground-muted)]" />
               {t("nav.admin", "Admin")}
@@ -76,8 +79,9 @@ function ProfileDropdown({
           )}
           <div className="border-t border-[var(--border)] mt-1" />
           <button
+            type="button"
             onClick={handleSignOut}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--destructive)] hover:bg-[var(--surface-hover)] transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--destructive-text)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
           >
             <LogOut className="w-4 h-4" />
             {t("nav.signout", "Sign out")}
@@ -121,12 +125,55 @@ function MobileDrawer({
   showSignup,
   t,
 }: Readonly<MobileDrawerProps>) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Move focus into the drawer on open, restore it on close, close on Escape and keep Tab inside.
+  useEffect(() => {
+    if (!open) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    return () => previouslyFocused?.focus();
+  }, [open]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        "a[href], button:not([disabled]):not([tabindex='-1']), select, input, [tabindex]:not([tabindex='-1'])"
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [onClose]
+  );
+
   if (!open) return null;
   let themeLabel = t("nav.theme_system", "System");
   if (theme === "dark") themeLabel = t("nav.theme_dark", "Dark mode");
   else if (theme === "light") themeLabel = t("nav.theme_light", "Light mode");
   return (
-    <div className="fixed inset-0 z-50 flex">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={appName}
+      onKeyDown={handleKeyDown}
+      className="fixed inset-0 z-50 flex"
+    >
       <button
         type="button"
         tabIndex={-1}
@@ -137,7 +184,13 @@ function MobileDrawer({
       <div className="relative ml-auto w-72 bg-[var(--surface)] h-full shadow-[var(--shadow-lg)] flex flex-col">
         <div className="flex items-center justify-between px-4 h-14 border-b border-[var(--border)]">
           <span className="font-semibold text-sm">{appName}</span>
-          <button onClick={onClose} className="p-1 text-[var(--foreground-muted)]">
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close", "Close")}
+            className="w-9 h-9 -mr-2 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -145,7 +198,8 @@ function MobileDrawer({
           <select
             value={currentLang}
             onChange={(e) => changeLang(e.target.value)}
-            className="w-full text-sm px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] focus:outline-none mb-3"
+            aria-label={t("nav.language", "Language")}
+            className="w-full text-sm px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--input)] text-[var(--foreground)] focus:outline-none focus:border-[var(--foreground)] transition-colors duration-100 mb-3"
           >
             {languages.map((l) => (
               <option key={l.code} value={l.code}>
@@ -155,13 +209,13 @@ function MobileDrawer({
           </select>
           {status === "authenticated" && session ? (
             <>
-              <div className="text-xs text-[var(--foreground-subtle)] px-2 py-1 truncate">
+              <div className="text-xs text-[var(--foreground-muted)] px-2 py-1 truncate">
                 {session.user?.name || session.user?.email}
               </div>
               <Link
                 href="/profile"
                 onClick={onClose}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
               >
                 <User className="w-4 h-4" />
                 {t("nav.profile", "My Profile")}
@@ -170,15 +224,16 @@ function MobileDrawer({
                 <Link
                   href="/admin"
                   onClick={onClose}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
                 >
                   <Settings className="w-4 h-4" />
                   {t("nav.admin", "Admin")}
                 </Link>
               )}
               <button
+                type="button"
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--destructive)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--destructive-text)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
               >
                 <LogOut className="w-4 h-4" />
                 {t("nav.signout", "Sign out")}
@@ -189,7 +244,7 @@ function MobileDrawer({
               <Link
                 href="/auth/signin"
                 onClick={onClose}
-                className="block px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+                className="block px-3 py-2 text-sm text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
               >
                 {t("nav.signin")}
               </Link>
@@ -197,7 +252,7 @@ function MobileDrawer({
                 <Link
                   href="/auth/signup"
                   onClick={onClose}
-                  className="block px-3 py-2 text-sm bg-[var(--primary)] text-white rounded-[var(--radius)] text-center"
+                  className="block px-3 py-2 text-sm bg-[var(--primary)] text-white rounded-[var(--radius)] text-center hover:bg-[var(--primary-hover)] transition-colors duration-100"
                 >
                   {t("nav.signup")}
                 </Link>
@@ -207,8 +262,9 @@ function MobileDrawer({
         </nav>
         <div className="border-t border-[var(--border)] p-3">
           <button
+            type="button"
             onClick={cycleTheme}
-            className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] px-3 py-2 w-full rounded-[var(--radius)] hover:bg-[var(--surface-hover)]"
+            className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] px-3 py-2 w-full rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
           >
             {themeIcon}
             <span>{themeLabel}</span>
@@ -237,7 +293,7 @@ export default function Navigation() {
       .then((d) => {
         if (d) setShowSignup(d.allowSignup && !d.onlySSOMode);
       })
-      .catch(() => {});
+      .catch((error) => console.error("Failed to check signup availability:", error));
   }, []);
 
   useEffect(() => {
@@ -266,8 +322,15 @@ export default function Navigation() {
         setProfileOpen(false);
       }
     };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setProfileOpen(false);
+    };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -331,7 +394,8 @@ export default function Navigation() {
             <select
               value={currentLang}
               onChange={(e) => changeLang(e.target.value)}
-              className="text-sm px-2 py-1 rounded-[var(--radius)] border border-[var(--border)] bg-transparent text-[var(--foreground-muted)] focus:outline-none focus:border-[var(--foreground)]"
+              aria-label={t("nav.language", "Language")}
+              className="text-sm h-9 px-2 rounded-[var(--radius)] border border-[var(--border)] bg-transparent text-[var(--foreground-muted)] focus:outline-none focus:border-[var(--foreground)] transition-colors duration-100"
             >
               {languages.map((l) => (
                 <option key={l.code} value={l.code}>
@@ -341,8 +405,9 @@ export default function Navigation() {
             </select>
 
             <button
+              type="button"
               onClick={cycleTheme}
-              className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+              className="w-9 h-9 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
               aria-label={t("nav.toggle_theme", "Toggle theme")}
             >
               {themeIcon}
@@ -363,14 +428,14 @@ export default function Navigation() {
               <>
                 <Link
                   href="/auth/signin"
-                  className="text-sm px-3 py-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors"
+                  className="text-sm px-3 py-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)] rounded-[var(--radius)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
                 >
                   {t("nav.signin")}
                 </Link>
                 {showSignup && (
                   <Link
                     href="/auth/signup"
-                    className="text-sm px-3 py-1.5 bg-[var(--primary)] text-white rounded-[var(--radius)] hover:bg-[var(--primary-hover)] transition-colors"
+                    className="text-sm px-3 py-1.5 bg-[var(--primary)] text-white rounded-[var(--radius)] hover:bg-[var(--primary-hover)] transition-colors duration-100"
                   >
                     {t("nav.signup")}
                   </Link>
@@ -381,7 +446,8 @@ export default function Navigation() {
 
           {/* Mobile burger */}
           <button
-            className="sm:hidden p-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            type="button"
+            className="sm:hidden w-9 h-9 -mr-2 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100"
             onClick={() => setMobileOpen(true)}
             aria-label={t("nav.open_menu", "Open menu")}
           >

@@ -10,8 +10,8 @@ export default function AccessLogs() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[var(--foreground)]">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h2 className="text-xl font-semibold text-[var(--foreground)]">
           {t("profile.access_logs.title", "Access Logs")}
         </h2>
         <span className="text-sm text-[var(--foreground-muted)]">

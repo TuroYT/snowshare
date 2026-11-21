@@ -60,15 +60,19 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
   }
 
   return (
-    <div className="mb-6 p-4 bg-[var(--primary)]/10 border border-[var(--primary)]/30 rounded-xl">
+    <div
+      role="status"
+      className="mb-6 p-4 bg-[color-mix(in_srgb,var(--primary)_8%,transparent)] border border-[color-mix(in_srgb,var(--primary)_30%,transparent)] rounded-[var(--radius-lg)]"
+    >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-blue-500/20 rounded-lg shrink-0">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="p-2 bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] rounded-[var(--radius)] shrink-0">
             <svg
-              className="w-5 h-5 text-blue-400"
+              className="w-5 h-5 text-[var(--foreground)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -78,7 +82,7 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
               />
             </svg>
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="font-semibold text-[var(--foreground)]">
               {t("admin.update.title", "Update Available")}
             </h3>
@@ -88,7 +92,7 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
                 {versionInfo.currentVersion}
               </span>
               {" → "}
-              <span className="font-mono text-xs bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
+              <span className="font-mono text-xs bg-[color-mix(in_srgb,var(--primary)_15%,transparent)] text-[var(--foreground)] px-1.5 py-0.5 rounded">
                 {latestVersion}
               </span>
             </p>
@@ -97,15 +101,21 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
                 <strong>{versionInfo.releaseName}</strong>
               </p>
             )}
-            <div className="flex items-center gap-3 mt-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
               <a
                 href={versionInfo.releaseUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--foreground)] underline underline-offset-2 decoration-[var(--primary)] hover:decoration-2 transition-colors duration-100 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
               >
                 {t("admin.update.view_release", "View Release Notes")}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -118,10 +128,16 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
                 href="https://github.com/TuroYT/snowshare/blob/main/docs/UPGRADE.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-100 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
               >
                 {t("admin.update.upgrade_guide", "Upgrade Guide")}
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -134,11 +150,19 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
           </div>
         </div>
         <button
+          type="button"
           onClick={handleDismiss}
-          className="p-1.5 text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] rounded-lg transition-colors shrink-0"
+          className="p-2 -m-1 text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] rounded-[var(--radius)] transition-colors duration-100 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
           title={t("admin.update.dismiss", "Dismiss")}
+          aria-label={t("admin.update.dismiss", "Dismiss")}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

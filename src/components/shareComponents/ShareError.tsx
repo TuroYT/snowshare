@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Alert } from "@/components/ui/Alert";
 
 interface ShareErrorProps {
   error: string;
@@ -13,13 +14,11 @@ const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => 
   const { t } = useTranslation();
 
   return (
-    <div
-      role="alert"
-      className="mt-6 bg-[var(--surface)] border border-[var(--destructive)] rounded-[var(--radius)] p-4"
-    >
+    <Alert variant="danger" className="mt-6 p-4">
       <div className="flex items-start gap-3">
         <svg
-          className="w-5 h-5 text-[var(--destructive)] flex-shrink-0 mt-0.5"
+          aria-hidden="true"
+          className="w-5 h-5 flex-shrink-0 mt-0.5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -31,14 +30,14 @@ const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => 
             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <div>
-          <h4 className="text-sm font-medium text-[var(--destructive)] mb-1">
+        <div className="min-w-0">
+          <h4 className="text-sm font-medium mb-1">
             {t(`${translationPrefix}.error_title`, "Error")}
           </h4>
-          <p className="text-sm text-[var(--foreground-muted)]">{error}</p>
+          <p className="text-sm text-[var(--foreground)] break-words">{error}</p>
         </div>
       </div>
-    </div>
+    </Alert>
   );
 };
 

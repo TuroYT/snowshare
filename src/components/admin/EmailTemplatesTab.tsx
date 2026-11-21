@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Spinner } from "@/components/ui/Spinner";
+import { Button, Input, Spinner, Tab, Tabs, Textarea } from "@/components/ui";
 import { toast } from "@/components/ui/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -260,96 +260,74 @@ export default function EmailTemplatesTab() {
       </div>
 
       {/* Email type tabs */}
-      <div className="flex gap-2 mb-6 border-b border-[var(--border)]/50">
+      <Tabs
+        value={activeType}
+        onValueChange={(v) => setActiveType(v as EmailType)}
+        className="mb-6"
+      >
         {emailTypes.map((type) => (
-          <button
-            key={type}
-            onClick={() => setActiveType(type)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-all ${
-              activeType === type
-                ? "border-blue-500 text-[var(--primary)]"
-                : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-            }`}
-          >
+          <Tab key={type} value={type}>
             {type === "share"
               ? t("admin.email_templates.type_share", "Share Email")
               : t("admin.email_templates.type_verify", "Verification Email")}
-          </button>
+          </Tab>
         ))}
-      </div>
+      </Tabs>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div
+        role="tabpanel"
+        id={`tabpanel-${activeType}`}
+        aria-labelledby={`tab-${activeType}`}
+        className="grid grid-cols-1 xl:grid-cols-2 gap-6"
+      >
         {/* Editor column */}
         <div className="space-y-4">
-          {/* Subject */}
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-              {t("admin.email_templates.subject", "Subject")}
-            </label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t("admin.email_templates.subject_placeholder", "Email subject…")}
-            />
-          </div>
+          <Input
+            label={t("admin.email_templates.subject", "Subject")}
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder={t("admin.email_templates.subject_placeholder", "Email subject…")}
+          />
 
-          {/* HTML */}
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-              {t("admin.email_templates.html_body", "HTML Body")}
-            </label>
-            <textarea
-              value={html}
-              onChange={(e) => setHtml(e.target.value)}
-              rows={14}
-              spellCheck={false}
-              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-xs font-mono rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-              placeholder="<div>…</div>"
-            />
-          </div>
+          <Textarea
+            label={t("admin.email_templates.html_body", "HTML Body")}
+            value={html}
+            onChange={(e) => setHtml(e.target.value)}
+            rows={14}
+            spellCheck={false}
+            className="text-xs font-mono resize-y"
+            placeholder="<div>…</div>"
+          />
 
-          {/* Plain text */}
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-1">
-              {t("admin.email_templates.text_body", "Plain Text Body")}
-            </label>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={5}
-              spellCheck={false}
-              className="w-full bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-xs font-mono rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-              placeholder={t("admin.email_templates.text_placeholder", "Plain text fallback…")}
-            />
-          </div>
+          <Textarea
+            label={t("admin.email_templates.text_body", "Plain Text Body")}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={5}
+            spellCheck={false}
+            className="text-xs font-mono resize-y"
+            placeholder={t("admin.email_templates.text_placeholder", "Plain text fallback…")}
+          />
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2 pt-2">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-            >
+            <Button type="button" onClick={handleSave} disabled={saving}>
               {saving ? t("admin.email_templates.saving", "Saving…") : t("common.save", "Save")}
-            </button>
-            <button
-              onClick={handleReset}
-              disabled={saving}
-              className="px-4 py-2 bg-[var(--surface)] hover:bg-[var(--border)] disabled:opacity-50 text-[var(--foreground)] text-sm font-medium rounded-lg border border-[var(--border)] transition-colors"
-            >
+            </Button>
+            <Button type="button" variant="secondary" onClick={handleReset} disabled={saving}>
               {t("admin.email_templates.reset_defaults", "Reset to defaults")}
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
               onClick={handleSendTest}
               disabled={testSending}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
             >
               {testSending
                 ? t("admin.email_templates.sending_test", "Sending…")
                 : t("admin.email_templates.send_test", "Send test email")}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -365,7 +343,7 @@ export default function EmailTemplatesTab() {
           {preview && (
             <>
               {/* Rendered subject */}
-              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3">
+              <div className="border border-[var(--border)] rounded-[var(--radius)] p-3">
                 <p className="text-xs text-[var(--foreground-muted)] mb-1 font-medium uppercase tracking-wide">
                   {t("admin.email_templates.preview_subject", "Subject")}
                 </p>
@@ -373,21 +351,21 @@ export default function EmailTemplatesTab() {
               </div>
 
               {/* HTML preview in sandboxed iframe */}
-              <div className="bg-white rounded-lg border border-[var(--border)] overflow-hidden">
-                <p className="text-xs text-gray-500 px-3 py-1.5 border-b border-gray-200 font-medium uppercase tracking-wide">
+              <div className="rounded-[var(--radius)] border border-[var(--border)] overflow-hidden">
+                <p className="text-xs text-[var(--foreground-muted)] bg-[var(--surface-hover)] px-3 py-1.5 border-b border-[var(--border)] font-medium uppercase tracking-wide">
                   {t("admin.email_templates.preview_html", "HTML")}
                 </p>
                 <iframe
                   ref={iframeRef}
-                  title="email-preview"
+                  title={t("admin.email_templates.preview_title", "Live Preview")}
                   sandbox="allow-same-origin"
-                  className="w-full border-0"
+                  className="w-full border-0 bg-white"
                   style={{ height: "380px" }}
                 />
               </div>
 
               {/* Plain text */}
-              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3">
+              <div className="border border-[var(--border)] rounded-[var(--radius)] p-3">
                 <p className="text-xs text-[var(--foreground-muted)] mb-1 font-medium uppercase tracking-wide">
                   {t("admin.email_templates.preview_text", "Plain Text")}
                 </p>

@@ -2,14 +2,14 @@
 
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { useTheme } from "@/hooks/useTheme";
+import { Alert } from "@/components/ui/Alert";
+import { Spinner } from "@/components/ui/Spinner";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 
 export default function TermsOfUse() {
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const [termsOfUseText, setTermsOfUseText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -38,14 +38,22 @@ export default function TermsOfUse() {
   }, [t]);
 
   let content: React.ReactNode;
-  if (loading) content = <p>{t("terms_of_use.loading", "Loading terms of use...")}</p>;
-  else if (error) content = <p className="text-red-500">{error}</p>;
+  if (loading)
+    content = (
+      <p role="status" className="flex items-center gap-2 text-[var(--foreground-muted)]">
+        <Spinner size="sm" />
+        {t("terms_of_use.loading", "Loading terms of use...")}
+      </p>
+    );
+  else if (error) content = <Alert variant="danger">{error}</Alert>;
   else content = <ReactMarkdown>{termsOfUseText}</ReactMarkdown>;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ color: colors.primaryColor }}>
+    <div className="min-h-screen flex flex-col">
       <Navigation />
-      <main className="flex-grow prose mx-auto p-4 w-full">{content}</main>
+      <main className="flex-grow prose mx-auto w-full max-w-[70ch] px-4 py-8 sm:py-12">
+        {content}
+      </main>
       <Footer />
     </div>
   );

@@ -16,6 +16,7 @@ import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/components/ui/Toast";
+import { Spinner, Tabs, Tab } from "@/components/ui";
 
 type User = {
   id: string;
@@ -24,6 +25,15 @@ type User = {
   createdAt: string;
 };
 
+type TabKey = "profile" | "shares" | "requests" | "accounts" | "apikeys" | "accesslogs";
+
+/** ARIA wiring between a tab (rendered by <Tab>) and its panel. */
+const panelProps = (key: TabKey) => ({
+  role: "tabpanel" as const,
+  id: `tabpanel-${key}`,
+  "aria-labelledby": `tab-${key}`,
+});
+
 const ProfilePage = () => {
   const { t } = useTranslation();
   const { status } = useSession();
@@ -31,9 +41,7 @@ const ProfilePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [shares, setShares] = useState<UserShare[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    "profile" | "shares" | "requests" | "accounts" | "apikeys" | "accesslogs"
-  >("profile");
+  const [activeTab, setActiveTab] = useState<TabKey>("profile");
   // Once opened, the upload requests section stays mounted (hidden) so a create or delete in
   // flight always refreshes the list the user sees
   const [requestsOpened, setRequestsOpened] = useState(false);
@@ -123,26 +131,7 @@ const ProfilePage = () => {
         <Navigation />
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <svg
-              className="animate-spin h-12 w-12 text-[var(--primary)]"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
+            <Spinner className="w-12 h-12" />
             <p className="text-[var(--foreground)]">{t("profile.loading")}</p>
           </div>
         </div>
@@ -158,64 +147,59 @@ const ProfilePage = () => {
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <Navigation />
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10">
+        <h1 className="sr-only">{t("profile.title", "My Profile")}</h1>
+
         {/* Tab navigation */}
-        <div className="mb-8 border-b border-[var(--border)]">
-          <nav className="flex gap-0 -mb-px overflow-x-auto scrollbar-hide">
-            {[
-              { key: "profile", label: t("profile.tab_profile", "Profile") },
-              { key: "shares", label: t("profile.tab_shares", "Shares") },
-              { key: "requests", label: t("profile.tab_requests", "Upload requests") },
-              { key: "accounts", label: t("profile.tab_accounts", "Linked accounts") },
-              { key: "apikeys", label: t("profile.tab_apikeys", "API Keys") },
-              { key: "accesslogs", label: t("profile.tab_accesslogs", "Access Logs") },
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key as typeof activeTab)}
-                className={[
-                  "px-4 py-2.5 text-sm border-b-2 transition-colors whitespace-nowrap shrink-0",
-                  activeTab === key
-                    ? "border-[var(--primary)] text-[var(--foreground)] font-medium"
-                    : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)]",
-                ].join(" ")}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as TabKey)}
+          className="mb-8"
+        >
+          <Tab value="profile">{t("profile.tab_profile", "Profile")}</Tab>
+          <Tab value="shares">{t("profile.tab_shares", "Shares")}</Tab>
+          <Tab value="requests">{t("profile.tab_requests", "Upload requests")}</Tab>
+          <Tab value="accounts">{t("profile.tab_accounts", "Linked accounts")}</Tab>
+          <Tab value="apikeys">{t("profile.tab_apikeys", "API Keys")}</Tab>
+          <Tab value="accesslogs">{t("profile.tab_accesslogs", "Access Logs")}</Tab>
+        </Tabs>
 
-        <div>
-          {activeTab === "profile" && user && (
-            <>
-              <ProfileInfo user={user} onUpdate={setUser} />
-              <TwoFactorSection />
-            </>
-          )}
+        {activeTab === "profile" && (
+          <div {...panelProps("profile")}>
+            <ProfileInfo user={user} onUpdate={setUser} />
+            <TwoFactorSection />
+          </div>
+        )}
 
-          {activeTab === "shares" && (
-            <>
-              <ProfileStats shares={shares} />
-              <SharesList
-                shares={shares}
-                onDelete={handleDeleteShare}
-                onUpdate={handleUpdateShare}
-              />
-            </>
-          )}
+        {activeTab === "shares" && (
+          <div {...panelProps("shares")}>
+            <ProfileStats shares={shares} />
+            <SharesList shares={shares} onDelete={handleDeleteShare} onUpdate={handleUpdateShare} />
+          </div>
+        )}
 
-          {requestsOpened && (
-            <div hidden={activeTab !== "requests"}>
-              <ReverseSharesSection />
-            </div>
-          )}
+        {requestsOpened && (
+          <div {...panelProps("requests")} hidden={activeTab !== "requests"}>
+            <ReverseSharesSection />
+          </div>
+        )}
 
-          {activeTab === "accounts" && <ConnectedAccounts />}
+        {activeTab === "accounts" && (
+          <div {...panelProps("accounts")}>
+            <ConnectedAccounts />
+          </div>
+        )}
 
-          {activeTab === "apikeys" && <ApiKeysSection />}
+        {activeTab === "apikeys" && (
+          <div {...panelProps("apikeys")}>
+            <ApiKeysSection />
+          </div>
+        )}
 
-          {activeTab === "accesslogs" && <AccessLogs />}
-        </div>
+        {activeTab === "accesslogs" && (
+          <div {...panelProps("accesslogs")}>
+            <AccessLogs />
+          </div>
+        )}
       </main>
       <Footer />
     </div>

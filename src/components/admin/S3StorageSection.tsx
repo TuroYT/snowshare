@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert, Button } from "@/components/ui";
 import { FieldInput, ToggleRow } from "./settings/primitives";
 
 export interface S3SectionSettings {
@@ -41,7 +42,8 @@ export default function S3StorageSection({ settings, onChange }: Readonly<Props>
           message: t("admin.settings.s3_test_error", { error: data.error }),
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("S3 connection test failed:", error);
       setTestResult({
         success: false,
         message: t("admin.settings.s3_test_error", { error: "Network error" }),
@@ -65,7 +67,7 @@ export default function S3StorageSection({ settings, onChange }: Readonly<Props>
       />
 
       {settings.s3Enabled && (
-        <div className="space-y-3 p-4 bg-[var(--surface)]/20 rounded-lg border border-[var(--border)]/50">
+        <div className="space-y-3 p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FieldInput
               label={t("admin.settings.s3_bucket")}
@@ -105,22 +107,24 @@ export default function S3StorageSection({ settings, onChange }: Readonly<Props>
             />
           </div>
 
-          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-xs text-yellow-400">{t("admin.settings.s3_env_priority")}</p>
-          </div>
+          <Alert variant="warning" className="text-xs">
+            {t("admin.settings.s3_env_priority")}
+          </Alert>
 
-          <div className="flex items-center gap-3 pt-1">
-            <button
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <Button
+              type="button"
+              variant="secondary"
               onClick={handleTest}
               disabled={testing || !settings.s3Bucket}
-              className="px-4 py-2 rounded-lg font-medium text-sm transition-all disabled:opacity-50 border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--surface)]"
             >
               {testing ? t("admin.settings.s3_testing") : t("admin.settings.s3_test")}
-            </button>
+            </Button>
 
             {testResult && (
               <span
-                className={`text-sm font-medium ${testResult.success ? "text-green-400" : "text-red-400"}`}
+                role="status"
+                className={`text-sm font-medium ${testResult.success ? "text-[var(--success-text)]" : "text-[var(--destructive-text)]"}`}
               >
                 {testResult.message}
               </span>

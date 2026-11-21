@@ -2,30 +2,30 @@
 
 import dynamic from "next/dynamic";
 import Modal from "@/components/ui/Modal";
+import { Spinner } from "@/components/ui/Spinner";
 import { useTranslation } from "react-i18next";
+
+function PreviewLoading() {
+  const { t } = useTranslation();
+  return (
+    <div
+      role="status"
+      className="flex flex-col items-center justify-center gap-3 h-full min-h-[400px]"
+    >
+      <Spinner size="lg" />
+      <p className="text-sm text-[var(--foreground-muted)]">{t("loading", "Loading...")}</p>
+    </div>
+  );
+}
 
 const FilePreview = dynamic(() => import("reactjs-file-preview"), {
   ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full min-h-[400px]">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
-        <p className="text-[var(--foreground-muted)]">Loading preview...</p>
-      </div>
-    </div>
-  ),
+  loading: () => <PreviewLoading />,
 });
 
 const PdfViewer = dynamic(() => import("./PdfViewer"), {
   ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full min-h-[400px]">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary)] mx-auto mb-4"></div>
-        <p className="text-[var(--foreground-muted)]">Loading PDF...</p>
-      </div>
-    </div>
-  ),
+  loading: () => <PreviewLoading />,
 });
 
 interface FilePreviewModalProps {
@@ -87,9 +87,10 @@ export default function FilePreviewModal({
         {error && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center max-w-md">
-              <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-yellow-900/20 border border-yellow-800 mb-4">
+              <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--warning)_10%,transparent)] border border-[color-mix(in_srgb,var(--warning)_30%,transparent)] mb-4">
                 <svg
-                  className="h-8 w-8 text-yellow-400"
+                  aria-hidden="true"
+                  className="h-8 w-8 text-[var(--warning-text)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -107,7 +108,7 @@ export default function FilePreviewModal({
               </h3>
               <p className="text-[var(--foreground-muted)] mb-4">{error}</p>
               {!isSupported && (
-                <div className="text-sm text-[var(--foreground-muted)] bg-[var(--background)] rounded-lg p-3 border border-[var(--border)]">
+                <div className="text-sm text-[var(--foreground-muted)] bg-[var(--background)] rounded-[var(--radius)] p-3 border border-[var(--border)]">
                   <p className="font-medium mb-2">
                     {t("file_preview.supported_formats", "Supported formats:")}
                   </p>
@@ -125,7 +126,7 @@ export default function FilePreviewModal({
           </div>
         )}
         {!error && !isPdf && (
-          <div className="flex-1 bg-[var(--background)] rounded-lg overflow-hidden">
+          <div className="flex-1 bg-[var(--background)] rounded-[var(--radius)] overflow-hidden">
             <FilePreview
               preview={fileUrl}
               fileType={previewFileType(fileExtension)}

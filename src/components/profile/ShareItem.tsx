@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui";
+import { Badge, Button, Input, Select, Textarea } from "@/components/ui";
 import ShareAccessLogsModal from "@/components/profile/ShareAccessLogsModal";
 import WarningModal from "@/components/admin/WarningModal";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
@@ -74,7 +74,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
     switch (share.type) {
       case "FILE":
         return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -85,7 +91,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
         );
       case "PASTE":
         return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -96,7 +108,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
         );
       case "URL":
         return (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -111,11 +129,11 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
   const getTypeIconClass = () => {
     switch (share.type) {
       case "FILE":
-        return "bg-[var(--secondary)]/10 border-[var(--secondary-dark)]/30 text-[var(--secondary)]";
+        return "text-[var(--foreground-muted)]";
       case "PASTE":
-        return "bg-[var(--primary)]/10 border-[var(--primary-dark)]/30 text-[var(--primary)]";
+        return "text-[var(--primary)]";
       case "URL":
-        return "bg-emerald-500/10 border-emerald-700/30 text-emerald-400";
+        return "text-[var(--success-text)]";
     }
   };
 
@@ -124,7 +142,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
     share.maxViews !== null && share.maxViews !== undefined && share.viewCount >= share.maxViews;
 
   const iconBtn =
-    "p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors";
+    "h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors duration-100";
 
   return (
     <div
@@ -142,7 +160,7 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
       <div className="flex items-start gap-3 p-4 sm:p-5">
         {/* Type icon */}
         <div
-          className={`mt-0.5 h-9 w-9 rounded-[var(--radius)] border flex items-center justify-center flex-shrink-0 ${getTypeIconClass()}`}
+          className={`mt-0.5 h-9 w-9 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center shrink-0 ${getTypeIconClass()}`}
         >
           {getTypeIcon()}
         </div>
@@ -155,22 +173,24 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
               href={path}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors truncate"
+              className="font-mono text-sm text-[var(--foreground)] hover:text-[var(--primary)] transition-colors duration-100 truncate max-w-full"
             >
               {path}
             </a>
             <button
               onClick={copyToClipboard}
-              className={iconBtn + " !p-1"}
+              type="button"
+              className={`${iconBtn} -my-2`}
               title={t("profile.copy_link")}
               aria-label={t("profile.copy_link")}
             >
               {copied ? (
                 <svg
-                  className="w-3.5 h-3.5 text-[var(--success)]"
+                  className="w-3.5 h-3.5 text-[var(--success-text)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -180,7 +200,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
                   />
                 </svg>
               ) : (
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -215,25 +241,32 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
             <span>
               {t("profile.created_on")} {new Date(share.createdAt).toLocaleDateString()}
             </span>
-            <span className="text-[var(--border)]">·</span>
+            <span className="text-[var(--border-hover)]" aria-hidden="true">
+              ·
+            </span>
             <button
+              type="button"
               onClick={() => setShowLogs(true)}
-              className="hover:text-[var(--foreground)] transition-colors underline-offset-2 hover:underline"
+              className="hover:text-[var(--foreground)] transition-colors duration-100 underline-offset-2 hover:underline"
             >
               {t("profile.access_count", "{{count}} accesses", { count: share.accessCount ?? 0 })}
             </button>
             {share.maxViews != null && (
               <>
-                <span className="text-[var(--border)]">·</span>
-                <span className={isViewLimitReached ? "text-[var(--destructive)]" : ""}>
+                <span className="text-[var(--border-hover)]" aria-hidden="true">
+                  ·
+                </span>
+                <span className={isViewLimitReached ? "text-[var(--destructive-text)]" : ""}>
                   {share.viewCount}/{share.maxViews} {t("profile.views")}
                 </span>
               </>
             )}
             {share.expiresAt && (
               <>
-                <span className="text-[var(--border)]">·</span>
-                <span className={isExpired ? "text-[var(--destructive)]" : ""}>
+                <span className="text-[var(--border-hover)]" aria-hidden="true">
+                  ·
+                </span>
+                <span className={isExpired ? "text-[var(--destructive-text)]" : ""}>
                   {isExpired ? t("profile.stats_expired", "Expired") : t("profile.expires_on")}{" "}
                   {new Date(share.expiresAt).toLocaleDateString()}
                 </span>
@@ -244,14 +277,21 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
 
         {/* Actions */}
         {!isEditing && (
-          <div className="flex items-center gap-0.5 flex-shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0">
             <button
+              type="button"
               onClick={() => setShowLogs(true)}
               className={iconBtn}
               title={t("profile.view_logs", "View access logs")}
               aria-label={t("profile.view_logs", "View access logs")}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -262,12 +302,19 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
             </button>
             {share.type !== "FILE" && (
               <button
+                type="button"
                 onClick={() => setIsEditing(true)}
                 className={iconBtn}
                 title={t("profile.edit")}
                 aria-label={t("profile.edit")}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -278,12 +325,19 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
               </button>
             )}
             <button
+              type="button"
               onClick={() => setShowDeleteConfirm(true)}
-              className="p-2 rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--destructive)] hover:bg-[var(--destructive)]/10 transition-colors"
+              className="h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] text-[var(--foreground-muted)] hover:text-[var(--destructive-text)] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] transition-colors duration-100"
               title={t("profile.delete")}
               aria-label={t("profile.delete")}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -301,84 +355,67 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
         <div className="space-y-4 border-t border-[var(--border)] p-4 sm:p-5">
           {share.type === "PASTE" && (
             <>
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                  {t("profile.label_content")}
-                </label>
-                <textarea
-                  value={editForm.paste || ""}
-                  placeholder={
-                    share.paste === null
-                      ? t(
-                          "profile.placeholder_protected_paste",
-                          "Protected paste: re-enter the content to change it"
-                        )
-                      : undefined
-                  }
-                  onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
-                  className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] font-mono"
-                  rows={4}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                  {t("profile.label_language")}
-                </label>
-                <select
-                  value={editForm.pastelanguage || "PLAINTEXT"}
-                  onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
-                  className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)] appearance-none"
-                >
-                  <option value="PLAINTEXT">Plain Text</option>
-                  <option value="JAVASCRIPT">JavaScript</option>
-                  <option value="TYPESCRIPT">TypeScript</option>
-                  <option value="PYTHON">Python</option>
-                  <option value="JAVA">Java</option>
-                  <option value="PHP">PHP</option>
-                  <option value="GO">Go</option>
-                  <option value="POWERSHELL">PowerShell</option>
-                  <option value="HTML">HTML</option>
-                  <option value="CSS">CSS</option>
-                  <option value="SQL">SQL</option>
-                  <option value="JSON">JSON</option>
-                  <option value="MARKDOWN">Markdown</option>
-                </select>
-              </div>
+              <Textarea
+                label={t("profile.label_content")}
+                value={editForm.paste || ""}
+                placeholder={
+                  share.paste === null
+                    ? t(
+                        "profile.placeholder_protected_paste",
+                        "Protected paste: re-enter the content to change it"
+                      )
+                    : undefined
+                }
+                onChange={(e) => setEditForm({ ...editForm, paste: e.target.value })}
+                className="font-mono"
+                rows={4}
+              />
+              <Select
+                label={t("profile.label_language")}
+                value={editForm.pastelanguage || "PLAINTEXT"}
+                onChange={(e) => setEditForm({ ...editForm, pastelanguage: e.target.value })}
+              >
+                <option value="PLAINTEXT">Plain Text</option>
+                <option value="JAVASCRIPT">JavaScript</option>
+                <option value="TYPESCRIPT">TypeScript</option>
+                <option value="PYTHON">Python</option>
+                <option value="JAVA">Java</option>
+                <option value="PHP">PHP</option>
+                <option value="GO">Go</option>
+                <option value="POWERSHELL">PowerShell</option>
+                <option value="HTML">HTML</option>
+                <option value="CSS">CSS</option>
+                <option value="SQL">SQL</option>
+                <option value="JSON">JSON</option>
+                <option value="MARKDOWN">Markdown</option>
+              </Select>
             </>
           )}
 
           {share.type === "URL" && (
-            <div>
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                {t("profile.label_url")}
-              </label>
-              <input
-                type="url"
-                value={editForm.urlOriginal}
-                placeholder={
-                  share.hasPassword
-                    ? t(
-                        "profile.placeholder_protected_url",
-                        "Protected link: re-enter the URL to change it"
-                      )
-                    : undefined
-                }
-                onChange={(e) => setEditForm({ ...editForm, urlOriginal: e.target.value })}
-                className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-              />
-            </div>
+            <Input
+              type="url"
+              label={t("profile.label_url")}
+              value={editForm.urlOriginal}
+              placeholder={
+                share.hasPassword
+                  ? t(
+                      "profile.placeholder_protected_url",
+                      "Protected link: re-enter the URL to change it"
+                    )
+                  : undefined
+              }
+              onChange={(e) => setEditForm({ ...editForm, urlOriginal: e.target.value })}
+            />
           )}
 
           <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.label_password")}
-            </label>
-            <input
+            <Input
               type="text"
+              label={t("profile.label_password")}
               value={editForm.newPassword}
               disabled={editForm.removePassword}
               onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })}
-              className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
               placeholder={
                 share.hasPassword
                   ? t(
@@ -394,44 +431,39 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
                   type="checkbox"
                   checked={editForm.removePassword}
                   onChange={(e) => setEditForm({ ...editForm, removePassword: e.target.checked })}
+                  className="shrink-0 accent-[var(--primary)]"
                 />
                 {t("profile.remove_password", "Remove password")}
               </label>
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              {t("profile.label_expiration")}
-            </label>
-            <input
-              type="datetime-local"
-              value={(() => {
-                if (!editForm.expiresAt) return "";
-                const d = new Date(editForm.expiresAt);
-                if (Number.isNaN(d.getTime())) return "";
-                return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-                  .toISOString()
-                  .slice(0, 16);
-              })()}
-              onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
-              className="w-full px-3 py-2 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
-            />
-          </div>
+          <Input
+            type="datetime-local"
+            label={t("profile.label_expiration")}
+            value={(() => {
+              if (!editForm.expiresAt) return "";
+              const d = new Date(editForm.expiresAt);
+              if (Number.isNaN(d.getTime())) return "";
+              return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+            })()}
+            onChange={(e) => setEditForm({ ...editForm, expiresAt: e.target.value })}
+          />
 
           <div className="flex gap-2 pt-1">
-            <button
-              onClick={handleUpdate}
-              className="px-4 py-2 rounded-[var(--radius)] text-sm font-medium text-white transition-colors flex-1 bg-[var(--primary)] hover:bg-[var(--primary-hover)]"
-            >
+            <Button type="button" className="flex-1" onClick={handleUpdate}>
               {t("profile.save")}
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
               onClick={() => setIsEditing(false)}
-              className="px-4 py-2 rounded-[var(--radius)] text-sm border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors flex-1"
             >
               {t("profile.cancel")}
-            </button>
+            </Button>
           </div>
         </div>
       )}

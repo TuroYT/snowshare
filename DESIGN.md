@@ -118,7 +118,7 @@ Palette retenue : neutre chaud + un accent piloté par le thème de l'instance.
 - **Encre chaude** (#1c1917) : texte principal ; atténué #78716c, discret #a8a29e.
 - **Filet** (#e7e5e4, survol #d6d3d1) : bordures et séparateurs.
 - **Nuit de pierre** (#0c0a09) : fond sombre ; surface #1c1917, survol #292524, texte #f5f5f4, bordure #292524.
-- **Sémantiques** : destructif #dc2626, succès #059669, alerte #d97706, info #0ea5e9.
+- **Sémantiques** : destructif #dc2626, succès #059669, alerte #d97706, info #0ea5e9. Pour du texte ou une icône dans une de ces couleurs, utiliser les variantes lisibles `--destructive-text`, `--success-text`, `--warning-text`, `--info-text` (tirées vers `--foreground`, AA en clair et en sombre) ; les couleurs brutes restent réservées aux fonds et aux bordures teintés (`color-mix` à 8–12 %).
 
 ### Named Rules
 
@@ -190,9 +190,14 @@ Coins doucement arrondis : 6 px pour les contrôles (boutons, champs), 10 px pou
 - **Focus:** la bordure passe à la couleur du texte (pas d'anneau coloré).
 - **Error / Disabled:** bordure et message destructifs ; désactivé à 50 % d'opacité.
 
+### Alertes
+
+- **Alert** (`src/components/ui/Alert.tsx`) : message de statut en ligne, variantes danger / success / warning / info. Fond teinté à 8 %, bordure 1px à 30 %, texte en `--*-text`, rayon 6 px. `role="alert"` pour les erreurs, `role="status"` sinon. Jamais de classes de palette Tailwind (`red-400`, `green-600`…) : elles ignorent le thème.
+- **Bouton destructif discret** : `Button variant="danger-outline"`.
+
 ### Autres primitives
 
-Badge, Modal, Select, Switch, Tabs, Toast, Tooltip, Spinner et squelettes dans `src/components/ui`, tous construits sur les mêmes variables.
+Badge, Modal (focus piégé, Échap, focus rendu au déclencheur), Select, Switch, Tabs, Toast, Tooltip, Spinner et squelettes dans `src/components/ui`, tous construits sur les mêmes variables. Les champs (`Input`, `Textarea`, `Select`) lient leur libellé et leur message d'erreur au contrôle.
 
 ## Do's and Don'ts
 

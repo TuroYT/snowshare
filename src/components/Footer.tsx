@@ -19,12 +19,12 @@ export default function Footer() {
   const customLinks = data?.links ?? [];
 
   const linkClass =
-    "text-sm text-[var(--foreground-subtle)] hover:text-[var(--foreground-muted)] transition-colors";
+    "text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-100";
 
   return (
     <footer className="mt-auto border-t border-[var(--border)] bg-[var(--surface)]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-sm text-[var(--foreground-subtle)]">
+        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-3 text-sm text-[var(--foreground-muted)]">
           <span>
             © {year} {branding.appName}
           </span>
@@ -37,7 +37,7 @@ export default function Footer() {
               href="https://github.com/TuroYT/snowshare"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-[var(--foreground-muted)] transition-colors"
+              className="underline hover:text-[var(--foreground)] transition-colors duration-100"
             >
               SnowShare
             </a>

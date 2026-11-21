@@ -18,7 +18,7 @@ type Props = {
 const CodeMirror = dynamic(() => import("@uiw/react-codemirror"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full min-h-[300px] rounded-xl border border-[var(--border)] bg-[var(--surface)] animate-pulse" />
+    <div className="h-full w-full min-h-[300px] rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] animate-pulse" />
   ),
 });
 
@@ -104,7 +104,7 @@ const CodeBlock: React.FC<Props> = ({ code, language, onChange, readOnly = false
   }, []);
 
   return (
-    <div className="codemirror-scroll-fix codemirror-container text-left text-sm rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-2 h-full w-full">
+    <div className="codemirror-scroll-fix codemirror-container text-left text-sm rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface)] p-2 h-full w-full">
       <div className="w-full h-full overflow-x-auto overflow-y-auto max-w-full">
         <CodeMirror
           value={value}

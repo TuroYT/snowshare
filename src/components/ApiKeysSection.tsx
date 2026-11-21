@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
 import WarningModal from "@/components/admin/WarningModal";
 import { downloadShareXConfig } from "@/lib/sharex";
+import { Alert, Button, Card, Input } from "@/components/ui";
 
 interface ApiKey {
   id: string;
@@ -57,7 +58,8 @@ export default function ApiKeysSection() {
       setNewKeyName("");
       setNewKeyExpiry("");
       refetchKeys();
-    } catch {
+    } catch (err) {
+      console.error("Failed to create API key:", err);
       setError(t("apikeys.error_create"));
     } finally {
       setCreating(false);
@@ -100,6 +102,9 @@ export default function ApiKeysSection() {
     });
   };
 
+  const docsLinkClass =
+    "inline-flex items-center justify-center font-medium text-sm px-4 py-2 rounded-[var(--radius)] transition-colors duration-100 bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--border-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] focus-visible:ring-[var(--foreground-muted)]";
+
   return (
     <div className="space-y-6">
       <WarningModal
@@ -109,11 +114,11 @@ export default function ApiKeysSection() {
         onConfirm={() => keyToRevoke && handleRevoke(keyToRevoke)}
         onCancel={() => setKeyToRevoke(null)}
       />
-      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
+      <Card>
         <h2 className="text-xl font-semibold text-[var(--foreground)] mb-1">
           {t("apikeys.title", "API Keys")}
         </h2>
-        <p className="text-sm text-[var(--muted)] mb-6">
+        <p className="text-sm text-[var(--foreground-muted)] mb-6">
           {t(
             "apikeys.description",
             "Use API keys to authenticate scripting and CLI access. Keys inherit all your account permissions."
@@ -123,104 +128,102 @@ export default function ApiKeysSection() {
         {/* Create form */}
         <form onSubmit={handleCreate} className="flex flex-wrap gap-3 items-end mb-6">
           <div className="flex-1 min-w-[180px]">
-            <label className="block text-xs font-medium text-[var(--muted)] mb-1">
-              {t("apikeys.label_name", "Key name")}
-            </label>
-            <input
+            <Input
               type="text"
+              label={t("apikeys.label_name", "Key name")}
               value={newKeyName}
               onChange={(e) => setNewKeyName(e.target.value)}
               placeholder={t("apikeys.placeholder_name", "e.g. My backup script")}
-              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
               maxLength={64}
             />
           </div>
           <div className="min-w-[180px]">
-            <label className="block text-xs font-medium text-[var(--muted)] mb-1">
-              {t("apikeys.label_expiry", "Expiration (optional)")}
-            </label>
-            <input
+            <Input
               type="date"
+              label={t("apikeys.label_expiry", "Expiration (optional)")}
               value={newKeyExpiry}
               onChange={(e) => setNewKeyExpiry(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--primary)]"
             />
           </div>
-          <button
-            type="submit"
-            disabled={creating || !newKeyName.trim()}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-            style={{ background: "var(--primary)", color: "#fff" }}
-          >
+          <Button type="submit" disabled={creating || !newKeyName.trim()}>
             {creating
               ? t("apikeys.creating", "Creating...")
               : t("apikeys.create_button", "Create key")}
-          </button>
+          </Button>
         </form>
 
-        {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            {error}
+          </Alert>
+        )}
 
-        {/* Revealed token modal */}
+        {/* Revealed token */}
         {revealedToken && (
-          <div className="mb-6 p-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10">
-            <p className="text-sm font-semibold text-yellow-400 mb-2">
+          <Alert variant="warning" className="mb-6 p-4">
+            <p className="font-semibold mb-2">
               {t("apikeys.token_warning", "Save this key — it will not be shown again.")}
             </p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs font-mono break-all bg-[var(--background)] px-3 py-2 rounded border border-[var(--border)] text-[var(--foreground)]">
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="flex-1 min-w-0 text-xs font-mono break-all bg-[var(--background)] px-3 py-2 rounded-[var(--radius)] border border-[var(--border)] text-[var(--foreground)]">
                 {revealedToken}
               </code>
-              <button
-                onClick={handleCopy}
-                className="px-3 py-2 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-              >
+              <Button variant="secondary" size="sm" onClick={handleCopy}>
                 {copied ? t("apikeys.copied", "Copied!") : t("apikeys.copy", "Copy")}
-              </button>
+              </Button>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-xs text-[var(--muted)]">
-                {t("apikeys.sharex_label", "ShareX:")}
-              </span>
-              <button
+              <span className="text-xs">{t("apikeys.sharex_label", "ShareX:")}</span>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => downloadShareXConfig(window.location.origin, revealedToken, "files")}
-                className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 {t("apikeys.sharex_files", "Download file uploader")}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => downloadShareXConfig(window.location.origin, revealedToken, "links")}
-                className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 {t("apikeys.sharex_links", "Download URL shortener")}
-              </button>
+              </Button>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3"
               onClick={() => setRevealedToken(null)}
-              className="mt-3 text-xs text-[var(--muted)] hover:text-[var(--foreground)] underline"
             >
               {t("apikeys.dismiss", "Dismiss")}
-            </button>
-          </div>
+            </Button>
+          </Alert>
         )}
 
         {/* Keys list */}
-        {loading && <p className="text-sm text-[var(--muted)]">{t("loading", "Loading...")}</p>}
+        {loading && (
+          <p className="text-sm text-[var(--foreground-muted)]">{t("loading", "Loading...")}</p>
+        )}
         {!loading && keys.length === 0 && (
-          <p className="text-sm text-[var(--muted)]">{t("apikeys.no_keys", "No API keys yet.")}</p>
+          <p className="text-sm text-[var(--foreground-muted)]">
+            {t("apikeys.no_keys", "No API keys yet.")}
+          </p>
         )}
         {!loading && keys.length > 0 && (
-          <div className="space-y-3">
+          <ul className="space-y-3">
             {keys.map((key) => (
-              <div
+              <li
                 key={key.id}
-                className="flex items-center justify-between gap-4 p-3 rounded-lg bg-[var(--background)] border border-[var(--border)]"
+                className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-[var(--radius)] bg-[var(--background)] border border-[var(--border)]"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-[var(--foreground)] truncate">
                     {key.name}
                   </p>
-                  <p className="text-xs text-[var(--muted)] font-mono mt-0.5">{key.keyPrefix}...</p>
-                  <p className="text-xs text-[var(--muted)] mt-0.5">
+                  <p className="text-xs text-[var(--foreground-muted)] font-mono mt-0.5">
+                    {key.keyPrefix}...
+                  </p>
+                  <p className="text-xs text-[var(--foreground-muted)] mt-0.5 break-words">
                     {t("apikeys.created", "Created")} {formatDate(key.createdAt)}
                     {key.lastUsedAt &&
                       ` · ${t("apikeys.last_used", "Last used")} ${formatDate(key.lastUsedAt)}`}
@@ -228,40 +231,32 @@ export default function ApiKeysSection() {
                       ` · ${t("apikeys.expires", "Expires")} ${formatDate(key.expiresAt)}`}
                   </p>
                 </div>
-                <button
-                  onClick={() => setKeyToRevoke(key.id)}
-                  className="shrink-0 px-3 py-1.5 text-xs rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
-                >
+                <Button variant="danger-outline" size="sm" onClick={() => setKeyToRevoke(key.id)}>
                   {t("apikeys.revoke", "Revoke")}
-                </button>
-              </div>
+                </Button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-      </div>
+      </Card>
 
       {/* Docs link */}
-      <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-4 flex items-center justify-between">
-        <div>
+      <Card className="p-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-sm font-medium text-[var(--foreground)]">
             {t("apikeys.docs_title", "API Documentation")}
           </p>
-          <p className="text-xs text-[var(--muted)]">
+          <p className="text-xs text-[var(--foreground-muted)]">
             {t(
               "apikeys.docs_description",
               "Browse the interactive API docs to explore all endpoints."
             )}
           </p>
         </div>
-        <a
-          href="/api-docs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-        >
+        <a href="/api-docs" target="_blank" rel="noopener noreferrer" className={docsLinkClass}>
           {t("apikeys.docs_link", "Open docs")}
         </a>
-      </div>
+      </Card>
     </div>
   );
 }

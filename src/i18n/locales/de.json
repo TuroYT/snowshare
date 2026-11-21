@@ -5,7 +5,8 @@
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "confirm": "Bestätigen",
-    "remove": "Entfernen"
+    "remove": "Entfernen",
+    "close": "Schließen"
   },
   "nav": {
     "hello": "Hallo, {{email}}",

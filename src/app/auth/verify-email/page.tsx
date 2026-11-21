@@ -4,6 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
+import { Spinner } from "@/components/ui/Spinner";
+
+const PRIMARY_LINK_BUTTON =
+  "inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-[var(--radius)] bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] focus-visible:ring-[var(--primary)]";
 
 type VerificationState = "pending" | "loading" | "success" | "error" | "check_email";
 
@@ -50,16 +54,19 @@ export default function VerifyEmailPage() {
       <div className="max-w-md w-full space-y-8 text-center">
         {state === "loading" && (
           <>
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="text-[var(--foreground-muted)]">{t("auth.verify_email_verifying")}</p>
+            <Spinner className="w-10 h-10 mx-auto" />
+            <p role="status" className="text-sm text-[var(--foreground-muted)]">
+              {t("auth.verify_email_verifying")}
+            </p>
           </>
         )}
 
         {state === "check_email" && (
           <>
-            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-blue-900/20 border border-blue-800">
+            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--primary)_30%,transparent)]">
               <svg
-                className="h-8 w-8 text-blue-400"
+                aria-hidden="true"
+                className="h-8 w-8 text-[var(--primary)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -72,16 +79,13 @@ export default function VerifyEmailPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl font-extrabold text-[var(--foreground)]">
+            <h2 className="text-2xl font-semibold text-[var(--foreground)]">
               {t("auth.verify_email_check_inbox_title")}
             </h2>
-            <p className="text-[var(--foreground-muted)]">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {t("auth.verify_email_check_inbox_message")}
             </p>
-            <Link
-              href="/auth/signin"
-              className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
-            >
+            <Link href="/auth/signin" className={PRIMARY_LINK_BUTTON}>
               {t("nav.signin")}
             </Link>
           </>
@@ -89,9 +93,10 @@ export default function VerifyEmailPage() {
 
         {state === "success" && (
           <>
-            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-green-900/20 border border-green-800">
+            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--success)_10%,transparent)] border border-[color-mix(in_srgb,var(--success)_30%,transparent)]">
               <svg
-                className="h-8 w-8 text-green-400"
+                aria-hidden="true"
+                className="h-8 w-8 text-[var(--success-text)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -104,16 +109,13 @@ export default function VerifyEmailPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl font-extrabold text-[var(--foreground)]">
+            <h2 className="text-2xl font-semibold text-[var(--foreground)]">
               {t("auth.verify_email_success_title")}
             </h2>
-            <p className="text-[var(--foreground-muted)]">
+            <p className="text-sm text-[var(--foreground-muted)]">
               {t("auth.verify_email_success_message")}
             </p>
-            <Link
-              href="/auth/signin"
-              className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] transition-colors"
-            >
+            <Link href="/auth/signin" className={PRIMARY_LINK_BUTTON}>
               {t("nav.signin")}
             </Link>
           </>
@@ -121,9 +123,10 @@ export default function VerifyEmailPage() {
 
         {state === "error" && (
           <>
-            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-900/20 border border-red-800">
+            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)] border border-[color-mix(in_srgb,var(--destructive)_30%,transparent)]">
               <svg
-                className="h-8 w-8 text-red-400"
+                aria-hidden="true"
+                className="h-8 w-8 text-[var(--destructive-text)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -136,14 +139,13 @@ export default function VerifyEmailPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl font-extrabold text-[var(--foreground)]">
+            <h2 className="text-2xl font-semibold text-[var(--foreground)]">
               {t("auth.verify_email_error_title")}
             </h2>
-            <p className="text-[var(--foreground-muted)]">{errorMessage}</p>
-            <Link
-              href="/auth/signin"
-              className="inline-flex items-center text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
-            >
+            <p role="alert" className="text-sm text-[var(--foreground-muted)]">
+              {errorMessage}
+            </p>
+            <Link href="/auth/signin" className={PRIMARY_LINK_BUTTON}>
               {t("nav.signin")}
             </Link>
           </>

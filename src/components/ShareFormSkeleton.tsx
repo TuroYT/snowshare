@@ -4,7 +4,7 @@ import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonShareHeader from "@/components/ui/SkeletonShareHeader";
 
 const ShareFormSkeleton = () => (
-  <div className="bg-[var(--surface)] bg-opacity-95 p-6 rounded-2xl shadow-2xl border border-[var(--border)]/50 w-full max-w-2xl mx-auto">
+  <div className="bg-[var(--surface)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)] w-full max-w-2xl mx-auto">
     <SkeletonShareHeader />
     <div className="mb-6">
       <WaveSkeleton variant="text" width={110} height={20} sx={{ mb: 1 }} />

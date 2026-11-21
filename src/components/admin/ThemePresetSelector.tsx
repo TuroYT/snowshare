@@ -15,7 +15,7 @@ export function ThemePresetSelector({ onSelectPreset }: Readonly<ThemePresetSele
 
   return (
     <div className="space-y-3">
-      <h4 className="text-xs font-semibold uppercase tracking-widest text-[var(--foreground-subtle)]">
+      <h4 className="text-xs font-semibold uppercase tracking-widest text-[var(--foreground-muted)]">
         {t("admin.theme.presets_label", "Presets")}
       </h4>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -24,22 +24,25 @@ export function ThemePresetSelector({ onSelectPreset }: Readonly<ThemePresetSele
           return (
             <button
               key={preset.id}
+              type="button"
               onClick={() => onSelectPreset(colors)}
-              className="group p-3 rounded-[var(--radius-lg)] border border-[var(--border)] hover:border-[var(--border-hover)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors text-left"
+              className="group min-w-0 p-3 rounded-[var(--radius)] border border-[var(--border)] hover:border-[var(--border-hover)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors duration-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
               title={preset.description}
             >
               <div className="flex gap-1 mb-2">
                 <span
-                  className="w-5 h-5 rounded-full border border-black/10"
+                  className="w-5 h-5 rounded-full border border-[var(--border)]"
                   style={{ backgroundColor: colors.primaryColor }}
+                  aria-hidden="true"
                 />
                 <span
-                  className="w-5 h-5 rounded-full border border-black/10"
+                  className="w-5 h-5 rounded-full border border-[var(--border)]"
                   style={{ backgroundColor: colors.secondaryColor }}
+                  aria-hidden="true"
                 />
               </div>
               <p className="text-xs font-medium text-[var(--foreground)] truncate">{preset.name}</p>
-              <p className="text-xs text-[var(--foreground-subtle)] truncate mt-0.5">
+              <p className="text-xs text-[var(--foreground-muted)] truncate mt-0.5">
                 {preset.description}
               </p>
             </button>
