@@ -1,8 +1,3 @@
-/**
- * Custom Node.js server for SnowShare
- * Uses tus protocol for resumable file uploads
- */
-
 import { createServer } from "node:http";
 import { parse } from "node:url";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -10,40 +5,30 @@ import next from "next";
 import { Server as TusServer } from "@tus/server";
 import { FileStore } from "@tus/file-store";
 import { existsSync, mkdirSync } from "node:fs";
-import { unlink } from "node:fs/promises";
 import path from "node:path";
-import { getToken } from "next-auth/jwt";
 import cron from "node-cron";
 import { CLIENT_IP_HEADER, resolveClientIp } from "./src/lib/getClientIp.js";
-
-// Upload metadata keys written by the server (they override any client-supplied value)
-const CTX_IP = "ss_ip";
-const CTX_USER = "ss_user";
-const CTX_AUTH = "ss_auth";
-const CTX_SIZE_CHECKED = "ss_size_checked";
+import { authenticateFromRequest, createTusHooks } from "./src/lib/tus-server.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = process.env.HOSTNAME || "localhost";
 const port = Number.parseInt(process.env.PORT || "3000", 10);
 
-// Initialize Next.js
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-// Create AsyncLocalStorage for request context
+// Carries the authenticated uploader into the tus callbacks
 const requestContext = new AsyncLocalStorage();
 
-// Get upload directory
 function getUploadDir() {
   return process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
 }
 
-// Get tus temp directory
 function getTusTempDir() {
   return path.join(getUploadDir(), ".tus-temp");
 }
 
-// Get client IP from native Node.js request (same resolution rules as src/lib/getClientIp.ts)
+// Same resolution rules as src/lib/getClientIp.ts
 function getClientIpFromHttpReq(req) {
   const header = (name) => {
     const value = req.headers?.[name];
@@ -54,84 +39,6 @@ function getClientIpFromHttpReq(req) {
     realIp: header("x-real-ip"),
     remoteAddress: req.socket?.remoteAddress,
   });
-}
-
-// Parse cookies from header string
-function parseCookies(cookieHeader) {
-  const cookies = {};
-  if (!cookieHeader) return cookies;
-
-  cookieHeader.split(";").forEach((cookie) => {
-    const parts = cookie.split("=");
-    const name = parts[0]?.trim();
-    const value = parts.slice(1).join("=").trim();
-    if (name) {
-      cookies[name] = decodeURIComponent(value);
-    }
-  });
-  return cookies;
-}
-
-// Authenticate user from HTTP request (supports NextAuth JWT + API key Bearer token)
-async function authenticateFromRequest(req, clientIp) {
-  // 1. Try API key Bearer token
-  const authHeader = req.headers?.authorization || "";
-  if (authHeader.startsWith("Bearer ")) {
-    const rawKey = authHeader.slice(7).trim();
-    if (rawKey.startsWith("sk_")) {
-      // Same invalid-key throttling as the Next.js API routes (shared in-memory store)
-      const { getRetryAfter, recordRateLimitHit } = await import("./src/lib/rate-limit.js");
-      const retryAfter = getRetryAfter("apiKey", clientIp);
-      if (retryAfter > 0) {
-        return { userId: null, isAuthenticated: false, retryAfter };
-      }
-      try {
-        const { prisma } = await import("./src/lib/prisma.js");
-        const { hashApiKey } = await import("./src/lib/security.js");
-        const keyHash = hashApiKey(rawKey);
-        const apiKey = await prisma.apiKey.findUnique({
-          where: { keyHash },
-          select: { id: true, userId: true, expiresAt: true },
-        });
-        if (apiKey && (!apiKey.expiresAt || apiKey.expiresAt > new Date())) {
-          // Fire-and-forget lastUsedAt update
-          prisma.apiKey
-            .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
-            .catch((err) => console.warn("[Auth] Failed to update lastUsedAt:", err.message));
-          return { userId: apiKey.userId, isAuthenticated: true };
-        }
-        recordRateLimitHit("apiKey", clientIp);
-      } catch (error) {
-        console.error("[Auth] API key lookup error:", error.message);
-      }
-    }
-  }
-
-  // 2. NextAuth JWT session
-  try {
-    const cookies = parseCookies(req.headers?.cookie || "");
-    const token = await getToken({
-      req: {
-        headers: req.headers || {},
-        cookies,
-      },
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    if (token?.id) {
-      return {
-        userId: token.id,
-        isAuthenticated: true,
-      };
-    }
-  } catch (error) {
-    console.error("[Auth] Error:", error.message);
-  }
-
-  return {
-    userId: null,
-    isAuthenticated: false,
-  };
 }
 
 // Shared TypeScript modules, loaded once (tsx resolves the .js paths to the .ts sources)
@@ -157,139 +64,6 @@ function loadLibs() {
   return libsPromise;
 }
 
-/**
- * Builds an Error carrying the { status_code, body } properties tus-node-server reads to
- * build the HTTP response.
- */
-function tusError(status_code, body) {
-  return Object.assign(new Error(body), { status_code, body });
-}
-
-/** Converts an error to the { status_code, body } shape tus-node-server returns to clients. */
-function toTusError(error, UploadError) {
-  if (error && typeof error === "object" && "status_code" in error) return error;
-  if (UploadError && error instanceof UploadError) {
-    return tusError(error.status, JSON.stringify({ error: error.code }));
-  }
-  console.error("[Upload] Unexpected error:", error);
-  return tusError(500, JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }));
-}
-
-/** Upload context persisted in the upload metadata at creation (survives restarts). */
-function readUploadContext(metadata) {
-  if (metadata?.[CTX_AUTH] === undefined) return null;
-  return {
-    clientIp: metadata[CTX_IP],
-    userId: metadata[CTX_USER] || null,
-    isAuthenticated: metadata[CTX_AUTH] === "1",
-  };
-}
-
-/**
- * Enforces the per-file size limit and the IP quota for an upload of `size` bytes.
- * Fails closed: if usage cannot be computed, the upload is refused.
- */
-async function assertWithinLimits(libs, context, size) {
-  let limits;
-  try {
-    limits = await libs.getUploadLimits(context.clientIp, context.isAuthenticated);
-  } catch (error) {
-    console.error("[Upload] Cannot compute upload limits, refusing upload:", error);
-    throw tusError(503, JSON.stringify({ error: "QUOTA_UNAVAILABLE" }));
-  }
-  if (size > limits.maxFileSizeBytes) {
-    throw tusError(413, JSON.stringify({ error: "FILE_TOO_LARGE" }));
-  }
-  if (size > limits.remainingQuotaBytes) {
-    throw tusError(429, JSON.stringify({ error: "IP_QUOTA_EXCEEDED" }));
-  }
-}
-
-function isBulkSubsequentFile(metadata) {
-  return (
-    metadata.isBulk === "true" &&
-    (!!metadata.bulkShareId ||
-      (!!metadata.fileIndex && Number.parseInt(metadata.fileIndex, 10) > 0))
-  );
-}
-
-function rawUploadOptions(metadata) {
-  return {
-    slug: metadata.slug,
-    password: metadata.password,
-    expiresAt: metadata.expiresAt,
-    maxViews: metadata.maxViews,
-    note: metadata.note,
-  };
-}
-
-/** Returns the existing bulk share for a subsequent file, after checking the uploader owns it. */
-async function getOwnedBulkShare(libs, bulkShareId, context) {
-  const share = await libs.prisma.share.findUnique({ where: { id: bulkShareId } });
-  if (!share?.isBulk) {
-    console.error(`[Upload] Bulk share not found: ${bulkShareId}`);
-    throw tusError(404, JSON.stringify({ error: "SHARE_NOT_FOUND" }));
-  }
-  const ownsShare = context.isAuthenticated
-    ? share.ownerId === context.userId
-    : share.ipSource === context.clientIp;
-  if (!ownsShare) {
-    const uploader = context.isAuthenticated ? `user ${context.userId}` : `IP ${context.clientIp}`;
-    console.error(`[Upload] Unauthorized bulk share access: ${bulkShareId} by ${uploader}`);
-    throw tusError(403, JSON.stringify({ error: "UNAUTHORIZED_SHARE_ACCESS" }));
-  }
-  return share;
-}
-
-/** Links the stored file to its share; removes the file from storage if that fails. */
-async function recordStoredFile(libs, share, finalFileName, info) {
-  const { filename, relativePath, size, mimeType, fileIndex, totalFiles } = info;
-  try {
-    if (share.isBulk) {
-      await libs.prisma.shareFile.create({
-        data: {
-          shareId: share.id,
-          filePath: finalFileName,
-          originalName: filename,
-          relativePath,
-          size: BigInt(size),
-          mimeType: mimeType || "application/octet-stream",
-        },
-      });
-      console.log(`Bulk upload file ${fileIndex + 1}/${totalFiles}: ${filename} -> ${share.slug}`);
-    } else {
-      await libs.prisma.share.update({
-        where: { id: share.id },
-        data: { filePath: finalFileName },
-      });
-      console.log(`Upload complete: ${filename} -> ${share.slug}`);
-    }
-  } catch (error) {
-    // The file is stored but not referenced: remove it
-    await libs.deleteFromStorage(finalFileName).catch((deleteError) => {
-      console.error("[Upload] Failed to remove unreferenced %s:", finalFileName, deleteError);
-    });
-    throw error;
-  }
-}
-
-/** True when the error is a deliberate rejection (limits, validation) rather than a crash. */
-function isUploadRejection(error, UploadError) {
-  return (
-    !!error && typeof error === "object" && ("status_code" in error || error instanceof UploadError)
-  );
-}
-
-async function removeTusFiles(uploadId) {
-  const tusFilePath = path.join(tusTempDir, uploadId);
-  for (const file of [tusFilePath, `${tusFilePath}.json`]) {
-    await unlink(file).catch((error) => {
-      if (error.code !== "ENOENT") console.error("[Upload] Failed to remove %s:", file, error);
-    });
-  }
-}
-
-// Ensure directories exist
 const uploadsDir = getUploadDir();
 const tusTempDir = getTusTempDir();
 
@@ -300,7 +74,6 @@ if (!existsSync(tusTempDir)) {
   mkdirSync(tusTempDir, { recursive: true });
 }
 
-// Create tus server with FileStore
 const tusServer = new TusServer({
   path: "/api/tus",
   datastore: new FileStore({ directory: tusTempDir }),
@@ -315,132 +88,19 @@ const tusServer = new TusServer({
       : settings?.anoMaxUpload || 2048;
     return maxMB * 1024 * 1024;
   },
-  // Expose custom headers to client
   respectForwardedHeaders: true,
   generateUrl(req, { proto: _proto, host: _host, path, id }) {
     // Use relative URL to avoid protocol mismatch behind reverse proxies (CSP 'self')
     return `${path}/${id}`;
   },
 
-  // Called when a new upload is created: validate everything we can before any byte is stored
-  async onUploadCreate(req, upload) {
-    if (!upload) {
-      console.error("onUploadCreate: upload object is undefined");
-      throw tusError(500, "Internal Server Error: Upload context missing");
-    }
-
-    const libs = await loadLibs();
-    const context = requestContext.getStore();
-    if (!context) {
-      console.error("[Upload] Missing request context in onUploadCreate");
-      throw tusError(500, JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }));
-    }
-
-    const metadata = upload.metadata || {};
-
-    try {
-      await libs.assertFileUploadAllowed(context);
-
-      // With Upload-Defer-Length the size is unknown here: limits are enforced on finish
-      const sizeKnown = upload.size !== undefined && upload.size !== null;
-      if (sizeKnown) {
-        await assertWithinLimits(libs, context, upload.size);
-      }
-
-      if (!isBulkSubsequentFile(metadata)) {
-        await libs.validateUploadOptions(rawUploadOptions(metadata), context, {
-          anonExpiry: "clamp",
-        });
-      }
-
-      // Persist who uploads with the upload itself: survives restarts and slow uploads
-      return {
-        metadata: {
-          ...metadata,
-          [CTX_IP]: context.clientIp,
-          [CTX_USER]: context.userId || "",
-          [CTX_AUTH]: context.isAuthenticated ? "1" : "0",
-          [CTX_SIZE_CHECKED]: sizeKnown ? "1" : "0",
-        },
-      };
-    } catch (error) {
-      throw toTusError(error, libs.UploadError);
-    }
-  },
-
-  // Called when upload is complete: create (or extend) the share and move the file to storage
-  async onUploadFinish(req, upload) {
-    const libs = await loadLibs();
-    const metadata = upload.metadata || {};
-    const context = readUploadContext(metadata) ?? requestContext.getStore();
-    if (!context) {
-      console.error(`[Upload] No upload context for ${upload.id}`);
-      throw tusError(500, JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }));
-    }
-
-    const filename = metadata.filename || "upload";
-    const isBulk = metadata.isBulk === "true";
-    const bulkShareId = metadata.bulkShareId || "";
-    const relativePath = metadata.relativePath || filename;
-    const fileIndex = metadata.fileIndex ? Number.parseInt(metadata.fileIndex, 10) : 0;
-    const totalFiles = metadata.totalFiles ? Number.parseInt(metadata.totalFiles, 10) : 1;
-    const size = upload.size ?? upload.offset ?? 0;
-    const tusFilePath = path.join(tusTempDir, upload.id);
-
-    let createdShareId = null;
-    try {
-      if (metadata[CTX_SIZE_CHECKED] !== "1") {
-        await assertWithinLimits(libs, context, size);
-      }
-
-      let share;
-      if (isBulk && bulkShareId) {
-        share = await getOwnedBulkShare(libs, bulkShareId, context);
-      } else {
-        const options = await libs.resolveUploadOptions(rawUploadOptions(metadata), context, {
-          anonExpiry: "clamp",
-        });
-        share = await libs.createFileShareRecord(options, context, { isBulk, size });
-        createdShareId = share.id;
-      }
-
-      const finalFileName = libs.generateSafeFilename(filename, share.id, { unique: isBulk });
-      await libs.moveToStorage(tusFilePath, finalFileName);
-      await unlink(`${tusFilePath}.json`).catch((error) => {
-        if (error.code !== "ENOENT")
-          console.error("[Upload] Failed to remove tus metadata:", error);
-      });
-
-      await recordStoredFile(libs, share, finalFileName, {
-        filename,
-        relativePath,
-        size,
-        mimeType: metadata.filetype,
-        fileIndex,
-        totalFiles,
-      });
-      if (createdShareId) void libs.emitShareEvent("share.created", share);
-
-      return {
-        headers: {
-          "X-Share-Slug": share.slug,
-          "X-Share-Id": share.id,
-          "X-Share-Expires": share.expiresAt?.toISOString() || "",
-          "X-Is-Bulk": isBulk ? "true" : "false",
-        },
-      };
-    } catch (error) {
-      if (createdShareId) await libs.rollbackShare(createdShareId);
-      // A rejected upload (limits, validation) will never be finalized: free the disk now
-      if (isUploadRejection(error, libs.UploadError)) {
-        await removeTusFiles(upload.id);
-      }
-      throw toTusError(error, libs.UploadError);
-    }
-  },
+  ...createTusHooks({
+    loadLibs,
+    getRequestContext: () => requestContext.getStore(),
+    tusTempDir,
+  }),
 });
 
-// Handle tus requests
 async function handleTus(req, res) {
   const clientIp = getClientIpFromHttpReq(req);
   const { userId, isAuthenticated, retryAfter } = await authenticateFromRequest(req, clientIp);
@@ -495,7 +155,6 @@ try {
       const parsedUrl = parse(req.url, true);
       const { pathname } = parsedUrl;
 
-      // Handle tus uploads
       if (pathname.startsWith("/api/tus")) {
         await handleTus(req, res);
         return;
@@ -505,7 +164,6 @@ try {
       // so a client cannot forge it.
       req.headers[CLIENT_IP_HEADER] = getClientIpFromHttpReq(req);
 
-      // Let Next.js handle everything else
       await handle(req, res, parsedUrl);
     } catch (err) {
       console.error("Server error:", err);
