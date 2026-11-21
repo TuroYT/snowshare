@@ -53,6 +53,7 @@ export function useFetch<T>(url: string | null, options?: FetchOptions): FetchSt
       const id = ++counterRef.current;
       if (loadedUrlRef.current !== url) {
         // First load, or the URL changed: the previous data no longer applies
+        loadedUrlRef.current = null;
         setData(null);
         setLoading(true);
       }

@@ -29,10 +29,15 @@ export interface StartTusUploadOptions {
  */
 export function useTusUpload() {
   const activeUploadsRef = useRef<Set<TusUpload>>(new Set());
+  // Set on unmount: an upload still waiting on the lazy import or on findPreviousUploads()
+  // is not in activeUploads yet (or would be restarted by start()), so it must check this
+  const unmountedRef = useRef(false);
 
   useEffect(() => {
+    unmountedRef.current = false;
     const activeUploads = activeUploadsRef.current;
     return () => {
+      unmountedRef.current = true;
       activeUploads.forEach((upload) => {
         // abort() may throw synchronously or return a rejected promise
         const logAbortError = (error: unknown) =>
@@ -62,6 +67,11 @@ export function useTusUpload() {
     return import("tus-js-client").then(
       (tus) =>
         new Promise<void>((resolve) => {
+          if (unmountedRef.current) {
+            resolve();
+            return;
+          }
+
           if (!tus.isSupported) {
             onError?.(networkErrorMessage);
             resolve();
@@ -129,17 +139,26 @@ export function useTusUpload() {
 
           activeUploadsRef.current.add(upload);
 
+          const startUnlessUnmounted = () => {
+            if (unmountedRef.current) {
+              activeUploadsRef.current.delete(upload);
+              settle();
+              return;
+            }
+            upload.start();
+          };
+
           upload
             .findPreviousUploads()
             .then((previousUploads) => {
-              if (previousUploads.length > 0) {
+              if (previousUploads.length > 0 && !unmountedRef.current) {
                 upload.resumeFromPreviousUpload(previousUploads[0]);
               }
-              upload.start();
+              startUnlessUnmounted();
             })
             .catch((error) => {
               console.error("useTusUpload: error finding previous uploads:", error);
-              upload.start();
+              startUnlessUnmounted();
             });
         })
     );

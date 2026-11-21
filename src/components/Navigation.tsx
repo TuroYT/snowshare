@@ -372,9 +372,12 @@ export default function Navigation() {
 
   // The server cannot know the stored theme: render an empty slot until hydration is done so the
   // markup matches and the icon does not flash from "system" to the real one.
-  let themeIcon = mounted ? <Monitor className="w-4 h-4" /> : <span className="w-4 h-4" />;
-  if (theme === "dark") themeIcon = <Moon className="w-4 h-4" />;
-  else if (theme === "light") themeIcon = <Sun className="w-4 h-4" />;
+  let themeIcon = <span className="w-4 h-4" />;
+  if (mounted) {
+    if (theme === "dark") themeIcon = <Moon className="w-4 h-4" />;
+    else if (theme === "light") themeIcon = <Sun className="w-4 h-4" />;
+    else themeIcon = <Monitor className="w-4 h-4" />;
+  }
 
   const initials =
     session?.user?.name

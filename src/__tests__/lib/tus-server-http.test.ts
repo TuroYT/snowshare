@@ -322,7 +322,7 @@ describe("tus protocol with the production hooks", () => {
     );
   });
 
-  it("rolls back the share and keeps the temp file when storing fails", async () => {
+  it("rolls back the share and drops the upload when storing fails", async () => {
     libs.moveToStorage.mockRejectedValueOnce(new Error("disk full"));
     const payload = Buffer.from("abc");
     const location = (await createUpload(payload.length)).headers.get("Location") as string;
@@ -332,7 +332,28 @@ describe("tus protocol with the production hooks", () => {
     expect(response.status).toBe(500);
     expect(libs.rollbackShare).toHaveBeenCalledWith("share-1");
     expect(libs.emitShareEvent).not.toHaveBeenCalled();
-    expect((await readdir(tusTempDir)).length).toBe(2);
+    expect(await readdir(tusTempDir)).toEqual([]);
+  });
+
+  it("lets the client start over after a storage failure instead of reporting a complete upload", async () => {
+    libs.moveToStorage.mockRejectedValueOnce(new Error("disk full"));
+    const payload = Buffer.from("abc");
+    const location = (await createUpload(payload.length)).headers.get("Location") as string;
+    await patch(location, 0, payload);
+
+    // A kept upload would answer with offset 3 of 3 and the client would stop there
+    const head = await fetch(`${baseUrl}${location}`, {
+      method: "HEAD",
+      headers: { "Tus-Resumable": "1.0.0" },
+    });
+    expect(head.status).toBeGreaterThanOrEqual(400);
+    expect(head.headers.get("Upload-Offset")).toBeNull();
+
+    const retryLocation = (await createUpload(payload.length)).headers.get("Location") as string;
+    const retry = await patch(retryLocation, 0, payload);
+
+    expect(retry.status).toBe(204);
+    expect(retry.headers.get("X-Share-Id")).toBe("share-1");
   });
 
   it("removes the temp files of an upload rejected on finish", async () => {

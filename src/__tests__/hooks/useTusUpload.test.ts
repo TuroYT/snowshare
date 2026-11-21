@@ -371,6 +371,47 @@ describe("useTusUpload", () => {
       expect(running.abort).toHaveBeenCalledTimes(1);
     });
 
+    it("does not start an upload when unmounted before the lazy import resolves", async () => {
+      const { result, unmount } = renderHook(() => useTusUpload());
+
+      const promise = result.current.startUpload(baseOptions({ onSuccess: jest.fn() }));
+      unmount();
+
+      await expect(promise).resolves.toBeUndefined();
+      expect(mockTus.instances).toHaveLength(0);
+    });
+
+    it("does not start an upload when unmounted while looking for previous uploads", async () => {
+      let finishLookup: (previous: unknown[]) => void = () => {};
+      mockTus.findPreviousUploads = () => new Promise((resolve) => (finishLookup = resolve));
+      const onSuccess = jest.fn();
+      const { result, unmount } = renderHook(() => useTusUpload());
+
+      const promise = result.current.startUpload(baseOptions({ onSuccess }));
+      await waitFor(() => expect(mockTus.instances).toHaveLength(1));
+      unmount();
+      finishLookup([{ uploadUrl: "/api/tus/old" }]);
+
+      await expect(promise).resolves.toBeUndefined();
+      expect(lastUpload().start).not.toHaveBeenCalled();
+      expect(lastUpload().resumeFromPreviousUpload).not.toHaveBeenCalled();
+      expect(onSuccess).not.toHaveBeenCalled();
+    });
+
+    it("does not start an upload when the previous uploads lookup fails after unmount", async () => {
+      let failLookup: (reason: Error) => void = () => {};
+      mockTus.findPreviousUploads = () => new Promise((_resolve, reject) => (failLookup = reject));
+      const { result, unmount } = renderHook(() => useTusUpload());
+
+      const promise = result.current.startUpload(baseOptions());
+      await waitFor(() => expect(mockTus.instances).toHaveLength(1));
+      unmount();
+      failLookup(new Error("storage unavailable"));
+
+      await expect(promise).resolves.toBeUndefined();
+      expect(lastUpload().start).not.toHaveBeenCalled();
+    });
+
     it("does not abort anything twice", async () => {
       const { result, unmount } = renderHook(() => useTusUpload());
       const { upload } = await begin(result.current.startUpload);

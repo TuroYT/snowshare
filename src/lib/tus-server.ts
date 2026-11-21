@@ -11,7 +11,6 @@ import { unlink } from "node:fs/promises";
 export const CTX_IP = "ss_ip";
 export const CTX_USER = "ss_user";
 export const CTX_AUTH = "ss_auth";
-export const CTX_SIZE_CHECKED = "ss_size_checked";
 
 export type UploadMetadata = Record<string, string | null | undefined>;
 
@@ -324,13 +323,6 @@ export async function recordStoredFile(
   }
 }
 
-/** True when the error is a deliberate rejection (limits, validation) rather than a crash. */
-export function isUploadRejection(error: unknown, UploadError: UploadErrorClass): boolean {
-  return (
-    !!error && typeof error === "object" && ("status_code" in error || error instanceof UploadError)
-  );
-}
-
 export async function removeTusFiles(tusTempDir: string, uploadId: string): Promise<void> {
   const tusFilePath = path.join(tusTempDir, uploadId);
   for (const file of [tusFilePath, `${tusFilePath}.json`]) {
@@ -369,7 +361,7 @@ export function createTusHooks({ loadLibs, getRequestContext, tusTempDir }: TusH
       try {
         await libs.assertFileUploadAllowed(context);
 
-        // With Upload-Defer-Length the size is unknown here: limits are enforced on finish
+        // With Upload-Defer-Length the size is unknown here: it is checked on finish anyway
         const sizeKnown = upload.size !== undefined && upload.size !== null;
         if (sizeKnown) {
           await assertWithinLimits(libs, context, upload.size as number);
@@ -388,7 +380,6 @@ export function createTusHooks({ loadLibs, getRequestContext, tusTempDir }: TusH
             [CTX_IP]: context.clientIp,
             [CTX_USER]: context.userId || "",
             [CTX_AUTH]: context.isAuthenticated ? "1" : "0",
-            [CTX_SIZE_CHECKED]: sizeKnown ? "1" : "0",
           },
         };
       } catch (error) {
@@ -415,9 +406,8 @@ export function createTusHooks({ loadLibs, getRequestContext, tusTempDir }: TusH
 
       let createdShareId: string | null = null;
       try {
-        if (metadata[CTX_SIZE_CHECKED] !== "1") {
-          await assertWithinLimits(libs, context, size);
-        }
+        // The creation check reserves nothing: other shares may have been stored since
+        await assertWithinLimits(libs, context, size);
 
         let share: ShareRecord;
         if (isBulk && bulkShareId) {
@@ -455,10 +445,10 @@ export function createTusHooks({ loadLibs, getRequestContext, tusTempDir }: TusH
         };
       } catch (error) {
         if (createdShareId) await libs.rollbackShare(createdShareId);
-        // A rejected upload (limits, validation) will never be finalized: free the disk now
-        if (isUploadRejection(error, libs.UploadError)) {
-          await removeTusFiles(tusTempDir, upload.id);
-        }
+        // All bytes are already received, so a retry would find the upload complete and the
+        // client would report success without a share. Dropping the upload makes the client
+        // start a new one instead (and frees the disk for rejected uploads).
+        await removeTusFiles(tusTempDir, upload.id);
         throw toTusError(error, libs.UploadError);
       }
     },

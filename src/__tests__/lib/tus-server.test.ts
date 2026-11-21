@@ -486,7 +486,6 @@ describe("createTusHooks", () => {
         ss_ip: "1.2.3.4",
         ss_user: "user-1",
         ss_auth: "1",
-        ss_size_checked: "1",
       });
       expect(libs.assertFileUploadAllowed).toHaveBeenCalledWith(userContext);
       expect(libs.getUploadLimits).toHaveBeenCalledWith("1.2.3.4", true);
@@ -508,9 +507,8 @@ describe("createTusHooks", () => {
     });
 
     it("defers the limits check for deferred-length uploads", async () => {
-      const result = await hooks.onUploadCreate({}, { id: "u1", size: null, metadata: {} });
+      await hooks.onUploadCreate({}, { id: "u1", size: null, metadata: {} });
 
-      expect(result.metadata.ss_size_checked).toBe("0");
       expect(libs.getUploadLimits).not.toHaveBeenCalled();
     });
 
@@ -602,7 +600,6 @@ describe("createTusHooks", () => {
         ss_ip: "1.2.3.4",
         ss_user: "user-1",
         ss_auth: "1",
-        ss_size_checked: "1",
       },
       ...overrides,
     });
@@ -715,7 +712,7 @@ describe("createTusHooks", () => {
           id: "upload-1",
           size: null,
           offset: 77,
-          metadata: { ss_ip: "1.2.3.4", ss_user: "", ss_auth: "0", ss_size_checked: "1" },
+          metadata: { ss_ip: "1.2.3.4", ss_user: "", ss_auth: "0" },
         }
       );
 
@@ -911,8 +908,8 @@ describe("createTusHooks", () => {
 
       expect(libs.rollbackShare).toHaveBeenCalledWith("share-1");
       expect(error.status_code).toBe(500);
-      // A crash is not a rejection: the tus files are kept so the upload can be retried
-      expect((await readdir(tusTempDir)).sort()).toEqual(["upload-1", "upload-1.json"]);
+      // The upload is complete and can never be finalized again: it must not stay resumable
+      expect(await readdir(tusTempDir)).toEqual([]);
     });
 
     it("deletes the stored file and rolls back the share when linking fails", async () => {
@@ -986,14 +983,14 @@ describe("createTusHooks", () => {
       expect(libs.rollbackShare).not.toHaveBeenCalled();
     });
 
-    it("keeps the tus files when the failure is a crash", async () => {
+    it("removes the tus files when the failure is a crash", async () => {
       await createTusFiles();
       libs.resolveUploadOptions.mockRejectedValue(new Error("boom"));
 
       const error = await rejection(hooks.onUploadFinish({}, finishedUpload()));
 
       expect(error.status_code).toBe(500);
-      expect((await readdir(tusTempDir)).sort()).toEqual(["upload-1", "upload-1.json"]);
+      expect(await readdir(tusTempDir)).toEqual([]);
     });
 
     it("does not fail when the tus files are already gone after a rejection", async () => {
@@ -1010,11 +1007,7 @@ describe("createTusHooks", () => {
     });
 
     describe("deferred-length uploads", () => {
-      const deferredUpload = (size: number) =>
-        finishedUpload({
-          size,
-          metadata: { ...finishedUpload().metadata, ss_size_checked: "0" },
-        });
+      const deferredUpload = (size: number) => finishedUpload({ size });
 
       it("checks the limits on finish and accepts a size within them", async () => {
         const result = await hooks.onUploadFinish({}, deferredUpload(500));
@@ -1045,10 +1038,18 @@ describe("createTusHooks", () => {
         expect(error.status_code).toBe(429);
       });
 
-      it("does not check the limits again when they were checked at creation", async () => {
-        await hooks.onUploadFinish({}, finishedUpload());
+      it("checks the limits again when they already passed at creation", async () => {
+        // Other shares may have been stored between creation and finish
+        libs.getUploadLimits.mockResolvedValue({
+          maxFileSizeBytes: 10_000,
+          remainingQuotaBytes: 50,
+        });
 
-        expect(libs.getUploadLimits).not.toHaveBeenCalled();
+        const error = await rejection(hooks.onUploadFinish({}, finishedUpload({ size: 80 })));
+
+        expect(libs.getUploadLimits).toHaveBeenCalledWith("1.2.3.4", true);
+        expect(error.status_code).toBe(429);
+        expect(libs.createFileShareRecord).not.toHaveBeenCalled();
       });
     });
   });
