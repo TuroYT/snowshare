@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { useFetch } from "@/hooks/useFetch";
 import { useSession } from "next-auth/react";
-import { Button, Spinner } from "@/components/ui";
+import { Button, Spinner, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 import { FIELD_FOCUS } from "./fieldStyles";
 
 // qrcode.react is only needed once a share was successfully created, so load
@@ -76,14 +77,13 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
   }, []);
 
   const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
-      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Error copying to clipboard:", err);
+    if (!(await copyText(text))) {
+      toast.error(t("common.copy_failed"));
+      return;
     }
+    setCopied(true);
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
   };
 
   useEffect(() => {

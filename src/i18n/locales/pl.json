@@ -6,7 +6,8 @@
     "delete": "Usuń",
     "confirm": "Potwierdź",
     "remove": "Usuń",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "copy_failed": "Nie udało się skopiować. Zaznacz tekst i skopiuj go ręcznie."
   },
   "nav": {
     "hello": "Witaj, {{email}}",
@@ -602,7 +603,8 @@
       "s3_test": "Testuj połączenie",
       "s3_testing": "Testowanie…",
       "s3_test_success": "Połączenie udane.",
-      "s3_test_error": "Połączenie nie powiodło się: {{error}}"
+      "s3_test_error": "Połączenie nie powiodło się: {{error}}",
+      "s3_network_error": "Błąd sieci"
     },
     "quotas": {
       "title": "Limity przesyłania",
@@ -666,7 +668,8 @@
         "city": "Miasto",
         "unknown": "Nieznany",
         "not_resolved": "Dane geolokalizacyjne niedostępne"
-      }
+      },
+      "views_title": "{{count}}/{{max}} wyświetleń"
     },
     "branding": {
       "section_identity": "Wygląd aplikacji",
@@ -729,7 +732,10 @@
       "font_family_hint": "Czcionka używana globalnie w całej aplikacji",
       "accent_colors_label": "Kolory akcentu",
       "accent_colors_hint": "Używane dla przycisków, linków i stanów fokusa. Wybór presetu nadpisuje te wartości.",
-      "background_image_error": "Nie można załadować obrazu. Sprawdź, czy adres URL wskazuje na prawidłowy obraz."
+      "background_image_error": "Nie można załadować obrazu. Sprawdź, czy adres URL wskazuje na prawidłowy obraz.",
+      "logo_preview_alt": "Podgląd logo",
+      "favicon_preview_alt": "Podgląd favicony",
+      "background_preview_alt": "Podgląd tła"
     },
     "email_templates": {
       "title": "Szablony e-mail",
@@ -778,7 +784,8 @@
       "url": "Adres URL webhooka",
       "secret": "Sekret podpisu (opcjonalnie)",
       "secret_hint": "Wysyłany jako X-SnowShare-Signature: sha256=<HMAC-SHA256 treści>"
-    }
+    },
+    "version_loading": "ładowanie..."
   },
   "paste_view": {
     "title": "Wklejka",
@@ -943,7 +950,8 @@
     "pdf_load_error": "Nie udało się załadować pliku PDF",
     "previous_page": "Poprzednia strona",
     "page_of": "Strona {{current}} z {{total}}",
-    "next_page": "Następna strona"
+    "next_page": "Następna strona",
+    "supported_formats_list": "Obrazy (jpg, png, gif, webp), dokumenty (pdf), filmy (mp4, webm, ogg)"
   },
   "embed": {
     "file": "Plik",
@@ -1009,5 +1017,8 @@
     "disable": "Wyłącz",
     "code_label": "Kod uwierzytelniający",
     "error": "Coś poszło nie tak."
+  },
+  "api_docs": {
+    "title": "Dokumentacja API"
   }
 }

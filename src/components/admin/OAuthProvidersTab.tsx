@@ -6,7 +6,7 @@ import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import { availableProviders } from "@/lib/providers";
 import Link from "next/link";
-import { Badge, Button, Input, Modal } from "@/components/ui";
+import { Badge, Button, Input, Modal, toast } from "@/components/ui";
 
 interface OAuthProvider {
   id: string;
@@ -96,9 +96,13 @@ export default function OAuthProvidersTab() {
       if (res.ok) {
         await fetchProviders();
         setEditingProvider(null);
+        toast.success(t("admin.save_success", "Changes saved successfully"));
+      } else {
+        toast.error(t("admin.save_error", "Error saving changes"));
       }
     } catch (error) {
       console.error("Failed to save provider", error);
+      toast.error(t("admin.save_error", "Error saving changes"));
     }
   };
 

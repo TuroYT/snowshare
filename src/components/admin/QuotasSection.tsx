@@ -44,7 +44,7 @@ function QuotaInput({
             helperText={hint}
             type="number"
             value={value}
-            onChange={(e) => onChange(Number.parseInt(e.target.value))}
+            onChange={(e) => onChange(Number.parseInt(e.target.value, 10) || 0)}
             min="0"
           />
         </div>

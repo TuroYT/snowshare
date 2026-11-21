@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
 import WarningModal from "@/components/admin/WarningModal";
 import { downloadShareXConfig } from "@/lib/sharex";
-import { Alert, Button, Card, Input } from "@/components/ui";
+import { Alert, Button, Card, Input, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 
 interface ApiKey {
   id: string;
@@ -84,13 +85,12 @@ export default function ApiKeysSection() {
 
   const handleCopy = async () => {
     if (!revealedToken) return;
-    try {
-      await navigator.clipboard.writeText(revealedToken);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy API key to clipboard:", err);
+    if (!(await copyText(revealedToken))) {
+      toast.error(t("common.copy_failed"));
+      return;
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const formatDate = (iso: string | null) => {

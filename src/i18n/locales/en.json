@@ -6,7 +6,8 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "remove": "Remove",
-    "close": "Close"
+    "close": "Close",
+    "copy_failed": "Could not copy. Select the text and copy it manually."
   },
   "nav": {
     "hello": "Hello, {{email}}",
@@ -602,7 +603,8 @@
       "s3_test": "Test connection",
       "s3_testing": "Testing…",
       "s3_test_success": "Connection successful.",
-      "s3_test_error": "Connection failed: {{error}}"
+      "s3_test_error": "Connection failed: {{error}}",
+      "s3_network_error": "Network error"
     },
     "quotas": {
       "title": "Upload Quotas",
@@ -666,7 +668,8 @@
         "city": "City",
         "unknown": "Unknown",
         "not_resolved": "Geolocation data unavailable"
-      }
+      },
+      "views_title": "{{count}}/{{max}} views"
     },
     "branding": {
       "section_identity": "App Identity",
@@ -729,7 +732,10 @@
       "font_family_hint": "The font used globally across the entire application",
       "accent_colors_label": "Accent colors",
       "accent_colors_hint": "Used for buttons, links, and focus states. Selecting a preset above overrides these.",
-      "background_image_error": "Unable to load image. Check that the URL points to a valid image."
+      "background_image_error": "Unable to load image. Check that the URL points to a valid image.",
+      "logo_preview_alt": "Logo preview",
+      "favicon_preview_alt": "Favicon preview",
+      "background_preview_alt": "Background preview"
     },
     "email_templates": {
       "title": "Email Templates",
@@ -778,7 +784,8 @@
       "url": "Webhook URL",
       "secret": "Signing secret (optional)",
       "secret_hint": "Sent as X-SnowShare-Signature: sha256=<HMAC-SHA256 of the body>"
-    }
+    },
+    "version_loading": "loading..."
   },
   "paste_view": {
     "title": "Paste",
@@ -943,7 +950,8 @@
     "pdf_load_error": "Failed to load PDF",
     "previous_page": "Previous page",
     "page_of": "Page {{current}} of {{total}}",
-    "next_page": "Next page"
+    "next_page": "Next page",
+    "supported_formats_list": "Images (jpg, png, gif, webp), Documents (pdf), Videos (mp4, webm, ogg)"
   },
   "embed": {
     "file": "File",
@@ -1009,5 +1017,8 @@
     "disable": "Turn off",
     "code_label": "Authentication code",
     "error": "Something went wrong."
+  },
+  "api_docs": {
+    "title": "API reference"
   }
 }

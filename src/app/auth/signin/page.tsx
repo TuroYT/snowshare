@@ -23,6 +23,7 @@ export default function SignIn() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
+  const messageParam = searchParams.get("message");
   const { t } = useTranslation();
   const { branding } = useTheme();
 
@@ -141,6 +142,13 @@ export default function SignIn() {
           </h1>
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
+
+        {/* Notice passed by signup/setup (?message=...) */}
+        {messageParam && !error && (
+          <Alert variant="success" className="mb-4">
+            {messageParam}
+          </Alert>
+        )}
 
         {/* Error message */}
         {error && (

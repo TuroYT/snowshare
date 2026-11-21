@@ -135,7 +135,7 @@ export default function AdminPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-2">
-              {t("admin.title")} - v{versionInfo?.currentVersion ?? "loading..."}
+              {t("admin.title")} - v{versionInfo?.currentVersion ?? t("admin.version_loading")}
             </h1>
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
           </div>

@@ -41,7 +41,7 @@ export default function LogoFaviconSection({
               </p>
               <Image
                 src={logoUrl}
-                alt="Logo preview"
+                alt={t("admin.branding.logo_preview_alt")}
                 width={120}
                 height={40}
                 className="h-10 w-auto object-contain"
@@ -71,7 +71,7 @@ export default function LogoFaviconSection({
               </p>
               <Image
                 src={faviconUrl}
-                alt="Favicon preview"
+                alt={t("admin.branding.favicon_preview_alt")}
                 width={32}
                 height={32}
                 className="h-8 w-8 object-contain"

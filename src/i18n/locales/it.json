@@ -6,7 +6,8 @@
     "delete": "Elimina",
     "confirm": "Conferma",
     "remove": "Rimuovi",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "copy_failed": "Impossibile copiare. Seleziona il testo e copialo manualmente."
   },
   "nav": {
     "hello": "Ciao, {{email}}",
@@ -602,7 +603,8 @@
       "s3_test": "Verifica connessione",
       "s3_testing": "Verifica in corso…",
       "s3_test_success": "Connessione riuscita.",
-      "s3_test_error": "Connessione non riuscita: {{error}}"
+      "s3_test_error": "Connessione non riuscita: {{error}}",
+      "s3_network_error": "Errore di rete"
     },
     "quotas": {
       "title": "Limiti di caricamento",
@@ -666,7 +668,8 @@
         "city": "Città",
         "unknown": "Sconosciuto",
         "not_resolved": "Dati di geolocalizzazione non disponibili"
-      }
+      },
+      "views_title": "{{count}}/{{max}} visualizzazioni"
     },
     "branding": {
       "section_identity": "Identità dell'app",
@@ -729,7 +732,10 @@
       "font_family_hint": "Il carattere utilizzato in tutta l'applicazione",
       "accent_colors_label": "Colori di accento",
       "accent_colors_hint": "Utilizzati per pulsanti, link e stati di focus. Selezionando una preimpostazione qui sopra, questi valori vengono sovrascritti.",
-      "background_image_error": "Impossibile caricare l'immagine. Verifica che l'URL rimandi a un'immagine valida."
+      "background_image_error": "Impossibile caricare l'immagine. Verifica che l'URL rimandi a un'immagine valida.",
+      "logo_preview_alt": "Anteprima del logo",
+      "favicon_preview_alt": "Anteprima della favicon",
+      "background_preview_alt": "Anteprima dello sfondo"
     },
     "email_templates": {
       "title": "Modelli email",
@@ -778,7 +784,8 @@
       "url": "URL del webhook",
       "secret": "Segreto di firma (facoltativo)",
       "secret_hint": "Inviato come X-SnowShare-Signature: sha256=<HMAC-SHA256 del corpo>"
-    }
+    },
+    "version_loading": "caricamento..."
   },
   "paste_view": {
     "title": "Incolla",
@@ -943,7 +950,8 @@
     "pdf_load_error": "Impossibile caricare il PDF",
     "previous_page": "Pagina precedente",
     "page_of": "Pagina {{current}} di {{total}}",
-    "next_page": "Pagina successiva"
+    "next_page": "Pagina successiva",
+    "supported_formats_list": "Immagini (jpg, png, gif, webp), documenti (pdf), video (mp4, webm, ogg)"
   },
   "embed": {
     "file": "File",
@@ -1009,5 +1017,8 @@
     "files": "File",
     "message_placeholder": "Messaggio (facoltativo)",
     "send": "Invia"
+  },
+  "api_docs": {
+    "title": "Riferimento API"
   }
 }

@@ -112,9 +112,7 @@ export default function FilePreviewModal({
                   <p className="font-medium mb-2">
                     {t("file_preview.supported_formats", "Supported formats:")}
                   </p>
-                  <p className="text-xs">
-                    Images (jpg, png, gif, webp), Documents (pdf), Videos (mp4, webm, ogg)
-                  </p>
+                  <p className="text-xs">{t("file_preview.supported_formats_list")}</p>
                 </div>
               )}
             </div>

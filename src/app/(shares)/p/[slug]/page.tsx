@@ -25,7 +25,8 @@ import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
 import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
-import { Badge, Button, Input, Spinner } from "@/components/ui";
+import { Badge, Button, Input, Spinner, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 
 function escapeHtml(text: string): string {
   return text
@@ -120,10 +121,8 @@ const PasteViewPage = () => {
 
   const handleCopy = async () => {
     if (!pasteData?.paste) return;
-    try {
-      await navigator.clipboard.writeText(pasteData.paste);
-    } catch (err) {
-      console.error("Error copying to clipboard:", err);
+    if (!(await copyText(pasteData.paste))) {
+      toast.error(t("common.copy_failed"));
       return;
     }
     setCopied(true);

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, Input, Select, Textarea } from "@/components/ui";
+import { Badge, Button, Input, Select, Textarea, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 import ShareAccessLogsModal from "@/components/profile/ShareAccessLogsModal";
 import WarningModal from "@/components/admin/WarningModal";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
@@ -64,8 +65,11 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
     setIsEditing(false);
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(`${window.location.origin}${path}`);
+  const copyToClipboard = async () => {
+    if (!(await copyText(`${window.location.origin}${path}`))) {
+      toast.error(t("common.copy_failed"));
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };

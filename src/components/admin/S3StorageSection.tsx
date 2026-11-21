@@ -46,7 +46,7 @@ export default function S3StorageSection({ settings, onChange }: Readonly<Props>
       console.error("S3 connection test failed:", error);
       setTestResult({
         success: false,
-        message: t("admin.settings.s3_test_error", { error: "Network error" }),
+        message: t("admin.settings.s3_test_error", { error: t("admin.settings.s3_network_error") }),
       });
     } finally {
       setTesting(false);

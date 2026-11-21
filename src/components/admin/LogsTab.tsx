@@ -486,7 +486,12 @@ export default function LogsTab() {
                         <Badge variant="success">{t("admin.logs.active")}</Badge>
                       )}
                       {log.maxViews && (
-                        <span title={`${log.viewCount}/${log.maxViews} views`}>
+                        <span
+                          title={t("admin.logs.views_title", {
+                            count: log.viewCount,
+                            max: log.maxViews,
+                          })}
+                        >
                           <Badge variant="info">
                             👁️ {log.viewCount}/{log.maxViews}
                           </Badge>

@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFetch } from "@/hooks/useFetch";
 import WarningModal from "@/components/admin/WarningModal";
-import { Alert, Button, Card, Input } from "@/components/ui";
+import { Alert, Button, Card, Input, toast } from "@/components/ui";
+import { copyText } from "@/lib/clipboard";
 
 interface ReverseShare {
   id: string;
@@ -96,13 +97,12 @@ export default function ReverseSharesSection() {
   };
 
   const handleCopy = async (slug: string) => {
-    try {
-      await navigator.clipboard.writeText(linkFor(slug));
-      setCopied(slug);
-      setTimeout(() => setCopied(null), 2000);
-    } catch (err) {
-      console.error("Failed to copy upload request link:", err);
+    if (!(await copyText(linkFor(slug)))) {
+      toast.error(t("common.copy_failed"));
+      return;
     }
+    setCopied(slug);
+    setTimeout(() => setCopied(null), 2000);
   };
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>

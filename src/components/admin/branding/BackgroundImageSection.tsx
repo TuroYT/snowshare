@@ -93,7 +93,7 @@ function BackgroundImagePreview({ url }: Readonly<{ url: string }>) {
     <div className="relative w-full h-32 rounded-[var(--radius)] overflow-hidden">
       <Image
         src={url}
-        alt="Background preview"
+        alt={t("admin.branding.background_preview_alt")}
         fill
         className="object-cover"
         onError={() => setStatus("error")}

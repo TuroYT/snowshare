@@ -102,28 +102,30 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
               </p>
             )}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
-              <a
-                href={versionInfo.releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--foreground)] underline underline-offset-2 decoration-[var(--primary)] hover:decoration-2 transition-colors duration-100 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-              >
-                {t("admin.update.view_release", "View Release Notes")}
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
+              {versionInfo.releaseUrl && (
+                <a
+                  href={versionInfo.releaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--foreground)] underline underline-offset-2 decoration-[var(--primary)] hover:decoration-2 transition-colors duration-100 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
-              </a>
+                  {t("admin.update.view_release", "View Release Notes")}
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </a>
+              )}
               <a
                 href="https://github.com/TuroYT/snowshare/blob/main/docs/UPGRADE.md"
                 target="_blank"
