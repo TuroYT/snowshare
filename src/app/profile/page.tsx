@@ -10,13 +10,13 @@ import ProfileStats from "@/components/profile/ProfileStats";
 import ConnectedAccounts from "@/components/profile/ConnectedAccounts";
 import type { UserShare, UserShareUpdate } from "@/components/profile/types";
 import ApiKeysSection from "@/components/ApiKeysSection";
-import ReverseSharesSection from "@/components/profile/ReverseSharesSection";
 import TwoFactorSection from "@/components/profile/TwoFactorSection";
 import AccessLogs from "@/components/profile/AccessLogs";
 import Footer from "@/components/Footer";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/components/ui/Toast";
-import { Spinner, Tabs, Tab } from "@/components/ui";
+import { Tabs, Tab } from "@/components/ui";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 
 type User = {
   id: string;
@@ -25,7 +25,7 @@ type User = {
   createdAt: string;
 };
 
-type TabKey = "profile" | "shares" | "requests" | "accounts" | "apikeys" | "accesslogs";
+type TabKey = "profile" | "shares" | "accounts" | "apikeys" | "accesslogs";
 
 /** ARIA wiring between a tab (rendered by <Tab>) and its panel. */
 const panelProps = (key: TabKey) => ({
@@ -42,14 +42,10 @@ const ProfilePage = () => {
   const [shares, setShares] = useState<UserShare[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("profile");
-  // Once opened, the upload requests section stays mounted (hidden) so a create or delete in
-  // flight always refreshes the list the user sees
-  const [requestsOpened, setRequestsOpened] = useState(false);
-  if (activeTab === "requests" && !requestsOpened) setRequestsOpened(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/auth/signin");
+      router.replace("/auth/signin");
     }
   }, [status, router]);
 
@@ -87,19 +83,33 @@ const ProfilePage = () => {
   }, [status, fetchUserData, fetchShares]);
 
   const handleDeleteShare = async (id: string) => {
+    const index = shares.findIndex((s) => s.id === id);
+    const removed = shares[index];
+    if (!removed) return;
+    setShares((current) => current.filter((s) => s.id !== id));
+
+    // Put the share back where it was when the server refuses or the request fails
+    const rollback = () =>
+      setShares((current) => {
+        if (current.some((s) => s.id === id)) return current;
+        const next = [...current];
+        next.splice(Math.min(index, next.length), 0, removed);
+        return next;
+      });
+
     try {
       const res = await fetch(`/api/user/shares/${id}`, {
         method: "DELETE",
       });
 
-      if (res.ok) {
-        setShares(shares.filter((s) => s.id !== id));
-      } else {
-        const data = await res.json();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        rollback();
         toast.error(data.error || t("profile.error_delete"));
       }
     } catch (error) {
       console.error("Error deleting share:", error);
+      rollback();
       toast.error(t("profile.error_delete"));
     }
   };
@@ -114,7 +124,7 @@ const ProfilePage = () => {
 
       if (res.ok) {
         const data = await res.json();
-        setShares(shares.map((s) => (s.id === id ? data.share : s)));
+        setShares((current) => current.map((s) => (s.id === id ? data.share : s)));
       } else {
         const data = await res.json();
         toast.error(data.error || t("profile.error_update_share"));
@@ -125,22 +135,24 @@ const ProfilePage = () => {
     }
   };
 
-  if (status === "loading" || loading) {
+  // Also covers the moment before the guard redirects an unauthenticated visitor
+  if (status !== "authenticated" || loading || !user) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col bg-[var(--background)]">
         <Navigation />
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <div className="flex flex-col items-center gap-4">
-            <Spinner className="w-12 h-12" />
-            <p className="text-[var(--foreground)]">{t("profile.loading")}</p>
+        <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10" aria-busy="true">
+          <p role="status" className="sr-only">
+            {t("profile.loading")}
+          </p>
+          <div className="flex gap-2 mb-8">
+            {[88, 72, 120, 104].map((width) => (
+              <WaveSkeleton key={width} variant="rounded" width={width} height={36} />
+            ))}
           </div>
-        </div>
+          <WaveSkeleton variant="rounded" height={320} sx={{ borderRadius: "var(--radius-lg)" }} />
+        </main>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
@@ -149,7 +161,6 @@ const ProfilePage = () => {
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-10">
         <h1 className="sr-only">{t("profile.title", "My Profile")}</h1>
 
-        {/* Tab navigation */}
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as TabKey)}
@@ -157,7 +168,6 @@ const ProfilePage = () => {
         >
           <Tab value="profile">{t("profile.tab_profile", "Profile")}</Tab>
           <Tab value="shares">{t("profile.tab_shares", "Shares")}</Tab>
-          <Tab value="requests">{t("profile.tab_requests", "Upload requests")}</Tab>
           <Tab value="accounts">{t("profile.tab_accounts", "Linked accounts")}</Tab>
           <Tab value="apikeys">{t("profile.tab_apikeys", "API Keys")}</Tab>
           <Tab value="accesslogs">{t("profile.tab_accesslogs", "Access Logs")}</Tab>
@@ -174,12 +184,6 @@ const ProfilePage = () => {
           <div {...panelProps("shares")}>
             <ProfileStats shares={shares} />
             <SharesList shares={shares} onDelete={handleDeleteShare} onUpdate={handleUpdateShare} />
-          </div>
-        )}
-
-        {requestsOpened && (
-          <div {...panelProps("requests")} hidden={activeTab !== "requests"}>
-            <ReverseSharesSection />
           </div>
         )}
 

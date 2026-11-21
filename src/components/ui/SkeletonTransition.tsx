@@ -29,14 +29,14 @@ export default function SkeletonTransition({
   return (
     <div className={`relative ${className ?? ""}`}>
       <div
-        className={`transition-opacity duration-300 ${!loading ? "absolute inset-0 pointer-events-none overflow-hidden" : ""}`}
+        className={`transition-opacity duration-200 ease-out ${!loading ? "absolute inset-0 pointer-events-none overflow-hidden" : ""}`}
         style={{ opacity: loading ? 1 : 0 }}
         aria-hidden={!loading}
       >
         {skeleton}
       </div>
       <div
-        className={`transition-opacity duration-300 ${loading ? "absolute inset-0 pointer-events-none overflow-hidden" : ""}`}
+        className={`transition-opacity duration-200 ease-out ${loading ? "absolute inset-0 pointer-events-none overflow-hidden" : ""}`}
         style={{ opacity: loading ? 0 : 1 }}
         aria-hidden={loading}
       >

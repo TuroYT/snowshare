@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
     const { name, displayName, enabled, clientId, clientSecret, issuer, tenantId } =
       await request.json();
 
-    // Validate displayName
     const dnValidation = isValidDisplayName(displayName);
     if (!dnValidation.valid) {
       return apiError(request, ErrorCode.INVALID_DISPLAY_NAME);
@@ -76,7 +75,6 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.SERVER_CONFIG_ERROR);
     }
 
-    // Encrypt secret if provided
     const secretKey = process.env.NEXTAUTH_SECRET;
     const encryptedSecret =
       clientSecret && secretKey ? encrypt(clientSecret, secretKey) : undefined;

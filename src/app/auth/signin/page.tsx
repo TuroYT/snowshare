@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Alert } from "@/components/ui/Alert";
+import FormNotice from "@/app/auth/_components/FormNotice";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -18,6 +18,7 @@ export default function SignIn() {
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(true);
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const router = useRouter();
@@ -89,9 +90,11 @@ export default function SignIn() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError("");
 
+    let redirecting = false;
     try {
       const result = await signIn("credentials", {
         email,
@@ -120,46 +123,62 @@ export default function SignIn() {
       } else if (result?.error) {
         setError(t("auth.error_invalid_credentials"));
       } else {
-        // Verify session was created successfully
         const session = await getSession();
         if (session) {
-          router.push("/");
+          // Stay in the busy state until the navigation replaces the page
+          redirecting = true;
+          router.replace("/");
         }
       }
     } catch (error) {
       setError(t("auth.error_generic") + (error as Error).message);
     } finally {
-      setLoading(false);
+      if (!redirecting) setLoading(false);
     }
+  };
+
+  // Coming back from the provider with the back button restores the page from bfcache with
+  // the pending state still set.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setPendingProvider(null);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
+  const handleProviderSignIn = (providerId: string) => {
+    setPendingProvider(providerId);
+    signIn(providerId, { callbackUrl: "/" }).catch((err) => {
+      console.error("Provider sign-in failed:", err);
+      setPendingProvider(null);
+    });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-sm">
-        {/* Logo and title */}
         <div className="text-center mb-8">
-          <Image src="/logo.svg" alt="" width={40} height={40} className="mx-auto mb-3" />
+          <Image
+            src="/logo.svg"
+            unoptimized
+            alt=""
+            width={40}
+            height={40}
+            className="mx-auto mb-3"
+          />
           <h1 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">
             {t("auth.signin_title", "Sign in")}
           </h1>
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
 
-        {/* Notice passed by signup/setup (?notice=account_created) */}
-        {noticeKey && !error && (
-          <Alert variant="success" className="mb-4">
-            {t(noticeKey)}
-          </Alert>
-        )}
+        {/* The notice comes from signup/setup (?notice=account_created) */}
+        <FormNotice
+          message={error || (noticeKey ? t(noticeKey) : null)}
+          variant={error ? "danger" : "success"}
+        />
 
-        {/* Error message */}
-        {error && (
-          <Alert variant="danger" className="mb-4">
-            {error}
-          </Alert>
-        )}
-
-        {/* Credentials form */}
         {!disableCredentialsLogin && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -168,7 +187,7 @@ export default function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              placeholder={t("auth.email_placeholder") as string}
+              placeholder={t("auth.email_placeholder")}
               required
             />
             <Input
@@ -177,7 +196,7 @@ export default function SignIn() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              placeholder={t("auth.password_placeholder") as string}
+              placeholder={t("auth.password_placeholder")}
               required
             />
             {needsTotp && (
@@ -192,13 +211,17 @@ export default function SignIn() {
                 required
               />
             )}
-            <Button type="submit" isLoading={loading} className="w-full">
+            <Button
+              type="submit"
+              isLoading={loading}
+              disabled={pendingProvider !== null}
+              className="w-full"
+            >
               {t("auth.signin_button", "Sign in")}
             </Button>
           </form>
         )}
 
-        {/* OAuth providers */}
         {providers &&
           Object.values(providers).some((p: ClientSafeProvider) => p.name !== "credentials") && (
             <>
@@ -223,7 +246,9 @@ export default function SignIn() {
                       key={provider.name}
                       variant="secondary"
                       className="w-full"
-                      onClick={() => signIn(provider.id, { callbackUrl: "/" })}
+                      isLoading={pendingProvider === provider.id}
+                      disabled={loading || pendingProvider !== null}
+                      onClick={() => handleProviderSignIn(provider.id)}
                     >
                       {t("auth.signin_with", "Sign in with")} {provider.name}
                     </Button>
@@ -232,7 +257,6 @@ export default function SignIn() {
             </>
           )}
 
-        {/* Sign up link */}
         {!disableCredentialsLogin && (
           <p className="text-center text-sm text-[var(--foreground-muted)] mt-6">
             {t("auth.no_account", "No account?")}{" "}

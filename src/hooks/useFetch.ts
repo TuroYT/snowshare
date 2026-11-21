@@ -18,16 +18,20 @@ export interface FetchOptions {
 // single consumer (that used to leave the other consumers with no data and no error).
 const inflightRequests = new Map<string, Promise<unknown>>();
 
-function sharedFetch<T>(url: string): Promise<T> {
+// `fresh` skips an in-flight request: a refetch after a mutation must not receive a
+// response that was started before the mutation.
+function sharedFetch<T>(url: string, fresh = false): Promise<T> {
   const existing = inflightRequests.get(url) as Promise<T> | undefined;
-  if (existing) return existing;
+  if (existing && !fresh) return existing;
 
-  const promise = fetch(url)
+  const promise: Promise<T> = fetch(url)
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json() as Promise<T>;
     })
-    .finally(() => inflightRequests.delete(url));
+    .finally(() => {
+      if (inflightRequests.get(url) === promise) inflightRequests.delete(url);
+    });
   inflightRequests.set(url, promise);
   return promise;
 }
@@ -38,40 +42,56 @@ export function useFetch<T>(url: string | null, options?: FetchOptions): FetchSt
   const [error, setError] = useState<string | null>(null);
   // Incremented on each fetch and on unmount: only the latest fetch may update state
   const counterRef = useRef(0);
+  // URL the current `data` belongs to: data is kept while revalidating the same URL
+  const loadedUrlRef = useRef<string | null>(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const fetch_ = useCallback(async () => {
-    if (!url) return;
-    const id = ++counterRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const json = await sharedFetch<T>(url);
-      if (id === counterRef.current) {
-        setData(json);
+  const load = useCallback(
+    async (fresh: boolean) => {
+      if (!url) return;
+      const id = ++counterRef.current;
+      if (loadedUrlRef.current !== url) {
+        // First load, or the URL changed: the previous data no longer applies
+        loadedUrlRef.current = null;
+        setData(null);
+        setLoading(true);
       }
-    } catch (err) {
-      if (id === counterRef.current) {
-        setError(
-          optionsRef.current?.errorMessage ?? (err instanceof Error ? err.message : "Unknown error")
-        );
+      setError(null);
+      try {
+        const json = await sharedFetch<T>(url, fresh);
+        if (id === counterRef.current) {
+          loadedUrlRef.current = url;
+          setData(json);
+        }
+      } catch (err) {
+        if (id === counterRef.current) {
+          setError(
+            optionsRef.current?.errorMessage ??
+              (err instanceof Error ? err.message : "Unknown error")
+          );
+        }
+      } finally {
+        if (id === counterRef.current) {
+          setLoading(false);
+        }
       }
-    } finally {
-      if (id === counterRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [url]);
+    },
+    [url]
+  );
+
+  const refetch = useCallback(() => {
+    void load(true);
+  }, [load]);
 
   useEffect(() => {
     const counter = counterRef;
-    fetch_();
+    void load(false);
     return () => {
       // Ignore the response of a request started before unmount / url change
       counter.current++;
     };
-  }, [fetch_]);
+  }, [load]);
 
-  return { data, loading, error, refetch: fetch_, clearError: () => setError(null) };
+  return { data, loading, error, refetch, clearError: () => setError(null) };
 }

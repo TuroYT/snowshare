@@ -11,7 +11,7 @@ export interface TusAfterResponseHeaders {
 
 export interface StartTusUploadOptions {
   file: File;
-  /** tus metadata sent with the upload (must be string values only). */
+  /** tus metadata (string values only) */
   metadata: Record<string, string>;
   /** Translates a server error code (from a `{ error: CODE }` response body) into a user-facing message. */
   translateErrorCode: (code: string) => string;
@@ -24,20 +24,20 @@ export interface StartTusUploadOptions {
 }
 
 /**
- * Wraps tus-js-client resumable uploads for the file share form.
- *
- * - tus-js-client is loaded lazily (`await import`) since it's only needed
- *   once a user actually starts a file upload.
- * - Every upload started through a given hook instance is tracked so it can
- *   be aborted on unmount, whether it's the single-file flow or one file in
- *   the sequential multi-file flow.
+ * Resumable tus uploads for the file share form. tus-js-client is loaded lazily, and
+ * every upload started through a hook instance is aborted on unmount.
  */
 export function useTusUpload() {
   const activeUploadsRef = useRef<Set<TusUpload>>(new Set());
+  // Set on unmount: an upload still waiting on the lazy import or on findPreviousUploads()
+  // is not in activeUploads yet (or would be restarted by start()), so it must check this
+  const unmountedRef = useRef(false);
 
   useEffect(() => {
+    unmountedRef.current = false;
     const activeUploads = activeUploadsRef.current;
     return () => {
+      unmountedRef.current = true;
       activeUploads.forEach((upload) => {
         // abort() may throw synchronously or return a rejected promise
         const logAbortError = (error: unknown) =>
@@ -67,6 +67,11 @@ export function useTusUpload() {
     return import("tus-js-client").then(
       (tus) =>
         new Promise<void>((resolve) => {
+          if (unmountedRef.current) {
+            resolve();
+            return;
+          }
+
           if (!tus.isSupported) {
             onError?.(networkErrorMessage);
             resolve();
@@ -90,7 +95,6 @@ export function useTusUpload() {
             onShouldRetry(err) {
               const status = err?.originalResponse?.getStatus();
               if (status && status >= 400 && status < 500) return false;
-              if (status === 409) return false;
               return true;
             },
             onError: (error: unknown) => {
@@ -135,17 +139,26 @@ export function useTusUpload() {
 
           activeUploadsRef.current.add(upload);
 
+          const startUnlessUnmounted = () => {
+            if (unmountedRef.current) {
+              activeUploadsRef.current.delete(upload);
+              settle();
+              return;
+            }
+            upload.start();
+          };
+
           upload
             .findPreviousUploads()
             .then((previousUploads) => {
-              if (previousUploads.length > 0) {
+              if (previousUploads.length > 0 && !unmountedRef.current) {
                 upload.resumeFromPreviousUpload(previousUploads[0]);
               }
-              upload.start();
+              startUnlessUnmounted();
             })
             .catch((error) => {
               console.error("useTusUpload: error finding previous uploads:", error);
-              upload.start();
+              startUnlessUnmounted();
             });
         })
     );

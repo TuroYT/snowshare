@@ -147,7 +147,6 @@ async function sendEmailChangeVerification(email: string) {
   }
 }
 
-// GET - Get User informations
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -181,7 +180,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH - Update the current user's profile
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -222,14 +220,12 @@ export async function PATCH(request: NextRequest) {
 
     let needsEmailVerification = false;
 
-    // Email update
     if (emailChanged) {
       const emailResult = await applyEmailChange(request, email, !!user.password, updateData);
       if (emailResult instanceof NextResponse) return emailResult;
       needsEmailVerification = emailResult;
     }
 
-    // Password update
     if (newPassword) {
       const passwordError = await applyPasswordChange(
         request,

@@ -36,7 +36,6 @@ export default function TypographySection({
           ))}
         </Select>
 
-        {/* Font Preview */}
         <div className="mt-4 p-4 rounded-[var(--radius)] border border-[var(--border)]">
           <p className="text-xs text-[var(--foreground-muted)] mb-2">
             {t("admin.branding.preview")}
@@ -48,7 +47,6 @@ export default function TypographySection({
   );
 }
 
-// Font preview component
 function FontPreview({ fontFamily }: Readonly<{ fontFamily: string }>) {
   const [loaded, setLoaded] = useState(false);
 
@@ -69,12 +67,13 @@ function FontPreview({ fontFamily }: Readonly<{ fontFamily: string }>) {
 
   const style: React.CSSProperties = {
     fontFamily: fontFamily === "Geist" ? "var(--font-geist-sans)" : `"${fontFamily}", sans-serif`,
-    opacity: loaded ? 1 : 0.5,
-    transition: "opacity 0.3s ease",
   };
 
   return (
-    <div style={style} className="space-y-2">
+    <div
+      style={style}
+      className={`space-y-2 transition-opacity duration-200 motion-reduce:transition-none ${loaded ? "opacity-100" : "opacity-50"}`}
+    >
       <p className="text-lg font-bold text-[var(--foreground)]">
         {fontFamily} — The quick brown fox jumps over the lazy dog
       </p>

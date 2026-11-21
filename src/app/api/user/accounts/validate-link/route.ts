@@ -5,10 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 
-/**
- * POST /api/user/accounts/validate-link
- * Validate the link token to finalize linking a new OAuth account
- */
 export async function POST(request: NextRequest) {
   try {
     const authOptions = await getAuthOptions();
@@ -32,13 +28,11 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.TOKEN_INVALID_OR_EXPIRED);
     }
 
-    // Expiry check
     if (verificationToken.expires < new Date()) {
       await prisma.verificationToken.delete({ where: { token } });
       return apiError(request, ErrorCode.TOKEN_EXPIRED);
     }
 
-    // Extract token information
     const parts = verificationToken.identifier.split(":");
     if (parts[0] !== "account-link" || !session.user.email || parts[1] !== session.user.email) {
       return apiError(request, ErrorCode.TOKEN_INVALID);
@@ -46,7 +40,6 @@ export async function POST(request: NextRequest) {
 
     const provider = parts[2];
 
-    // Verify that the account is now linked
     const linkedAccount = await prisma.account.findFirst({
       where: {
         userId: session.user.id,

@@ -1,8 +1,3 @@
-/**
- * GET  /api/keys — List own API keys (session required)
- * POST /api/keys — Create a new API key (session required)
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

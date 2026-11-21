@@ -1,7 +1,3 @@
-/**
- * GET /api/v1/openapi.json — Serve the OpenAPI 3.1 spec
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { buildOpenApiSpec } from "@/lib/openapi";
 

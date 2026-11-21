@@ -3,8 +3,7 @@ import { getSettingsCached } from "@/lib/settings";
 
 export async function GET() {
   try {
-    // Get settings from database
-    let allowSignup = true; // Default value
+    let allowSignup = true;
     const settings = await getSettingsCached();
 
     if (settings) {

@@ -6,9 +6,6 @@ import { getUploadLimits } from "@/lib/quota-shared";
 
 const BYTES_PER_MB = 1024 * 1024;
 
-/**
- * Get quota information for display (sizes in MB).
- */
 export async function getQuotaInfo(request: NextRequest): Promise<{
   maxFileSize: number;
   ipQuota: number;

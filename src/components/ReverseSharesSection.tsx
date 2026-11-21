@@ -33,7 +33,11 @@ export default function ReverseSharesSection() {
     error: loadError,
     refetch,
   } = useFetch<{ data: ReverseShare[] }>("/api/user/reverse-shares");
-  const items = data?.data ?? [];
+  // Deleted requests disappear right away; they come back if the request fails
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const items = (data?.data ?? []).filter((rs) => !deletedIds.includes(rs.id));
+  // Later refetches keep the list on screen
+  const initialLoading = loading && !data;
   const [form, setForm] = useState({
     name: "",
     password: "",
@@ -42,7 +46,6 @@ export default function ReverseSharesSection() {
     maxSizeMB: "",
   });
   const [creating, setCreating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<string | null>(null);
@@ -82,17 +85,20 @@ export default function ReverseSharesSection() {
   };
 
   const handleDelete = async (id: string) => {
-    setDeleting(true);
+    setToDelete(null);
+    setError(null);
+    setDeletedIds((ids) => [...ids, id]);
+    const restore = () => {
+      setDeletedIds((ids) => ids.filter((x) => x !== id));
+      setError(t("reverse_shares.error_delete", "Could not delete the request."));
+    };
     try {
       const res = await fetch(`/api/user/reverse-shares/${id}`, { method: "DELETE" });
       if (res.ok) refetch();
-      else setError(t("reverse_shares.error_delete", "Could not delete the request."));
+      else restore();
     } catch (err) {
       console.error("Failed to delete upload request:", err);
-      setError(t("reverse_shares.error_delete", "Could not delete the request."));
-    } finally {
-      setDeleting(false);
-      setToDelete(null);
+      restore();
     }
   };
 
@@ -170,7 +176,7 @@ export default function ReverseSharesSection() {
         <div className="sm:col-span-2 flex justify-end">
           <Button
             type="submit"
-            disabled={creating || deleting || loading || !form.name.trim()}
+            disabled={creating || initialLoading || !form.name.trim()}
             isLoading={creating}
           >
             {creating
@@ -186,31 +192,25 @@ export default function ReverseSharesSection() {
         </Alert>
       )}
 
-      {loading && (
+      {initialLoading && (
         <p className="text-sm text-[var(--foreground-muted)]">{t("loading", "Loading...")}</p>
       )}
-      {!loading && loadError && (
+      {!initialLoading && loadError && (
         <Alert variant="danger" className="flex flex-wrap items-center gap-3">
           <p className="min-w-0">
             {t("reverse_shares.error_load", "Could not load your upload requests.")}
           </p>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={refetch}
-            disabled={creating || deleting}
-          >
+          <Button type="button" variant="secondary" size="sm" onClick={refetch} disabled={creating}>
             {t("reverse_shares.retry", "Retry")}
           </Button>
         </Alert>
       )}
-      {!loading && !loadError && items.length === 0 && (
+      {!initialLoading && !loadError && items.length === 0 && (
         <p className="text-sm text-[var(--foreground-muted)]">
           {t("reverse_shares.empty", "No upload requests yet.")}
         </p>
       )}
-      {!loading && !loadError && items.length > 0 && (
+      {!initialLoading && !loadError && items.length > 0 && (
         <ul className="space-y-3">
           {items.map((rs) => (
             <li
@@ -238,12 +238,7 @@ export default function ReverseSharesSection() {
                     ? t("reverse_shares.copied", "Copied!")
                     : t("reverse_shares.copy_link", "Copy link")}
                 </Button>
-                <Button
-                  variant="danger-outline"
-                  size="sm"
-                  onClick={() => setToDelete(rs.id)}
-                  disabled={creating || deleting}
-                >
+                <Button variant="danger-outline" size="sm" onClick={() => setToDelete(rs.id)}>
                   {t("reverse_shares.delete", "Delete")}
                 </Button>
               </div>

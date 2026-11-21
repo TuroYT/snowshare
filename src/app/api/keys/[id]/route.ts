@@ -1,7 +1,3 @@
-/**
- * DELETE /api/keys/:id — Revoke an API key (session required, owner only)
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

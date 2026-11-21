@@ -132,7 +132,6 @@ export default function AdminPage() {
       <Navigation />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-[var(--foreground)] mb-2">
               {t("admin.title")} - v{versionInfo?.currentVersion ?? t("admin.version_loading")}
@@ -140,10 +139,8 @@ export default function AdminPage() {
             <p className="text-[var(--foreground-muted)]">{t("admin.subtitle")}</p>
           </div>
 
-          {/* Update Notification */}
           <UpdateNotification versionInfo={versionInfo} setVersionInfo={setVersionInfo} />
 
-          {/* Tabs */}
           <Tabs
             value={activeTab}
             onValueChange={(v) => setActiveTab(v as AdminTab)}
@@ -156,7 +153,6 @@ export default function AdminPage() {
             ))}
           </Tabs>
 
-          {/* Tab Content */}
           <div
             role="tabpanel"
             id={`tabpanel-${activeTab}`}

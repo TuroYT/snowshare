@@ -367,10 +367,3 @@ export const themePresets: ThemePreset[] = [
     colors: INK_DARK,
   },
 ];
-
-export function getPresetById(id: string): ThemePreset | undefined {
-  return themePresets.find((p) => p.id === id);
-}
-export function getPresetNames(): string[] {
-  return themePresets.map((p) => p.name);
-}

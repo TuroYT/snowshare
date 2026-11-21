@@ -191,7 +191,6 @@ async function buildShareUpdateData(
   return updateData;
 }
 
-// DELETE - Delete a share and its stored files
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -231,7 +230,6 @@ export async function DELETE(
   }
 }
 
-// PATCH - Update a share
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);

@@ -195,26 +195,21 @@ body {
   }
 }
 
-@keyframes shimmer {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-
 .animate-fade-in {
   animation: fade-in 0.2s var(--ease-out-expo);
 }
 
-/* Share tab entrance animation — GPU-composited (opacity + transform only) */
 .animate-fade-in-up {
   animation: fade-in-up 0.3s var(--ease-out-expo) both;
 }
 
 .animate-scale-in {
   animation: scale-in 0.2s var(--ease-out-expo) both;
+}
+
+/* Hidden for the first 300 ms so a fast load never flashes a spinner */
+.animate-fade-in-delayed {
+  animation: fade-in 0.2s ease-out 300ms backwards;
 }
 
 .animate-spin {
@@ -224,9 +219,18 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-fade-in-up,
+  .animate-fade-in-delayed,
   .animate-scale-in,
+  .animate-pulse,
   .animate-spin {
     animation: none;
+  }
+
+  /* Unlayered, so it wins over the Tailwind transition-duration utilities */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms;
   }
 }
 
@@ -376,6 +380,10 @@ body {
 }
 
 .codemirror-scroll-fix .cm-scroller {
+  /* The editor only has a min-height: let the scroller fill it, otherwise the gutter, the
+     horizontal scrollbar and the clickable area stop after the first line */
+  flex: 1 1 auto !important;
+  align-items: stretch !important;
   overflow-x: auto !important;
   overflow-y: auto !important;
   max-width: 100% !important;
@@ -386,7 +394,14 @@ body {
   white-space: pre !important;
   word-break: normal !important;
   overflow-wrap: normal !important;
-  min-width: 100% !important;
+  /* The content already grows to fill the scroller; 100% on top of the gutter made the
+     editor scroll sideways even when empty */
+  min-width: 0 !important;
+}
+
+/* CodeMirror sets height: 100%, which does not resolve here and blocks the stretch */
+.codemirror-scroll-fix .cm-gutters {
+  height: auto !important;
 }
 
 .codemirror-scroll-fix .cm-line {

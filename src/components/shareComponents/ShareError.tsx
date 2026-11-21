@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "@/components/ui/Alert";
 
@@ -12,9 +12,14 @@ interface ShareErrorProps {
 
 const ShareError: React.FC<ShareErrorProps> = ({ error, translationPrefix }) => {
   const { t } = useTranslation();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    ref.current?.scrollIntoView?.({ block: "nearest" });
+  }, [error]);
 
   return (
-    <Alert variant="danger" className="mt-6 p-4">
+    <Alert ref={ref} variant="danger" className="mt-6 p-4 animate-fade-in">
       <div className="flex items-start gap-3">
         <svg
           aria-hidden="true"

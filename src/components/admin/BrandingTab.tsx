@@ -130,13 +130,11 @@ export default function BrandingTab() {
   };
 
   const validateSettingsBeforeSave = (): boolean => {
-    // Required text fields
     if (!settings.appName?.trim() || !settings.appDescription?.trim()) {
       toast.error(t("admin.validation_required"));
       return false;
     }
 
-    // Validate colors
     const colorKeys: (keyof BrandingSettings)[] = [
       "primaryColor",
       "primaryHover",
@@ -159,7 +157,6 @@ export default function BrandingTab() {
       }
     }
 
-    // Optional URLs when provided
     if (settings.logoUrl && !isValidUrl(settings.logoUrl)) {
       toast.error(t("admin.validation_invalid_url"));
       return false;
@@ -213,7 +210,6 @@ export default function BrandingTab() {
 
   const handleSelectPreset = (colors: PresetColors) => {
     setSettings((prev) => ({ ...prev, ...colors }));
-    // Apply preset immediately for live preview
     updateTheme(colors);
   };
 
@@ -229,7 +225,6 @@ export default function BrandingTab() {
 
       if (!response.ok) throw new Error("Failed to save settings");
 
-      // Update theme with new colors (live preview)
       updateTheme({
         primaryColor: settings.primaryColor,
         primaryHover: settings.primaryHover,
@@ -244,7 +239,7 @@ export default function BrandingTab() {
         borderColor: settings.borderColor,
       });
 
-      // Show toast and refresh theme (metadata + favicon) without full reload
+      // Refresh theme (metadata + favicon) without a full reload
       toast.success(t("admin.save_success"));
       await refreshSettings({ force: true });
     } catch (err) {
@@ -318,7 +313,6 @@ export default function BrandingTab() {
             onSelectPreset={handleSelectPreset}
           />
 
-          {/* Background image (orthogonal to color system) */}
           <BackgroundImageSection
             backgroundImageUrl={settings.backgroundImageUrl}
             onChange={handleChange}
@@ -327,9 +321,8 @@ export default function BrandingTab() {
 
         <CustomLinksSection />
 
-        {/* Info Box */}
         <Alert variant="info">
-          <p className="font-medium mb-2">💡 {t("admin.branding.info_title")}</p>
+          <p className="font-medium mb-2">{t("admin.branding.info_title")}</p>
           <ul className="space-y-1 text-xs">
             <li>• {t("admin.branding.info_1")}</li>
             <li>• {t("admin.branding.info_2")}</li>
@@ -337,12 +330,11 @@ export default function BrandingTab() {
           </ul>
         </Alert>
 
-        {/* Action Buttons */}
         <div className="flex flex-wrap justify-between gap-3">
           <Button type="button" variant="secondary" onClick={handleResetDefaults}>
             {t("admin.branding.reset_defaults")}
           </Button>
-          <Button type="button" onClick={handleSave} disabled={saving} className="px-6">
+          <Button type="button" onClick={handleSave} isLoading={saving} className="px-6">
             {saving ? t("admin.settings.saving") : t("admin.settings.save")}
           </Button>
         </div>

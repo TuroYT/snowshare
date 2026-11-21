@@ -32,7 +32,6 @@ export default function UpdateNotification({ versionInfo, setVersionInfo }: Read
           const data = await response.json();
           setVersionInfo(data);
 
-          // Check if this version was already dismissed
           const dismissedVersion = localStorage.getItem("snowshare_dismissed_version");
           if (dismissedVersion === (data.latestVersion ?? data.currentVersion)) {
             setDismissed(true);

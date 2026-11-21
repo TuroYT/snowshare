@@ -7,7 +7,6 @@ import { toUserShare, USER_SHARE_SELECT } from "@/lib/user-shares";
 
 const MAX_LIMIT = 1000;
 
-// GET - List the current user's shares (newest first)
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

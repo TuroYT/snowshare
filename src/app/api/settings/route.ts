@@ -2,12 +2,10 @@ import { getOrCreateSettings } from "@/lib/settings";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 
-// Public endpoint to get public settings (no authentication required)
 export async function GET(request: NextRequest) {
   try {
     const settings = await getOrCreateSettings();
 
-    // Return public settings including theme colors
     return NextResponse.json(
       {
         settings: {

@@ -24,7 +24,6 @@ export default function LogoFaviconSection({
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Logo URL */}
         <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
           <Input
             label={t("admin.branding.logo_url")}
@@ -41,6 +40,7 @@ export default function LogoFaviconSection({
               </p>
               <Image
                 src={logoUrl}
+                unoptimized
                 alt={t("admin.branding.logo_preview_alt")}
                 width={120}
                 height={40}
@@ -54,7 +54,6 @@ export default function LogoFaviconSection({
           )}
         </div>
 
-        {/* Favicon URL */}
         <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
           <Input
             label={t("admin.branding.favicon_url")}
@@ -71,6 +70,7 @@ export default function LogoFaviconSection({
               </p>
               <Image
                 src={faviconUrl}
+                unoptimized
                 alt={t("admin.branding.favicon_preview_alt")}
                 width={32}
                 height={32}

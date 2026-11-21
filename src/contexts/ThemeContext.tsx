@@ -182,8 +182,7 @@ export function ThemeProvider({
 
   useEffect(() => {
     if (initialData) {
-      // Server already provided the settings for the initial render: apply them
-      // directly and skip the extra client-side fetch (avoids a duplicate request).
+      // Settings already came with the server render: skip the duplicate client fetch
       const { colors: newColors, branding: newBranding } = parseSettings(initialData.settings);
       setColors(newColors);
       setBranding(newBranding);
@@ -198,7 +197,7 @@ export function ThemeProvider({
 
   const updateTheme = useCallback(
     (newColors: Partial<ThemeColors>) => {
-      // Filter out invalid color values to prevent crashes during editing
+      // Invalid values (e.g. a half-typed hex) would break the DOM styles while editing
       const validatedColors: Partial<ThemeColors> = {};
       Object.entries(newColors).forEach(([key, value]) => {
         if (typeof value === "string" && isValidHexColor(value)) {
@@ -218,7 +217,6 @@ export function ThemeProvider({
     [colors, branding, isLoading, updateTheme, refreshSettings]
   );
 
-  // Apply branding metadata (title, favicon) when ready
   useEffect(() => {
     if (!isLoading) {
       applyBrandingMeta(branding);
@@ -244,18 +242,13 @@ function clearBodyBackground() {
   document.body.style.backgroundRepeat = "";
 }
 
-/**
- * Load a Google Font dynamically by injecting a <link> into the document head.
- * "Geist" is bundled via next/font so we skip loading it from Google.
- */
+/** Injects a Google Fonts <link>. "Geist" ships with next/font, so it is never fetched from Google. */
 function loadGoogleFont(fontFamily: string) {
   const linkId = "dynamic-google-font";
 
   if (!fontFamily || fontFamily === "Geist") {
-    // Geist is loaded via next/font, just set the CSS variable to use it
     document.documentElement.style.setProperty("--font-app", "var(--font-geist-sans)");
 
-    // Remove any previously injected Google Font link
     const existingLink = document.getElementById(linkId);
     if (existingLink) {
       existingLink.remove();
@@ -281,15 +274,10 @@ function loadGoogleFont(fontFamily: string) {
   document.documentElement.style.setProperty("--font-app", `"${fontFamily}", sans-serif`);
 }
 
-/**
- * Apply admin-configurable accent colors to CSS custom properties.
- * Chrome colors (background, surface, text, border) are intentionally
- * left to globals.css so next-themes can control light/dark switching.
- */
+/** Only accent colors are overridden: next-themes owns data-theme and the background/surface/text/border colors. */
 function applyThemeToDOM(colors: ThemeColors) {
   const root = document.documentElement;
 
-  // Only override accent colors — next-themes owns data-theme and bg/surface/text/border
   root.style.setProperty("--primary", colors.primaryColor);
   root.style.setProperty("--primary-hover", colors.primaryHover);
   root.style.setProperty("--primary-dark", colors.primaryDark);
@@ -314,7 +302,6 @@ function applyThemeToDOM(colors: ThemeColors) {
   }
 }
 
-// Update document metadata (favicon, title) when branding changes
 function applyBrandingMeta(branding: BrandingSettings) {
   if (branding.appName) {
     document.title = branding.appName;

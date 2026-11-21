@@ -26,10 +26,8 @@ export default function ColorsSection({
         {t("admin.branding.section_colors")}
       </h3>
 
-      {/* Theme Presets */}
       <ThemePresetSelector onSelectPreset={onSelectPreset} />
 
-      {/* Accent colors — primary and secondary; chrome colors managed by the theme system */}
       <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border)]">
         <h4 className="text-sm font-semibold text-[var(--foreground)] mb-1">
           {t("admin.branding.accent_colors_label", "Accent colors")}
@@ -57,17 +55,14 @@ export default function ColorsSection({
   );
 }
 
-// Reusable component for color inputs
 function ColorInput({
   label,
   value,
   onChange,
-  hint,
 }: Readonly<{
   label: string;
   value: string;
   onChange: (value: string) => void;
-  hint?: string;
 }>) {
   const id = useId();
   return (
@@ -92,7 +87,6 @@ function ColorInput({
           placeholder="#000000"
         />
       </div>
-      {hint && <p className="text-xs text-[var(--foreground-muted)] mt-1">{hint}</p>}
     </div>
   );
 }

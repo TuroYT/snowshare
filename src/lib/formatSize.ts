@@ -1,9 +1,4 @@
-/**
- * Format bytes to a readable size string using either Binary (MiB/GiB) or Decimal (MB/GB) units
- * @param bytes - Size in bytes
- * @param useBinary - If true, use binary units (MiB/GiB), else use decimal (MB/GB)
- * @returns Formatted size string
- */
+/** Binary units (KiB, MiB...) when `useBinary`, decimal (KB, MB...) otherwise. */
 export function formatBytes(bytes: number, useBinary: boolean = false): string {
   if (bytes === 0) return "0 Bytes";
 
@@ -24,37 +19,17 @@ function mibToGiB(mebibytes: number): number {
   return Math.round((mebibytes / MIB_PER_GIB) * 100) / 100;
 }
 
-/**
- * Convert megabytes to appropriate unit value based on settings
- *
- * NOTE: Throughout this system, "MB" refers to MiB (binary megabytes = 1024² bytes),
- * NOT decimal MB (1,000,000 bytes). This is a common convention in file systems and
- * storage applications. All quota calculations use binary units internally.
- *
- * @param megabytes - Size in MiB (mebibytes, 1024² bytes)
- * @param useGiB - If true, convert to GiB, else keep as MiB
- * @returns Size in requested unit
- */
+/** Throughout the app "MB" means MiB (1024² bytes), not decimal MB. */
 export function convertFromMB(megabytes: number, useGiB: boolean): number {
-  // 1 GiB = 1024 MiB; MiB needs no conversion since the input is already MiB
   return useGiB ? mibToGiB(megabytes) : megabytes;
 }
 
-/**
- * Convert from appropriate unit back to megabytes (MiB)
- *
- * @param value - Size in units (MiB or GiB)
- * @param useGiB - If true, value is in GiB, else MiB
- * @returns Size in MiB (mebibytes, 1024² bytes)
- */
+/** Inverse of convertFromMB: value in MiB or GiB back to MiB. */
 export function convertToMB(value: number, useGiB: boolean): number {
-  // Factor is 1024 for GiB and 1 for MiB (1024 ** 0)
+  // 1024 for GiB, 1 for MiB (1024 ** 0)
   return Math.round(value * MIB_PER_GIB ** Number(useGiB));
 }
 
-/**
- * Check if a value is in GiB units based on current settings
- */
 export function isUsingGiB(
   isAuthenticated: boolean,
   useGiBForAnon: boolean,
@@ -63,9 +38,6 @@ export function isUsingGiB(
   return isAuthenticated ? useGiBForAuth : useGiBForAnon;
 }
 
-/**
- * Get display unit label
- */
 export function getUnitLabel(useGiB: boolean): string {
   return useGiB ? "GiB" : "MiB";
 }

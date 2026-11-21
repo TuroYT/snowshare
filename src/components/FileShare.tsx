@@ -22,6 +22,7 @@ import ShareSuccess from "./shareComponents/ShareSuccess";
 import ShareError from "./shareComponents/ShareError";
 import SubmitButton from "./shareComponents/SubmitButton";
 import FileDropZone from "./shareComponents/FileDropZone";
+import UploadProgress, { type UploadProgressHandle } from "./shareComponents/UploadProgress";
 
 const MAX_DAYS_ANON = MAX_ANON_EXPIRY_DAYS;
 const MAX_NOTE_LENGTH = 2000;
@@ -39,7 +40,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [note, setNote] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const progressRef = useRef<UploadProgressHandle>(null);
 
   const {
     isAuthenticated,
@@ -119,7 +120,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
   const totalSize = React.useMemo(() => files.reduce((sum, f) => sum + f.file.size, 0), [files]);
 
-  // Map server error codes to translated messages
   const errorCodeMap: Record<string, string> = {
     SLUG_ALREADY_TAKEN: t(
       "api.errors.slug_already_taken",
@@ -142,7 +142,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
       : code;
   };
 
-  const finishAndReset = (shareSlug: string | null, progress: number) => {
+  const finishAndReset = (shareSlug: string | null) => {
     if (shareSlug) {
       setSuccess(`${window.location.origin}/f/${shareSlug}`);
       setSuccessSlug(shareSlug);
@@ -154,7 +154,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
       fileInputRef.current.value = "";
     }
     setLoading(false);
-    setUploadProgress(progress);
   };
 
   const buildBaseMetadata = () => {
@@ -171,15 +170,23 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     return baseMetadata;
   };
 
-  // Handle form submission with tus resumable upload
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setSuccess(null);
 
     if (files.length === 0) {
       setError(t("fileshare.file_required", "At least one file is required"));
       return;
+    }
+
+    if (files.length === 1) {
+      const fileError = validateFile(files[0].file);
+      if (fileError) {
+        setError(fileError);
+        return;
+      }
     }
 
     const maxTotalMB = isAuthenticated
@@ -200,7 +207,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
     }
 
     setLoading(true);
-    setUploadProgress(0);
 
     const networkErrorMessage = t(
       "fileshare.network_error",
@@ -212,12 +218,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
       if (files.length === 1) {
         const file = files[0].file;
-        const validationError = validateFile(file);
-        if (validationError) {
-          setError(validationError);
-          setLoading(false);
-          return;
-        }
 
         const metadata = {
           ...baseMetadata,
@@ -236,8 +236,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
           onProgress: (bytesUploaded, bytesTotal) => {
             const total = bytesTotal || file.size;
             if (total > 0) {
-              const percent = Math.round((bytesUploaded / total) * 100);
-              setUploadProgress(percent);
+              progressRef.current?.setProgress(Math.round((bytesUploaded / total) * 100));
             }
           },
           onAfterResponse: (headers) => {
@@ -249,15 +248,13 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
             if (!shareSlug) {
               setError(networkErrorMessage);
               setLoading(false);
-              setUploadProgress(0);
               return;
             }
-            finishAndReset(shareSlug, 0);
+            finishAndReset(shareSlug);
           },
           onError: (message) => {
             setError(message);
             setLoading(false);
-            setUploadProgress(0);
           },
         });
       } else {
@@ -266,7 +263,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
 
         const uploadNextFile = async (index: number): Promise<void> => {
           if (index >= files.length) {
-            finishAndReset(shareSlug, 100);
+            finishAndReset(shareSlug);
             return;
           }
 
@@ -303,7 +300,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
             onProgress: (bytesUploaded) => {
               const overallProgress = bytesUploadedSoFar + bytesUploaded;
               const percent = Math.round((overallProgress / totalSize) * 100);
-              setUploadProgress(Math.min(percent, 100));
+              progressRef.current?.setProgress(Math.min(percent, 100));
             },
             onAfterResponse: (headers) => {
               if (headers.shareSlug) {
@@ -318,14 +315,12 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
               if (!fileProcessed) {
                 setError(`${t("fileshare.file", "File")} ${index + 1}: ${networkErrorMessage}`);
                 setLoading(false);
-                setUploadProgress(0);
               }
             },
             onError: (message) => {
               fileErrored = true;
               const fileError = `${t("fileshare.file", "File")} ${index + 1}: ${message}`;
               setLoading(false);
-              setUploadProgress(0);
               if (!shareSlug) {
                 setError(fileError);
                 return;
@@ -361,7 +356,6 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
         setError(networkErrorMessage);
       }
       setLoading(false);
-      setUploadProgress(0);
     }
   };
 
@@ -420,32 +414,7 @@ const FileShare: React.FC<FileShareProps> = ({ initialFiles, onInitialFilesConsu
           dirInputRef={dirInputRef}
         />
 
-        {/* Upload Progress */}
-        {loading && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-[var(--foreground)]">
-              <span>{t("fileshare.uploading", "Uploading...")}</span>
-              <span>
-                {t("fileshare.upload_progress", "Progress: {{progress}}%", {
-                  progress: uploadProgress,
-                })}
-              </span>
-            </div>
-            <div
-              role="progressbar"
-              aria-label={t("fileshare.uploading", "Uploading...")}
-              aria-valuenow={uploadProgress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              className="w-full bg-[var(--border)] rounded-full h-3"
-            >
-              <div
-                className="h-3 rounded-full transition-[width] duration-300 bg-[var(--primary)]"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
+        {loading && <UploadProgress ref={progressRef} />}
 
         <PasswordField
           password={password}

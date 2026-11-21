@@ -12,11 +12,6 @@ import {
   resetRateLimit,
 } from "@/lib/rate-limit";
 
-/**
- * Centralized access rules for shares: expiration, view limits, password checks
- * (rate limited) and short-lived signed download tokens.
- */
-
 export interface AccessCheckedShare {
   id: string;
   password: string | null;
@@ -112,10 +107,6 @@ export async function consumeView(shareId: string): Promise<boolean> {
   });
   return result.count > 0;
 }
-
-// ---------------------------------------------------------------------------
-// Signed download tokens
-// ---------------------------------------------------------------------------
 
 /**
  * - "download": issued after a view was consumed; grants downloads and previews of the share

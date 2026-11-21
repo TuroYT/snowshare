@@ -67,12 +67,10 @@ function validateCredentials(
     return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
   }
 
-  // Validate email format
   if (!isValidEmail(email as string)) {
     return apiError(request, ErrorCode.INVALID_EMAIL_FORMAT);
   }
 
-  // Validate password length
   if (!isValidPassword(password as string)) {
     return apiError(request, ErrorCode.PASSWORD_LENGTH, {
       min: PASSWORD_MIN_LENGTH,
@@ -128,7 +126,7 @@ async function createUser(
 /** Stores a verification token and emails it. Email failures do not fail the registration. */
 async function sendVerification(email: string) {
   const token = crypto.randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   await prisma.verificationToken.create({
     data: {
@@ -195,7 +193,6 @@ export async function POST(request: NextRequest) {
 
     const { email, password, isFirstUser, captchaToken } = await request.json();
 
-    // Check if this is the first user setup
     const userCount = await prisma.user.count();
     const isActuallyFirstUser = userCount === 0;
 
@@ -207,13 +204,11 @@ export async function POST(request: NextRequest) {
     const credentialsError = validateCredentials(request, email, password);
     if (credentialsError) return credentialsError;
 
-    // Verify CAPTCHA if enabled (skip for first user setup)
     if (settings.captchaEnabled && !isActuallyFirstUser) {
       const captchaError = await checkCaptcha(request, captchaToken, settings);
       if (captchaError) return captchaError;
     }
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -222,7 +217,6 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.USER_ALREADY_EXISTS);
     }
 
-    // Hash the password
     const hashedPassword = await hashPassword(password);
 
     // Determine if email verification is needed
@@ -241,7 +235,6 @@ export async function POST(request: NextRequest) {
     if (created instanceof NextResponse) return created;
     const user = created;
 
-    // Send verification email if required
     if (needsEmailVerification) {
       await sendVerification(email);
 

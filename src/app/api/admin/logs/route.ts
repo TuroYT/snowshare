@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
       return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
-    // Check if user is admin
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { isAdmin: true },
@@ -22,7 +21,6 @@ export async function GET(request: NextRequest) {
       return apiError(request, ErrorCode.ADMIN_ONLY);
     }
 
-    // Get pagination params
     const { searchParams } = new URL(request.url);
     const parsedPage = Number.parseInt(searchParams.get("page") || "1");
     const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
@@ -33,7 +31,6 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
     const where: {
       type?: "FILE" | "PASTE" | "URL";
       OR?: Array<
@@ -55,7 +52,6 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Get shares with pagination
     const [shares, total] = await Promise.all([
       prisma.share.findMany({
         where,
@@ -84,7 +80,6 @@ export async function GET(request: NextRequest) {
       prisma.share.count({ where }),
     ]);
 
-    // Batch fetch geolocation data for all IPs on this page
     const uniqueIps = [
       ...new Set(shares.map((s) => s.ipSource).filter((ip): ip is string => !!ip)),
     ];
@@ -98,7 +93,6 @@ export async function GET(request: NextRequest) {
 
     const geoMap = new Map(geoData.map((g) => [g.ip, g]));
 
-    // Format shares for response
     const logs = shares.map((share) => {
       const geo = share.ipSource ? geoMap.get(share.ipSource) : undefined;
       return {

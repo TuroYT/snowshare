@@ -24,17 +24,56 @@ type AvailableProvider = {
 const DISMISS_BUTTON_CLASS =
   "shrink-0 -my-1.5 -mr-1.5 h-9 w-9 inline-flex items-center justify-center rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,currentColor_12%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-current";
 
-function DismissIcon() {
+function DismissibleAlert({
+  variant,
+  iconPath,
+  onDismiss,
+  children,
+}: Readonly<{
+  variant: "danger" | "success";
+  iconPath: string;
+  onDismiss: () => void;
+  children: React.ReactNode;
+}>) {
+  const { t } = useTranslation();
   return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
+    <Alert variant={variant} className="p-4 mb-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0">
+          <svg
+            className="w-5 h-5 shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={iconPath} />
+          </svg>
+          <p className="min-w-0 break-words">{children}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className={DISMISS_BUTTON_CLASS}
+          aria-label={t("common.close", "Close")}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+    </Alert>
   );
 }
 
@@ -210,8 +249,9 @@ export default function ConnectedAccounts() {
     </Card>
   );
 
+  // Only the first load shows the skeleton: later refetches keep the cards and the dialog mounted
   return (
-    <SkeletonTransition loading={loading} skeleton={skeleton}>
+    <SkeletonTransition loading={loading && !accountsData} skeleton={skeleton}>
       <>
         <Card>
           <div className="flex items-center gap-4 mb-6">
@@ -242,73 +282,28 @@ export default function ConnectedAccounts() {
           </div>
 
           {displayError && (
-            <Alert variant="danger" className="p-4 mb-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <svg
-                    className="w-5 h-5 shrink-0 mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <p className="min-w-0 break-words">{displayError}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError(null);
-                    clearAccountsError();
-                  }}
-                  className={DISMISS_BUTTON_CLASS}
-                  aria-label={t("common.close", "Close")}
-                >
-                  <DismissIcon />
-                </button>
-              </div>
-            </Alert>
+            <DismissibleAlert
+              variant="danger"
+              iconPath="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              onDismiss={() => {
+                setError(null);
+                clearAccountsError();
+              }}
+            >
+              {displayError}
+            </DismissibleAlert>
           )}
 
           {success && (
-            <Alert variant="success" className="p-4 mb-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <svg
-                    className="w-5 h-5 shrink-0 mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <p className="min-w-0 break-words">{success}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSuccess(null)}
-                  className={DISMISS_BUTTON_CLASS}
-                  aria-label={t("common.close", "Close")}
-                >
-                  <DismissIcon />
-                </button>
-              </div>
-            </Alert>
+            <DismissibleAlert
+              variant="success"
+              iconPath="M5 13l4 4L19 7"
+              onDismiss={() => setSuccess(null)}
+            >
+              {success}
+            </DismissibleAlert>
           )}
 
-          {/* Accounts */}
           <div className="mb-6">
             <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">
               {t("profile.accounts.connected")}
@@ -378,7 +373,6 @@ export default function ConnectedAccounts() {
             )}
           </div>
 
-          {/* Providers */}
           <div className="border-t border-[var(--border)] pt-6">
             <h3 className="text-lg font-medium text-[var(--foreground)] mb-3">
               {t("profile.accounts.available")}
@@ -425,7 +419,6 @@ export default function ConnectedAccounts() {
           </div>
         </Card>
 
-        {/* Unlink confirmation dialog */}
         <Modal
           isOpen={deleteDialogOpen}
           onClose={() => setDeleteDialogOpen(false)}

@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { isValidUrl } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
-// GET – Retrieve all links
 export async function GET(request: NextRequest) {
   try {
     const links = await prisma.customLink.findMany({
@@ -18,12 +17,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Add a new link
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Checking admin permissions
     if (!session?.user?.id) {
       return apiError(request, ErrorCode.UNAUTHORIZED);
     }
@@ -39,7 +36,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, url } = body;
 
-    // Validation
     if (!name || !url) {
       return apiError(request, ErrorCode.MISSING_DATA);
     }

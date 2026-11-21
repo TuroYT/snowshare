@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { Alert, Badge, Button, Input } from "@/components/ui";
@@ -28,7 +28,10 @@ export default function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  // Users with an action in flight: finishing one must not unlock the others
+  const [busyUserIds, setBusyUserIds] = useState<string[]>([]);
+  // Only the latest list request may update the screen
+  const fetchIdRef = useRef(0);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     userId: string;
@@ -36,18 +39,20 @@ export default function UsersTab() {
   } | null>(null);
 
   const fetchUsers = useCallback(async () => {
+    const id = ++fetchIdRef.current;
     try {
-      setLoading(true);
       const response = await fetch("/api/admin/users");
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
+      if (id !== fetchIdRef.current) return;
       setUsers(data.users);
       setError(null);
     } catch (err) {
+      if (id !== fetchIdRef.current) return;
       setError(t("admin.error_load_data"));
       console.error(err);
     } finally {
-      setLoading(false);
+      if (id === fetchIdRef.current) setLoading(false);
     }
   }, [t]);
 
@@ -73,7 +78,7 @@ export default function UsersTab() {
     setPendingAction(null);
 
     try {
-      setActionLoading(userId);
+      setBusyUserIds((ids) => [...ids, userId]);
       const response = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -82,14 +87,13 @@ export default function UsersTab() {
 
       if (!response.ok) throw new Error("Failed to update user");
 
-      // Refresh users list
       await fetchUsers();
       setError(null);
     } catch (err) {
       setError(t("admin.error_load_data"));
       console.error("Failed to update user:", err);
     } finally {
-      setActionLoading(null);
+      setBusyUserIds((ids) => ids.filter((id) => id !== userId));
     }
   };
 
@@ -148,7 +152,6 @@ export default function UsersTab() {
           onCancel={() => setPendingAction(null)}
         />
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
             <div className="text-sm text-[var(--foreground-muted)]">
@@ -166,7 +169,6 @@ export default function UsersTab() {
 
         {error && <Alert variant="danger">{error}</Alert>}
 
-        {/* Search and Create Button */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Input
             type="text"
@@ -181,7 +183,6 @@ export default function UsersTab() {
           </Button>
         </div>
 
-        {/* Users Table */}
         <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border)]">
           <table className="w-full">
             <thead>
@@ -217,7 +218,10 @@ export default function UsersTab() {
                 filteredUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className="hover:bg-[var(--surface-hover)] transition-colors duration-100"
+                    aria-busy={busyUserIds.includes(user.id) || undefined}
+                    className={`hover:bg-[var(--surface-hover)] transition-colors duration-150 ${
+                      busyUserIds.includes(user.id) ? "opacity-60" : ""
+                    }`}
                   >
                     <td className="px-6 py-3 text-sm text-[var(--foreground)]">{user.email}</td>
                     <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
@@ -242,13 +246,11 @@ export default function UsersTab() {
                           onClick={() =>
                             requestAction(user.id, user.isAdmin ? "demote" : "promote")
                           }
-                          disabled={actionLoading === user.id}
+                          disabled={busyUserIds.includes(user.id)}
                         >
-                          {actionLoading === user.id
-                            ? "..."
-                            : user.isAdmin
-                              ? t("admin.users.action_remove_admin")
-                              : t("admin.users.action_make_admin")}
+                          {user.isAdmin
+                            ? t("admin.users.action_remove_admin")
+                            : t("admin.users.action_make_admin")}
                         </Button>
                         <Button
                           size="sm"
@@ -259,25 +261,23 @@ export default function UsersTab() {
                               user.ssoAutoLink ? "disableSsoAutoLink" : "enableSsoAutoLink"
                             )
                           }
-                          disabled={actionLoading === user.id}
+                          disabled={busyUserIds.includes(user.id)}
                           title={t(
                             "admin.users.sso_link_hint",
                             "Link the user's SSO account automatically on their next SSO sign-in"
                           )}
                         >
-                          {actionLoading === user.id
-                            ? "..."
-                            : user.ssoAutoLink
-                              ? t("admin.users.action_disable_sso_link", "Cancel SSO link")
-                              : t("admin.users.action_enable_sso_link", "Allow SSO link")}
+                          {user.ssoAutoLink
+                            ? t("admin.users.action_disable_sso_link", "Cancel SSO link")
+                            : t("admin.users.action_enable_sso_link", "Allow SSO link")}
                         </Button>
                         <Button
                           size="sm"
                           variant="danger-outline"
                           onClick={() => requestAction(user.id, "delete")}
-                          disabled={actionLoading === user.id}
+                          disabled={busyUserIds.includes(user.id)}
                         >
-                          {actionLoading === user.id ? "..." : t("admin.users.action_delete")}
+                          {t("admin.users.action_delete")}
                         </Button>
                       </div>
                     </td>

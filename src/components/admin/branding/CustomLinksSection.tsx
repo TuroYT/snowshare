@@ -146,7 +146,6 @@ export default function CustomLinksSection() {
         <Button type="submit">{t("admin.links.button_add")}</Button>
       </form>
 
-      {/* Links List */}
       <div>
         <h4 className="text-base font-semibold text-[var(--foreground)] mb-3">
           {t("admin.links.title_list")}

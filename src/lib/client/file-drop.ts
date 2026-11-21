@@ -1,22 +1,12 @@
-/**
- * Pure helpers for walking the HTML5 FileSystem Entry API when files/folders
- * are dropped onto the file share drop zone. Kept free of React so it can be
- * unit tested in isolation from the component tree.
- */
-
 export interface FileWithPath {
   file: File;
   relativePath: string;
 }
 
 /**
- * Recursively reads a FileSystemEntry (file or directory) and resolves to the
- * flat list of files it contains, each tagged with its relative path.
- *
- * Per the FileSystem API spec, `readEntries()` on a directory reader must be
- * called repeatedly until it returns an empty array to get all entries.
- * See: https://www.w3.org/TR/FileAPI/#file-directory-reader
- * (Behavior implemented by WebKit/Blink as well.)
+ * Flattens a dropped file or directory into files tagged with their relative path.
+ * `readEntries()` must be called repeatedly until it returns an empty array to get every
+ * entry (https://www.w3.org/TR/FileAPI/#file-directory-reader).
  */
 export async function traverseFileTree(
   entry: FileSystemEntry,
@@ -64,10 +54,6 @@ export async function traverseFileTree(
   });
 }
 
-/**
- * Walks every dropped DataTransferItem (files and folders) and resolves to
- * the flat list of files with their relative paths.
- */
 export async function collectDroppedFiles(items: DataTransferItemList): Promise<FileWithPath[]> {
   const filePromises: Promise<FileWithPath[]>[] = [];
 

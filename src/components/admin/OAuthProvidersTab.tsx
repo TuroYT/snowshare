@@ -25,6 +25,7 @@ export default function OAuthProvidersTab() {
   const { t } = useTranslation();
   const [providers, setProviders] = useState<OAuthProvider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -63,7 +64,7 @@ export default function OAuthProvidersTab() {
         name: provider.name,
         displayName: provider.displayName,
         clientId: provider.clientId || "",
-        clientSecret: "", // Never show secret
+        clientSecret: "", // the stored secret is never sent to the client
         issuer: provider.issuer || "",
         tenantId: provider.tenantId || "",
         enabled: provider.enabled,
@@ -86,6 +87,7 @@ export default function OAuthProvidersTab() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     try {
       const res = await fetch("/api/admin/oauth-providers", {
         method: "POST",
@@ -103,6 +105,8 @@ export default function OAuthProvidersTab() {
     } catch (error) {
       console.error("Failed to save provider", error);
       toast.error(t("admin.save_error", "Error saving changes"));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -186,17 +190,17 @@ export default function OAuthProvidersTab() {
           </div>
         </div>
 
-        {/* Edit dialog */}
         <Modal
           isOpen={editingProvider !== null}
-          onClose={() => setEditingProvider(null)}
+          onClose={() => {
+            if (!saving) setEditingProvider(null);
+          }}
           title={t("admin.oauth.configure_provider", "Configurer {{provider}}", {
             provider: availableProviders.find((p) => p.id === editingProvider)?.name,
           })}
           size="sm"
         >
           <form onSubmit={handleSave} className="space-y-4">
-            {/* Callback URL info */}
             <div className="p-3 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--border)] text-sm">
               <p className="font-semibold text-[var(--foreground)] mb-1 uppercase text-xs tracking-wide">
                 {t("admin.oauth.callback_url", "URL de Callback (Redirect URI)")}
@@ -214,7 +218,6 @@ export default function OAuthProvidersTab() {
               </p>
             </div>
 
-            {/* Documentation link */}
             <div className="p-3 rounded-[var(--radius)] bg-[var(--surface-hover)] border border-[var(--border)] text-sm">
               <p className="font-semibold text-[var(--foreground)] mb-1 uppercase text-xs tracking-wide">
                 {t("admin.oauth.documentation", "Documentation du fournisseur")}
@@ -231,7 +234,6 @@ export default function OAuthProvidersTab() {
               </Link>
             </div>
 
-            {/* Fields */}
             {editingProvider === "oidc" && (
               <Input
                 label={t("admin.oauth.issuer", "Issuer URL (OpenID Connect)")}
@@ -297,12 +299,18 @@ export default function OAuthProvidersTab() {
               </span>
             </label>
 
-            {/* Footer */}
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="ghost" onClick={() => setEditingProvider(null)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setEditingProvider(null)}
+                disabled={saving}
+              >
                 {t("common.cancel", "Cancel")}
               </Button>
-              <Button type="submit">{t("common.save", "Save")}</Button>
+              <Button type="submit" isLoading={saving}>
+                {t("common.save", "Save")}
+              </Button>
             </div>
           </form>
         </Modal>

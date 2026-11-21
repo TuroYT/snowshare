@@ -65,4 +65,30 @@ describe("useFetch", () => {
     expect(result.current.error).toBe("Could not load");
     expect(result.current.data).toBeNull();
   });
+
+  it("shows the loading state again when coming back to a URL after another one failed", async () => {
+    global.fetch = jest.fn((url: RequestInfo | URL) =>
+      String(url) === "/api/a" ? mockJsonResponse({ value: 1 }) : mockJsonResponse({}, false, 500)
+    );
+
+    const { result, rerender } = renderHook(({ url }) => useFetch<{ value: number }>(url), {
+      initialProps: { url: "/api/a" },
+    });
+    await waitFor(() => expect(result.current.data).toEqual({ value: 1 }));
+
+    rerender({ url: "/api/b" });
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(result.current.data).toBeNull();
+
+    let resolveA: (value: Response) => void = () => {};
+    global.fetch = jest.fn(
+      () => new Promise<Response>((resolve) => (resolveA = resolve))
+    ) as unknown as typeof fetch;
+    rerender({ url: "/api/a" });
+
+    // Empty data while the request is pending must not look like a loaded, empty result
+    expect(result.current.loading).toBe(true);
+    resolveA({ ok: true, status: 200, json: () => Promise.resolve({ value: 1 }) } as Response);
+    await waitFor(() => expect(result.current.data).toEqual({ value: 1 }));
+  });
 });

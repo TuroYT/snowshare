@@ -69,6 +69,12 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
   const isAuthenticated = !!session?.user?.id;
 
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rootRef = useRef<HTMLOutputElement>(null);
+
+  // The panel renders below a long form: bring it into view instead of leaving it off screen
+  useEffect(() => {
+    rootRef.current?.scrollIntoView?.({ block: "nearest" });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -135,7 +141,10 @@ const ShareSuccess: React.FC<ShareSuccessProps> = ({
   };
 
   return (
-    <output className="block mt-6 bg-[var(--surface)] border border-[var(--success)] rounded-[var(--radius)] p-4">
+    <output
+      ref={rootRef}
+      className="block mt-6 bg-[var(--surface)] border border-[var(--success)] rounded-[var(--radius)] p-4 animate-fade-in"
+    >
       <div className="flex-1 min-w-0">
         <h4 className="text-sm font-medium text-[var(--success-text)] mb-2 flex items-center gap-2">
           <svg

@@ -12,14 +12,8 @@ export interface UseShareFormOptions {
 }
 
 /**
- * Shared form state/behaviour for the FileShare, LinkShare and
- * ManageCodeBlock (PasteShare) forms:
- * - common fields: slug, password, neverExpires, expiresDays, view limit, loading/error/success state
- * - expiration computation, capped to MAX_ANON_EXPIRY_DAYS for anonymous users
- *   and MAX_AUTH_EXPIRY_DAYS for signed-in users (unified across all three forms)
- * - reset of the shared fields after a successful submission
- * - the Ctrl/Cmd+Enter submit shortcut, wired through a form ref rather than
- *   `document.querySelector("form")` so it targets this specific form only
+ * Shared state for the FileShare, LinkShare and PasteShare forms. The Ctrl/Cmd+Enter
+ * shortcut goes through `formRef` so it only submits this form.
  */
 export function useShareForm(options: UseShareFormOptions = {}) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -45,8 +39,7 @@ export function useShareForm(options: UseShareFormOptions = {}) {
   const [successSlug, setSuccessSlug] = useState<string>("");
   const [successSummary, setSuccessSummary] = useState("");
 
-  // Keep the latest canSubmit/loading in refs so the keydown listener can be
-  // registered once instead of re-bound on every render.
+  // Refs let the keydown listener be registered once instead of on every render
   const canSubmitRef = useRef(options.canSubmit);
   canSubmitRef.current = options.canSubmit;
   const loadingRef = useRef(loading);
@@ -68,12 +61,7 @@ export function useShareForm(options: UseShareFormOptions = {}) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  /**
-   * Computes the ISO expiresAt timestamp for the share being created, or
-   * `null` when the share should never expire (only possible for signed-in
-   * users who opted into "never expires"). Anonymous users are always capped
-   * to MAX_ANON_EXPIRY_DAYS, signed-in users to MAX_AUTH_EXPIRY_DAYS.
-   */
+  /** ISO expiry date, or `null` for "never expires" (signed-in users only). Capped per user type. */
   const computeExpiresAt = (): string | null => {
     if (isAuthenticated && neverExpires) return null;
     const cap = isAuthenticated ? MAX_AUTH_EXPIRY_DAYS : MAX_ANON_EXPIRY_DAYS;
@@ -89,7 +77,6 @@ export function useShareForm(options: UseShareFormOptions = {}) {
     setMaxViews(1);
   };
 
-  /** Dismisses the success panel so a new share can be created. */
   const clearSuccess = () => {
     setSuccess(null);
     setSuccessSlug("");

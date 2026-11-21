@@ -8,17 +8,10 @@ export default function LoadingScreen() {
   return (
     <div
       role="status"
-      className="flex justify-center items-center min-h-screen bg-[var(--background)] pointer-events-none"
-      style={{ animation: "fadeOut 0.6s ease-out 2s forwards" }}
+      className="flex min-h-screen items-center justify-center bg-[var(--background)] animate-fade-in-delayed"
     >
-      <Spinner className="w-16 h-16" />
+      <Spinner size="lg" />
       <span className="sr-only">{t("loading", "Loading...")}</span>
-      <style>{`
-        @keyframes fadeOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -1,8 +1,3 @@
-/**
- * GET  /api/v1/shares — List own shares (auth required)
- * POST /api/v1/shares — Create a link or paste share
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiRequest } from "@/lib/api-auth";
 import { rateLimitResponse } from "@/lib/rate-limit";

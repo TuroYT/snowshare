@@ -26,14 +26,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (verificationToken.expires < new Date()) {
-      // Clean up expired token
       await prisma.verificationToken.delete({
         where: { identifier_token: { identifier, token } },
       });
       return apiError(request, ErrorCode.TOKEN_EXPIRED);
     }
 
-    // Mark the user's email as verified
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return apiError(request, ErrorCode.USER_NOT_FOUND);
@@ -44,7 +42,6 @@ export async function GET(request: NextRequest) {
       data: { emailVerified: new Date() },
     });
 
-    // Delete the used token
     await prisma.verificationToken.delete({
       where: { identifier_token: { identifier, token } },
     });

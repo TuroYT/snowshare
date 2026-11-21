@@ -1,7 +1,4 @@
-/**
- * Server-side i18n for API routes
- * Simple synchronous translation lookup — no async, no i18next dependency
- */
+// Synchronous translation lookup for API routes: no i18next dependency
 
 import { NextRequest } from "next/server";
 import { resolveDefaultLocale } from "@/i18n/locale-utils";
@@ -28,10 +25,6 @@ const translations: Record<string, Record<string, unknown>> = {
   it,
 };
 
-/**
- * Resolve a dot-separated key in a nested object
- * e.g. "api.errors.signup_disabled" → obj.api.errors.signup_disabled
- */
 function resolveKey(obj: Record<string, unknown>, key: string): string | undefined {
   let current: unknown = obj;
   for (const part of key.split(".")) {
@@ -43,10 +36,7 @@ function resolveKey(obj: Record<string, unknown>, key: string): string | undefin
   return typeof current === "string" ? current : undefined;
 }
 
-/**
- * Translate a key for a given locale, with optional interpolation.
- * Falls back to DEFAULT_LOCALE, then to the raw key.
- */
+/** Falls back to DEFAULT_LOCALE, then to the raw key. */
 export function translate(
   locale: SupportedLocale,
   key: string,
@@ -88,13 +78,7 @@ function localeFromAcceptLanguage(acceptLanguage: string | null): SupportedLocal
 
 const LOCALE_COOKIES = ["i18next", "i18nextLng", "NEXT_LOCALE"];
 
-/**
- * Detects the locale from various sources in order of priority:
- * 1. Query parameter (?lang=en)
- * 2. Cookie (i18nextLng or NEXT_LOCALE)
- * 3. Accept-Language header
- * 4. Default locale
- */
+/** Locale from `?lang=`, then cookies, then Accept-Language, then the default. */
 export function detectLocale(request: NextRequest): SupportedLocale {
   const queryLocale = request.nextUrl.searchParams.get("lang");
   if (isSupportedLocale(queryLocale)) return queryLocale;

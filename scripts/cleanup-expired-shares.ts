@@ -10,13 +10,10 @@ function getTusTempDir(): string {
   return path.join(getUploadDir(), ".tus-temp");
 }
 
-// Files in .tus-temp/ older than this are considered abandoned uploads.
-const TUS_TEMP_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+const TUS_TEMP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-// Files in uploads/ without a DB record are only deleted after this grace
-// period to avoid racing with in-flight uploads that have not yet inserted
-// their database row.
-const ORPHAN_GRACE_MS = 60 * 60 * 1000; // 1 hour
+// An upload may be stored before its DB row is inserted: only older orphans are deleted
+const ORPHAN_GRACE_MS = 60 * 60 * 1000;
 
 // Shares out of views are kept while a download token issued for their last view may still be
 // in use (downloads, Range requests and previews reuse it), then deleted like expired ones.
@@ -43,7 +40,7 @@ function unavailableSharesWhere(now: Date) {
 }
 
 async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedFiles: number }> {
-  console.log("🧹 Cleaning expired and exhausted shares...");
+  console.log("Cleaning expired and exhausted shares...");
 
   const now = new Date();
   const unavailable = unavailableSharesWhere(now);
@@ -72,9 +69,7 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
       const failed = await deleteShareFiles(share);
       deletedFiles += fileCount - failed.length;
       if (failed.length > 0) {
-        console.error(
-          `❌ Share ${share.slug}: ${failed.length} file(s) not deleted, kept for retry`
-        );
+        console.error(`Share ${share.slug}: ${failed.length} file(s) not deleted, kept for retry`);
         failedIds.push(share.id);
       } else {
         deletableIds.push(share.id);
@@ -88,7 +83,7 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
   }
 
   console.log(
-    `✅ Expired/exhausted shares: ${deletedShares} DB record(s), ${deletedFiles} file(s) deleted`
+    `Expired/exhausted shares: ${deletedShares} DB record(s), ${deletedFiles} file(s) deleted`
   );
 
   return { deletedShares, deletedFiles };
@@ -97,7 +92,7 @@ async function cleanupExpiredShares(): Promise<{ deletedShares: number; deletedF
 async function cleanupAbandonedTusUploads(
   maxAgeMs: number = TUS_TEMP_MAX_AGE_MS
 ): Promise<{ deletedFiles: number }> {
-  console.log("🧹 Cleaning abandoned tus uploads...");
+  console.log("Cleaning abandoned tus uploads...");
 
   const tusTempDir = getTusTempDir();
   let entries: fs.Dirent[];
@@ -106,7 +101,7 @@ async function cleanupAbandonedTusUploads(
     entries = await fs.promises.readdir(tusTempDir, { withFileTypes: true });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      console.log("ℹ️  No .tus-temp directory, skipping");
+      console.log("No .tus-temp directory, skipping");
       return { deletedFiles: 0 };
     }
     throw error;
@@ -124,23 +119,23 @@ async function cleanupAbandonedTusUploads(
         if (stat.mtimeMs >= cutoff) return;
         await fs.promises.unlink(fullPath);
         deletedFiles++;
-        console.log(`🗑️  Abandoned tus file deleted: ${entry.name}`);
+        console.log(`Abandoned tus file deleted: ${entry.name}`);
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          console.error("❌ Error deleting tus file %s:", entry.name, error);
+          console.error("Error deleting tus file %s:", entry.name, error);
         }
       }
     })
   );
 
-  console.log(`✅ Abandoned tus uploads: ${deletedFiles} file(s) deleted`);
+  console.log(`Abandoned tus uploads: ${deletedFiles} file(s) deleted`);
   return { deletedFiles };
 }
 
 async function cleanupOrphanFiles(
   graceMs: number = ORPHAN_GRACE_MS
 ): Promise<{ deletedFiles: number }> {
-  console.log("🧹 Cleaning orphan files in uploads/...");
+  console.log("Cleaning orphan files in uploads/...");
 
   const uploadDir = getUploadDir();
   let entries: fs.Dirent[];
@@ -149,7 +144,7 @@ async function cleanupOrphanFiles(
     entries = await fs.promises.readdir(uploadDir, { withFileTypes: true });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      console.log("ℹ️  No uploads directory, skipping");
+      console.log("No uploads directory, skipping");
       return { deletedFiles: 0 };
     }
     throw error;
@@ -189,21 +184,21 @@ async function cleanupOrphanFiles(
         if (stat.mtimeMs >= cutoff) return;
         await fs.promises.unlink(fullPath);
         deletedFiles++;
-        console.log(`🗑️  Orphan file deleted: ${entry.name}`);
+        console.log(`Orphan file deleted: ${entry.name}`);
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-          console.error("❌ Error deleting orphan %s:", entry.name, error);
+          console.error("Error deleting orphan %s:", entry.name, error);
         }
       }
     })
   );
 
-  console.log(`✅ Orphan files: ${deletedFiles} file(s) deleted`);
+  console.log(`Orphan files: ${deletedFiles} file(s) deleted`);
   return { deletedFiles };
 }
 
 async function runCleanup(): Promise<void> {
-  console.log("🚀 Starting full cleanup...");
+  console.log("Starting full cleanup...");
 
   try {
     const expired = await cleanupExpiredShares();
@@ -211,13 +206,13 @@ async function runCleanup(): Promise<void> {
     const orphans = await cleanupOrphanFiles();
 
     console.log("");
-    console.log("📊 Summary:");
+    console.log("Summary:");
     console.log(`   - ${expired.deletedShares} expired/exhausted share(s) removed from DB`);
     console.log(`   - ${expired.deletedFiles} expired/exhausted share file(s) deleted`);
     console.log(`   - ${abandoned.deletedFiles} abandoned tus upload(s) deleted`);
     console.log(`   - ${orphans.deletedFiles} orphan file(s) deleted`);
   } catch (error) {
-    console.error("❌ Error during cleanup:", error);
+    console.error("Error during cleanup:", error);
     throw error;
   }
 }
@@ -229,12 +224,12 @@ const isMain =
 if (isMain) {
   runCleanup()
     .then(async () => {
-      console.log("🎉 Cleanup completed successfully");
+      console.log("Cleanup completed successfully");
       await prisma.$disconnect();
       process.exit(0);
     })
     .catch(async (error) => {
-      console.error("💥 Cleanup failed:", error);
+      console.error("Cleanup failed:", error);
       await prisma.$disconnect();
       process.exit(1);
     });

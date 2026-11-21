@@ -27,11 +27,12 @@ const config = {
   transform: {
     "^.+\\.(ts|tsx)$": ["ts-jest", tsJestOptions],
     // ESM-only dependencies (see transformIgnorePatterns) are transpiled to CommonJS
-    "^.+\\.js$": ["ts-jest", tsJestOptions],
+    "^.+\\.m?js$": ["ts-jest", tsJestOptions],
   },
-  // htmlparser2 (used by sanitize-html) and its dependencies ship ESM only
+  // htmlparser2 (used by sanitize-html), the tus server (@tus/*, srvx) and their dependencies ship
+  // ESM only
   transformIgnorePatterns: [
-    "/node_modules/(?!(?:.*/node_modules/)?(htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities)/)",
+    "/node_modules/(?!(?:.*/node_modules/)?(htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities|@tus/[^/]+|srvx)/)",
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   // The default babel provider writes malformed lcov paths with ts-jest ("dir/file:/abs/path"), which SonarQube cannot match

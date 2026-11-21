@@ -31,6 +31,7 @@ const LinkShare: React.FC = () => {
   const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState<string | null>(null);
+  const urlInputRef = React.useRef<HTMLInputElement>(null);
 
   const {
     isAuthenticated,
@@ -83,6 +84,7 @@ const LinkShare: React.FC = () => {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setSuccess(null);
 
@@ -186,6 +188,7 @@ const LinkShare: React.FC = () => {
             <div className="relative">
               <input
                 id={urlId}
+                ref={urlInputRef}
                 type="url"
                 placeholder={t("linkshare.placeholder_url", "https://example.com/my-page")}
                 value={url}
@@ -281,7 +284,10 @@ const LinkShare: React.FC = () => {
             slug={successSlug}
             translationPrefix="linkshare"
             summary={successSummary}
-            onNewShare={clearSuccess}
+            onNewShare={() => {
+              clearSuccess();
+              urlInputRef.current?.focus();
+            }}
           />
         )}
       </div>

@@ -43,7 +43,6 @@ export async function GET(request: NextRequest) {
       return apiError(request, ErrorCode.UNAUTHORIZED);
     }
 
-    // Check if user is admin
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { isAdmin: true },
@@ -53,18 +52,16 @@ export async function GET(request: NextRequest) {
       return apiError(request, ErrorCode.ADMIN_ONLY);
     }
 
-    // Fetch latest release from GitHub
     const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
       headers: {
         Accept: "application/vnd.github.v3+json",
         "User-Agent": "SnowShare-Version-Check",
       },
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: 3600 },
     });
 
     if (!response.ok) {
       if (response.status === 404) {
-        // No releases found
         return NextResponse.json({
           currentVersion: CURRENT_VERSION,
           latestVersion: null,
@@ -94,8 +91,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Compare two semver versions
-// Returns: 1 if v1 > v2, -1 if v1 < v2, 0 if equal
+// Returns 1 if v1 > v2, -1 if v1 < v2, 0 if equal
 function compareVersions(v1: string, v2: string): number {
   const parts1 = v1.split(".").map(Number);
   const parts2 = v2.split(".").map(Number);
