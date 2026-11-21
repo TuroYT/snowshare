@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiError, ErrorCode } from "@/lib/api-errors";
 
-/**
- * GET /api/oauth-providers
- * Get the list of enabled OAuth providers
- */
 export async function GET(request: NextRequest) {
   try {
     const providers = await prisma.oAuthProvider.findMany({

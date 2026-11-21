@@ -1,10 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Settings } from "@/generated/prisma";
 
-// ---------------------------------------------------------------------------
-// Settings cache
-// ---------------------------------------------------------------------------
-
 const SETTINGS_CACHE_TTL_MS = 30 * 1000;
 
 interface SettingsCacheEntry {
@@ -112,30 +108,8 @@ const defaultSettings = {
   },
 };
 
-const defaultBranding = {
-  branding: {
-    appName: DEFAULTS.appName,
-    appDescription: DEFAULTS.appDescription,
-    logoUrl: null,
-    faviconUrl: null,
-    primaryColor: DEFAULTS.primaryColor,
-    primaryHover: DEFAULTS.primaryHover,
-    primaryDark: DEFAULTS.primaryDark,
-    secondaryColor: DEFAULTS.secondaryColor,
-    secondaryHover: DEFAULTS.secondaryHover,
-    secondaryDark: DEFAULTS.secondaryDark,
-    backgroundColor: DEFAULTS.backgroundColor,
-    surfaceColor: DEFAULTS.surfaceColor,
-    textColor: DEFAULTS.textColor,
-    textMuted: DEFAULTS.textMuted,
-    borderColor: DEFAULTS.borderColor,
-    fontFamily: DEFAULTS.fontFamily,
-  },
-};
-
 export async function getPublicSettings() {
-  // If DATABASE_URL is not set (e.g. during static build/prerender),
-  // avoid calling Prisma and return safe defaults.
+  // No DATABASE_URL during static build/prerender: skip Prisma and return defaults
   if (!process.env.DATABASE_URL) {
     return defaultSettings;
   }
@@ -174,50 +148,5 @@ export async function getPublicSettings() {
       error instanceof Error ? error.message : error
     );
     return defaultSettings;
-  }
-}
-
-export async function getBrandingSettings() {
-  // If DATABASE_URL is not set, return default branding to avoid Prisma calls
-  if (!process.env.DATABASE_URL) {
-    return defaultBranding;
-  }
-  try {
-    const settings = await getSettingsCached();
-    const s = settings && {
-      appName: settings.appName,
-      appDescription: settings.appDescription,
-      logoUrl: settings.logoUrl,
-      faviconUrl: settings.faviconUrl,
-      primaryColor: settings.primaryColor,
-      primaryHover: settings.primaryHover,
-      primaryDark: settings.primaryDark,
-      secondaryColor: settings.secondaryColor,
-      secondaryHover: settings.secondaryHover,
-      secondaryDark: settings.secondaryDark,
-      backgroundColor: settings.backgroundColor,
-      surfaceColor: settings.surfaceColor,
-      textColor: settings.textColor,
-      textMuted: settings.textMuted,
-      borderColor: settings.borderColor,
-      fontFamily: settings.fontFamily,
-    };
-
-    return {
-      branding: s ?? {
-        ...DEFAULTS,
-        appName: DEFAULTS.appName,
-        appDescription: DEFAULTS.appDescription,
-        logoUrl: null,
-        faviconUrl: null,
-      },
-    } as const;
-  } catch (error) {
-    console.warn(
-      "failed to fetch settings from database, note that this is expected during static builds/prerendering:",
-      error instanceof Error ? error.message : error
-    );
-
-    return defaultBranding;
   }
 }

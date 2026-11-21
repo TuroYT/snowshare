@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
-import { Alert, Button, Input, Spinner, Textarea } from "@/components/ui";
+import { Alert, Button, Input, Textarea } from "@/components/ui";
+import ShareViewSkeleton from "@/components/shareComponents/ShareViewSkeleton";
 import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
 import { formatBytes } from "@/lib/formatSize";
 
@@ -79,11 +80,7 @@ export default function UploadRequestPage() {
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <main className="flex-1 flex items-start justify-center px-4 py-12">
         <div className="w-full max-w-lg space-y-4">
-          {loading && (
-            <div role="status" aria-label={t("loading")} className="flex justify-center py-12">
-              <Spinner size="lg" />
-            </div>
-          )}
+          {loading && <ShareViewSkeleton bodyHeight={260} />}
 
           {!loading && !info && <ShareUnavailable message={error} />}
 

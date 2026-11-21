@@ -8,14 +8,13 @@ export async function GET(request: NextRequest) {
     const USER_COUNT = await prisma.user.count();
     const NEED_SETUP = USER_COUNT === 0;
 
-    // Get settings from database
-    let allowSignup = true; // Default value
+    let allowSignup = true;
     const settings = await getSettingsCached();
 
     if (settings) {
       allowSignup = settings.allowSignin;
 
-      // Fix NULL values if they exist
+      // Backfill NULL branding columns left by older versions
       const needsUpdate =
         !settings.appName ||
         !settings.appDescription ||
@@ -52,10 +51,8 @@ export async function GET(request: NextRequest) {
           },
         });
         invalidateSettingsCache();
-        console.log("✅ Settings NULL values fixed with defaults");
       }
     } else if (NEED_SETUP) {
-      // Create default settings if they don't exist during setup
       // Every column has a database default
       await getOrCreateSettings();
     }

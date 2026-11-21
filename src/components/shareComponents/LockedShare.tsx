@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 
 interface LockedShareProps {
-  /** Share type: 'link', 'file', or 'paste' */
-  type: "link" | "file" | "paste";
+  /** Share type: 'link', 'file', 'paste' or 'reverse' (upload requests) */
+  type: "link" | "file" | "paste" | "reverse";
   /** If true, displays a loading skeleton */
   isLoading: boolean;
   /** If true, displays the lock message */
@@ -35,12 +35,14 @@ const LockedShare: React.FC<LockedShareProps> = ({ type, isLoading, isLocked }) 
     link: "Link sharing is locked",
     file: "File sharing is locked",
     paste: "Paste sharing is locked",
+    reverse: "Upload requests are locked",
   };
 
   const defaultMessages: Record<string, string> = {
     link: "You must be logged in to share links.",
     file: "You must be logged in to share files.",
     paste: "You must be logged in to share code.",
+    reverse: "Sign in to create a link that lets others send you files.",
   };
 
   return (

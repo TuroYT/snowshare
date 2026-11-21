@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Seeds `expiresDays` from the server-provided default once auth/settings have
- * loaded, but never overwrites a value the user has already started editing
- * (userEdited ref is set synchronously on every manual change, so it wins
- * even if the user typed before the settings/auth fetch resolved).
+ * Seeds `expiresDays` from the server default once auth/settings have loaded, without
+ * overwriting a value the user already edited (the ref is set synchronously, so it also
+ * wins when the user typed before the fetch resolved).
  */
 export function useDefaultExpirationDays(
   isAuthenticated: boolean,

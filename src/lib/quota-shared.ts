@@ -49,9 +49,6 @@ export async function calculateIpUploadSizeBytes(ipAddress: string): Promise<num
   return totalSize;
 }
 
-/**
- * Settings-based upload limits.
- */
 export interface UploadLimits {
   maxFileSizeBytes: number;
   maxFileSizeMB: number;
@@ -63,9 +60,6 @@ export interface UploadLimits {
   useGiB: boolean;
 }
 
-/**
- * Get upload limits for a given IP and auth status.
- */
 export async function getUploadLimits(
   ipAddress: string,
   isAuthenticated: boolean

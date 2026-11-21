@@ -6,29 +6,22 @@ import { apiError, ErrorCode } from "@/lib/api-errors";
 const SCALAR_DOMAINS =
   "https://api.scalar.com https://cdn.scalar.com https://fonts.scalar.com https://cdn.jsdelivr.net";
 
-// Helper function to add security headers
 function addSecurityHeaders(
   response: NextResponse,
-  _isApiDocs = false,
   isScalarHtml = false,
   allowIframeEmbedding = false
 ): NextResponse {
-  // Prevent clickjacking — omit when iframe embedding is allowed by admin
+  // Omitted when the admin allows iframe embedding
   if (!allowIframeEmbedding) {
     response.headers.set("X-Frame-Options", isScalarHtml ? "SAMEORIGIN" : "DENY");
   }
-  // Prevent MIME type sniffing
   response.headers.set("X-Content-Type-Options", "nosniff");
-  // Enable browser XSS protection
   response.headers.set("X-XSS-Protection", "1; mode=block");
-  // Referrer policy
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  // Comprehensive permissions policy restricting potentially dangerous APIs
   response.headers.set(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=()"
   );
-  // HSTS
   response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
 
   let frameAncestors: string;
@@ -40,7 +33,6 @@ function addSecurityHeaders(
     frameAncestors = "frame-ancestors 'none'";
   }
 
-  // Content Security Policy
   const scalarScriptSrc = isScalarHtml ? " https://cdn.jsdelivr.net" : "";
   const scalarDomains = isScalarHtml ? " " + SCALAR_DOMAINS : "";
   response.headers.set(
@@ -132,14 +124,12 @@ async function getSetupState(): Promise<{ needsSetup: boolean; allowIframeEmbedd
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isApiDocs = pathname.startsWith("/api-docs");
   const isScalarHtml = pathname === "/scalar.html";
 
   if (isCrossSiteMutation(request)) {
-    return addSecurityHeaders(apiError(request, ErrorCode.FORBIDDEN), isApiDocs, isScalarHtml);
+    return addSecurityHeaders(apiError(request, ErrorCode.FORBIDDEN), isScalarHtml);
   }
 
-  // Skip setup check for setup page, API routes, and static assets
   if (
     pathname.startsWith("/setup") ||
     pathname.startsWith("/api/") ||
@@ -147,28 +137,25 @@ export default async function proxy(request: NextRequest) {
     pathname.startsWith("/static/")
   ) {
     const response = NextResponse.next();
-    return addSecurityHeaders(response, isApiDocs, isScalarHtml);
+    return addSecurityHeaders(response, isScalarHtml);
   }
 
-  // Check if setup is needed (result cached, see getSetupState)
   let allowIframeEmbedding: boolean;
   try {
     const state = await getSetupState();
     allowIframeEmbedding = state.allowIframeEmbedding;
 
     if (state.needsSetup) {
-      // Redirect to setup page if not already there
       const redirectResponse = NextResponse.redirect(new URL("/setup", request.url));
-      return addSecurityHeaders(redirectResponse, isApiDocs, isScalarHtml);
+      return addSecurityHeaders(redirectResponse, isScalarHtml);
     }
   } catch (error) {
-    // If setup check fails due to network/database issues, fail open to avoid lockout
+    // Fail open on network/database errors to avoid locking everyone out
     console.error("Error checking setup status:", error);
     const nextResponse = NextResponse.next();
-    return addSecurityHeaders(nextResponse, isApiDocs, isScalarHtml);
+    return addSecurityHeaders(nextResponse, isScalarHtml);
   }
 
-  // Check authentication for protected routes
   const protectedPaths = ["/admin", "/dashboard", "/profile", "/api/protected"];
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
 
@@ -179,12 +166,12 @@ export default async function proxy(request: NextRequest) {
       const signInUrl = new URL("/auth/signin", request.url);
       signInUrl.searchParams.set("callbackUrl", pathname);
       const redirectResponse = NextResponse.redirect(signInUrl);
-      return addSecurityHeaders(redirectResponse, isApiDocs, isScalarHtml, allowIframeEmbedding);
+      return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
     }
   }
 
   const response = NextResponse.next();
-  return addSecurityHeaders(response, isApiDocs, isScalarHtml, allowIframeEmbedding);
+  return addSecurityHeaders(response, isScalarHtml, allowIframeEmbedding);
 }
 
 export const config = {

@@ -21,7 +21,7 @@ interface S3Config {
 }
 
 async function getS3Config(): Promise<S3Config | null> {
-  // Env vars take priority — no DB query needed
+  // Env vars take priority: no DB query needed
   if (process.env.S3_BUCKET) {
     return {
       bucket: process.env.S3_BUCKET,
@@ -32,7 +32,6 @@ async function getS3Config(): Promise<S3Config | null> {
     };
   }
 
-  // Fall back to DB settings (cached)
   try {
     const settings = await getSettingsCached();
     if (!settings?.s3Enabled || !settings.s3Bucket) return null;

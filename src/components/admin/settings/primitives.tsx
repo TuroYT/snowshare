@@ -27,12 +27,12 @@ export function Toggle({
       aria-labelledby={labelledBy}
       disabled={disabled}
       onClick={onChange}
-      className={`relative inline-flex shrink-0 h-8 w-14 items-center rounded-full transition-colors duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] ${
+      className={`relative inline-flex shrink-0 h-8 w-14 items-center rounded-full transition-colors duration-150 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)] ${
         checked ? activeColor : "bg-[var(--border-hover)]"
       }${disabled ? " opacity-50 cursor-not-allowed" : " cursor-pointer"}`}
     >
       <span
-        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+        className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-150 motion-reduce:transition-none ${
           checked ? "translate-x-7" : "translate-x-1"
         }`}
       />
@@ -89,7 +89,6 @@ interface FieldInputProps {
   onChange: (value: string | null) => void;
   placeholder?: string;
   hint?: string;
-  min?: number;
 }
 
 export function FieldInput({
@@ -99,7 +98,6 @@ export function FieldInput({
   onChange,
   placeholder,
   hint,
-  min,
 }: Readonly<FieldInputProps>) {
   return (
     <Input
@@ -108,7 +106,6 @@ export function FieldInput({
       value={value}
       onChange={(e) => onChange(e.target.value || null)}
       placeholder={placeholder}
-      min={min}
       helperText={hint}
     />
   );

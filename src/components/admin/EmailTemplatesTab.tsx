@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button, Input, Spinner, Tab, Tabs, Textarea } from "@/components/ui";
+import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { toast } from "@/components/ui/Toast";
 import { useTranslation } from "react-i18next";
 
@@ -58,8 +59,6 @@ export default function EmailTemplatesTab() {
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // ─── Load templates ─────────────────────────────────────────────────────────
-
   const fetchTemplates = useCallback(async () => {
     try {
       setLoading(true);
@@ -80,8 +79,6 @@ export default function EmailTemplatesTab() {
     fetchTemplates();
   }, [fetchTemplates]);
 
-  // ─── Sync form fields when type or templates change ─────────────────────────
-
   useEffect(() => {
     if (!defaults) return;
     if (activeType === "share") {
@@ -94,8 +91,6 @@ export default function EmailTemplatesTab() {
       setText(templates.verifyEmailText ?? defaults.verifyEmailText);
     }
   }, [activeType, templates, defaults]);
-
-  // ─── Live preview (debounced) ────────────────────────────────────────────────
 
   const refreshPreview = useCallback(async () => {
     setPreviewLoading(true);
@@ -129,14 +124,12 @@ export default function EmailTemplatesTab() {
     };
   }, [refreshPreview]);
 
-  // Write preview HTML into iframe via srcdoc
+  // srcdoc is set imperatively so typing does not remount the iframe
   useEffect(() => {
     if (iframeRef.current && preview?.html) {
       iframeRef.current.srcdoc = preview.html;
     }
   }, [preview?.html]);
-
-  // ─── Save ────────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     setSaving(true);
@@ -171,8 +164,6 @@ export default function EmailTemplatesTab() {
     }
   };
 
-  // ─── Reset to defaults ───────────────────────────────────────────────────────
-
   const handleReset = async () => {
     if (!defaults) return;
     setSaving(true);
@@ -205,8 +196,6 @@ export default function EmailTemplatesTab() {
     }
   };
 
-  // ─── Send test email ─────────────────────────────────────────────────────────
-
   const handleSendTest = async () => {
     setTestSending(true);
     try {
@@ -233,12 +222,15 @@ export default function EmailTemplatesTab() {
     }
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────────
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Spinner size="lg" />
+      <div className="space-y-4" aria-busy="true">
+        <WaveSkeleton variant="text" width={200} height={28} />
+        <WaveSkeleton variant="rounded" height={42} />
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <WaveSkeleton variant="rounded" height={420} />
+          <WaveSkeleton variant="rounded" height={420} />
+        </div>
       </div>
     );
   }
@@ -259,7 +251,6 @@ export default function EmailTemplatesTab() {
         </p>
       </div>
 
-      {/* Email type tabs */}
       <Tabs
         value={activeType}
         onValueChange={(v) => setActiveType(v as EmailType)}
@@ -280,7 +271,6 @@ export default function EmailTemplatesTab() {
         aria-labelledby={`tab-${activeType}`}
         className="grid grid-cols-1 xl:grid-cols-2 gap-6"
       >
-        {/* Editor column */}
         <div className="space-y-4">
           <Input
             label={t("admin.email_templates.subject", "Subject")}
@@ -310,9 +300,8 @@ export default function EmailTemplatesTab() {
             placeholder={t("admin.email_templates.text_placeholder", "Plain text fallback…")}
           />
 
-          {/* Actions */}
           <div className="flex flex-wrap gap-2 pt-2">
-            <Button type="button" onClick={handleSave} disabled={saving}>
+            <Button type="button" onClick={handleSave} isLoading={saving}>
               {saving ? t("admin.email_templates.saving", "Saving…") : t("common.save", "Save")}
             </Button>
             <Button type="button" variant="secondary" onClick={handleReset} disabled={saving}>
@@ -322,7 +311,7 @@ export default function EmailTemplatesTab() {
               type="button"
               variant="secondary"
               onClick={handleSendTest}
-              disabled={testSending}
+              isLoading={testSending}
             >
               {testSending
                 ? t("admin.email_templates.sending_test", "Sending…")
@@ -331,18 +320,16 @@ export default function EmailTemplatesTab() {
           </div>
         </div>
 
-        {/* Preview column */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[var(--foreground)]">
               {t("admin.email_templates.preview_title", "Live Preview")}
             </h3>
-            {previewLoading && <Spinner size="sm" />}
+            <span className="h-5 flex items-center">{previewLoading && <Spinner size="sm" />}</span>
           </div>
 
           {preview && (
             <>
-              {/* Rendered subject */}
               <div className="border border-[var(--border)] rounded-[var(--radius)] p-3">
                 <p className="text-xs text-[var(--foreground-muted)] mb-1 font-medium uppercase tracking-wide">
                   {t("admin.email_templates.preview_subject", "Subject")}
@@ -350,7 +337,6 @@ export default function EmailTemplatesTab() {
                 <p className="text-sm text-[var(--foreground)]">{preview.subject}</p>
               </div>
 
-              {/* HTML preview in sandboxed iframe */}
               <div className="rounded-[var(--radius)] border border-[var(--border)] overflow-hidden">
                 <p className="text-xs text-[var(--foreground-muted)] bg-[var(--surface-hover)] px-3 py-1.5 border-b border-[var(--border)] font-medium uppercase tracking-wide">
                   {t("admin.email_templates.preview_html", "HTML")}
@@ -364,7 +350,6 @@ export default function EmailTemplatesTab() {
                 />
               </div>
 
-              {/* Plain text */}
               <div className="border border-[var(--border)] rounded-[var(--radius)] p-3">
                 <p className="text-xs text-[var(--foreground-muted)] mb-1 font-medium uppercase tracking-wide">
                   {t("admin.email_templates.preview_text", "Plain Text")}

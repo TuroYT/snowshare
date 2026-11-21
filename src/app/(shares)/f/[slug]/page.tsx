@@ -8,7 +8,8 @@ import Footer from "@/components/Footer";
 import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
 import { formatBytes } from "@/lib/formatSize";
 import FilePreviewModal from "@/components/filePreview/FilePreviewModal";
-import { Button, Badge, Input, Spinner, Alert } from "@/components/ui";
+import ShareViewSkeleton from "@/components/shareComponents/ShareViewSkeleton";
+import { Button, Badge, Input, Alert } from "@/components/ui";
 
 interface FileListItem {
   name: string;
@@ -148,21 +149,18 @@ export default function FileSharePage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch("/api/settings");
+        const [response, sessionResponse] = await Promise.all([
+          fetch("/api/settings"),
+          fetch("/api/auth/session"),
+        ]);
         if (response.ok) {
           const data = await response.json();
-          // Check user authentication status and set appropriate unit
-          const sessionResponse = await fetch("/api/auth/session");
-          if (sessionResponse.ok) {
-            const session = await sessionResponse.json();
-            if (session?.user) {
-              setUseGiB(data.settings?.useGiBForAuth ?? false);
-            } else {
-              setUseGiB(data.settings?.useGiBForAnon ?? false);
-            }
-          } else {
-            setUseGiB(data.settings?.useGiBForAnon ?? false);
-          }
+          const session = sessionResponse.ok ? await sessionResponse.json() : null;
+          setUseGiB(
+            session?.user
+              ? (data.settings?.useGiBForAuth ?? false)
+              : (data.settings?.useGiBForAnon ?? false)
+          );
         }
       } catch (err) {
         console.error("Error fetching settings:", err);
@@ -362,11 +360,7 @@ export default function FileSharePage() {
       <main className="flex-1 flex items-start justify-center px-4 py-12">
         <div className="w-full max-w-lg">
           {/* Loading state */}
-          {loadingInfo && (
-            <div role="status" aria-label={t("loading")} className="flex justify-center py-12">
-              <Spinner size="lg" />
-            </div>
-          )}
+          {loadingInfo && <ShareViewSkeleton bodyHeight={200} />}
 
           {/* Error state when no file info */}
           {!loadingInfo && !fileInfo && error && <ShareUnavailable message={error} />}

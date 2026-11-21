@@ -1,8 +1,3 @@
-/**
- * Shared share creation service.
- * Used by API routes, tus server, and frontend share endpoints.
- */
-
 import { prisma } from "@/lib/prisma";
 import { getSettingsCached } from "@/lib/settings";
 import { encrypt } from "@/lib/crypto-link";
@@ -55,9 +50,7 @@ export function toPublicShare<
   return { ...rest, hasPassword: !!password };
 }
 
-// ---------------------------------------------------------------------------
-// Shared validation helpers (order of checks is significant: callers run them in sequence)
-// ---------------------------------------------------------------------------
+// Callers run these checks in sequence: the order decides which error is reported first
 
 type ShareError = { errorCode: ErrorCode; params?: Record<string, number> };
 
@@ -143,10 +136,6 @@ function parseMaxViews(maxViews: number | undefined): number | null {
   return maxViews && Number.isInteger(maxViews) && maxViews > 0 ? maxViews : null;
 }
 
-// ---------------------------------------------------------------------------
-// Link share
-// ---------------------------------------------------------------------------
-
 export interface CreateLinkShareParams {
   urlOriginal: string;
   context: ShareContext;
@@ -160,25 +149,20 @@ export async function createLinkShare(params: CreateLinkShareParams): Promise<Sh
   const { context, expiresAt, maxViews } = params;
   let { urlOriginal, slug, password } = params;
 
-  // Validate URL
   const urlValidation = validateUrl(urlOriginal);
   if (!urlValidation.valid) {
     return { errorCode: ErrorCode.INVALID_URL };
   }
 
-  // Validate slug (format, then uniqueness)
   const slugError = await validateRequestedSlug(slug);
   if (slugError) return slugError;
 
-  // Validate expiration
   const expirationError = validateExpiration(expiresAt);
   if (expirationError) return expirationError;
 
-  // Password length
   const passwordError = validatePasswordLength(password);
   if (passwordError) return passwordError;
 
-  // Anonymous restrictions
   if (!context.isAuthenticated) {
     const anonError = await validateAnonymousExpiringShare(
       "allowAnonLinkShare",
@@ -188,14 +172,12 @@ export async function createLinkShare(params: CreateLinkShareParams): Promise<Sh
     if (anonError) return anonError;
   }
 
-  // Hash password and encrypt URL
   if (password) {
     const hashedPassword = await hashPassword(password);
     urlOriginal = encrypt(urlOriginal, password);
     password = hashedPassword;
   }
 
-  // Generate slug if not provided
   if (!slug) {
     slug = await generateUniqueSlug();
   }
@@ -220,10 +202,6 @@ export async function createLinkShare(params: CreateLinkShareParams): Promise<Sh
   return { share };
 }
 
-// ---------------------------------------------------------------------------
-// Paste share
-// ---------------------------------------------------------------------------
-
 export interface CreatePasteShareParams {
   paste: string;
   pastelanguage: string;
@@ -241,7 +219,6 @@ export async function createPasteShare(
   const { paste, pastelanguage } = params;
   let { slug, password } = params;
 
-  // Validate paste content
   if (!paste || paste.length < 1) {
     return { errorCode: ErrorCode.PASTE_CONTENT_EMPTY };
   }
@@ -252,24 +229,19 @@ export async function createPasteShare(
     };
   }
 
-  // Validate language
   if (!pastelanguage || !isValidPasteLanguage(pastelanguage)) {
     return { errorCode: ErrorCode.PASTE_LANGUAGE_INVALID };
   }
 
-  // Validate slug (format, then uniqueness)
   const slugError = await validateRequestedSlug(slug);
   if (slugError) return slugError;
 
-  // Validate expiration
   const expirationError = validateExpiration(expiresAt);
   if (expirationError) return expirationError;
 
-  // Password length
   const passwordError = validatePasswordLength(password);
   if (passwordError) return passwordError;
 
-  // Anonymous restrictions
   if (!context.isAuthenticated) {
     const anonError = await validateAnonymousExpiringShare(
       "allowAnonPasteShare",
@@ -285,7 +257,6 @@ export async function createPasteShare(
     password = await hashPassword(password);
   }
 
-  // Generate slug
   if (!slug) {
     slug = await generateUniqueSlug();
   }
@@ -312,10 +283,6 @@ export async function createPasteShare(
   return { share };
 }
 
-// ---------------------------------------------------------------------------
-// File share (multipart — not tus)
-// ---------------------------------------------------------------------------
-
 export interface CreateFileShareParams {
   filename: string;
   filePath: string;
@@ -332,19 +299,15 @@ export async function createFileShare(params: CreateFileShareParams): Promise<Sh
   const { context, expiresAt, maxViews, filePath, filename: _filename } = params;
   let { slug, password } = params;
 
-  // Validate slug (format, then uniqueness)
   const slugError = await validateRequestedSlug(slug);
   if (slugError) return slugError;
 
-  // Validate expiration
   const expirationError = validateExpiration(expiresAt);
   if (expirationError) return expirationError;
 
-  // Password length
   const passwordError = validatePasswordLength(password);
   if (passwordError) return passwordError;
 
-  // Anonymous restrictions
   if (!context.isAuthenticated) {
     if (!(await isAnonShareAllowed("allowAnonFileShare"))) {
       return { errorCode: ErrorCode.ANON_FILE_SHARE_DISABLED };
@@ -353,18 +316,15 @@ export async function createFileShare(params: CreateFileShareParams): Promise<Sh
       const expiryError = validateAnonExpiryRange(expiresAt);
       if (expiryError) return expiryError;
     } else {
-      // Default to max anon expiry
       const result = resolveAnonExpiry(null);
       params.expiresAt = result.date;
     }
   }
 
-  // Hash password
   if (password) {
     password = await hashPassword(password);
   }
 
-  // Generate slug
   if (!slug) {
     slug = await generateUniqueSlug();
   }

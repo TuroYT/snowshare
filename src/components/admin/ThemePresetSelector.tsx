@@ -26,7 +26,7 @@ export function ThemePresetSelector({ onSelectPreset }: Readonly<ThemePresetSele
               key={preset.id}
               type="button"
               onClick={() => onSelectPreset(colors)}
-              className="group min-w-0 p-3 rounded-[var(--radius)] border border-[var(--border)] hover:border-[var(--border-hover)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors duration-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              className="min-w-0 p-3 rounded-[var(--radius)] border border-[var(--border)] hover:border-[var(--border-hover)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] transition-colors duration-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
               title={preset.description}
             >
               <div className="flex gap-1 mb-2">

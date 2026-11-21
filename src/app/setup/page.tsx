@@ -8,7 +8,7 @@ import { signIn, SignInResponse } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
-import { Alert } from "@/components/ui/Alert";
+import FormNotice from "@/app/auth/_components/FormNotice";
 
 export default function Setup() {
   const [email, setEmail] = useState("");
@@ -21,15 +21,13 @@ export default function Setup() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Check if setup is actually needed
     const checkSetupStatus = async () => {
       try {
         const response = await fetch("/api/setup/check");
         const data = await response.json();
 
         if (!data.needsSetup) {
-          // Setup not needed, redirect to home
-          router.push("/");
+          router.replace("/");
         } else {
           setChecking(false);
         }
@@ -43,21 +41,21 @@ export default function Setup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (loading) return;
     setError("");
 
     if (password !== confirmPassword) {
       setError(t("auth.error_passwords_mismatch"));
-      setLoading(false);
       return;
     }
 
     if (password.length < 6) {
       setError(t("auth.error_password_too_short"));
-      setLoading(false);
       return;
     }
 
+    setLoading(true);
+    let redirecting = false;
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -76,20 +74,16 @@ export default function Setup() {
           password,
         })) as SignInResponse | undefined;
 
-        if (signInResult?.ok) {
-          // Redirect to home after successful sign-in
-          router.push("/");
-        } else {
-          // If auto-login failed, redirect to sign-in with a message
-          router.push("/auth/signin?notice=account_created");
-        }
+        // Stay in the busy state until the navigation replaces the page
+        redirecting = true;
+        router.replace(signInResult?.ok ? "/" : "/auth/signin?notice=account_created");
       } else {
-        setError(data.error || t("auth.error_generic").replace(" : ", ""));
+        setError(data.error || t("auth.error_generic_standalone"));
       }
     } catch {
-      setError(t("auth.error_generic").replace(" : ", ""));
+      setError(t("auth.error_generic_standalone"));
     } finally {
-      setLoading(false);
+      if (!redirecting) setLoading(false);
     }
   };
 
@@ -113,26 +107,26 @@ export default function Setup() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-sm">
-        {/* Logo and title */}
         <div className="text-center mb-8">
-          <Image src="/logo.svg" alt="" width={40} height={40} className="mx-auto mb-3" />
+          <Image
+            src="/logo.svg"
+            unoptimized
+            alt=""
+            width={40}
+            height={40}
+            className="mx-auto mb-3"
+          />
           <h1 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">
             {t("setup.title")}
           </h1>
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{t("setup.description")}</p>
         </div>
 
-        {/* Info notice */}
         <div className="mb-6 p-3 rounded-[var(--radius)] bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--foreground-muted)]">
           {t("setup.info")}
         </div>
 
-        {/* Error message */}
-        {error && (
-          <Alert variant="danger" className="mb-4">
-            {error}
-          </Alert>
-        )}
+        <FormNotice message={error || null} variant="danger" />
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
@@ -141,7 +135,7 @@ export default function Setup() {
             autoComplete="email"
             required
             pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-            placeholder={t("auth.email_placeholder") as string}
+            placeholder={t("auth.email_placeholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -150,7 +144,7 @@ export default function Setup() {
             type="password"
             autoComplete="new-password"
             required
-            placeholder={t("auth.password_new_placeholder") as string}
+            placeholder={t("auth.password_new_placeholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -159,7 +153,7 @@ export default function Setup() {
             type="password"
             autoComplete="new-password"
             required
-            placeholder={t("auth.confirm_password_placeholder") as string}
+            placeholder={t("auth.confirm_password_placeholder")}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

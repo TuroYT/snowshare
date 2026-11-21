@@ -1,8 +1,3 @@
-/**
- * GET  /api/user/reverse-shares — List own upload requests (session required)
- * POST /api/user/reverse-shares — Create an upload request (session required)
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

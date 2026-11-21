@@ -1,8 +1,3 @@
-/**
- * API authentication middleware.
- * Supports API key (Bearer token) and NextAuth session auth.
- */
-
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -57,12 +52,11 @@ async function authenticateWithApiKey(
     return null;
   }
 
-  // Check expiration
   if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
     return { user: null, authMethod: null };
   }
 
-  // Update lastUsedAt asynchronously (fire and forget)
+  // Fire and forget: the response does not wait for lastUsedAt
   prisma.apiKey
     .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
     .catch((err: Error) => console.warn("[api-auth] Failed to update lastUsedAt:", err.message));
@@ -70,20 +64,11 @@ async function authenticateWithApiKey(
   return { user: apiKey.user, authMethod: "apikey" };
 }
 
-/**
- * Authenticate an API request.
- *
- * Resolution order:
- * 1. `Authorization: Bearer sk_...` → HMAC-SHA256 hash lookup in ApiKey table
- * 2. NextAuth session cookie
- * 3. Unauthenticated (anonymous)
- */
+/** Resolution order: `Bearer sk_...` API key, then NextAuth session, then anonymous. */
 export async function authenticateApiRequest(request: NextRequest): Promise<ApiAuthResult> {
-  // 1. API key via Bearer token
   const apiKeyResult = await authenticateWithApiKey(request, request.headers.get("authorization"));
   if (apiKeyResult) return apiKeyResult;
 
-  // 2. NextAuth session
   const session = await getServerSession(authOptions);
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
@@ -95,6 +80,5 @@ export async function authenticateApiRequest(request: NextRequest): Promise<ApiA
     }
   }
 
-  // 3. Anonymous
   return { user: null, authMethod: null };
 }

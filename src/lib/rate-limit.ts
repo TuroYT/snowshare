@@ -73,10 +73,7 @@ function evictIfFull(now: number) {
   }
 }
 
-/**
- * Returns the number of seconds until the key may try again, or 0 when not limited.
- * Does not count an event.
- */
+/** Seconds until the key may try again, or 0 when not limited. Does not count an event. */
 export function getRetryAfter(scope: RateLimitScope, key: string): number {
   const now = Date.now();
   const bucket = getBucket(scope, key, now);
@@ -84,17 +81,11 @@ export function getRetryAfter(scope: RateLimitScope, key: string): number {
   return Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
 }
 
-/**
- * Number of events still allowed for the key in the current window.
- */
 export function getRemainingEvents(scope: RateLimitScope, key: string): number {
   const bucket = getBucket(scope, key, Date.now());
   return Math.max(0, RATE_LIMITS[scope].limit - (bucket?.count ?? 0));
 }
 
-/**
- * Counts one event for the key (e.g. a failed password attempt).
- */
 export function recordRateLimitHit(scope: RateLimitScope, key: string): void {
   const now = Date.now();
   const bucket = getBucket(scope, key, now);
@@ -128,16 +119,10 @@ export function consumeRateLimit(scope: RateLimitScope, key: string): number {
   return 0;
 }
 
-/**
- * Clears the counter for a key (e.g. after a successful login).
- */
 export function resetRateLimit(scope: RateLimitScope, key: string): void {
   store.delete(`${scope}:${key}`);
 }
 
-/**
- * Translated 429 response with a Retry-After header.
- */
 export function rateLimitResponse(
   request: NextRequest,
   retryAfterSeconds: number

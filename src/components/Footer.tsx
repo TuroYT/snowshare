@@ -15,11 +15,13 @@ export default function Footer() {
   const { t } = useTranslation();
   const { branding } = useTheme();
   const year = new Date().getFullYear();
-  const { data } = useFetch<{ links: CustomLink[] }>("/api/custom-links");
+  const { data, loading } = useFetch<{ links: CustomLink[] }>("/api/custom-links");
   const customLinks = data?.links ?? [];
 
   const linkClass =
     "text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-100";
+  // The default links are swapped for the custom ones once known: keep their space without showing them
+  const defaultLinkClass = `${linkClass} ${loading ? "invisible" : ""}`;
 
   return (
     <footer className="mt-auto border-t border-[var(--border)] bg-[var(--surface)]">
@@ -62,7 +64,7 @@ export default function Footer() {
                 href="https://github.com/TuroYT/snowshare"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${linkClass} flex items-center gap-1`}
+                className={`${defaultLinkClass} flex items-center gap-1`}
               >
                 <svg
                   width="16"
@@ -79,7 +81,7 @@ export default function Footer() {
                 href="https://github.com/TuroYT/snowshare/blob/main/LICENSE"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={linkClass}
+                className={defaultLinkClass}
               >
                 {t("footer.license", "License")}
               </a>

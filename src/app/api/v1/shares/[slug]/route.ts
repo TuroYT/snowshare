@@ -1,8 +1,3 @@
-/**
- * GET    /api/v1/shares/:slug — Get share metadata
- * DELETE /api/v1/shares/:slug — Delete a share (owner or admin)
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { emitShareEvent } from "@/lib/webhooks";
 import { authenticateApiRequest } from "@/lib/api-auth";

@@ -428,16 +428,13 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
         onCancel={() => setShowDeleteConfirm(false)}
       />
       <div className="flex items-start gap-3 p-4 sm:p-5">
-        {/* Type icon */}
         <div
           className={`mt-0.5 h-9 w-9 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-hover)] flex items-center justify-center shrink-0 ${TYPE_ICON_CLASS[share.type]}`}
         >
           <ShareTypeIcon type={share.type} />
         </div>
 
-        {/* Main */}
         <div className="flex-1 min-w-0">
-          {/* Slug + badges */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <a
               href={path}
@@ -493,7 +490,6 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
             />
           </div>
 
-          {/* Target preview */}
           <ShareTargetPreview share={share} />
 
           <ShareMeta
@@ -504,7 +500,6 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
           />
         </div>
 
-        {/* Actions */}
         {!isEditing && (
           <ShareActions
             share={share}
@@ -525,12 +520,15 @@ export default function ShareItem({ share, onDelete, onUpdate }: Readonly<ShareI
         />
       )}
 
-      <ShareAccessLogsModal
-        shareId={share.id}
-        slug={share.slug}
-        isOpen={showLogs}
-        onClose={() => setShowLogs(false)}
-      />
+      {/* Mounted on demand so the logs are only fetched when the owner opens them */}
+      {showLogs && (
+        <ShareAccessLogsModal
+          shareId={share.id}
+          slug={share.slug}
+          isOpen
+          onClose={() => setShowLogs(false)}
+        />
+      )}
     </div>
   );
 }

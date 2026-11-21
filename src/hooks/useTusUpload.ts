@@ -11,7 +11,7 @@ export interface TusAfterResponseHeaders {
 
 export interface StartTusUploadOptions {
   file: File;
-  /** tus metadata sent with the upload (must be string values only). */
+  /** tus metadata (string values only) */
   metadata: Record<string, string>;
   /** Translates a server error code (from a `{ error: CODE }` response body) into a user-facing message. */
   translateErrorCode: (code: string) => string;
@@ -24,13 +24,8 @@ export interface StartTusUploadOptions {
 }
 
 /**
- * Wraps tus-js-client resumable uploads for the file share form.
- *
- * - tus-js-client is loaded lazily (`await import`) since it's only needed
- *   once a user actually starts a file upload.
- * - Every upload started through a given hook instance is tracked so it can
- *   be aborted on unmount, whether it's the single-file flow or one file in
- *   the sequential multi-file flow.
+ * Resumable tus uploads for the file share form. tus-js-client is loaded lazily, and
+ * every upload started through a hook instance is aborted on unmount.
  */
 export function useTusUpload() {
   const activeUploadsRef = useRef<Set<TusUpload>>(new Set());
@@ -90,7 +85,6 @@ export function useTusUpload() {
             onShouldRetry(err) {
               const status = err?.originalResponse?.getStatus();
               if (status && status >= 400 && status < 500) return false;
-              if (status === 409) return false;
               return true;
             },
             onError: (error: unknown) => {

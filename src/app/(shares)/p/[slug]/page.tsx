@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 // Only the grammars used by a prisma `pasteType` enum value are loaded (see
@@ -25,7 +25,8 @@ import ReactMarkdown from "react-markdown";
 import { useTranslation } from "react-i18next";
 import Footer from "@/components/Footer";
 import ShareUnavailable from "@/components/shareComponents/ShareUnavailable";
-import { Badge, Button, Input, Spinner, toast } from "@/components/ui";
+import ShareViewSkeleton from "@/components/shareComponents/ShareViewSkeleton";
+import { Badge, Button, Input, toast } from "@/components/ui";
 import { copyText } from "@/lib/clipboard";
 
 function escapeHtml(text: string): string {
@@ -110,7 +111,6 @@ const PasteViewPage = () => {
   }, [slug, t]);
 
   const [copied, setCopied] = useState(false);
-  const [highlighted, setHighlighted] = useState("");
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -136,34 +136,23 @@ const PasteViewPage = () => {
     setError(null);
   };
 
-  useEffect(() => {
-    if (pasteData?.paste && pasteData?.language) {
-      // PrismJS language mapping
-      let lang = pasteData.language.toLowerCase();
-      if (lang === "js") lang = "javascript";
-      if (lang === "ts") lang = "typescript";
-      if (lang === "c++") lang = "cpp";
-      if (lang === "html") lang = "markup";
-      // Ensure the language exists, fallback to plaintext
-      if (!Prism.languages[lang]) lang = "plaintext";
-      const html = Prism.highlight(
-        pasteData.paste,
-        Prism.languages[lang] || Prism.languages.plaintext,
-        lang
-      );
-      setHighlighted(html);
-    }
+  // Derived during render (not in an effect) so the first paint is already highlighted
+  const highlighted = useMemo(() => {
+    if (!pasteData?.paste || !pasteData.language) return "";
+    let lang = pasteData.language.toLowerCase();
+    if (lang === "js") lang = "javascript";
+    if (lang === "ts") lang = "typescript";
+    if (lang === "c++") lang = "cpp";
+    if (lang === "html") lang = "markup";
+    if (!Prism.languages[lang]) lang = "plaintext";
+    return Prism.highlight(pasteData.paste, Prism.languages[lang], lang);
   }, [pasteData]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-10">
         {/* Loading state */}
-        {loading && (
-          <div role="status" aria-label={t("loading")} className="flex justify-center py-12">
-            <Spinner size="lg" />
-          </div>
-        )}
+        {loading && <ShareViewSkeleton bodyHeight={280} />}
 
         {/* Error state (non-password) */}
         {error && !loading && !requiresPassword && (

@@ -11,12 +11,7 @@ function deriveKey(password: string, salt: Buffer): Buffer {
   return crypto.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 32, "sha256");
 }
 
-/**
- * Encrypts a text string with a password (AES-256-GCM, authenticated)
- * @param {string} text - Text to encrypt
- * @param {string} password - Password
- * @returns {string} - Encrypted string in the form v2:salt:iv:tag:ciphertext (base64 parts)
- */
+/** AES-256-GCM. Output: `v2:salt:iv:tag:ciphertext` (base64 parts). */
 export function encrypt(text: string, password: string): string {
   const salt = crypto.randomBytes(16);
   const iv = crypto.randomBytes(GCM_IV_LENGTH);
@@ -60,12 +55,7 @@ function decryptLegacyCbc(parts: string[], password: string): string {
   return decrypted;
 }
 
-/**
- * Decrypts an encrypted string with a password
- * @param {string} encrypted - v2:salt:iv:tag:ciphertext (AES-256-GCM) or legacy salt:iv:encrypted (AES-256-CBC)
- * @param {string} password - Password
- * @returns {string} - Decrypted text
- */
+/** Accepts the v2 GCM format or the legacy `salt:iv:encrypted` CBC one. */
 export function decrypt(encrypted: string, password: string): string {
   const parts = encrypted.split(":");
   if (parts[0] === V2_PREFIX && parts.length === 5) {

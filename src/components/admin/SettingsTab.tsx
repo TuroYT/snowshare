@@ -242,7 +242,7 @@ export default function SettingsTab() {
           <WebhooksSection settings={settings} onChange={patchSettings} />
 
           <div className="flex justify-end">
-            <Button type="button" onClick={handleSave} disabled={saving} className="px-6">
+            <Button type="button" onClick={handleSave} isLoading={saving} className="px-6">
               {saving ? t("admin.settings.saving") : t("admin.settings.save")}
             </Button>
           </div>

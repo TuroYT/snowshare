@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
-  // Check if user is admin
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
@@ -79,7 +78,6 @@ export async function PATCH(request: NextRequest) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
-  // Check if user is admin
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
@@ -104,7 +102,6 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Prevent self-modification
     if (userId === session.user.id && action !== "view") {
       return apiError(request, ErrorCode.FORBIDDEN);
     }

@@ -1,7 +1,4 @@
-/**
- * DELETE /api/user/reverse-shares/:id — Delete an upload request (session required, owner only).
- * Files already received stay in the owner's shares.
- */
+// Files already received stay in the owner's shares.
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";

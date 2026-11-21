@@ -55,17 +55,11 @@ export function nodeStreamToWebStream(nodeStream: Readable): ReadableStream {
   });
 }
 
-/**
- * Parse and validate Range header for HTTP range requests
- * @param rangeHeader - The Range header value (e.g., "bytes=0-999")
- * @param fileSize - The total size of the file
- * @returns Object with start and end positions, or null if invalid
- */
+/** Parses a single `bytes=start-end` range; null when malformed or out of bounds. */
 export function parseRangeHeader(
   rangeHeader: string,
   fileSize: number
 ): { start: number; end: number } | null {
-  // Parse range header
   const parts = rangeHeader.replace(/bytes=/, "").split("-");
 
   if (parts.length !== 2) {
@@ -75,23 +69,19 @@ export function parseRangeHeader(
   const start = Number.parseInt(parts[0], 10);
   const end = parts[1] ? Number.parseInt(parts[1], 10) : fileSize - 1;
 
-  // Validate parsed values
   if (Number.isNaN(start) || Number.isNaN(end)) {
     return null;
   }
 
-  // Check for negative values
   if (start < 0 || end < 0) {
     return null;
   }
 
-  // Check that start is not greater than end
   if (start > end) {
     return null;
   }
 
-  // Check that values are within file bounds
-  // Note: end can equal fileSize - 1 since byte positions are zero-indexed
+  // Byte positions are zero-indexed: the last valid one is fileSize - 1
   if (start >= fileSize || end > fileSize - 1) {
     return null;
   }

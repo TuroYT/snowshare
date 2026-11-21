@@ -1,23 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
-import IpGeoModal from "@/components/admin/IpGeoModal";
+import IpGeoModal, { type IpGeoData } from "@/components/admin/IpGeoModal";
 import LogRow from "@/components/admin/LogRow";
 import WarningModal from "@/components/admin/WarningModal";
 import { toast } from "@/components/ui/Toast";
 import { Alert, Button, Input } from "@/components/ui";
-
-interface IpGeoData {
-  countryCode: string | null;
-  countryName: string | null;
-  continentCode: string | null;
-  continentName: string | null;
-  stateProv: string | null;
-  city: string | null;
-  status: string;
-}
 
 export interface LogEntry {
   id: string;
@@ -48,6 +38,9 @@ export default function LogsTab() {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedRef = useRef(false);
+  const requestIdRef = useRef(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
@@ -65,7 +58,10 @@ export default function LogsTab() {
   const [logToDelete, setLogToDelete] = useState<LogEntry | null>(null);
 
   const fetchLogs = useCallback(async () => {
-    setLoading(true);
+    const requestId = ++requestIdRef.current;
+    // Keep the current rows on screen while filtering, paging or refreshing
+    if (hasLoadedRef.current) setRefreshing(true);
+    else setLoading(true);
     setFetchError(null);
     try {
       const params = new URLSearchParams({
@@ -79,13 +75,18 @@ export default function LogsTab() {
       if (!response.ok) throw new Error("Failed to fetch logs");
 
       const data = await response.json();
+      if (requestId !== requestIdRef.current) return;
       setLogs(data.logs);
       setPagination(data.pagination);
+      hasLoadedRef.current = true;
     } catch (error) {
       console.error("Error fetching logs:", error);
-      setFetchError(t("admin.error_load_data"));
+      if (requestId === requestIdRef.current) setFetchError(t("admin.error_load_data"));
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, [pagination.page, pagination.limit, typeFilter, search, t]);
 
@@ -143,21 +144,14 @@ export default function LogsTab() {
         onCancel={() => setLogToDelete(null)}
       />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-xl font-semibold text-[var(--foreground)]">
-            {t("admin.logs.title")}
-          </h2>
-          <p className="text-sm text-[var(--foreground-muted)]">
-            {t("admin.logs.total_shares", { count: pagination.total })}
-          </p>
-        </div>
+      <div>
+        <h2 className="text-xl font-semibold text-[var(--foreground)]">{t("admin.logs.title")}</h2>
+        <p className="text-sm text-[var(--foreground-muted)]">
+          {t("admin.logs.total_shares", { count: pagination.total })}
+        </p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search */}
         <form onSubmit={handleSearch} className="flex-1">
           <div className="relative">
             <Input
@@ -185,7 +179,6 @@ export default function LogsTab() {
           </div>
         </form>
 
-        {/* Type Filter */}
         <div className="flex flex-wrap gap-2">
           {["all", "FILE", "PASTE", "URL"].map((type) => (
             <Button
@@ -205,7 +198,6 @@ export default function LogsTab() {
 
       {fetchError && <Alert variant="danger">{fetchError}</Alert>}
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -238,7 +230,10 @@ export default function LogsTab() {
           </thead>
           <tbody
             key={loading ? "loading" : "loaded"}
-            className="animate-fade-in divide-y divide-[var(--border)]"
+            aria-busy={refreshing || undefined}
+            className={`animate-fade-in divide-y divide-[var(--border)] transition-opacity duration-150 motion-reduce:transition-none ${
+              refreshing ? "opacity-60" : ""
+            }`}
           >
             {loading &&
               skeletonRowIds.map((id) => (
@@ -304,7 +299,6 @@ export default function LogsTab() {
         </table>
       </div>
 
-      {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--border)]">
           <div className="text-sm text-[var(--foreground-muted)]">
@@ -340,7 +334,6 @@ export default function LogsTab() {
         </div>
       )}
 
-      {/* IP Geolocation Modal */}
       {selectedGeoLog && (
         <IpGeoModal
           isOpen={geoModalOpen}

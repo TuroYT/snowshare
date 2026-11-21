@@ -10,7 +10,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
-import { Alert } from "@/components/ui/Alert";
+import FormNotice from "@/app/auth/_components/FormNotice";
 
 declare global {
   interface Window {
@@ -49,11 +49,10 @@ export default function SignUp() {
 
   useEffect(() => {
     if (disableCredentialsLogin) {
-      router.push("/auth/signin");
+      router.replace("/auth/signin");
     }
   }, [disableCredentialsLogin, router]);
 
-  // Check signup status from database
   useEffect(() => {
     const fetchSignupStatus = async () => {
       try {
@@ -138,7 +137,6 @@ export default function SignUp() {
     }
   }, [captchaEnabled, captchaSiteKey, captchaProvider, checkingStatus]);
 
-  // Show loading state while checking signup status
   if (checkingStatus) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
@@ -198,6 +196,7 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -206,6 +205,7 @@ export default function SignUp() {
     setLoading(true);
     setError("");
 
+    let redirecting = false;
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -219,52 +219,50 @@ export default function SignUp() {
 
       if (response.ok) {
         if (data.requiresVerification) {
-          // Redirect to the "check your email" page
-          router.push("/auth/verify-email");
+          redirecting = true;
+          router.replace("/auth/verify-email");
           return;
         }
 
-        // Auto-login after successful registration using NextAuth credentials provider
         const signInResult = (await signIn("credentials", {
           redirect: false,
           email,
           password,
         })) as SignInResponse | undefined;
 
-        if (signInResult?.ok) {
-          router.push("/");
-        } else {
-          router.push("/auth/signin?notice=account_created");
-        }
+        // Stay in the busy state until the navigation replaces the page
+        redirecting = true;
+        router.replace(signInResult?.ok ? "/" : "/auth/signin?notice=account_created");
       } else {
-        setError(data.error || t("auth.error_generic").replace(" : ", ""));
+        setError(data.error || t("auth.error_generic_standalone"));
         if (captchaEnabled) resetCaptcha();
       }
     } catch {
-      setError(t("auth.error_generic").replace(" : ", ""));
+      setError(t("auth.error_generic_standalone"));
     } finally {
-      setLoading(false);
+      if (!redirecting) setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-sm">
-        {/* Logo and title */}
         <div className="text-center mb-8">
-          <Image src="/logo.svg" alt="" width={40} height={40} className="mx-auto mb-3" />
+          <Image
+            src="/logo.svg"
+            unoptimized
+            alt=""
+            width={40}
+            height={40}
+            className="mx-auto mb-3"
+          />
           <h1 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">
             {t("auth.signup_title", "Create an account")}
           </h1>
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
 
-        {/* Error message */}
-        {error && (
-          <Alert variant="danger" className="mb-4">
-            {error}
-          </Alert>
-        )}
+        <FormNotice message={error || null} variant="danger" />
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
@@ -273,7 +271,7 @@ export default function SignUp() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            placeholder={t("auth.email_placeholder") as string}
+            placeholder={t("auth.email_placeholder")}
             required
           />
           <Input
@@ -282,7 +280,7 @@ export default function SignUp() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
-            placeholder={t("auth.password_new_placeholder") as string}
+            placeholder={t("auth.password_new_placeholder")}
             required
           />
           <Input
@@ -291,11 +289,10 @@ export default function SignUp() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
-            placeholder={t("auth.confirm_password_placeholder") as string}
+            placeholder={t("auth.confirm_password_placeholder")}
             required
           />
 
-          {/* CAPTCHA widget */}
           {captchaEnabled && captchaSiteKey && (
             <div className="flex justify-center">
               <div ref={captchaRef}></div>

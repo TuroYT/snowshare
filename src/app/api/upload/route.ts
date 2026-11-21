@@ -33,10 +33,8 @@ import {
   type UploadContext,
 } from "@/lib/upload-share";
 
-// Force Node.js runtime (not Edge)
 export const runtime = "nodejs";
 
-// Disable static optimization
 export const dynamic = "force-dynamic";
 
 /**

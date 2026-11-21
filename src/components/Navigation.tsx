@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { User, Settings, LogOut, Menu, X, Sun, Moon, Monitor } from "lucide-react";
@@ -55,7 +55,7 @@ function ProfileDropdown({
         )}
       </button>
       {profileOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-52 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] py-1 z-50">
+        <div className="absolute right-0 top-full mt-1.5 w-52 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] py-1 z-50 animate-fade-in">
           <div className="px-3 py-2 text-xs text-[var(--foreground-muted)] border-b border-[var(--border)] truncate">
             {session?.user?.name || session?.user?.email}
           </div>
@@ -172,7 +172,7 @@ function MobileDrawer({
       aria-modal="true"
       aria-label={appName}
       onKeyDown={handleKeyDown}
-      className="fixed inset-0 z-50 flex"
+      className="fixed inset-0 z-50 flex animate-fade-in"
     >
       <button
         type="button"
@@ -281,6 +281,11 @@ export default function Navigation() {
   const { t, i18n } = useTranslation();
   const { branding } = useTheme();
   const { theme, setTheme } = useColorScheme();
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -365,7 +370,9 @@ export default function Navigation() {
     else setTheme("system");
   };
 
-  let themeIcon = <Monitor className="w-4 h-4" />;
+  // The server cannot know the stored theme: render an empty slot until hydration is done so the
+  // markup matches and the icon does not flash from "system" to the real one.
+  let themeIcon = mounted ? <Monitor className="w-4 h-4" /> : <span className="w-4 h-4" />;
   if (theme === "dark") themeIcon = <Moon className="w-4 h-4" />;
   else if (theme === "light") themeIcon = <Sun className="w-4 h-4" />;
 
@@ -389,9 +396,16 @@ export default function Navigation() {
             className="flex items-center gap-2.5 shrink-0 text-[var(--foreground)] no-underline"
           >
             {branding.logoUrl ? (
-              <Image src={branding.logoUrl} alt="" width={24} height={24} className="rounded" />
+              <Image
+                src={branding.logoUrl}
+                unoptimized
+                alt=""
+                width={24}
+                height={24}
+                className="rounded"
+              />
             ) : (
-              <Image src="/logo.svg" alt="" width={24} height={24} />
+              <Image src="/logo.svg" unoptimized alt="" width={24} height={24} />
             )}
             <span className="font-semibold text-sm tracking-tight">{branding.appName}</span>
           </Link>
@@ -420,7 +434,9 @@ export default function Navigation() {
               {themeIcon}
             </button>
 
-            {status === "authenticated" && session ? (
+            {status === "loading" ? (
+              <div className="w-9 h-9" aria-hidden="true" />
+            ) : status === "authenticated" && session ? (
               <ProfileDropdown
                 session={session}
                 isAdmin={isAdmin}

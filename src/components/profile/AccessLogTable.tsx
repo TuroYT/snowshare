@@ -86,7 +86,8 @@ export default function AccessLogTable({
 }: Readonly<AccessLogTableProps>) {
   const { t } = useTranslation();
 
-  if (loading) {
+  // Page changes keep the current rows on screen (dimmed) instead of swapping in a spinner
+  if (loading && logs.length === 0) {
     return (
       <div
         className="flex justify-center py-10"
@@ -107,8 +108,12 @@ export default function AccessLogTable({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border)]">
+    <div className="space-y-4" aria-busy={loading || undefined}>
+      <div
+        className={`overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border)] motion-safe:transition-opacity motion-safe:duration-150 ${
+          loading ? "opacity-60" : ""
+        }`}
+      >
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] bg-[var(--surface-hover)]">

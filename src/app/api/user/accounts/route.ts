@@ -5,9 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 
-/**
- * GET /api/user/accounts
- */
 export async function GET(request: NextRequest) {
   try {
     const authOptions = await getAuthOptions();
@@ -39,9 +36,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * DELETE /api/user/accounts
- */
 export async function DELETE(request: NextRequest) {
   try {
     const authOptions = await getAuthOptions();

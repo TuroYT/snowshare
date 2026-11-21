@@ -1,8 +1,3 @@
-/**
- * Centralized MIME type mapping for file handling.
- * Used across download, preview, and upload routes.
- */
-
 const MIME_TYPES: Record<string, string> = {
   ".pdf": "application/pdf",
   ".jpg": "image/jpeg",
@@ -31,10 +26,7 @@ const MIME_TYPES: Record<string, string> = {
   ".ogg": "video/ogg",
 };
 
-/**
- * MIME types that are considered safe for inline display.
- * SVG and HTML are explicitly excluded to prevent XSS.
- */
+/** SVG and HTML are excluded on purpose: inline display would allow XSS. */
 const SAFE_INLINE_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -46,9 +38,6 @@ const SAFE_INLINE_TYPES = new Set([
   "video/ogg",
 ]);
 
-/**
- * Get MIME type from a file extension.
- */
 export function getMimeType(filenameOrExt: string): string {
   const ext = filenameOrExt.startsWith(".")
     ? filenameOrExt.toLowerCase()
@@ -56,18 +45,11 @@ export function getMimeType(filenameOrExt: string): string {
   return MIME_TYPES[ext] || "application/octet-stream";
 }
 
-/**
- * Check if a MIME type is safe for inline display (no XSS risk).
- * SVG and HTML are NOT safe for inline display.
- */
 export function isSafeForInline(contentType: string): boolean {
   return SAFE_INLINE_TYPES.has(contentType);
 }
 
-/**
- * Sanitize a filename for use in Content-Disposition headers.
- * Prevents header injection attacks.
- */
+/** Strips characters that could inject headers through Content-Disposition. */
 export function sanitizeFilenameForHeader(filename: string): string {
   return (filename || "download")
     .replace(/[\r\n]/g, "")

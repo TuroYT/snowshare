@@ -24,7 +24,11 @@ export default function ApiKeysSection() {
     loading,
     refetch: refetchKeys,
   } = useFetch<{ data: ApiKey[] }>("/api/keys");
-  const keys = keysData?.data ?? [];
+  // Revoked keys disappear right away; they come back if the request fails
+  const [revokedIds, setRevokedIds] = useState<string[]>([]);
+  const keys = (keysData?.data ?? []).filter((k) => !revokedIds.includes(k.id));
+  // Later refetches keep the list on screen
+  const initialLoading = loading && !keysData;
   const [creating, setCreating] = useState(false);
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyExpiry, setNewKeyExpiry] = useState("");
@@ -68,18 +72,23 @@ export default function ApiKeysSection() {
   };
 
   const handleRevoke = async (id: string) => {
+    setKeyToRevoke(null);
+    setError(null);
+    setRevokedIds((ids) => [...ids, id]);
+    const restore = () => {
+      setRevokedIds((ids) => ids.filter((x) => x !== id));
+      setError(t("apikeys.error_revoke", "Failed to revoke the API key."));
+    };
     try {
       const res = await fetch(`/api/keys/${id}`, { method: "DELETE" });
       if (res.ok || res.status === 204) {
         refetchKeys();
       } else {
-        setError(t("apikeys.error_revoke", "Failed to revoke the API key."));
+        restore();
       }
     } catch (err) {
       console.error("Failed to revoke API key:", err);
-      setError(t("apikeys.error_revoke", "Failed to revoke the API key."));
-    } finally {
-      setKeyToRevoke(null);
+      restore();
     }
   };
 
@@ -125,7 +134,6 @@ export default function ApiKeysSection() {
           )}
         </p>
 
-        {/* Create form */}
         <form onSubmit={handleCreate} className="flex flex-wrap gap-3 items-end mb-6">
           <div className="flex-1 min-w-[180px]">
             <Input
@@ -158,7 +166,6 @@ export default function ApiKeysSection() {
           </Alert>
         )}
 
-        {/* Revealed token */}
         {revealedToken && (
           <Alert variant="warning" className="mb-6 p-4">
             <p className="font-semibold mb-2">
@@ -200,16 +207,15 @@ export default function ApiKeysSection() {
           </Alert>
         )}
 
-        {/* Keys list */}
-        {loading && (
+        {initialLoading && (
           <p className="text-sm text-[var(--foreground-muted)]">{t("loading", "Loading...")}</p>
         )}
-        {!loading && keys.length === 0 && (
+        {!initialLoading && keys.length === 0 && (
           <p className="text-sm text-[var(--foreground-muted)]">
             {t("apikeys.no_keys", "No API keys yet.")}
           </p>
         )}
-        {!loading && keys.length > 0 && (
+        {!initialLoading && keys.length > 0 && (
           <ul className="space-y-3">
             {keys.map((key) => (
               <li
@@ -240,7 +246,6 @@ export default function ApiKeysSection() {
         )}
       </Card>
 
-      {/* Docs link */}
       <Card className="p-4 flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-[var(--foreground)]">

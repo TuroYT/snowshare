@@ -1,8 +1,3 @@
-/**
- * OpenAPI 3.1 spec for SnowShare public API v1.
- * Generated programmatically to stay in sync with the code.
- */
-
 export function buildOpenApiSpec(baseUrl: string) {
   return {
     openapi: "3.1.0",

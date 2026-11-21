@@ -47,7 +47,6 @@ export default function CreateUserDialog({
         throw new Error(data.error || "Failed to create user");
       }
 
-      // Reset form and close dialog
       setEmail("");
       setName("");
       setPassword("");
@@ -98,7 +97,6 @@ export default function CreateUserDialog({
           disabled={loading}
         />
 
-        {/* SSO Auto-link checkbox */}
         <div className="flex items-start gap-3 p-3 border border-[var(--border)] rounded-[var(--radius)]">
           <input
             type="checkbox"
@@ -134,7 +132,6 @@ export default function CreateUserDialog({
           />
         )}
 
-        {/* Admin checkbox */}
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -149,7 +146,6 @@ export default function CreateUserDialog({
           </label>
         </div>
 
-        {/* Actions */}
         <div className="flex gap-3 pt-2">
           <Button
             type="button"

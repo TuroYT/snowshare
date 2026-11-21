@@ -1,10 +1,4 @@
-/**
- * Validation utilities for share operations
- */
-
-/**
- * Validates an OAuth provider display name
- */
+/** Validates an OAuth provider display name. */
 export function isValidDisplayName(
   displayName: string,
   maxLength = 100

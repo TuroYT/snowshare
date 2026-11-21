@@ -6,6 +6,7 @@ import { Tabs, Tab } from "@/components/ui";
 import LinkShare from "@/components/LinkShare";
 import PasteShare from "@/components/PasteShare";
 import FileShare from "@/components/FileShare";
+import ReverseShare from "@/components/ReverseShare";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/hooks/useTheme";
 import { useSession } from "next-auth/react";
@@ -38,7 +39,7 @@ export default function Home() {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Alt+1/2/3 → switch tabs
+      // Alt+1/2/3/4 → switch tabs
       if (e.altKey && !e.ctrlKey && !e.metaKey) {
         if (e.key === "1") {
           e.preventDefault();
@@ -53,6 +54,11 @@ export default function Home() {
         if (e.key === "3") {
           e.preventDefault();
           setActiveTab("fileshare");
+          return;
+        }
+        if (e.key === "4") {
+          e.preventDefault();
+          setActiveTab("reverseshare");
           return;
         }
       }
@@ -124,6 +130,7 @@ export default function Home() {
           <Tab value="linkshare">{t("tabs.linkshare", "Link")}</Tab>
           <Tab value="pasteshare">{t("tabs.pasteshare", "Text")}</Tab>
           <Tab value="fileshare">{t("tabs.fileshare", "File")}</Tab>
+          <Tab value="reverseshare">{t("tabs.reverseshare", "Request")}</Tab>
         </Tabs>
 
         {/* Content */}
@@ -147,6 +154,7 @@ export default function Home() {
               onInitialFilesConsumed={() => setFileInitialFiles(undefined)}
             />
           )}
+          {activeTab === "reverseshare" && <ReverseShare />}
         </div>
       </main>
       <Footer />

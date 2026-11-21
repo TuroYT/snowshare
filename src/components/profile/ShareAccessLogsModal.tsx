@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@/components/ui";
 import { useAccessLogs } from "@/hooks/useAccessLogs";
@@ -21,11 +20,6 @@ export default function ShareAccessLogsModal({
 }: Readonly<ShareAccessLogsModalProps>) {
   const { t } = useTranslation();
   const { logs, total, page, setPage, loading, totalPages } = useAccessLogs({ shareId });
-
-  // Reset to first page each time the modal opens.
-  useEffect(() => {
-    if (isOpen) setPage(1);
-  }, [isOpen, shareId, setPage]);
 
   return (
     <Modal

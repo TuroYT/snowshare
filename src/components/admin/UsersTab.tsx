@@ -37,7 +37,6 @@ export default function UsersTab() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      setLoading(true);
       const response = await fetch("/api/admin/users");
       if (!response.ok) throw new Error("Failed to fetch users");
       const data = await response.json();
@@ -82,7 +81,6 @@ export default function UsersTab() {
 
       if (!response.ok) throw new Error("Failed to update user");
 
-      // Refresh users list
       await fetchUsers();
       setError(null);
     } catch (err) {
@@ -148,7 +146,6 @@ export default function UsersTab() {
           onCancel={() => setPendingAction(null)}
         />
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
             <div className="text-sm text-[var(--foreground-muted)]">
@@ -166,7 +163,6 @@ export default function UsersTab() {
 
         {error && <Alert variant="danger">{error}</Alert>}
 
-        {/* Search and Create Button */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Input
             type="text"
@@ -181,7 +177,6 @@ export default function UsersTab() {
           </Button>
         </div>
 
-        {/* Users Table */}
         <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border)]">
           <table className="w-full">
             <thead>
@@ -217,7 +212,10 @@ export default function UsersTab() {
                 filteredUsers.map((user) => (
                   <tr
                     key={user.id}
-                    className="hover:bg-[var(--surface-hover)] transition-colors duration-100"
+                    aria-busy={actionLoading === user.id || undefined}
+                    className={`hover:bg-[var(--surface-hover)] transition-colors duration-150 ${
+                      actionLoading === user.id ? "opacity-60" : ""
+                    }`}
                   >
                     <td className="px-6 py-3 text-sm text-[var(--foreground)]">{user.email}</td>
                     <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
@@ -244,11 +242,9 @@ export default function UsersTab() {
                           }
                           disabled={actionLoading === user.id}
                         >
-                          {actionLoading === user.id
-                            ? "..."
-                            : user.isAdmin
-                              ? t("admin.users.action_remove_admin")
-                              : t("admin.users.action_make_admin")}
+                          {user.isAdmin
+                            ? t("admin.users.action_remove_admin")
+                            : t("admin.users.action_make_admin")}
                         </Button>
                         <Button
                           size="sm"
@@ -265,11 +261,9 @@ export default function UsersTab() {
                             "Link the user's SSO account automatically on their next SSO sign-in"
                           )}
                         >
-                          {actionLoading === user.id
-                            ? "..."
-                            : user.ssoAutoLink
-                              ? t("admin.users.action_disable_sso_link", "Cancel SSO link")
-                              : t("admin.users.action_enable_sso_link", "Allow SSO link")}
+                          {user.ssoAutoLink
+                            ? t("admin.users.action_disable_sso_link", "Cancel SSO link")
+                            : t("admin.users.action_enable_sso_link", "Allow SSO link")}
                         </Button>
                         <Button
                           size="sm"
@@ -277,7 +271,7 @@ export default function UsersTab() {
                           onClick={() => requestAction(user.id, "delete")}
                           disabled={actionLoading === user.id}
                         >
-                          {actionLoading === user.id ? "..." : t("admin.users.action_delete")}
+                          {t("admin.users.action_delete")}
                         </Button>
                       </div>
                     </td>

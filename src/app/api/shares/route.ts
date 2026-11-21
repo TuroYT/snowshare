@@ -1,5 +1,4 @@
-/** API route for creating shares (Link and Paste only)
- * File uploads are handled by /pages/api/upload.ts for true streaming */
+// Link and Paste shares only: files go through /api/upload (streamed to disk).
 
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
@@ -11,12 +10,10 @@ import { apiError, ErrorCode } from "@/lib/api-errors";
 async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") || "";
 
-  // File uploads should use /api/upload (Pages Router) for true streaming
   if (contentType.includes("multipart/form-data")) {
     return apiError(req, ErrorCode.INVALID_REQUEST);
   }
 
-  // Handle JSON data for other share types
   try {
     const data = await req.json();
     if (!data?.type) {
@@ -51,7 +48,6 @@ async function POST(req: NextRequest) {
       }
       case "PASTE": {
         const { paste, pastelanguage, expiresAt, slug, password, maxViews } = data;
-        // Convert expiresAt string to Date if provided
         const expiresAtDate = expiresAt ? new Date(expiresAt) : undefined;
         const result = await createPasteShare({
           paste,

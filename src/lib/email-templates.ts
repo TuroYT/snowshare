@@ -1,14 +1,3 @@
-/**
- * Email template rendering utilities.
- *
- * Templates support a small set of safe variables enclosed in double curly
- * braces: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.
- *
- * All variable values are HTML-escaped before being injected into HTML
- * templates.  Plain-text templates receive the raw (unescaped) values so
- * that URLs remain copy-pasteable.
- */
-
 import sanitizeHtml from "sanitize-html";
 
 export type EmailType = "share" | "verify";
@@ -25,10 +14,6 @@ export interface VerifyTemplateVars {
   appName: string;
   verifyUrl: string;
 }
-
-export type TemplateVars = ShareTemplateVars | VerifyTemplateVars;
-
-// ─── Default templates ────────────────────────────────────────────────────────
 
 export const DEFAULT_SHARE_SUBJECT = `Someone shared "{{shareTitle}}" with you – {{appName}}`;
 
@@ -62,8 +47,6 @@ export const DEFAULT_VERIFY_HTML = `<div style="font-family: sans-serif; max-wid
 
 export const DEFAULT_VERIFY_TEXT = `Verify your email for {{appName}}:\n\n{{verifyUrl}}\n\nThis link expires in 24 hours.`;
 
-// ─── Renderer ─────────────────────────────────────────────────────────────────
-
 function escapeHtml(str: string): string {
   return str
     .replaceAll("&", "&amp;")
@@ -74,25 +57,14 @@ function escapeHtml(str: string): string {
 }
 
 /**
- * Strip executable content from an HTML email template.
- *
- * Email clients generally do not run JavaScript, but we explicitly remove it
- * here so that (a) templates stored in the DB cannot contain active payloads
- * and (b) static analysis tools can confirm that admin-supplied HTML is
- * sanitised before it is used anywhere.
- *
- * Removes:
- *  - `<script>…</script>` blocks (any attributes)
- *  - Inline event-handler attributes (`on*="…"`)
- *  - `javascript:` URIs in any attribute
+ * Strips scripts, inline event handlers and `javascript:` URIs from an admin-supplied HTML
+ * template, so DB-stored templates cannot carry active payloads.
  */
 export function sanitizeEmailHtml(html: string): string {
   return sanitizeHtml(html, {
-    // Keep common email-safe markup while removing executable content.
     allowedTags: sanitizeHtml.defaults.allowedTags.filter(
       (tag) => tag !== "script" && tag !== "style"
     ),
-    // Explicitly allow non-event attributes used by our templates.
     allowedAttributes: {
       a: ["href", "name", "target", "rel", "style"],
       div: ["style"],
@@ -109,22 +81,13 @@ export function sanitizeEmailHtml(html: string): string {
       hr: ["style"],
       "*": ["style"],
     },
-    // Disallow javascript: and other non-http/mailto schemes in URLs.
     allowedSchemes: ["http", "https", "mailto"],
     allowedSchemesAppliedToAttributes: ["href", "src", "cite"],
     allowProtocolRelative: false,
   });
 }
 
-/**
- * Render a template string by replacing `{{variable}}` placeholders.
- *
- * @param template   - The template string (may contain HTML or plain text).
- * @param vars       - Key/value map of variable replacements.
- * @param escapeVars - When `true` (default for HTML), variable values are
- *                     HTML-escaped before insertion.  Pass `false` for plain
- *                     text templates so that URLs stay intact.
- */
+/** Replaces `{{variable}}` placeholders. Pass `escapeVars = false` for plain-text templates so URLs stay intact. */
 export function renderTemplate(
   template: string,
   vars: Record<string, string>,
@@ -135,11 +98,9 @@ export function renderTemplate(
       const value = vars[key];
       return escapeVars ? escapeHtml(value) : value;
     }
-    return match; // leave unknown placeholders unchanged
+    return match;
   });
 }
-
-// ─── Convenience renderers ────────────────────────────────────────────────────
 
 /** Render a share email from raw template strings (or defaults). */
 export function renderShareEmail(

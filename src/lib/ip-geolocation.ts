@@ -11,10 +11,7 @@ interface DbIpResponse {
   city: string;
 }
 
-/**
- * Fire-and-forget geolocation lookup for an IP address.
- * Does not block the caller — the promise is not awaited.
- */
+/** Fire-and-forget: callers do not await the lookup. */
 export function lookupIpGeolocation(ip: string): void {
   if (!ip || ip === "127.0.0.1" || ip === "::1" || !isIP(ip)) {
     return;

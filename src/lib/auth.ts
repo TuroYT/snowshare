@@ -186,10 +186,9 @@ async function linkAccountWithToken(
         },
       });
     });
-    console.log(`✅ Account linked successfully`);
     return true;
   } catch (error) {
-    console.error(`❌ Error creating account link:`, error);
+    console.error("Error creating account link:", error);
     return false;
   }
 }
@@ -273,7 +272,6 @@ async function handleExistingUserSignIn(
   return linkAccountWithToken(existingUser, account);
 }
 
-// Cache for providers
 let providersCache: Provider[] | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 60000; // 1 minute
@@ -281,7 +279,6 @@ const CACHE_TTL = 60000; // 1 minute
 export async function getDynamicProviders() {
   const now = Date.now();
 
-  // Use cache if valid
   if (providersCache && now - cacheTimestamp < CACHE_TTL) {
     return providersCache;
   }
@@ -290,7 +287,6 @@ export async function getDynamicProviders() {
     where: { enabled: true },
   });
 
-  // Check if credentials login is disabled
   const settings = await getSettingsCached();
 
   const providers: Provider[] = [];
@@ -373,7 +369,6 @@ export async function getDynamicProviders() {
 
           resetRateLimit("login", limitKey);
 
-          // Check email verification if required
           const verificationSettings = await getSettingsCached();
           if (
             verificationSettings?.emailVerificationRequired &&
@@ -503,17 +498,12 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
         return session;
       },
       redirect: async ({ url, baseUrl }) => {
-        // Allows relative callback URLs
         if (url.startsWith("/")) return `${baseUrl}${url}`;
-        // Allows callback URLs on the same origin
         if (new URL(url).origin === baseUrl) return url;
         return baseUrl;
       },
     },
     events: {
-      async linkAccount({ user, account }) {
-        console.log(`Account ${account.provider} linked to user ${user.id}`);
-      },
       async signIn({ user, account, profile }) {
         await markEmailVerifiedByProvider(
           user as { id: string; email?: string | null; emailVerified?: Date | null },
@@ -529,10 +519,10 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
   };
 }
 
-// Export default options for static usage (e.g. middleware) - Note: this won't have dynamic providers
+// Static options for middleware: no dynamic providers
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  providers: [], // Will be populated dynamically
+  providers: [],
   session: {
     strategy: "jwt",
   },

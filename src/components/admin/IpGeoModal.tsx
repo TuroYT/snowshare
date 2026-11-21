@@ -3,7 +3,7 @@
 import Modal from "@/components/ui/Modal";
 import { useTranslation } from "react-i18next";
 
-interface IpGeoData {
+export interface IpGeoData {
   countryCode: string | null;
   countryName: string | null;
   continentCode: string | null;
@@ -20,7 +20,7 @@ interface IpGeoModalProps {
   geoData: IpGeoData | null;
 }
 
-function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
+export function countryCodeToFlagEmoji(countryCode: string | null | undefined): string {
   if (countryCode?.length !== 2) {
     return "\u2753";
   }
@@ -66,7 +66,6 @@ export default function IpGeoModal({ isOpen, onClose, ip, geoData }: Readonly<Ip
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t("admin.logs.geo.modal_title")} size="sm">
       <div className="space-y-3">
-        {/* Large flag display */}
         <div className="text-center py-4">
           <span className="text-6xl">{flag}</span>
           {isResolved && geoData?.countryName && (
@@ -81,7 +80,6 @@ export default function IpGeoModal({ isOpen, onClose, ip, geoData }: Readonly<Ip
           )}
         </div>
 
-        {/* Detail rows */}
         <div className="rounded-[var(--radius)] border border-[var(--border)] divide-y divide-[var(--border)]">
           {rows.map((row) => (
             <div key={row.label} className="flex justify-between items-center gap-3 px-4 py-3">

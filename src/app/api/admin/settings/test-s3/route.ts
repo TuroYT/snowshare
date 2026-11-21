@@ -6,9 +6,7 @@ import { S3Client, HeadBucketCommand, S3ServiceException } from "@aws-sdk/client
 import { apiError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
 
-// HTTP status codes that prove the S3 server is reachable and understands the request.
-// 200 = bucket accessible, 301 = wrong region (bucket exists), 403 = auth/ACL issue (server reached),
-// 404 = bucket not found (server reached), 301/400 = various redirect/config issues — all mean connectivity works.
+// Statuses that prove the S3 server was reached (bucket ok, wrong region, auth/ACL issue, missing bucket, bad config).
 const REACHABLE_STATUS_CODES = new Set([200, 301, 400, 403, 404]);
 
 /**

@@ -9,6 +9,18 @@ import { isValidWebhookUrl } from "@/lib/webhooks";
 
 type SettingsInput = Record<string, unknown>;
 
+const SECRET_MASK = "••••••••";
+
+function maskSecrets(settings: Settings) {
+  return {
+    ...settings,
+    captchaSecretKey: settings.captchaSecretKey ? SECRET_MASK : null,
+    smtpPassword: settings.smtpPassword ? SECRET_MASK : null,
+    s3SecretAccessKey: settings.s3SecretAccessKey ? SECRET_MASK : null,
+    webhookSecret: settings.webhookSecret ? SECRET_MASK : null,
+  };
+}
+
 function field<K extends keyof Settings>(
   data: SettingsInput,
   current: Settings,
@@ -33,7 +45,7 @@ function maskedSecret<K extends keyof Settings>(
   key: K
 ): Settings[K] {
   const val = data[key];
-  if (val !== undefined && val !== "••••••••") return ((val as string) || null) as Settings[K];
+  if (val !== undefined && val !== SECRET_MASK) return ((val as string) || null) as Settings[K];
   return current[key];
 }
 
@@ -192,7 +204,6 @@ export async function GET(request: NextRequest) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
-  // Check if user is admin
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
@@ -214,16 +225,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Never expose secret keys to the client
-    const safeSettings = {
-      ...settings,
-      captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
-      smtpPassword: settings.smtpPassword ? "••••••••" : null,
-      allowIframeEmbedding: settings.allowIframeEmbedding,
-      s3SecretAccessKey: settings.s3SecretAccessKey ? "••••••••" : null,
-      webhookSecret: settings.webhookSecret ? "••••••••" : null,
-    };
-
-    return NextResponse.json({ settings: safeSettings, hasActiveSSO: activeProvidersCount > 0 });
+    return NextResponse.json({
+      settings: maskSecrets(settings),
+      hasActiveSSO: activeProvidersCount > 0,
+    });
   } catch (error) {
     console.error("Error fetching settings:", error);
     return internalError(request);
@@ -237,7 +242,6 @@ export async function PATCH(request: NextRequest) {
     return apiError(request, ErrorCode.UNAUTHORIZED);
   }
 
-  // Check if user is admin
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
@@ -278,15 +282,7 @@ export async function PATCH(request: NextRequest) {
     }
     invalidateSettingsCache();
 
-    const safeUpdated = {
-      ...settings,
-      captchaSecretKey: settings.captchaSecretKey ? "••••••••" : null,
-      smtpPassword: settings.smtpPassword ? "••••••••" : null,
-      s3SecretAccessKey: settings.s3SecretAccessKey ? "••••••••" : null,
-      webhookSecret: settings.webhookSecret ? "••••••••" : null,
-    };
-
-    return NextResponse.json({ settings: safeUpdated });
+    return NextResponse.json({ settings: maskSecrets(settings) });
   } catch (error) {
     console.error("Error updating settings:", error);
     return internalError(request);

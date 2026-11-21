@@ -5,9 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { randomBytes } from "node:crypto";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 
-/**
- * POST /api/user/accounts/link
- */
 export async function POST(request: NextRequest) {
   try {
     const authOptions = await getAuthOptions();
@@ -23,7 +20,6 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.MISSING_DATA);
     }
 
-    // Verify that the provider exists and is enabled
     const oauthProvider = await prisma.oAuthProvider.findFirst({
       where: {
         name: provider,
@@ -35,7 +31,6 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.PROVIDER_NOT_FOUND);
     }
 
-    // Verify if the account is not already linked
     const existingAccount = await prisma.account.findFirst({
       where: {
         userId: session.user.id,
@@ -73,7 +68,6 @@ export async function POST(request: NextRequest) {
       expiresAt: expiresAt.toISOString(),
     });
 
-    // Set the httpOnly cookie with the token
     response.cookies.set(LINK_TOKEN_COOKIE, linkToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
