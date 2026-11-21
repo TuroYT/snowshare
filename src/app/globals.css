@@ -281,9 +281,6 @@ body {
 .prose a {
   color: var(--primary);
   text-decoration: underline;
-}
-
-.prose a {
   text-underline-offset: 2px;
 }
 
