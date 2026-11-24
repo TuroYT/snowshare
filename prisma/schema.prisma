@@ -63,6 +63,8 @@ model User {
   totpEnabled     Boolean  @default(false)
   /// Last accepted TOTP time step (replay protection)
   totpLastCounter Int?
+  /// Set by an admin: the user must pick a new password at their next password sign-in
+  mustChangePassword Boolean @default(false)
   accounts      Account[]
   sessions      Session[]
   shares        Share[]
@@ -215,6 +217,9 @@ model Settings {
   verifyEmailSubject        String?
   verifyEmailHtml           String?
   verifyEmailText           String?
+  resetEmailSubject         String?
+  resetEmailHtml            String?
+  resetEmailText            String?
 
   // S3-compatible object storage
   s3Enabled         Boolean @default(false)

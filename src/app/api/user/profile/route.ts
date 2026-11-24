@@ -12,6 +12,7 @@ import {
   PASSWORD_MAX_LENGTH,
 } from "@/lib/constants";
 import { sendVerificationEmail } from "@/lib/email";
+import { clearPasswordResetTokens } from "@/lib/password-reset";
 import crypto from "node:crypto";
 
 const MAX_NAME_LENGTH = 100;
@@ -23,6 +24,7 @@ type ProfileUpdateData = {
   email?: string;
   emailVerified?: Date | null;
   password?: string;
+  mustChangePassword?: boolean;
   defaultTab?: "linkshare" | "pasteshare" | "fileshare";
   notifyOnAccess?: boolean;
 };
@@ -119,6 +121,7 @@ async function applyPasswordChange(
   }
 
   updateData.password = await hashPassword(newPassword);
+  updateData.mustChangePassword = false;
   return null;
 }
 
@@ -249,6 +252,11 @@ export async function PATCH(request: NextRequest) {
         notifyOnAccess: true,
       },
     });
+
+    if (updateData.password) {
+      // A reset link requested before the change must not outlive it
+      await clearPasswordResetTokens(session.user.id);
+    }
 
     if (needsEmailVerification && updateData.email) {
       await sendEmailChangeVerification(updateData.email);

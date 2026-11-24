@@ -255,7 +255,22 @@
     "signin_with": "Sign in with",
     "error_too_many_attempts": "Too many failed sign-in attempts. Try again later.",
     "error_totp_invalid": "Invalid authentication code.",
-    "totp_label": "Authentication code"
+    "totp_label": "Authentication code",
+    "forgot_link": "Forgot your password?",
+    "forgot_title": "Forgot your password?",
+    "forgot_description": "Enter your email address and we will send you a link to choose a new password.",
+    "forgot_button": "Send reset link",
+    "forgot_sent": "If an account exists for this address, a reset link is on its way. It stays valid for 1 hour.",
+    "back_to_signin": "Back to sign in",
+    "reset_title": "Choose a new password",
+    "reset_button": "Set new password",
+    "reset_invalid_title": "This link no longer works",
+    "reset_invalid_message": "The reset link is invalid, has expired or was already used. Request a new one.",
+    "new_password_label": "New password",
+    "current_password_label": "Current password",
+    "change_title": "Choose a new password",
+    "change_description": "An administrator asked you to set your own password before continuing.",
+    "success_password_reset": "Your password has been changed. You can sign in now."
   },
   "profile": {
     "title": "My profile",
@@ -495,7 +510,15 @@
       "create": "Create user",
       "creating": "Creating…",
       "sso_auto_link": "Allow SSO auto-link",
-      "sso_auto_link_hint": "The account is linked the first time the user signs in through any SSO provider. No password needed."
+      "sso_auto_link_hint": "The account is linked the first time the user signs in through any SSO provider. No password needed.",
+      "action_set_password": "Set password",
+      "set_password_title": "Set password",
+      "set_password_description": "Choose a new password for {{email}}. Their current password stops working.",
+      "set_password_submit": "Set password",
+      "set_password_error": "Could not set the password.",
+      "must_change_password": "Require a new password at next sign-in",
+      "must_change_password_hint": "The user must choose their own password right after signing in with this one.",
+      "badge_must_change_password": "Password change required"
     },
     "settings": {
       "allow_signup": "Allow sign-up",
@@ -658,9 +681,10 @@
     },
     "email_templates": {
       "title": "Email templates",
-      "description": "Edit the subject and body of outgoing emails. Placeholders: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Edit the subject and body of outgoing emails. Placeholders: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "Share email",
       "type_verify": "Verification email",
+      "type_reset": "Password reset email",
       "subject": "Subject",
       "subject_placeholder": "Email subject…",
       "html_body": "HTML body",
@@ -838,7 +862,9 @@
       "account_unlinked": "Account unlinked",
       "account_linked": "Account linked",
       "test_email_sent": "Test email sent",
-      "no_releases_found": "No releases found"
+      "no_releases_found": "No releases found",
+      "password_reset_requested": "If an account exists for this address, a reset link has been sent.",
+      "password_reset_done": "Password changed"
     }
   },
   "share_email": {

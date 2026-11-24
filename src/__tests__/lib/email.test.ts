@@ -21,7 +21,12 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { sendVerificationEmail, isEmailEnabled, sendShareEmail } from "@/lib/email";
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  isEmailEnabled,
+  sendShareEmail,
+} from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 const mockSettingsFindFirst = prisma.settings.findFirst as jest.Mock;
@@ -41,6 +46,9 @@ const smtpSettings = {
   verifyEmailSubject: null,
   verifyEmailHtml: null,
   verifyEmailText: null,
+  resetEmailSubject: null,
+  resetEmailHtml: null,
+  resetEmailText: null,
 };
 
 describe("email utility", () => {
@@ -240,6 +248,36 @@ describe("email utility", () => {
   });
 
   // ─── sendShareEmail ────────────────────────────────────────────────────────────
+
+  describe("sendPasswordResetEmail", () => {
+    it("returns false without sending when SMTP is not enabled", async () => {
+      mockSettingsFindFirst.mockResolvedValue({ ...smtpSettings, smtpEnabled: false });
+      expect(await sendPasswordResetEmail("a@b.co", "tok")).toBe(false);
+      expect(mockSendMail).not.toHaveBeenCalled();
+    });
+
+    it("sends a link to the reset page carrying only the token", async () => {
+      mockSettingsFindFirst.mockResolvedValue(smtpSettings);
+      expect(await sendPasswordResetEmail("a@b.co", "tok en/1")).toBe(true);
+      const mail = mockSendMail.mock.calls[0][0];
+      expect(mail.to).toBe("a@b.co");
+      expect(mail.subject).toBe("Reset your password – TestApp");
+      expect(mail.text).toContain("http://localhost:3000/auth/reset-password?token=tok%20en%2F1");
+      expect(mail.text).not.toContain("a@b.co");
+    });
+
+    it("uses the custom reset template of the admin", async () => {
+      mockSettingsFindFirst.mockResolvedValue({
+        ...smtpSettings,
+        resetEmailSubject: "Nouveau mot de passe",
+        resetEmailText: "Lien : {{resetUrl}}",
+      });
+      await sendPasswordResetEmail("a@b.co", "tok");
+      const mail = mockSendMail.mock.calls[0][0];
+      expect(mail.subject).toBe("Nouveau mot de passe");
+      expect(mail.text).toBe("Lien : http://localhost:3000/auth/reset-password?token=tok");
+    });
+  });
 
   describe("sendShareEmail", () => {
     it("should return false when SMTP is not configured", async () => {

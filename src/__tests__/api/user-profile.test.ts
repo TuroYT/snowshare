@@ -14,6 +14,7 @@ jest.mock("@/lib/prisma", () => ({
     },
     verificationToken: {
       create: jest.fn(),
+      deleteMany: jest.fn(),
     },
   },
 }));
@@ -55,6 +56,7 @@ import { NextRequest } from "next/server";
 const mockFindUnique = prisma.user.findUnique as jest.Mock;
 const mockUpdate = prisma.user.update as jest.Mock;
 const mockTokenCreate = prisma.verificationToken.create as jest.Mock;
+const mockTokenDeleteMany = prisma.verificationToken.deleteMany as jest.Mock;
 const mockGetSession = getServerSession as jest.Mock;
 const mockGetSettings = getSettingsCached as jest.Mock;
 const mockVerifyPassword = verifyPassword as jest.Mock;
@@ -307,6 +309,38 @@ describe("/api/user/profile", () => {
         expect(res.status).toBe(200);
         expect(mockVerifyPassword).toHaveBeenCalledWith("old", "stored-hash");
         expect(mockUpdate.mock.calls[0][0].data.password).toBe("hashed:newpassword123");
+      });
+
+      it("clears the forced-change flag and drops pending reset links", async () => {
+        await PATCH(makeRequest({ newPassword: "newpassword123", currentPassword: "old" }));
+        expect(mockUpdate.mock.calls[0][0].data.mustChangePassword).toBe(false);
+        expect(mockTokenDeleteMany).toHaveBeenCalledWith({
+          where: { identifier: "password-reset:user-1" },
+        });
+      });
+
+      it("leaves the flag and the reset links alone when the password is not changed", async () => {
+        await PATCH(makeRequest({ name: "Bob" }));
+        expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty("mustChangePassword");
+        expect(mockTokenDeleteMany).not.toHaveBeenCalled();
+      });
+
+      it("does not let a password holder skip the current password with an empty one", async () => {
+        // Issue #382 workaround: "leave the current password empty" must not work
+        const res = await PATCH(
+          makeRequest({ newPassword: "newpassword123", currentPassword: "" })
+        );
+        expect((await res.json()).code).toBe("CURRENT_PASSWORD_REQUIRED");
+        expect(mockUpdate).not.toHaveBeenCalled();
+      });
+
+      it("forbids an SSO-only account from adding a password, even with an empty current one", async () => {
+        mockFindUnique.mockResolvedValue({ ...passwordUser, password: null });
+        const res = await PATCH(
+          makeRequest({ newPassword: "newpassword123", currentPassword: "" })
+        );
+        expect((await res.json()).code).toBe("FORBIDDEN");
+        expect(mockUpdate).not.toHaveBeenCalled();
       });
 
       it("rejects a new password with an invalid length", async () => {

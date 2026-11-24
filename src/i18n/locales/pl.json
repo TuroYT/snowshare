@@ -255,7 +255,22 @@
     "signin_with": "Zaloguj się przez",
     "error_too_many_attempts": "Zbyt wiele nieudanych prób logowania. Spróbuj ponownie później.",
     "error_totp_invalid": "Nieprawidłowy kod uwierzytelniający.",
-    "totp_label": "Kod uwierzytelniający"
+    "totp_label": "Kod uwierzytelniający",
+    "forgot_link": "Nie pamiętasz hasła?",
+    "forgot_title": "Nie pamiętasz hasła?",
+    "forgot_description": "Podaj swój adres e-mail, a wyślemy Ci link do ustawienia nowego hasła.",
+    "forgot_button": "Wyślij link",
+    "forgot_sent": "Jeśli dla tego adresu istnieje konto, link do zresetowania hasła jest w drodze. Jest ważny przez 1 godzinę.",
+    "back_to_signin": "Wróć do logowania",
+    "reset_title": "Wybierz nowe hasło",
+    "reset_button": "Zapisz hasło",
+    "reset_invalid_title": "Ten link już nie działa",
+    "reset_invalid_message": "Link do resetu jest nieprawidłowy, wygasł lub został już użyty. Poproś o nowy.",
+    "new_password_label": "Nowe hasło",
+    "current_password_label": "Obecne hasło",
+    "change_title": "Wybierz nowe hasło",
+    "change_description": "Administrator prosi Cię o ustawienie własnego hasła, zanim przejdziesz dalej.",
+    "success_password_reset": "Hasło zostało zmienione. Możesz się teraz zalogować."
   },
   "profile": {
     "title": "Mój profil",
@@ -495,7 +510,15 @@
       "create": "Utwórz użytkownika",
       "creating": "Tworzenie…",
       "sso_auto_link": "Automatyczne łączenie SSO",
-      "sso_auto_link_hint": "Konto zostanie powiązane przy pierwszym logowaniu użytkownika przez dowolnego dostawcę SSO. Hasło nie jest wymagane."
+      "sso_auto_link_hint": "Konto zostanie powiązane przy pierwszym logowaniu użytkownika przez dowolnego dostawcę SSO. Hasło nie jest wymagane.",
+      "action_set_password": "Ustaw hasło",
+      "set_password_title": "Ustaw hasło",
+      "set_password_description": "Wybierz nowe hasło dla {{email}}. Dotychczasowe przestanie działać.",
+      "set_password_submit": "Ustaw hasło",
+      "set_password_error": "Nie udało się ustawić hasła.",
+      "must_change_password": "Wymagaj nowego hasła przy następnym logowaniu",
+      "must_change_password_hint": "Użytkownik musi wybrać własne hasło zaraz po zalogowaniu się tym hasłem.",
+      "badge_must_change_password": "Wymagana zmiana hasła"
     },
     "settings": {
       "allow_signup": "Włącz rejestrację",
@@ -658,9 +681,10 @@
     },
     "email_templates": {
       "title": "Szablony e-mail",
-      "description": "Edytuj temat i treść wychodzących e-maili. Zmienne: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Edytuj temat i treść wychodzących e-maili. Zmienne: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "E-mail udostępniania",
       "type_verify": "E-mail weryfikacyjny",
+      "type_reset": "E-mail resetowania hasła",
       "subject": "Temat",
       "subject_placeholder": "Temat e-maila…",
       "html_body": "Treść HTML",
@@ -838,7 +862,9 @@
       "account_unlinked": "Konto odłączone",
       "account_linked": "Konto połączone",
       "test_email_sent": "Testowy e-mail wysłany",
-      "no_releases_found": "Nie znaleziono wydań"
+      "no_releases_found": "Nie znaleziono wydań",
+      "password_reset_requested": "Jeśli dla tego adresu istnieje konto, wysłano link do zresetowania hasła.",
+      "password_reset_done": "Hasło zmienione"
     }
   },
   "share_email": {

@@ -11,6 +11,9 @@ import {
   DEFAULT_VERIFY_SUBJECT,
   DEFAULT_VERIFY_HTML,
   DEFAULT_VERIFY_TEXT,
+  DEFAULT_RESET_SUBJECT,
+  DEFAULT_RESET_HTML,
+  DEFAULT_RESET_TEXT,
 } from "@/lib/email-templates";
 
 async function requireAdminUser(request: NextRequest) {
@@ -38,6 +41,9 @@ export async function GET(request: NextRequest) {
         verifyEmailSubject: true,
         verifyEmailHtml: true,
         verifyEmailText: true,
+        resetEmailSubject: true,
+        resetEmailHtml: true,
+        resetEmailText: true,
       },
     });
 
@@ -49,6 +55,9 @@ export async function GET(request: NextRequest) {
         verifyEmailSubject: settings?.verifyEmailSubject ?? null,
         verifyEmailHtml: settings?.verifyEmailHtml ?? null,
         verifyEmailText: settings?.verifyEmailText ?? null,
+        resetEmailSubject: settings?.resetEmailSubject ?? null,
+        resetEmailHtml: settings?.resetEmailHtml ?? null,
+        resetEmailText: settings?.resetEmailText ?? null,
       },
       defaults: {
         shareEmailSubject: DEFAULT_SHARE_SUBJECT,
@@ -57,6 +66,9 @@ export async function GET(request: NextRequest) {
         verifyEmailSubject: DEFAULT_VERIFY_SUBJECT,
         verifyEmailHtml: DEFAULT_VERIFY_HTML,
         verifyEmailText: DEFAULT_VERIFY_TEXT,
+        resetEmailSubject: DEFAULT_RESET_SUBJECT,
+        resetEmailHtml: DEFAULT_RESET_HTML,
+        resetEmailText: DEFAULT_RESET_TEXT,
       },
     });
   } catch (error) {
@@ -72,6 +84,9 @@ const TEMPLATE_FIELDS = [
   "verifyEmailSubject",
   "verifyEmailHtml",
   "verifyEmailText",
+  "resetEmailSubject",
+  "resetEmailHtml",
+  "resetEmailText",
 ] as const;
 
 type TemplateField = (typeof TEMPLATE_FIELDS)[number];
@@ -93,6 +108,9 @@ function buildCreateData(data: TemplateData) {
     verifyEmailSubject: data.verifyEmailSubject ?? null,
     verifyEmailHtml: data.verifyEmailHtml ?? null,
     verifyEmailText: data.verifyEmailText ?? null,
+    resetEmailSubject: data.resetEmailSubject ?? null,
+    resetEmailHtml: data.resetEmailHtml ?? null,
+    resetEmailText: data.resetEmailText ?? null,
   };
 }
 
@@ -104,6 +122,9 @@ function pickTemplates<T extends TemplateData>(settings: T) {
     verifyEmailSubject: settings.verifyEmailSubject,
     verifyEmailHtml: settings.verifyEmailHtml,
     verifyEmailText: settings.verifyEmailText,
+    resetEmailSubject: settings.resetEmailSubject,
+    resetEmailHtml: settings.resetEmailHtml,
+    resetEmailText: settings.resetEmailText,
   };
 }
 

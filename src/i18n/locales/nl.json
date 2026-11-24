@@ -255,7 +255,22 @@
     "signin_with": "Inloggen met",
     "error_too_many_attempts": "Te veel mislukte inlogpogingen. Probeer het later opnieuw.",
     "error_totp_invalid": "Ongeldige authenticatiecode.",
-    "totp_label": "Authenticatiecode"
+    "totp_label": "Authenticatiecode",
+    "forgot_link": "Wachtwoord vergeten?",
+    "forgot_title": "Wachtwoord vergeten?",
+    "forgot_description": "Vul je e-mailadres in en we sturen je een link om een nieuw wachtwoord te kiezen.",
+    "forgot_button": "Link versturen",
+    "forgot_sent": "Als er een account bestaat voor dit adres, is er een resetlink onderweg. Hij blijft 1 uur geldig.",
+    "back_to_signin": "Terug naar inloggen",
+    "reset_title": "Kies een nieuw wachtwoord",
+    "reset_button": "Wachtwoord opslaan",
+    "reset_invalid_title": "Deze link werkt niet meer",
+    "reset_invalid_message": "De resetlink is ongeldig, verlopen of al gebruikt. Vraag een nieuwe aan.",
+    "new_password_label": "Nieuw wachtwoord",
+    "current_password_label": "Huidig wachtwoord",
+    "change_title": "Kies een nieuw wachtwoord",
+    "change_description": "Een beheerder vraagt je een eigen wachtwoord in te stellen voordat je verdergaat.",
+    "success_password_reset": "Je wachtwoord is gewijzigd. Je kunt nu inloggen."
   },
   "profile": {
     "title": "Mijn profiel",
@@ -495,7 +510,15 @@
       "create": "Gebruiker aanmaken",
       "creating": "Wordt aangemaakt…",
       "sso_auto_link": "Automatisch SSO-koppelen",
-      "sso_auto_link_hint": "Het account wordt gekoppeld bij de eerste keer dat de gebruiker inlogt via een SSO-provider. Geen wachtwoord vereist."
+      "sso_auto_link_hint": "Het account wordt gekoppeld bij de eerste keer dat de gebruiker inlogt via een SSO-provider. Geen wachtwoord vereist.",
+      "action_set_password": "Wachtwoord instellen",
+      "set_password_title": "Wachtwoord instellen",
+      "set_password_description": "Kies een nieuw wachtwoord voor {{email}}. Het huidige werkt daarna niet meer.",
+      "set_password_submit": "Wachtwoord instellen",
+      "set_password_error": "Het wachtwoord kon niet worden ingesteld.",
+      "must_change_password": "Nieuw wachtwoord vereisen bij de volgende aanmelding",
+      "must_change_password_hint": "De gebruiker moet direct na het inloggen hiermee een eigen wachtwoord kiezen.",
+      "badge_must_change_password": "Wachtwoordwijziging vereist"
     },
     "settings": {
       "allow_signup": "Registreren toestaan",
@@ -658,9 +681,10 @@
     },
     "email_templates": {
       "title": "E-mailsjablonen",
-      "description": "Pas het onderwerp en de inhoud van uitgaande e-mails aan. Variabelen: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Pas het onderwerp en de inhoud van uitgaande e-mails aan. Plaatshouders: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "Deel-e-mail",
       "type_verify": "Verificatie-e-mail",
+      "type_reset": "E-mail voor wachtwoordreset",
       "subject": "Onderwerp",
       "subject_placeholder": "E-mailonderwerp…",
       "html_body": "HTML-tekst",
@@ -838,7 +862,9 @@
       "account_unlinked": "Account ontkoppeld",
       "account_linked": "Account gekoppeld",
       "test_email_sent": "Test-e-mail verzonden",
-      "no_releases_found": "Geen releases gevonden"
+      "no_releases_found": "Geen releases gevonden",
+      "password_reset_requested": "Als er een account bestaat voor dit adres, is er een resetlink verstuurd.",
+      "password_reset_done": "Wachtwoord gewijzigd"
     }
   },
   "share_email": {

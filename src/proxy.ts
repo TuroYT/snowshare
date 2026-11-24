@@ -159,15 +159,19 @@ export default async function proxy(request: NextRequest) {
   const protectedPaths = ["/admin", "/dashboard", "/profile", "/api/protected"];
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
 
-  if (isProtectedPath) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!token) {
-      const signInUrl = new URL("/auth/signin", request.url);
-      signInUrl.searchParams.set("callbackUrl", pathname);
-      const redirectResponse = NextResponse.redirect(signInUrl);
-      return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
-    }
+  if (isProtectedPath && !token) {
+    const signInUrl = new URL("/auth/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", pathname);
+    const redirectResponse = NextResponse.redirect(signInUrl);
+    return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
+  }
+
+  // An admin asked this user to pick a new password: nothing else until they have
+  if (token?.mustChangePassword && !pathname.startsWith("/auth/")) {
+    const redirectResponse = NextResponse.redirect(new URL("/auth/change-password", request.url));
+    return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
   }
 
   const response = NextResponse.next();

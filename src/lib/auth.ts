@@ -32,6 +32,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     name?: string | null;
+    mustChangePassword?: boolean;
   }
   interface Session {
     user: {
@@ -48,6 +49,8 @@ declare module "next-auth/jwt" {
     id: string;
     name?: string | null;
     image?: string | null;
+    /** Set at password sign-in when an admin requires a new password (see proxy.ts) */
+    mustChangePassword?: boolean;
   }
 }
 
@@ -329,6 +332,7 @@ export async function getDynamicProviders() {
               totpEnabled: true,
               totpSecret: true,
               totpLastCounter: true,
+              mustChangePassword: true,
             },
           });
 
@@ -382,6 +386,7 @@ export async function getDynamicProviders() {
             id: user.id,
             email: user.email,
             name: user.name,
+            mustChangePassword: user.mustChangePassword,
           };
         },
       })
@@ -436,6 +441,20 @@ export function crossSiteCookies(): NonNullable<NextAuthOptions["cookies"]> {
   };
 }
 
+async function stillMustChangePassword(userId: string): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { mustChangePassword: true },
+    });
+    return user?.mustChangePassword ?? false;
+  } catch (error) {
+    // Keep the current state rather than letting the user skip the change on a database hiccup
+    console.error("Unable to refresh the password-change flag:", error);
+    return true;
+  }
+}
+
 export async function getAuthOptions(): Promise<NextAuthOptions> {
   const providers = await getDynamicProviders();
 
@@ -478,11 +497,18 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
 
         return true;
       },
-      jwt: async ({ token, user }) => {
+      jwt: async ({ token, user, account, trigger }) => {
         if (user) {
           token.id = user.id;
           token.name = user.name;
           token.image = user.image || gravatarUrl(token.email as string);
+          // Only a password sign-in is asked for a new password: an SSO user may not have one
+          token.mustChangePassword =
+            account?.provider === "credentials" && user.mustChangePassword === true;
+        }
+        if (trigger === "update" && token.mustChangePassword) {
+          // The change-password page asks for a refresh once the new password is saved
+          token.mustChangePassword = await stillMustChangePassword(token.id);
         }
         if (!token.image && token.email) {
           token.image = gravatarUrl(token.email as string);

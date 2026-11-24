@@ -21,6 +21,7 @@ export default function CreateUserDialog({
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [ssoAutoLink, setSsoAutoLink] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +40,7 @@ export default function CreateUserDialog({
           password: ssoAutoLink ? undefined : password,
           isAdmin,
           ssoAutoLink,
+          mustChangePassword: !ssoAutoLink && mustChangePassword,
         }),
       });
 
@@ -52,6 +54,7 @@ export default function CreateUserDialog({
       setPassword("");
       setIsAdmin(false);
       setSsoAutoLink(false);
+      setMustChangePassword(false);
       onUserCreated();
       onClose();
     } catch (err) {
@@ -130,6 +133,25 @@ export default function CreateUserDialog({
             required
             disabled={loading}
           />
+        )}
+
+        {!ssoAutoLink && (
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="createMustChangePassword"
+              checked={mustChangePassword}
+              onChange={(e) => setMustChangePassword(e.target.checked)}
+              className="w-4 h-4 shrink-0 accent-[var(--primary)] cursor-pointer"
+              disabled={loading}
+            />
+            <label
+              htmlFor="createMustChangePassword"
+              className="text-sm text-[var(--foreground)] cursor-pointer"
+            >
+              {t("admin.users.must_change_password")}
+            </label>
+          </div>
         )}
 
         <div className="flex items-center gap-3">

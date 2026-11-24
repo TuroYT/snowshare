@@ -6,7 +6,7 @@ import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { toast } from "@/components/ui/Toast";
 import { useTranslation } from "react-i18next";
 
-type EmailType = "share" | "verify";
+type EmailType = "share" | "verify" | "reset";
 
 interface EmailTemplates {
   shareEmailSubject: string | null;
@@ -15,6 +15,9 @@ interface EmailTemplates {
   verifyEmailSubject: string | null;
   verifyEmailHtml: string | null;
   verifyEmailText: string | null;
+  resetEmailSubject: string | null;
+  resetEmailHtml: string | null;
+  resetEmailText: string | null;
 }
 
 interface DefaultTemplates {
@@ -24,6 +27,9 @@ interface DefaultTemplates {
   verifyEmailSubject: string;
   verifyEmailHtml: string;
   verifyEmailText: string;
+  resetEmailSubject: string;
+  resetEmailHtml: string;
+  resetEmailText: string;
 }
 
 interface PreviewResult {
@@ -31,6 +37,19 @@ interface PreviewResult {
   html: string;
   text: string;
 }
+
+/** The template columns behind each email type */
+const TEMPLATE_KEYS = {
+  share: { subject: "shareEmailSubject", html: "shareEmailHtml", text: "shareEmailText" },
+  verify: { subject: "verifyEmailSubject", html: "verifyEmailHtml", text: "verifyEmailText" },
+  reset: { subject: "resetEmailSubject", html: "resetEmailHtml", text: "resetEmailText" },
+} as const satisfies Record<EmailType, Record<"subject" | "html" | "text", keyof EmailTemplates>>;
+
+const TYPE_LABELS: Record<EmailType, { key: string; fallback: string }> = {
+  share: { key: "admin.email_templates.type_share", fallback: "Share Email" },
+  verify: { key: "admin.email_templates.type_verify", fallback: "Verification Email" },
+  reset: { key: "admin.email_templates.type_reset", fallback: "Password Reset Email" },
+};
 
 export default function EmailTemplatesTab() {
   const { t } = useTranslation();
@@ -42,6 +61,9 @@ export default function EmailTemplatesTab() {
     verifyEmailSubject: null,
     verifyEmailHtml: null,
     verifyEmailText: null,
+    resetEmailSubject: null,
+    resetEmailHtml: null,
+    resetEmailText: null,
   });
   const [defaults, setDefaults] = useState<DefaultTemplates | null>(null);
 
@@ -81,15 +103,10 @@ export default function EmailTemplatesTab() {
 
   useEffect(() => {
     if (!defaults) return;
-    if (activeType === "share") {
-      setSubject(templates.shareEmailSubject ?? defaults.shareEmailSubject);
-      setHtml(templates.shareEmailHtml ?? defaults.shareEmailHtml);
-      setText(templates.shareEmailText ?? defaults.shareEmailText);
-    } else {
-      setSubject(templates.verifyEmailSubject ?? defaults.verifyEmailSubject);
-      setHtml(templates.verifyEmailHtml ?? defaults.verifyEmailHtml);
-      setText(templates.verifyEmailText ?? defaults.verifyEmailText);
-    }
+    const fields = TEMPLATE_KEYS[activeType];
+    setSubject(templates[fields.subject] ?? defaults[fields.subject]);
+    setHtml(templates[fields.html] ?? defaults[fields.html]);
+    setText(templates[fields.text] ?? defaults[fields.text]);
   }, [activeType, templates, defaults]);
 
   const refreshPreview = useCallback(async () => {
@@ -134,17 +151,12 @@ export default function EmailTemplatesTab() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const patchData: Partial<EmailTemplates> = {};
-
-      if (activeType === "share") {
-        patchData.shareEmailSubject = subject || null;
-        patchData.shareEmailHtml = html || null;
-        patchData.shareEmailText = text || null;
-      } else {
-        patchData.verifyEmailSubject = subject || null;
-        patchData.verifyEmailHtml = html || null;
-        patchData.verifyEmailText = text || null;
-      }
+      const fields = TEMPLATE_KEYS[activeType];
+      const patchData: Partial<EmailTemplates> = {
+        [fields.subject]: subject || null,
+        [fields.html]: html || null,
+        [fields.text]: text || null,
+      };
 
       const res = await fetch("/api/admin/email-templates", {
         method: "PATCH",
@@ -168,16 +180,12 @@ export default function EmailTemplatesTab() {
     if (!defaults) return;
     setSaving(true);
     try {
-      const patchData: Partial<EmailTemplates> = {};
-      if (activeType === "share") {
-        patchData.shareEmailSubject = null;
-        patchData.shareEmailHtml = null;
-        patchData.shareEmailText = null;
-      } else {
-        patchData.verifyEmailSubject = null;
-        patchData.verifyEmailHtml = null;
-        patchData.verifyEmailText = null;
-      }
+      const fields = TEMPLATE_KEYS[activeType];
+      const patchData: Partial<EmailTemplates> = {
+        [fields.subject]: null,
+        [fields.html]: null,
+        [fields.text]: null,
+      };
 
       const res = await fetch("/api/admin/email-templates", {
         method: "PATCH",
@@ -235,7 +243,7 @@ export default function EmailTemplatesTab() {
     );
   }
 
-  const emailTypes: EmailType[] = ["share", "verify"];
+  const emailTypes = Object.keys(TEMPLATE_KEYS) as EmailType[];
 
   return (
     <div>
@@ -246,7 +254,7 @@ export default function EmailTemplatesTab() {
         <p className="text-sm text-[var(--foreground-muted)]">
           {t(
             "admin.email_templates.description",
-            "Customize the HTML/text content and subject line of outgoing emails. Use {{appName}}, {{shareTitle}}, {{shareUrl}}, or {{verifyUrl}} as placeholders."
+            "Customize the HTML/text content and subject line of outgoing emails. Use {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, or {{resetUrl}} as placeholders."
           )}
         </p>
       </div>
@@ -258,9 +266,7 @@ export default function EmailTemplatesTab() {
       >
         {emailTypes.map((type) => (
           <Tab key={type} value={type}>
-            {type === "share"
-              ? t("admin.email_templates.type_share", "Share Email")
-              : t("admin.email_templates.type_verify", "Verification Email")}
+            {t(TYPE_LABELS[type].key, TYPE_LABELS[type].fallback)}
           </Tab>
         ))}
       </Tabs>

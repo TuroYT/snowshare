@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateSettings, getSettingsCached, invalidateSettingsCache } from "@/lib/settings";
 import { internalError } from "@/lib/api-errors";
+import { isPasswordResetAvailable } from "@/lib/password-reset";
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
       emailVerificationRequired:
         (settings?.emailVerificationRequired ?? false) && (settings?.smtpEnabled ?? false),
       allowIframeEmbedding: settings?.allowIframeEmbedding ?? false,
+      passwordResetAvailable: await isPasswordResetAvailable(),
     });
   } catch (error) {
     console.error("Error checking setup status:", error);

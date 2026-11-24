@@ -31,6 +31,10 @@ export const RATE_LIMITS = {
   reverseShareUpload: { limit: 30, windowMs: 60 * 60 * 1000 },
   /** Access notification e-mails, per share owner (the per-share hourly throttle is in the DB) */
   accessNotification: { limit: 20, windowMs: 60 * 60 * 1000 },
+  /** Password reset requests and reset-page checks, per IP */
+  passwordReset: { limit: 10, windowMs: 60 * 60 * 1000 },
+  /** Password reset e-mails, per address (silent past the limit) */
+  passwordResetEmail: { limit: 3, windowMs: 60 * 60 * 1000 },
   /** Wrong two-factor codes when enabling/disabling it, per user */
   totpVerify: { limit: 10, windowMs: 15 * 60 * 1000 },
 } satisfies Record<string, RateLimitRule>;
