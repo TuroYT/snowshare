@@ -34,6 +34,8 @@ declare module "next-auth" {
     id: string;
     name?: string | null;
     mustChangePassword?: boolean;
+    /** When a password sign-in began (ms), taken before the stored hash is read */
+    authenticatedAt?: number;
   }
   interface Session {
     user: {
@@ -316,6 +318,9 @@ export async function getDynamicProviders() {
           if (!credentials?.email || !credentials?.password) {
             return null;
           }
+          // Taken before the stored hash is read: a password change that lands while this
+          // sign-in is in flight then revokes the session it produces (see applyAccountState)
+          const authenticatedAt = Date.now();
 
           // Throttle failed logins per client IP + email to slow down brute force. The IP
           // resolved by server.js from the socket comes first, like in getClientIp()
@@ -396,6 +401,7 @@ export async function getDynamicProviders() {
             email: user.email,
             name: user.name,
             mustChangePassword: user.mustChangePassword,
+            authenticatedAt,
           };
         },
       })
@@ -454,7 +460,7 @@ export function crossSiteCookies(): NonNullable<NextAuthOptions["cookies"]> {
  * Re-reads what the database says about the account on every session read, so changes made while
  * a session is open take effect: a session opened before an admin set the password or a reset
  * link was used is revoked, and an admin's "new password required" flag applies to live sessions.
- * Keeps the current state when the database cannot be read.
+ * Throws when the database cannot be read (fail closed).
  */
 export async function applyAccountState(token: JWT): Promise<JWT> {
   if (!token.id) return token;
@@ -469,7 +475,10 @@ export async function applyAccountState(token: JWT): Promise<JWT> {
       (!!user.sessionsValidFrom && user.sessionsValidFrom.getTime() > (token.signedInAt ?? 0));
     token.mustChangePassword = !token.revoked && !!token.viaPassword && !!user?.mustChangePassword;
   } catch (error) {
+    // Fail closed: a session whose state could not be checked must not pass as valid (it may be
+    // one an admin just revoked). The error reaches the caller; the cookie is left untouched.
     console.error("Unable to refresh the account state of the session:", error);
+    throw error;
   }
   return token;
 }
@@ -531,7 +540,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           token.id = user.id;
           token.name = user.name;
           token.image = user.image || gravatarUrl(token.email as string);
-          token.signedInAt = Date.now();
+          token.signedInAt = user.authenticatedAt ?? Date.now();
           token.revoked = false;
           // Only a password sign-in is asked for a new password: an SSO user may not have one
           token.viaPassword = account?.provider === "credentials";
@@ -592,6 +601,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string | null;
+        session.user.mustChangePassword = token.mustChangePassword === true;
       }
       return withoutUserIfRevoked(session, token);
     },

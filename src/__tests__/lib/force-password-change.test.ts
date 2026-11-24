@@ -23,7 +23,7 @@ import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
 import type { Account, Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
-import { getAuthOptions } from "@/lib/auth";
+import { authOptions, getAuthOptions } from "@/lib/auth";
 import proxy from "@/proxy";
 
 type JwtCallback = (params: {
@@ -152,22 +152,36 @@ describe("jwt callback: account state", () => {
     expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
   });
 
-  it("keeps the current state when the database cannot be read", async () => {
+  it("fails closed when the database cannot be read: the error reaches the caller", async () => {
     const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
     mockPrisma.user.findUnique.mockRejectedValue(new Error("db down"));
-    const token = await jwt({
-      token: {
-        id: "u1",
-        email: "a@b.co",
-        viaPassword: true,
-        mustChangePassword: true,
-        signedInAt: 1,
-      },
-    });
-    expect(token.mustChangePassword).toBe(true);
-    expect(token.revoked).toBeUndefined();
+    await expect(
+      jwt({ token: { id: "u1", email: "a@b.co", viaPassword: true, signedInAt: 1 } })
+    ).rejects.toThrow("db down");
     expect(consoleError).toHaveBeenCalled();
     consoleError.mockRestore();
+  });
+
+  it("uses the time the sign-in began, so a change committed meanwhile revokes the session", async () => {
+    // Sign-in began at 5_000; the password was changed at 5_500, while it was in flight
+    dbSays(false, new Date(5_500));
+    const token = await jwt({
+      token: { id: "", email: "a@b.co" },
+      user: { id: "u1", authenticatedAt: 5_000 } as User,
+      account: credentials,
+    });
+    expect(token.signedInAt).toBe(5_000);
+    expect(token.revoked).toBe(true);
+  });
+
+  it("falls back to now for a sign-in that carries no start time (SSO)", async () => {
+    const before = Date.now();
+    const token = await jwt({
+      token: { id: "", email: "a@b.co" },
+      user: { id: "u1" } as User,
+      account: github,
+    });
+    expect(token.signedInAt).toBeGreaterThanOrEqual(before);
   });
 
   it("empties the session of a revoked token: signed out for routes and for the client", async () => {
@@ -207,6 +221,36 @@ describe("credentials authorize: mustChangePassword", () => {
       { headers: { "x-forwarded-for": "10.9.9.9" } }
     );
     expect(user).toMatchObject({ id: "u9", mustChangePassword: true });
+  });
+
+  it("stamps the sign-in before the stored hash is read", async () => {
+    mockPrisma.oAuthProvider.findMany.mockResolvedValue([]);
+    const options = await getAuthOptions();
+    const provider = options.providers.find((p) => p.id === "credentials") as unknown as {
+      options: { authorize: Authorize };
+    };
+    let readAt = 0;
+    mockPrisma.user.findUnique.mockImplementation(async () => {
+      readAt = Date.now();
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return {
+        id: "u9",
+        email: "stamp@change.co",
+        name: null,
+        password: await bcrypt.hash("pw-123456", 4),
+        emailVerified: new Date(),
+        totpEnabled: false,
+        totpSecret: null,
+        totpLastCounter: null,
+        mustChangePassword: false,
+      };
+    });
+    const user = (await provider.options.authorize(
+      { email: "stamp@change.co", password: "pw-123456" },
+      { headers: { "x-forwarded-for": "10.9.9.8" } }
+    )) as { authenticatedAt: number };
+    expect(user.authenticatedAt).toBeLessThanOrEqual(readAt);
+    expect(user.authenticatedAt).toBeGreaterThan(0);
   });
 });
 
@@ -294,5 +338,17 @@ describe("proxy: forced password change redirect", () => {
     mockGetToken.mockResolvedValue(null);
     const res = await visit("/admin");
     expect(res.headers.get("location")).toContain("/auth/signin?callbackUrl=%2Fadmin");
+  });
+});
+
+describe("static options (getServerSession)", () => {
+  it("copies the forced-change flag to the session like the dynamic options do", async () => {
+    const session = { user: { id: "", name: null }, expires: "x" } as unknown as Session;
+    const sessionCb = authOptions.callbacks!.session as unknown as (p: {
+      session: Session;
+      token: JWT;
+    }) => Promise<Session>;
+    const out = await sessionCb({ session, token: { id: "u1", mustChangePassword: true } });
+    expect(out.user.mustChangePassword).toBe(true);
   });
 });
