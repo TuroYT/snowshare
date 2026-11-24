@@ -180,10 +180,16 @@ export async function authenticateFromRequest(
     });
 
     if (token?.id) {
-      return {
-        userId: token.id as string,
-        isAuthenticated: true,
-      };
+      // Same policy as the Next.js routes: a session closed by a password change, or one that
+      // must first pick a new password, is not an authenticated uploader (it falls to anonymous)
+      const { applyAccountState } = await import("./account-state.js");
+      const state = await applyAccountState(token);
+      if (!state.revoked && !state.mustChangePassword) {
+        return {
+          userId: token.id as string,
+          isAuthenticated: true,
+        };
+      }
     }
   } catch (error) {
     console.error("[Auth] Error:", (error as Error).message);

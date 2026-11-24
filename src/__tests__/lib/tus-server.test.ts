@@ -26,6 +26,11 @@ jest.mock("../../lib/security.js", () => ({ hashApiKey: (key: string) => `hash:$
   virtual: true,
 });
 
+const mockApplyAccountState = jest.fn();
+jest.mock("../../lib/account-state.js", () => ({ applyAccountState: mockApplyAccountState }), {
+  virtual: true,
+});
+
 const mockGetToken = jest.fn();
 jest.mock("next-auth/jwt", () => ({ getToken: mockGetToken }));
 
@@ -144,6 +149,7 @@ describe("authenticateFromRequest", () => {
   beforeEach(() => {
     process.env.NEXTAUTH_SECRET = "test-secret";
     mockGetToken.mockResolvedValue(null);
+    mockApplyAccountState.mockImplementation(async (token: unknown) => token);
   });
 
   afterAll(() => {
@@ -264,6 +270,34 @@ describe("authenticateFromRequest", () => {
     expect(result).toEqual({ userId: null, isAuthenticated: false });
     expect(mockGetRetryAfter).not.toHaveBeenCalled();
     expect(mockApiKeyFindUnique).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["revoked by a password change", { id: "user-7", revoked: true }],
+    ["waiting for a forced password change", { id: "user-7", mustChangePassword: true }],
+  ])("treats a JWT session %s as anonymous", async (_name, state) => {
+    mockGetToken.mockResolvedValue({ id: "user-7" });
+    mockApplyAccountState.mockResolvedValue(state);
+
+    const result = await authenticateFromRequest(
+      { headers: { cookie: "next-auth.session-token=abc" } },
+      "9.9.9.9"
+    );
+
+    expect(result).toEqual({ userId: null, isAuthenticated: false });
+  });
+
+  it("treats a JWT session as anonymous when its state cannot be checked (fail closed)", async () => {
+    mockGetToken.mockResolvedValue({ id: "user-7" });
+    mockApplyAccountState.mockRejectedValue(new Error("db down"));
+
+    const result = await authenticateFromRequest(
+      { headers: { cookie: "next-auth.session-token=abc" } },
+      "9.9.9.9"
+    );
+
+    expect(result).toEqual({ userId: null, isAuthenticated: false });
+    expect(console.error).toHaveBeenCalledWith("[Auth] Error:", "db down");
   });
 
   it("authenticates from the NextAuth JWT cookie", async () => {
