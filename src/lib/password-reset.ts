@@ -67,7 +67,12 @@ export async function isPasswordResetTokenValid(rawToken: string): Promise<boole
   return !!record?.identifier.startsWith("password-reset:") && record.expires > new Date();
 }
 
-/** Drops every outstanding reset token of a user (after a password change by any path). */
-export async function clearPasswordResetTokens(userId: string): Promise<void> {
-  await prisma.verificationToken.deleteMany({ where: { identifier: identifierFor(userId) } });
+/**
+ * Deletes every outstanding reset token of a user. Returns the pending query so a caller can run
+ * it in the same `prisma.$transaction([...])` as the change that makes the links obsolete (a
+ * password or e-mail change): a failure then leaves both untouched, and a link cannot be used
+ * between the two writes.
+ */
+export function revokePasswordResetTokens(userId: string) {
+  return prisma.verificationToken.deleteMany({ where: { identifier: identifierFor(userId) } });
 }

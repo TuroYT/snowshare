@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { hashPassword } from "@/lib/security";
-import { clearPasswordResetTokens } from "@/lib/password-reset";
+import { revokePasswordResetTokens } from "@/lib/password-reset";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -98,17 +98,21 @@ async function setUserPassword(
     return apiError(request, ErrorCode.USER_NOT_FOUND);
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      password: await hashPassword(password),
-      mustChangePassword: mustChangePassword === true,
-      // Sessions opened with the old password (a compromised account, say) stop working
-      sessionsValidFrom: new Date(),
-    },
-  });
-  // A reset link requested before the admin stepped in must not undo the new password
-  await clearPasswordResetTokens(userId);
+  const hashedPassword = await hashPassword(password);
+  // One transaction: a reset link requested before the admin stepped in cannot be used between
+  // the two writes to undo the new password
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: mustChangePassword === true,
+        // Sessions opened with the old password (a compromised account, say) stop working
+        sessionsValidFrom: new Date(),
+      },
+    }),
+    revokePasswordResetTokens(userId),
+  ]);
   return NextResponse.json({ success: true });
 }
 
@@ -148,7 +152,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === "setPassword") {
-      return setUserPassword(request, userId, password, mustChangePassword);
+      return await setUserPassword(request, userId, password, mustChangePassword);
     }
 
     if (action === "promote") {

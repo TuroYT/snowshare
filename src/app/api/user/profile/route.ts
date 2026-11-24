@@ -12,7 +12,7 @@ import {
   PASSWORD_MAX_LENGTH,
 } from "@/lib/constants";
 import { sendVerificationEmail } from "@/lib/email";
-import { clearPasswordResetTokens } from "@/lib/password-reset";
+import { revokePasswordResetTokens } from "@/lib/password-reset";
 import crypto from "node:crypto";
 
 const MAX_NAME_LENGTH = 100;
@@ -25,6 +25,7 @@ type ProfileUpdateData = {
   emailVerified?: Date | null;
   password?: string;
   mustChangePassword?: boolean;
+  sessionsValidFrom?: Date;
   defaultTab?: "linkshare" | "pasteshare" | "fileshare";
   notifyOnAccess?: boolean;
 };
@@ -128,6 +129,8 @@ async function applyPasswordChange(
 
   updateData.password = await hashPassword(newPassword);
   updateData.mustChangePassword = false;
+  // Other sessions (a stolen one, say) are signed out; the client reopens its own (reopenSession)
+  updateData.sessionsValidFrom = new Date();
   return null;
 }
 
@@ -246,7 +249,7 @@ export async function PATCH(request: NextRequest) {
       if (passwordError) return passwordError;
     }
 
-    const updatedUser = await prisma.user.update({
+    const userUpdate = prisma.user.update({
       where: { id: session.user.id },
       data: updateData,
       select: {
@@ -260,9 +263,16 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    if (updateData.password) {
-      // A reset link requested before the change must not outlive it
-      await clearPasswordResetTokens(session.user.id);
+    // A reset link requested before a new password or a new address must not outlive it (links
+    // go to the old address). Same transaction: no window to use one, and no half-done change.
+    let updatedUser;
+    if (updateData.password || updateData.email) {
+      [updatedUser] = await prisma.$transaction([
+        userUpdate,
+        revokePasswordResetTokens(session.user.id),
+      ]);
+    } else {
+      updatedUser = await userUpdate;
     }
 
     if (needsEmailVerification && updateData.email) {

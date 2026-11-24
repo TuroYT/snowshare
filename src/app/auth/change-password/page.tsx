@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { reopenSession } from "@/lib/client/reopen-session";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
@@ -14,7 +15,7 @@ import { PASSWORD_MIN_LENGTH } from "@/lib/share-constants";
 export default function ChangePassword() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { status, update } = useSession();
+  const { data: session, status } = useSession();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -51,10 +52,10 @@ export default function ChangePassword() {
         setError(data.error || t("auth.error_generic_standalone"));
         return;
       }
-      // Refreshes the session so the sign-in gate lets the user through. If that fails the
-      // password is saved but the gate would bounce the user back here: say so instead.
-      const refreshed = await update();
-      if (!refreshed?.user || refreshed.user.mustChangePassword) {
+      // The change signed this session out with all the others: sign in again with the new
+      // password (which also drops the "new password required" gate). If that fails the
+      // password is saved but the user has to sign in by hand.
+      if (!session?.user?.email || !(await reopenSession(session.user.email, newPassword))) {
         setError(t("auth.error_session_refresh"));
         return;
       }

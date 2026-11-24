@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,7 @@ import FormNotice from "@/app/auth/_components/FormNotice";
 import AuthShell from "@/app/auth/_components/AuthShell";
 import { PASSWORD_MIN_LENGTH } from "@/lib/share-constants";
 
-type TokenState = "checking" | "valid" | "invalid";
+type TokenState = "checking" | "valid" | "invalid" | "unavailable";
 
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -24,22 +24,28 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   // Only looks at the link: opening it must not use it up (mail scanners do open links)
-  useEffect(() => {
+  const checkLink = useCallback(async () => {
     if (!token) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/auth/reset-password?token=${encodeURIComponent(token)}`);
-        if (!cancelled) setTokenState(res.ok ? "valid" : "invalid");
-      } catch (err) {
-        console.error("Error checking the reset link:", err);
-        if (!cancelled) setTokenState("invalid");
+    setTokenState("checking");
+    try {
+      const res = await fetch(`/api/auth/reset-password?token=${encodeURIComponent(token)}`);
+      if (res.ok) {
+        setTokenState("valid");
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      const data = await res.json().catch(() => ({}));
+      // Only a refusal of the link itself means it is dead; a 429 or a 500 says nothing about it
+      const dead = data.code === "TOKEN_INVALID_OR_EXPIRED" || data.code === "TOKEN_REQUIRED";
+      setTokenState(dead ? "invalid" : "unavailable");
+    } catch (err) {
+      console.error("Error checking the reset link:", err);
+      setTokenState("unavailable");
+    }
   }, [token]);
+
+  useEffect(() => {
+    checkLink();
+  }, [checkLink]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +92,24 @@ export default function ResetPassword() {
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <Spinner size="lg" />
       </div>
+    );
+  }
+
+  if (tokenState === "unavailable") {
+    return (
+      <AuthShell title={t("auth.reset_title", "Choose a new password")}>
+        <div className="space-y-6 text-center">
+          <p role="alert" className="text-sm text-[var(--foreground-muted)]">
+            {t(
+              "auth.reset_check_failed",
+              "We could not check your link right now. It may still be valid: try again in a moment."
+            )}
+          </p>
+          <Button type="button" onClick={checkLink} className="w-full">
+            {t("auth.reset_retry", "Try again")}
+          </Button>
+        </div>
+      </AuthShell>
     );
   }
 

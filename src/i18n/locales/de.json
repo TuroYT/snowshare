@@ -272,7 +272,10 @@
     "change_description": "Ein Administrator bittet dich, ein eigenes Passwort festzulegen, bevor du fortfährst.",
     "success_password_reset": "Dein Passwort wurde geändert. Du kannst dich jetzt anmelden.",
     "error_password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
-    "error_session_refresh": "Dein Passwort wurde gespeichert, aber die Sitzung konnte nicht aktualisiert werden. Melde dich ab und mit dem neuen Passwort wieder an."
+    "error_session_refresh": "Dein Passwort wurde gespeichert, aber die Sitzung konnte nicht aktualisiert werden. Melde dich ab und mit dem neuen Passwort wieder an.",
+    "reset_check_failed": "Dein Link konnte gerade nicht geprüft werden. Er ist möglicherweise noch gültig: Versuche es gleich noch einmal.",
+    "reset_retry": "Erneut versuchen",
+    "success_password_changed": "Dein Passwort wurde geändert. Melde dich erneut an."
   },
   "profile": {
     "title": "Mein Profil",

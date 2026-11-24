@@ -29,6 +29,7 @@ export default function SignIn() {
   const NOTICE_KEYS: Record<string, string> = {
     account_created: "auth.success_account_created",
     password_reset: "auth.success_password_reset",
+    password_changed: "auth.success_password_changed",
   };
   const noticeKey = NOTICE_KEYS[searchParams.get("notice") ?? ""] ?? null;
   const { t } = useTranslation();

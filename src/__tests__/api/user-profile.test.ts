@@ -16,6 +16,8 @@ jest.mock("@/lib/prisma", () => ({
       create: jest.fn(),
       deleteMany: jest.fn(),
     },
+    // Batched writes run together (array form)
+    $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }));
 
@@ -94,6 +96,10 @@ describe("/api/user/profile", () => {
     mockGetSession.mockResolvedValue({ user: { id: "user-1" } });
     mockFindUnique.mockResolvedValue(passwordUser);
     mockUpdate.mockResolvedValue(updatedUser);
+    mockTokenDeleteMany.mockResolvedValue({ count: 0 });
+    (prisma.$transaction as jest.Mock).mockImplementation((ops: Promise<unknown>[]) =>
+      Promise.all(ops)
+    );
     mockVerifyPassword.mockResolvedValue(true);
     (hashPassword as jest.Mock).mockImplementation((p: string) => Promise.resolve(`hashed:${p}`));
     mockGetSettings.mockResolvedValue({ emailVerificationRequired: false, smtpEnabled: false });
@@ -311,12 +317,33 @@ describe("/api/user/profile", () => {
         expect(mockUpdate.mock.calls[0][0].data.password).toBe("hashed:newpassword123");
       });
 
-      it("clears the forced-change flag and drops pending reset links", async () => {
+      it("clears the forced-change flag, signs out other sessions and drops pending reset links", async () => {
         await PATCH(makeRequest({ newPassword: "newpassword123", currentPassword: "old" }));
-        expect(mockUpdate.mock.calls[0][0].data.mustChangePassword).toBe(false);
+        const data = mockUpdate.mock.calls[0][0].data;
+        expect(data.mustChangePassword).toBe(false);
+        expect(data.sessionsValidFrom).toBeInstanceOf(Date);
         expect(mockTokenDeleteMany).toHaveBeenCalledWith({
           where: { identifier: "password-reset:user-1" },
         });
+        // Both writes go through one transaction
+        expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      });
+
+      it("drops pending reset links when the e-mail changes (they went to the old address)", async () => {
+        mockVerifyPassword.mockResolvedValue(true);
+        mockFindUnique.mockResolvedValueOnce(passwordUser).mockResolvedValueOnce(null);
+        mockGetSettings.mockResolvedValue({ emailVerificationRequired: false });
+        await PATCH(makeRequest({ email: "new@example.com", currentPassword: "pw" }));
+        expect(mockTokenDeleteMany).toHaveBeenCalledWith({
+          where: { identifier: "password-reset:user-1" },
+        });
+        // An e-mail change alone does not sign out sessions
+        expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty("sessionsValidFrom");
+      });
+
+      it("does not touch the transaction when only the profile fields change", async () => {
+        await PATCH(makeRequest({ name: "Bob" }));
+        expect(prisma.$transaction).not.toHaveBeenCalled();
       });
 
       it("leaves the flag and the reset links alone when the password is not changed", async () => {

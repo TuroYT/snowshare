@@ -400,3 +400,21 @@ describe("hashResetToken", () => {
     expect(() => hashResetToken(RAW_TOKEN)).toThrow("NEXTAUTH_SECRET");
   });
 });
+
+describe("POST /api/auth/forgot-password: hourly ceiling per address", () => {
+  it("mails an address at most 5 times an hour, one a minute apart, then stays silent", async () => {
+    jest.useFakeTimers({ doNotFake: ["setImmediate", "nextTick"] });
+    try {
+      mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.co", password: "hash" });
+      for (let i = 0; i < 7; i++) {
+        const res = await forgotPassword(forgot({ email: "a@b.co" }, `10.1.0.${i}`));
+        expect(res.status).toBe(200);
+        await flush();
+        jest.advanceTimersByTime(61 * 1000);
+      }
+      expect(mockSend).toHaveBeenCalledTimes(5);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});

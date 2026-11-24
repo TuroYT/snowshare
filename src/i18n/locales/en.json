@@ -272,7 +272,10 @@
     "change_description": "An administrator asked you to set your own password before continuing.",
     "success_password_reset": "Your password has been changed. You can sign in now.",
     "error_password_unchanged": "The new password must differ from the current one.",
-    "error_session_refresh": "Your password was saved, but your session could not be refreshed. Sign out and sign in again with your new password."
+    "error_session_refresh": "Your password was saved, but your session could not be refreshed. Sign out and sign in again with your new password.",
+    "reset_check_failed": "We could not check your link right now. It may still be valid: try again in a moment.",
+    "reset_retry": "Try again",
+    "success_password_changed": "Your password was changed. Sign in again."
   },
   "profile": {
     "title": "My profile",

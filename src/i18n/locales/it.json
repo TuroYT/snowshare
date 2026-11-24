@@ -272,7 +272,10 @@
     "change_description": "Un amministratore ti chiede di impostare la tua password prima di continuare.",
     "success_password_reset": "La tua password è stata modificata. Ora puoi accedere.",
     "error_password_unchanged": "La nuova password deve essere diversa da quella attuale.",
-    "error_session_refresh": "La password è stata salvata, ma non è stato possibile aggiornare la sessione. Esci e accedi di nuovo con la nuova password."
+    "error_session_refresh": "La password è stata salvata, ma non è stato possibile aggiornare la sessione. Esci e accedi di nuovo con la nuova password.",
+    "reset_check_failed": "Al momento non è stato possibile verificare il link. Potrebbe essere ancora valido: riprova tra un momento.",
+    "reset_retry": "Riprova",
+    "success_password_changed": "La tua password è stata modificata. Accedi di nuovo."
   },
   "profile": {
     "title": "Il mio profilo",

@@ -14,6 +14,7 @@ jest.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findUnique: jest.fn(), update: jest.fn(), create: jest.fn() },
     verificationToken: { deleteMany: jest.fn() },
+    $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }));
 
@@ -78,6 +79,16 @@ describe("PATCH setPassword", () => {
     expect(mockTokenDeleteMany).toHaveBeenCalledWith({
       where: { identifier: "password-reset:target" },
     });
+    // The password and the revocation of the links commit together
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("answers 500 (translated) instead of rejecting when the write fails", async () => {
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    (prisma.$transaction as jest.Mock).mockRejectedValueOnce(new Error("db down"));
+    const res = await setPassword();
+    expect(res.status).toBe(500);
+    consoleError.mockRestore();
   });
 
   it("clears the flag when the admin does not ask for a change (and when it is omitted)", async () => {

@@ -6,7 +6,12 @@ import { sendResetLinkEmail } from "@/lib/email";
 import { createPasswordResetToken, isPasswordResetAvailable } from "@/lib/password-reset";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { getClientIp } from "@/lib/getClientIp";
-import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import {
+  consumeRateLimit,
+  getRetryAfter,
+  rateLimitResponse,
+  recordRateLimitHit,
+} from "@/lib/rate-limit";
 
 /**
  * Creates the token and sends the e-mail. Runs after the response so the answer takes the same
@@ -46,12 +51,18 @@ export async function POST(request: NextRequest) {
       message: translate(detectLocale(request), "api.messages.password_reset_requested"),
     });
 
-    // One mail a minute per address: past it, stay silent instead of answering 429 (which would
+    // One mail a minute and five an hour per address: past it, stay silent instead of answering 429 (which would
     // reveal that the address is being mailed). Earlier links stay valid, so someone spamming an
     // address can neither cancel the owner's link nor flood the mailbox.
-    if (consumeRateLimit("passwordResetEmail", email.toLowerCase()) > 0) {
+    const addressKey = email.toLowerCase();
+    if (
+      getRetryAfter("passwordResetEmail", addressKey) > 0 ||
+      getRetryAfter("passwordResetEmailHourly", addressKey) > 0
+    ) {
       return response;
     }
+    recordRateLimitHit("passwordResetEmail", addressKey);
+    recordRateLimitHit("passwordResetEmailHourly", addressKey);
 
     // Passwordless (SSO-only) accounts have nothing to reset: giving them a password here
     // would change how they can sign in (and drop them from verified-email SSO auto-links).

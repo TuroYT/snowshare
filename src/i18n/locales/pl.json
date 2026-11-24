@@ -272,7 +272,10 @@
     "change_description": "Administrator prosi Cię o ustawienie własnego hasła, zanim przejdziesz dalej.",
     "success_password_reset": "Hasło zostało zmienione. Możesz się teraz zalogować.",
     "error_password_unchanged": "Nowe hasło musi różnić się od obecnego.",
-    "error_session_refresh": "Hasło zostało zapisane, ale nie udało się odświeżyć sesji. Wyloguj się i zaloguj ponownie nowym hasłem."
+    "error_session_refresh": "Hasło zostało zapisane, ale nie udało się odświeżyć sesji. Wyloguj się i zaloguj ponownie nowym hasłem.",
+    "reset_check_failed": "Nie udało się teraz sprawdzić linku. Może nadal być ważny: spróbuj ponownie za chwilę.",
+    "reset_retry": "Spróbuj ponownie",
+    "success_password_changed": "Hasło zostało zmienione. Zaloguj się ponownie."
   },
   "profile": {
     "title": "Mój profil",

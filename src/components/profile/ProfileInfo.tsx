@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Download } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { toast } from "@/components/ui/Toast";
+import { reopenSession } from "@/lib/client/reopen-session";
 import { Alert, Button, Card, Input, Select } from "@/components/ui";
 
 type User = {
@@ -78,6 +80,10 @@ export default function ProfileInfo({ user, onUpdate }: Readonly<ProfileInfoProp
       const data = await res.json();
 
       if (res.ok) {
+        if (newPassword && !(await reopenSession(data.user.email, newPassword))) {
+          await signOut({ callbackUrl: "/auth/signin?notice=password_changed" });
+          return;
+        }
         setMessage(
           data.requiresVerification
             ? t(

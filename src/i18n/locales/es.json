@@ -272,7 +272,10 @@
     "change_description": "Un administrador te pide que definas tu propia contraseña antes de continuar.",
     "success_password_reset": "Tu contraseña se ha cambiado. Ya puedes iniciar sesión.",
     "error_password_unchanged": "La nueva contraseña debe ser distinta de la actual.",
-    "error_session_refresh": "Tu contraseña se guardó, pero no se pudo actualizar la sesión. Cierra sesión y vuelve a iniciarla con tu nueva contraseña."
+    "error_session_refresh": "Tu contraseña se guardó, pero no se pudo actualizar la sesión. Cierra sesión y vuelve a iniciarla con tu nueva contraseña.",
+    "reset_check_failed": "No pudimos comprobar tu enlace en este momento. Puede que siga siendo válido: inténtalo de nuevo en un momento.",
+    "reset_retry": "Reintentar",
+    "success_password_changed": "Tu contraseña se ha cambiado. Vuelve a iniciar sesión."
   },
   "profile": {
     "title": "Mi perfil",

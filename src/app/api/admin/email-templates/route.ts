@@ -139,6 +139,9 @@ export async function PATCH(request: NextRequest) {
 
     for (const key of TEMPLATE_FIELDS) {
       const val = data[key];
+      if (val !== undefined && val !== null && typeof val !== "string") {
+        return apiError(request, ErrorCode.INVALID_REQUEST);
+      }
       if (typeof val === "string" && val.length > MAX_TEMPLATE_SIZE) {
         return apiError(request, ErrorCode.INVALID_REQUEST);
       }
