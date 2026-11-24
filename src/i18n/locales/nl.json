@@ -272,7 +272,6 @@
     "change_description": "Een beheerder vraagt je een eigen wachtwoord in te stellen voordat je verdergaat.",
     "success_password_reset": "Je wachtwoord is gewijzigd. Je kunt nu inloggen.",
     "error_password_unchanged": "Het nieuwe wachtwoord moet verschillen van het huidige.",
-    "error_session_refresh": "Je wachtwoord is opgeslagen, maar de sessie kon niet worden vernieuwd. Log uit en log opnieuw in met je nieuwe wachtwoord.",
     "reset_check_failed": "We konden je link nu niet controleren. Hij is misschien nog geldig: probeer het zo opnieuw.",
     "reset_retry": "Opnieuw proberen",
     "success_password_changed": "Je wachtwoord is gewijzigd. Log opnieuw in."
@@ -856,7 +855,8 @@
       "email_required": "E-mailadres is verplicht",
       "paste_content_required_for_password_change": "Voer de inhoud opnieuw in om het wachtwoord van een beveiligde paste te wijzigen of te verwijderen.",
       "paste_password_required_for_content_change": "Voer een wachtwoord (huidig of nieuw) in om de inhoud van een beveiligde paste te wijzigen.",
-      "password_unchanged": "Het nieuwe wachtwoord moet verschillen van het huidige"
+      "password_unchanged": "Het nieuwe wachtwoord moet verschillen van het huidige",
+      "concurrent_update": "Je account is gewijzigd terwijl je opsloeg. Laad de pagina opnieuw en probeer het nog eens."
     },
     "file_protected": "Beveiligd bestand",
     "file_count": "{{count}} bestanden",

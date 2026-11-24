@@ -152,13 +152,34 @@ describe("jwt callback: account state", () => {
     expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
   });
 
-  it("fails closed when the database cannot be read: the error reaches the caller", async () => {
+  it("fails closed without touching the cookie when the database cannot be read", async () => {
     const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
     mockPrisma.user.findUnique.mockRejectedValue(new Error("db down"));
-    await expect(
-      jwt({ token: { id: "u1", email: "a@b.co", viaPassword: true, signedInAt: 1 } })
-    ).rejects.toThrow("db down");
+    const input = { id: "u1", email: "a@b.co", viaPassword: true, signedInAt: 1 };
+    const token = await jwt({ token: { ...input } });
+
+    // The callback does not throw (next-auth would clear the session cookie), and nothing about
+    // the failure is written to the token that gets encoded back into the cookie
+    expect(token).toEqual({ ...input, image: expect.any(String) });
+    expect(token.revoked).toBeUndefined();
+    expect(token.mustChangePassword).toBeUndefined();
+    // ...yet this read is denied
+    const session = { user: { id: "", name: null }, expires: "x" } as unknown as Session;
+    expect(await sessionCb({ session, token })).toEqual({});
     expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it("recovers on the next read once the database is back", async () => {
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockPrisma.user.findUnique.mockRejectedValueOnce(new Error("db down"));
+    const token = { id: "u1", email: "a@b.co", viaPassword: true, signedInAt: 1 };
+    const session = { user: { id: "", name: null }, expires: "x" } as unknown as Session;
+    await jwt({ token });
+    // Same cookie, next request
+    const next = await jwt({ token: { ...token } });
+    const out = await sessionCb({ session, token: next });
+    expect(out.user.id).toBe("u1");
     consoleError.mockRestore();
   });
 

@@ -272,7 +272,6 @@
     "change_description": "Administrator prosi Cię o ustawienie własnego hasła, zanim przejdziesz dalej.",
     "success_password_reset": "Hasło zostało zmienione. Możesz się teraz zalogować.",
     "error_password_unchanged": "Nowe hasło musi różnić się od obecnego.",
-    "error_session_refresh": "Hasło zostało zapisane, ale nie udało się odświeżyć sesji. Wyloguj się i zaloguj ponownie nowym hasłem.",
     "reset_check_failed": "Nie udało się teraz sprawdzić linku. Może nadal być ważny: spróbuj ponownie za chwilę.",
     "reset_retry": "Spróbuj ponownie",
     "success_password_changed": "Hasło zostało zmienione. Zaloguj się ponownie."
@@ -856,7 +855,8 @@
       "email_required": "Adres e-mail jest wymagany",
       "paste_content_required_for_password_change": "Wpisz ponownie treść, aby zmienić lub usunąć hasło chronionego wklejenia.",
       "paste_password_required_for_content_change": "Podaj hasło (obecne lub nowe), aby zmienić treść chronionego wklejenia.",
-      "password_unchanged": "Nowe hasło musi różnić się od obecnego"
+      "password_unchanged": "Nowe hasło musi różnić się od obecnego",
+      "concurrent_update": "Twoje konto zmieniło się podczas zapisywania. Odśwież stronę i spróbuj ponownie."
     },
     "file_protected": "Chroniony plik",
     "file_count": "Pliki: {{count}}",

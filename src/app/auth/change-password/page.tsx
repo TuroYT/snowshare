@@ -53,10 +53,11 @@ export default function ChangePassword() {
         return;
       }
       // The change signed this session out with all the others: sign in again with the new
-      // password (which also drops the "new password required" gate). If that fails the
-      // password is saved but the user has to sign in by hand.
+      // password (which also drops the "new password required" gate). If that is not possible
+      // (a two-factor code is needed, say) the password is saved: send the user to sign in.
       if (!session?.user?.email || !(await reopenSession(session.user.email, newPassword))) {
-        setError(t("auth.error_session_refresh"));
+        redirecting = true;
+        await signOut({ callbackUrl: "/auth/signin?notice=password_changed" });
         return;
       }
       redirecting = true;

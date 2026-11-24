@@ -272,7 +272,6 @@
     "change_description": "Un administrador te pide que definas tu propia contraseña antes de continuar.",
     "success_password_reset": "Tu contraseña se ha cambiado. Ya puedes iniciar sesión.",
     "error_password_unchanged": "La nueva contraseña debe ser distinta de la actual.",
-    "error_session_refresh": "Tu contraseña se guardó, pero no se pudo actualizar la sesión. Cierra sesión y vuelve a iniciarla con tu nueva contraseña.",
     "reset_check_failed": "No pudimos comprobar tu enlace en este momento. Puede que siga siendo válido: inténtalo de nuevo en un momento.",
     "reset_retry": "Reintentar",
     "success_password_changed": "Tu contraseña se ha cambiado. Vuelve a iniciar sesión."
@@ -856,7 +855,8 @@
       "email_required": "El correo electrónico es obligatorio",
       "paste_content_required_for_password_change": "Vuelve a introducir el contenido para cambiar o quitar la contraseña de un paste protegido.",
       "paste_password_required_for_content_change": "Introduce una contraseña (actual o nueva) para cambiar el contenido de un paste protegido.",
-      "password_unchanged": "La nueva contraseña debe ser distinta de la actual"
+      "password_unchanged": "La nueva contraseña debe ser distinta de la actual",
+      "concurrent_update": "Tu cuenta cambió mientras guardabas. Recarga la página e inténtalo de nuevo."
     },
     "file_protected": "Archivo protegido",
     "file_count": "{{count}} archivos",

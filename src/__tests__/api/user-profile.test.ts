@@ -341,6 +341,28 @@ describe("/api/user/profile", () => {
         expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty("sessionsValidFrom");
       });
 
+      it("applies a credential change only to the password hash that was verified", async () => {
+        await PATCH(makeRequest({ newPassword: "newpassword123", currentPassword: "old" }));
+        expect(mockUpdate.mock.calls[0][0].where).toEqual({
+          id: "user-1",
+          password: "stored-hash",
+        });
+      });
+
+      it("answers 409 when the account changed between the check and the update", async () => {
+        mockUpdate.mockRejectedValue(Object.assign(new Error("not found"), { code: "P2025" }));
+        const res = await PATCH(
+          makeRequest({ newPassword: "newpassword123", currentPassword: "old" })
+        );
+        expect(res.status).toBe(409);
+        expect((await res.json()).code).toBe("CONCURRENT_UPDATE");
+      });
+
+      it("keeps the id-only filter for profile changes that are not credentials", async () => {
+        await PATCH(makeRequest({ name: "Bob" }));
+        expect(mockUpdate.mock.calls[0][0].where).toEqual({ id: "user-1" });
+      });
+
       it("does not touch the transaction when only the profile fields change", async () => {
         await PATCH(makeRequest({ name: "Bob" }));
         expect(prisma.$transaction).not.toHaveBeenCalled();

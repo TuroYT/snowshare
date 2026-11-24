@@ -272,7 +272,6 @@
     "change_description": "Ein Administrator bittet dich, ein eigenes Passwort festzulegen, bevor du fortfährst.",
     "success_password_reset": "Dein Passwort wurde geändert. Du kannst dich jetzt anmelden.",
     "error_password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
-    "error_session_refresh": "Dein Passwort wurde gespeichert, aber die Sitzung konnte nicht aktualisiert werden. Melde dich ab und mit dem neuen Passwort wieder an.",
     "reset_check_failed": "Dein Link konnte gerade nicht geprüft werden. Er ist möglicherweise noch gültig: Versuche es gleich noch einmal.",
     "reset_retry": "Erneut versuchen",
     "success_password_changed": "Dein Passwort wurde geändert. Melde dich erneut an."
@@ -856,7 +855,8 @@
       "email_required": "E-Mail-Adresse ist erforderlich",
       "paste_content_required_for_password_change": "Gib den Inhalt erneut ein, um das Passwort eines geschützten Pastes zu ändern oder zu entfernen.",
       "paste_password_required_for_content_change": "Gib ein Passwort (aktuell oder neu) ein, um den Inhalt eines geschützten Pastes zu ändern.",
-      "password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden"
+      "password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden",
+      "concurrent_update": "Dein Konto hat sich während des Speicherns geändert. Lade die Seite neu und versuche es erneut."
     },
     "file_protected": "Geschützte Datei",
     "file_count": "{{count}} Dateien",

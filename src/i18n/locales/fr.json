@@ -272,7 +272,6 @@
     "change_description": "Un administrateur vous demande de définir votre propre mot de passe avant de continuer.",
     "success_password_reset": "Votre mot de passe a été modifié. Vous pouvez vous connecter.",
     "error_password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel.",
-    "error_session_refresh": "Votre mot de passe est enregistré, mais la session n'a pas pu être actualisée. Déconnectez-vous puis reconnectez-vous avec votre nouveau mot de passe.",
     "reset_check_failed": "Impossible de vérifier votre lien pour le moment. Il est peut-être encore valable : réessayez dans un instant.",
     "reset_retry": "Réessayer",
     "success_password_changed": "Votre mot de passe a été modifié. Reconnectez-vous."
@@ -856,7 +855,8 @@
       "email_required": "L'adresse e-mail est requise",
       "paste_content_required_for_password_change": "Ressaisissez le contenu pour changer ou retirer le mot de passe d'une paste protégée.",
       "paste_password_required_for_content_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier le contenu d'une paste protégée.",
-      "password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel"
+      "password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel",
+      "concurrent_update": "Votre compte a changé pendant l'enregistrement. Rechargez la page et réessayez."
     },
     "file_protected": "Fichier protégé",
     "file_count": "{{count}} fichiers",

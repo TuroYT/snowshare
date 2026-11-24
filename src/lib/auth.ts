@@ -14,7 +14,7 @@ import { cookies } from "next/headers";
 import { getClientIpFromHeaders } from "@/lib/getClientIp";
 import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
 import { openTotpSecret, verifyTotp } from "@/lib/totp";
-import { applyAccountState } from "@/lib/account-state";
+import { isUnverified, refreshAccountState } from "@/lib/account-state";
 
 /** httpOnly cookie binding an account-link request to the browser that initiated it. */
 export const LINK_TOKEN_COOKIE = "__snowshare-link-token";
@@ -320,7 +320,7 @@ export async function getDynamicProviders() {
             return null;
           }
           // Taken before the stored hash is read: a password change that lands while this
-          // sign-in is in flight then revokes the session it produces (see applyAccountState)
+          // sign-in is in flight then revokes the session it produces (see refreshAccountState)
           const authenticatedAt = Date.now();
 
           // Throttle failed logins per client IP + email to slow down brute force. The IP
@@ -463,7 +463,8 @@ export function crossSiteCookies(): NonNullable<NextAuthOptions["cookies"]> {
  * without a user would make the client believe it is signed in and crash on the missing user.
  */
 function withoutUserIfRevoked(session: Session, token: JWT): Session {
-  if (token.revoked) return {} as Session;
+  // Revoked, or the database could not be asked: deny, without touching the cookie
+  if (token.revoked || isUnverified(token)) return {} as Session;
   return session;
 }
 
@@ -519,7 +520,7 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           // Only a password sign-in is asked for a new password: an SSO user may not have one
           token.viaPassword = account?.provider === "credentials";
         }
-        await applyAccountState(token);
+        await refreshAccountState(token);
         if (!token.image && token.email) {
           token.image = gravatarUrl(token.email as string);
         }
@@ -569,7 +570,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
       }
-      return applyAccountState(token);
+      return refreshAccountState(token);
     },
     session: async ({ session, token }) => {
       if (token && session.user) {

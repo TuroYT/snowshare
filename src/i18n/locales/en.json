@@ -272,7 +272,6 @@
     "change_description": "An administrator asked you to set your own password before continuing.",
     "success_password_reset": "Your password has been changed. You can sign in now.",
     "error_password_unchanged": "The new password must differ from the current one.",
-    "error_session_refresh": "Your password was saved, but your session could not be refreshed. Sign out and sign in again with your new password.",
     "reset_check_failed": "We could not check your link right now. It may still be valid: try again in a moment.",
     "reset_retry": "Try again",
     "success_password_changed": "Your password was changed. Sign in again."
@@ -856,7 +855,8 @@
       "email_required": "Email is required",
       "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
       "paste_password_required_for_content_change": "Enter a password (current or new) to change the content of a protected paste.",
-      "password_unchanged": "The new password must differ from the current one"
+      "password_unchanged": "The new password must differ from the current one",
+      "concurrent_update": "Your account changed while you were saving. Reload the page and try again."
     },
     "file_protected": "Protected file",
     "file_count": "{{count}} files",

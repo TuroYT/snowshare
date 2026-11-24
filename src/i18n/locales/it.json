@@ -272,7 +272,6 @@
     "change_description": "Un amministratore ti chiede di impostare la tua password prima di continuare.",
     "success_password_reset": "La tua password è stata modificata. Ora puoi accedere.",
     "error_password_unchanged": "La nuova password deve essere diversa da quella attuale.",
-    "error_session_refresh": "La password è stata salvata, ma non è stato possibile aggiornare la sessione. Esci e accedi di nuovo con la nuova password.",
     "reset_check_failed": "Al momento non è stato possibile verificare il link. Potrebbe essere ancora valido: riprova tra un momento.",
     "reset_retry": "Riprova",
     "success_password_changed": "La tua password è stata modificata. Accedi di nuovo."
@@ -856,7 +855,8 @@
       "email_required": "L'email è obbligatoria",
       "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
       "paste_password_required_for_content_change": "Inserisci una password (corrente o nuova) per cambiare il contenuto di una condivisione protetta.",
-      "password_unchanged": "La nuova password deve essere diversa da quella attuale"
+      "password_unchanged": "La nuova password deve essere diversa da quella attuale",
+      "concurrent_update": "Il tuo account è cambiato durante il salvataggio. Ricarica la pagina e riprova."
     },
     "file_protected": "File protetto",
     "file_count": "{{count}} file",

@@ -17,6 +17,10 @@ import crypto from "node:crypto";
 
 const MAX_NAME_LENGTH = 100;
 
+function isPrismaError(error: unknown, code: string): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+}
+
 const VALID_TABS = new Set(["linkshare", "pasteshare", "fileshare"]);
 
 type ProfileUpdateData = {
@@ -249,8 +253,14 @@ export async function PATCH(request: NextRequest) {
       if (passwordError) return passwordError;
     }
 
+    // A credential change must be applied to the password hash that was verified above: if an
+    // admin or a reset changed it in between, the update matches nothing (P2025) instead of
+    // undoing that change
+    const credentialChange = emailChanged || !!newPassword;
     const userUpdate = prisma.user.update({
-      where: { id: session.user.id },
+      where: credentialChange
+        ? { id: session.user.id, password: user.password }
+        : { id: session.user.id },
       data: updateData,
       select: {
         id: true,
@@ -284,6 +294,9 @@ export async function PATCH(request: NextRequest) {
       ...(needsEmailVerification && { requiresVerification: true }),
     });
   } catch (error) {
+    if (isPrismaError(error, "P2025")) {
+      return apiError(request, ErrorCode.CONCURRENT_UPDATE);
+    }
     console.error("Error updating user profile:", error);
     return internalError(request);
   }
