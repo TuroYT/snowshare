@@ -33,14 +33,14 @@ jest.mock("@/lib/i18n-server", () => ({
   translate: jest.fn((_locale: string, key: string) => key),
 }));
 
-jest.mock("@/lib/email", () => ({ sendPasswordResetEmail: jest.fn() }));
+jest.mock("@/lib/email", () => ({ sendResetLinkEmail: jest.fn() }));
 
 import { NextRequest } from "next/server";
 import { POST as forgotPassword } from "@/app/api/auth/forgot-password/route";
 import { GET as checkToken, POST as resetPassword } from "@/app/api/auth/reset-password/route";
 import { prisma } from "@/lib/prisma";
 import { getSettingsCached } from "@/lib/settings";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendResetLinkEmail } from "@/lib/email";
 import { hashResetToken } from "@/lib/password-reset";
 import { __resetAllRateLimits } from "@/lib/rate-limit";
 
@@ -50,7 +50,7 @@ const mockTokenFind = prisma.verificationToken.findUnique as jest.Mock;
 const mockTokenDeleteMany = prisma.verificationToken.deleteMany as jest.Mock;
 const mockTokenCreate = prisma.verificationToken.create as jest.Mock;
 const mockSettings = getSettingsCached as jest.Mock;
-const mockSend = sendPasswordResetEmail as jest.Mock;
+const mockSend = sendResetLinkEmail as jest.Mock;
 
 const RAW_TOKEN = "a".repeat(64);
 const smtpOn = { smtpEnabled: true, smtpHost: "smtp.example.com", disableCredentialsLogin: false };
@@ -360,5 +360,25 @@ describe("POST /api/auth/reset-password", () => {
     }
     const res = await resetPassword(reset({ token: "x", password: "newpass1" }, "10.0.5.1"));
     expect(res.status).toBe(429);
+  });
+});
+
+describe("hashResetToken", () => {
+  const original = process.env.NEXTAUTH_SECRET;
+  afterEach(() => {
+    process.env.NEXTAUTH_SECRET = original;
+  });
+
+  it("is a keyed hash: another secret gives another value, never the raw token", () => {
+    const first = hashResetToken(RAW_TOKEN);
+    process.env.NEXTAUTH_SECRET = "another-secret";
+    expect(hashResetToken(RAW_TOKEN)).not.toBe(first);
+    expect(first).toMatch(/^[0-9a-f]{64}$/);
+    expect(first).not.toContain(RAW_TOKEN);
+  });
+
+  it("refuses to hash without NEXTAUTH_SECRET", () => {
+    delete process.env.NEXTAUTH_SECRET;
+    expect(() => hashResetToken(RAW_TOKEN)).toThrow("NEXTAUTH_SECRET");
   });
 });

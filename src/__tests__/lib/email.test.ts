@@ -23,7 +23,7 @@ jest.mock("@/lib/prisma", () => ({
 
 import {
   sendVerificationEmail,
-  sendPasswordResetEmail,
+  sendResetLinkEmail,
   isEmailEnabled,
   sendShareEmail,
 } from "@/lib/email";
@@ -249,16 +249,16 @@ describe("email utility", () => {
 
   // ─── sendShareEmail ────────────────────────────────────────────────────────────
 
-  describe("sendPasswordResetEmail", () => {
+  describe("sendResetLinkEmail", () => {
     it("returns false without sending when SMTP is not enabled", async () => {
       mockSettingsFindFirst.mockResolvedValue({ ...smtpSettings, smtpEnabled: false });
-      expect(await sendPasswordResetEmail("a@b.co", "tok")).toBe(false);
+      expect(await sendResetLinkEmail("a@b.co", "tok")).toBe(false);
       expect(mockSendMail).not.toHaveBeenCalled();
     });
 
     it("sends a link to the reset page carrying only the token", async () => {
       mockSettingsFindFirst.mockResolvedValue(smtpSettings);
-      expect(await sendPasswordResetEmail("a@b.co", "tok en/1")).toBe(true);
+      expect(await sendResetLinkEmail("a@b.co", "tok en/1")).toBe(true);
       const mail = mockSendMail.mock.calls[0][0];
       expect(mail.to).toBe("a@b.co");
       expect(mail.subject).toBe("Reset your password – TestApp");
@@ -272,7 +272,7 @@ describe("email utility", () => {
         resetEmailSubject: "Nouveau mot de passe",
         resetEmailText: "Lien : {{resetUrl}}",
       });
-      await sendPasswordResetEmail("a@b.co", "tok");
+      await sendResetLinkEmail("a@b.co", "tok");
       const mail = mockSendMail.mock.calls[0][0];
       expect(mail.subject).toBe("Nouveau mot de passe");
       expect(mail.text).toBe("Lien : http://localhost:3000/auth/reset-password?token=tok");

@@ -61,7 +61,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   return true;
 }
 
-export async function sendPasswordResetEmail(email: string, token: string): Promise<boolean> {
+export async function sendResetLinkEmail(email: string, token: string): Promise<boolean> {
   const config = await getSmtpConfig();
   if (!config) return false;
 

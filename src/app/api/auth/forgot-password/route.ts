@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isValidEmail } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendResetLinkEmail } from "@/lib/email";
 import { createPasswordResetToken, isPasswordResetAvailable } from "@/lib/password-reset";
 import { detectLocale, translate } from "@/lib/i18n-server";
 import { getClientIp } from "@/lib/getClientIp";
@@ -15,7 +15,7 @@ import { consumeRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 async function issueResetEmail(userId: string, email: string): Promise<void> {
   try {
     const token = await createPasswordResetToken(userId);
-    await sendPasswordResetEmail(email, token);
+    await sendResetLinkEmail(email, token);
   } catch (error) {
     console.error("Failed to send password reset email:", error);
   }

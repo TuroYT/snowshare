@@ -10,9 +10,18 @@ function identifierFor(userId: string): string {
   return `password-reset:${userId}`;
 }
 
-/** Only the hash is stored: a leaked database does not leak usable reset links. */
+/**
+ * What the database stores for a reset link: HMAC-SHA256 of the token, keyed with NEXTAUTH_SECRET.
+ * The token is 256 random bits (not a user-chosen password), so a fast keyed hash is right here,
+ * and a leaked database cannot be used to check candidate tokens. Changing NEXTAUTH_SECRET
+ * invalidates the links in flight (they last an hour).
+ */
 export function hashResetToken(rawToken: string): string {
-  return crypto.createHash("sha256").update(rawToken).digest("hex");
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    throw new Error("NEXTAUTH_SECRET is required to hash reset tokens");
+  }
+  return crypto.createHmac("sha256", secret).update(rawToken).digest("hex");
 }
 
 /**
