@@ -56,6 +56,11 @@ export async function POST(request: NextRequest) {
       return apiError(request, ErrorCode.TOKEN_INVALID_OR_EXPIRED);
     }
 
+    // Cheap read first: bcrypt is only worth running for a link that can still be used
+    if (!(await isPasswordResetTokenValid(token))) {
+      return apiError(request, ErrorCode.TOKEN_INVALID_OR_EXPIRED);
+    }
+
     const hashedPassword = await hashPassword(password);
     const tokenHash = hashResetToken(token);
 
@@ -74,7 +79,12 @@ export async function POST(request: NextRequest) {
       const userId = record.identifier.slice(prefix.length);
       const updated = await tx.user.updateMany({
         where: { id: userId, password: { not: null } },
-        data: { password: hashedPassword, mustChangePassword: false },
+        // sessionsValidFrom: whoever was signed in with the old password is signed out
+        data: {
+          password: hashedPassword,
+          mustChangePassword: false,
+          sessionsValidFrom: new Date(),
+        },
       });
       if (updated.count !== 1) return false;
 

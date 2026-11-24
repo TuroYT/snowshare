@@ -343,6 +343,27 @@ describe("/api/user/profile", () => {
         expect(mockUpdate).not.toHaveBeenCalled();
       });
 
+      it("refuses to keep the temporary password when an admin required a change", async () => {
+        mockFindUnique.mockResolvedValue({ ...passwordUser, mustChangePassword: true });
+        mockVerifyPassword.mockResolvedValue(true); // the new password matches the current hash
+        const res = await PATCH(
+          makeRequest({ newPassword: "temp-password", currentPassword: "temp-password" })
+        );
+        expect(res.status).toBe(400);
+        expect((await res.json()).code).toBe("PASSWORD_UNCHANGED");
+        expect(mockUpdate).not.toHaveBeenCalled();
+      });
+
+      it("accepts a different password when an admin required a change", async () => {
+        mockFindUnique.mockResolvedValue({ ...passwordUser, mustChangePassword: true });
+        mockVerifyPassword.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+        const res = await PATCH(
+          makeRequest({ newPassword: "brand-new-pass", currentPassword: "temp-password" })
+        );
+        expect(res.status).toBe(200);
+        expect(mockUpdate.mock.calls[0][0].data.mustChangePassword).toBe(false);
+      });
+
       it("rejects a new password with an invalid length", async () => {
         const res = await PATCH(makeRequest({ newPassword: "x", currentPassword: "old" }));
         expect(res.status).toBe(400);

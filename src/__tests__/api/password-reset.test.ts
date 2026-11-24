@@ -41,6 +41,7 @@ import { GET as checkToken, POST as resetPassword } from "@/app/api/auth/reset-p
 import { prisma } from "@/lib/prisma";
 import { getSettingsCached } from "@/lib/settings";
 import { sendResetLinkEmail } from "@/lib/email";
+import { hashPassword } from "@/lib/security";
 import { hashResetToken } from "@/lib/password-reset";
 import { __resetAllRateLimits } from "@/lib/rate-limit";
 
@@ -98,9 +99,9 @@ describe("POST /api/auth/forgot-password", () => {
     const ttl = stored.expires.getTime() - Date.now();
     expect(ttl).toBeGreaterThan(59 * 60 * 1000);
     expect(ttl).toBeLessThanOrEqual(60 * 60 * 1000);
-    // Earlier links of that user are dropped first
+    // Earlier unexpired links stay valid (nobody can cancel the owner's link); only dead ones go
     expect(mockTokenDeleteMany).toHaveBeenCalledWith({
-      where: { identifier: "password-reset:u1" },
+      where: { identifier: "password-reset:u1", expires: { lt: expect.any(Date) } },
     });
   });
 
@@ -141,29 +142,34 @@ describe("POST /api/auth/forgot-password", () => {
     consoleError.mockRestore();
   });
 
-  it("stays silent (200, no mail) once an address was mailed 3 times in the hour", async () => {
+  it("mails an address at most once a minute and stays silent (200) for the rest", async () => {
     mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.co", password: "hash" });
-    for (let i = 0; i < 3; i++) {
-      await forgotPassword(forgot({ email: "a@b.co" }, `10.0.1.${i}`));
-    }
+    const first = await forgotPassword(forgot({ email: "a@b.co" }, "10.0.1.1"));
+    const second = await forgotPassword(forgot({ email: "a@b.co" }, "10.0.1.2"));
     await flush();
-    expect(mockSend).toHaveBeenCalledTimes(3);
 
-    const fourth = await forgotPassword(forgot({ email: "a@b.co" }, "10.0.1.9"));
-    await flush();
-    expect(fourth.status).toBe(200);
-    expect(mockSend).toHaveBeenCalledTimes(3);
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(await second.json()).toEqual(await first.json());
+    expect(mockSend).toHaveBeenCalledTimes(1);
   });
 
-  it("counts the address case-insensitively against the per-address limit", async () => {
+  it("counts the address case-insensitively against that limit", async () => {
     mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.co", password: "hash" });
     await forgotPassword(forgot({ email: "a@b.co" }, "10.0.2.1"));
     await forgotPassword(forgot({ email: "A@B.co" }, "10.0.2.2"));
-    await forgotPassword(forgot({ email: "a@B.CO" }, "10.0.2.3"));
-    await forgotPassword(forgot({ email: "A@b.CO" }, "10.0.2.4"));
     await flush();
-    // The 4th request is dropped before any lookup, whatever the case it was typed in
-    expect(mockUserFindUnique).toHaveBeenCalledTimes(3);
+    // The second request is dropped before any lookup, whatever the case it was typed in
+    expect(mockUserFindUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not cancel the link already sent when someone requests another one", async () => {
+    mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.co", password: "hash" });
+    await forgotPassword(forgot({ email: "a@b.co" }, "10.0.2.3"));
+    await flush();
+    for (const call of mockTokenDeleteMany.mock.calls) {
+      expect(call[0].where.expires).toEqual({ lt: expect.any(Date) });
+    }
   });
 
   it("answers 429 once an IP made 10 requests in the hour", async () => {
@@ -275,7 +281,11 @@ describe("POST /api/auth/reset-password", () => {
     expect(res.status).toBe(200);
     expect(mockUserUpdateMany).toHaveBeenNthCalledWith(1, {
       where: { id: "u1", password: { not: null } },
-      data: { password: "hashed:newpass1", mustChangePassword: false },
+      data: {
+        password: "hashed:newpass1",
+        mustChangePassword: false,
+        sessionsValidFrom: expect.any(Date),
+      },
     });
     expect(mockUserUpdateMany).toHaveBeenNthCalledWith(2, {
       where: { id: "u1", emailVerified: null },
@@ -288,6 +298,14 @@ describe("POST /api/auth/reset-password", () => {
     expect(mockTokenDeleteMany).toHaveBeenNthCalledWith(2, {
       where: { identifier: "password-reset:u1" },
     });
+  });
+
+  it("does not run bcrypt for a link that is unknown or expired", async () => {
+    mockTokenFind.mockResolvedValue(null);
+    await resetPassword(reset({ token: "x", password: "newpass1" }));
+    mockTokenFind.mockResolvedValue({ ...liveToken, expires: new Date(Date.now() - 1) });
+    await resetPassword(reset({ token: RAW_TOKEN, password: "newpass1" }, "10.0.9.9"));
+    expect(hashPassword).not.toHaveBeenCalled();
   });
 
   it("refuses a second submit of the same link (lost the claim race)", async () => {

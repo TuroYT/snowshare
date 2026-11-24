@@ -21,7 +21,7 @@ jest.mock("next-auth/jwt", () => ({ getToken: (...args: unknown[]) => mockGetTok
 
 import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
-import type { Account, User } from "next-auth";
+import type { Account, Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import { getAuthOptions } from "@/lib/auth";
 import proxy from "@/proxy";
@@ -43,75 +43,144 @@ const credentials = { provider: "credentials" } as Account;
 const github = { provider: "github" } as Account;
 const flaggedUser = { id: "u1", name: "A", mustChangePassword: true } as User;
 
-describe("jwt callback: mustChangePassword", () => {
+describe("jwt callback: account state", () => {
   let jwt: JwtCallback;
+  let sessionCb: (p: { session: Session; token: JWT }) => Promise<Session>;
 
   beforeAll(async () => {
     process.env.NEXTAUTH_SECRET = "test-secret";
     mockPrisma.oAuthProvider.findMany.mockResolvedValue([]);
     jwt = await getJwt();
+    sessionCb = (await getAuthOptions()).callbacks!.session as unknown as typeof sessionCb;
   });
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockPrisma.user.findUnique.mockResolvedValue({
+      mustChangePassword: false,
+      sessionsValidFrom: null,
+    });
+  });
+
+  const dbSays = (mustChangePassword: boolean, sessionsValidFrom: Date | null = null) =>
+    mockPrisma.user.findUnique.mockResolvedValue({ mustChangePassword, sessionsValidFrom });
 
   it("flags a password sign-in of a user who must change it", async () => {
+    dbSays(true);
     const token = await jwt({
       token: { id: "", email: "a@b.co" },
       user: flaggedUser,
       account: credentials,
     });
     expect(token.mustChangePassword).toBe(true);
+    expect(token.viaPassword).toBe(true);
+    expect(token.revoked).toBe(false);
   });
 
   it("does not flag a regular password sign-in", async () => {
     const token = await jwt({
       token: { id: "", email: "a@b.co" },
-      user: { id: "u1", mustChangePassword: false } as User,
+      user: { id: "u1" } as User,
       account: credentials,
     });
     expect(token.mustChangePassword).toBe(false);
   });
 
   it("never flags an SSO sign-in, even for a flagged user", async () => {
+    dbSays(true);
     const token = await jwt({
       token: { id: "", email: "a@b.co" },
       user: flaggedUser,
       account: github,
     });
     expect(token.mustChangePassword).toBe(false);
+    expect(token.viaPassword).toBe(false);
   });
 
-  it("re-reads the flag from the database on a session update and lets the user through", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ mustChangePassword: false });
+  it("applies a flag set by an admin to a session that is already open", async () => {
+    dbSays(true);
     const token = await jwt({
-      token: { id: "u1", mustChangePassword: true },
+      token: { id: "u1", email: "a@b.co", viaPassword: true, signedInAt: Date.now() },
+    });
+    expect(token.mustChangePassword).toBe(true);
+  });
+
+  it("lets the user through once the database says the change was made", async () => {
+    dbSays(false);
+    const token = await jwt({
+      token: {
+        id: "u1",
+        email: "a@b.co",
+        viaPassword: true,
+        mustChangePassword: true,
+        signedInAt: 5,
+      },
       trigger: "update",
     });
     expect(token.mustChangePassword).toBe(false);
-    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
-      where: { id: "u1" },
-      select: { mustChangePassword: true },
-    });
   });
 
-  it("keeps the flag while the database still says the change is pending", async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({ mustChangePassword: true });
-    const token = await jwt({ token: { id: "u1", mustChangePassword: true }, trigger: "update" });
-    expect(token.mustChangePassword).toBe(true);
+  it("revokes a session opened before the password was set by an admin or a reset", async () => {
+    dbSays(false, new Date(10_000));
+    const token = await jwt({ token: { id: "u1", email: "a@b.co", signedInAt: 9_999 } });
+    expect(token.revoked).toBe(true);
   });
 
-  it("keeps the flag when the database cannot be read", async () => {
+  it("keeps a session opened after the change (including the same millisecond)", async () => {
+    dbSays(false, new Date(10_000));
+    for (const signedInAt of [10_000, 10_001]) {
+      const token = await jwt({ token: { id: "u1", email: "a@b.co", signedInAt } });
+      expect(token.revoked).toBe(false);
+    }
+  });
+
+  it("revokes a session that predates the signedInAt field once a change is recorded", async () => {
+    dbSays(false, new Date(10_000));
+    const token = await jwt({ token: { id: "u1", email: "a@b.co" } });
+    expect(token.revoked).toBe(true);
+  });
+
+  it("revokes the session of a deleted user", async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    const token = await jwt({ token: { id: "u1", email: "a@b.co", signedInAt: 1 } });
+    expect(token.revoked).toBe(true);
+  });
+
+  it("never un-revokes a session, and does not query the database again for it", async () => {
+    const token = await jwt({ token: { id: "u1", email: "a@b.co", revoked: true } });
+    expect(token.revoked).toBe(true);
+    expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("keeps the current state when the database cannot be read", async () => {
     const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
     mockPrisma.user.findUnique.mockRejectedValue(new Error("db down"));
-    const token = await jwt({ token: { id: "u1", mustChangePassword: true }, trigger: "update" });
+    const token = await jwt({
+      token: {
+        id: "u1",
+        email: "a@b.co",
+        viaPassword: true,
+        mustChangePassword: true,
+        signedInAt: 1,
+      },
+    });
     expect(token.mustChangePassword).toBe(true);
+    expect(token.revoked).toBeUndefined();
     expect(consoleError).toHaveBeenCalled();
     consoleError.mockRestore();
   });
 
-  it("does not hit the database on an update when nothing is pending", async () => {
-    await jwt({ token: { id: "u1" }, trigger: "update" });
-    expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
+  it("empties the session of a revoked token: signed out for routes and for the client", async () => {
+    const session = { user: { id: "", name: null }, expires: "2030-01-01" } as unknown as Session;
+    const out = await sessionCb({ session, token: { id: "u1", revoked: true } });
+    expect(out).toEqual({});
+  });
+
+  it("exposes the flag to the client session of a live token", async () => {
+    const session = { user: { id: "", name: null }, expires: "x" } as unknown as Session;
+    const out = await sessionCb({ session, token: { id: "u1", mustChangePassword: true } });
+    expect(out.user.mustChangePassword).toBe(true);
+    expect(out.user.id).toBe("u1");
   });
 });
 
@@ -174,10 +243,44 @@ describe("proxy: forced password change redirect", () => {
     }
   });
 
-  it("does not touch API calls (the page needs them to save the new password)", async () => {
+  it("lets the change page call what it needs (profile, sign-in plumbing, public settings)", async () => {
     mockGetToken.mockResolvedValue({ id: "u1", mustChangePassword: true });
-    const res = await visit("/api/user/profile");
-    expect(res.headers.get("location")).toBeNull();
+    for (const path of [
+      "/api/user/profile",
+      "/api/auth/session",
+      "/api/setup/check",
+      "/api/settings",
+      "/api/health",
+    ]) {
+      const res = await visit(path);
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it("answers 403 to every other API route while the change is pending", async () => {
+    mockGetToken.mockResolvedValue({ id: "u1", mustChangePassword: true });
+    for (const path of ["/api/shares", "/api/upload", "/api/user/shares", "/api/admin/users"]) {
+      const res = await visit(path);
+      expect(res.status).toBe(403);
+    }
+  });
+
+  it("does not block the API for a revoked session (the routes answer 401 themselves)", async () => {
+    mockGetToken.mockResolvedValue({ id: "u1", mustChangePassword: true, revoked: true });
+    expect((await visit("/api/shares")).status).toBe(200);
+  });
+
+  it("does not block the API for everyone else", async () => {
+    mockGetToken.mockResolvedValue({ id: "u1", mustChangePassword: false });
+    expect((await visit("/api/shares")).status).toBe(200);
+    mockGetToken.mockResolvedValue(null);
+    expect((await visit("/api/shares")).status).toBe(200);
+  });
+
+  it("treats a revoked session as signed out on protected pages", async () => {
+    mockGetToken.mockResolvedValue({ id: "u1", revoked: true });
+    const res = await visit("/admin");
+    expect(res.headers.get("location")).toContain("/auth/signin");
   });
 
   it("leaves everyone else alone", async () => {

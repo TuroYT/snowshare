@@ -32,6 +32,10 @@ export default function ChangePassword() {
       setError(t("auth.error_password_too_short"));
       return;
     }
+    if (newPassword === currentPassword) {
+      setError(t("auth.error_password_unchanged"));
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -47,10 +51,16 @@ export default function ChangePassword() {
         setError(data.error || t("auth.error_generic_standalone"));
         return;
       }
-      // Refreshes the session so the sign-in gate lets the user through
-      await update();
+      // Refreshes the session so the sign-in gate lets the user through. If that fails the
+      // password is saved but the gate would bounce the user back here: say so instead.
+      const refreshed = await update();
+      if (!refreshed?.user || refreshed.user.mustChangePassword) {
+        setError(t("auth.error_session_refresh"));
+        return;
+      }
       redirecting = true;
-      router.replace("/");
+      // A full navigation: the client router may have cached "/" as a redirect to this page
+      globalThis.location.assign("/");
     } catch (err) {
       console.error("Password change failed:", err);
       setError(t("auth.error_generic_standalone"));

@@ -270,7 +270,9 @@
     "current_password_label": "Obecne hasło",
     "change_title": "Wybierz nowe hasło",
     "change_description": "Administrator prosi Cię o ustawienie własnego hasła, zanim przejdziesz dalej.",
-    "success_password_reset": "Hasło zostało zmienione. Możesz się teraz zalogować."
+    "success_password_reset": "Hasło zostało zmienione. Możesz się teraz zalogować.",
+    "error_password_unchanged": "Nowe hasło musi różnić się od obecnego.",
+    "error_session_refresh": "Hasło zostało zapisane, ale nie udało się odświeżyć sesji. Wyloguj się i zaloguj ponownie nowym hasłem."
   },
   "profile": {
     "title": "Mój profil",
@@ -850,7 +852,8 @@
       "s3_bucket_required": "Nazwa bucketu jest wymagana",
       "email_required": "Adres e-mail jest wymagany",
       "paste_content_required_for_password_change": "Wpisz ponownie treść, aby zmienić lub usunąć hasło chronionego wklejenia.",
-      "paste_password_required_for_content_change": "Podaj hasło (obecne lub nowe), aby zmienić treść chronionego wklejenia."
+      "paste_password_required_for_content_change": "Podaj hasło (obecne lub nowe), aby zmienić treść chronionego wklejenia.",
+      "password_unchanged": "Nowe hasło musi różnić się od obecnego"
     },
     "file_protected": "Chroniony plik",
     "file_count": "Pliki: {{count}}",

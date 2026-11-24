@@ -270,7 +270,9 @@
     "current_password_label": "Mot de passe actuel",
     "change_title": "Choisissez un nouveau mot de passe",
     "change_description": "Un administrateur vous demande de définir votre propre mot de passe avant de continuer.",
-    "success_password_reset": "Votre mot de passe a été modifié. Vous pouvez vous connecter."
+    "success_password_reset": "Votre mot de passe a été modifié. Vous pouvez vous connecter.",
+    "error_password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel.",
+    "error_session_refresh": "Votre mot de passe est enregistré, mais la session n'a pas pu être actualisée. Déconnectez-vous puis reconnectez-vous avec votre nouveau mot de passe."
   },
   "profile": {
     "title": "Mon profil",
@@ -850,7 +852,8 @@
       "s3_bucket_required": "Le nom du bucket est requis",
       "email_required": "L'adresse e-mail est requise",
       "paste_content_required_for_password_change": "Ressaisissez le contenu pour changer ou retirer le mot de passe d'une paste protégée.",
-      "paste_password_required_for_content_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier le contenu d'une paste protégée."
+      "paste_password_required_for_content_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier le contenu d'une paste protégée.",
+      "password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel"
     },
     "file_protected": "Fichier protégé",
     "file_count": "{{count}} fichiers",

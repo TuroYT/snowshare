@@ -270,7 +270,9 @@
     "current_password_label": "Aktuelles Passwort",
     "change_title": "Neues Passwort wählen",
     "change_description": "Ein Administrator bittet dich, ein eigenes Passwort festzulegen, bevor du fortfährst.",
-    "success_password_reset": "Dein Passwort wurde geändert. Du kannst dich jetzt anmelden."
+    "success_password_reset": "Dein Passwort wurde geändert. Du kannst dich jetzt anmelden.",
+    "error_password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+    "error_session_refresh": "Dein Passwort wurde gespeichert, aber die Sitzung konnte nicht aktualisiert werden. Melde dich ab und mit dem neuen Passwort wieder an."
   },
   "profile": {
     "title": "Mein Profil",
@@ -850,7 +852,8 @@
       "s3_bucket_required": "Der Bucket-Name ist erforderlich",
       "email_required": "E-Mail-Adresse ist erforderlich",
       "paste_content_required_for_password_change": "Gib den Inhalt erneut ein, um das Passwort eines geschützten Pastes zu ändern oder zu entfernen.",
-      "paste_password_required_for_content_change": "Gib ein Passwort (aktuell oder neu) ein, um den Inhalt eines geschützten Pastes zu ändern."
+      "paste_password_required_for_content_change": "Gib ein Passwort (aktuell oder neu) ein, um den Inhalt eines geschützten Pastes zu ändern.",
+      "password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden"
     },
     "file_protected": "Geschützte Datei",
     "file_count": "{{count}} Dateien",

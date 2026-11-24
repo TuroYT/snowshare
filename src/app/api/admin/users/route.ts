@@ -103,6 +103,8 @@ async function setUserPassword(
     data: {
       password: await hashPassword(password),
       mustChangePassword: mustChangePassword === true,
+      // Sessions opened with the old password (a compromised account, say) stop working
+      sessionsValidFrom: new Date(),
     },
   });
   // A reset link requested before the admin stepped in must not undo the new password

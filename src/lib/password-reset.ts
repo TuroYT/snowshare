@@ -33,11 +33,17 @@ export async function isPasswordResetAvailable(): Promise<boolean> {
   return !!settings?.smtpEnabled && !!settings.smtpHost && !settings.disableCredentialsLogin;
 }
 
-/** Creates a fresh reset token for the user, replacing any outstanding one. Returns the raw token. */
+/**
+ * Creates a reset token for the user and returns the raw value. Earlier unexpired links stay
+ * valid: otherwise anyone could request a reset for an address and cancel the link its owner
+ * just received. Expired ones are swept here; a successful reset removes all of them.
+ */
 export async function createPasswordResetToken(userId: string): Promise<string> {
   const rawToken = crypto.randomBytes(32).toString("hex");
   await prisma.$transaction([
-    prisma.verificationToken.deleteMany({ where: { identifier: identifierFor(userId) } }),
+    prisma.verificationToken.deleteMany({
+      where: { identifier: identifierFor(userId), expires: { lt: new Date() } },
+    }),
     prisma.verificationToken.create({
       data: {
         identifier: identifierFor(userId),

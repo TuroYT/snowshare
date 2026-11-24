@@ -270,7 +270,9 @@
     "current_password_label": "Password attuale",
     "change_title": "Scegli una nuova password",
     "change_description": "Un amministratore ti chiede di impostare la tua password prima di continuare.",
-    "success_password_reset": "La tua password è stata modificata. Ora puoi accedere."
+    "success_password_reset": "La tua password è stata modificata. Ora puoi accedere.",
+    "error_password_unchanged": "La nuova password deve essere diversa da quella attuale.",
+    "error_session_refresh": "La password è stata salvata, ma non è stato possibile aggiornare la sessione. Esci e accedi di nuovo con la nuova password."
   },
   "profile": {
     "title": "Il mio profilo",
@@ -850,7 +852,8 @@
       "s3_bucket_required": "Il nome del bucket è obbligatorio",
       "email_required": "L'email è obbligatoria",
       "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
-      "paste_password_required_for_content_change": "Inserisci una password (corrente o nuova) per cambiare il contenuto di una condivisione protetta."
+      "paste_password_required_for_content_change": "Inserisci una password (corrente o nuova) per cambiare il contenuto di una condivisione protetta.",
+      "password_unchanged": "La nuova password deve essere diversa da quella attuale"
     },
     "file_protected": "File protetto",
     "file_count": "{{count}} file",

@@ -69,7 +69,11 @@ describe("PATCH setPassword", () => {
     expect(res.status).toBe(200);
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "target" },
-      data: { password: "hashed:newpass1", mustChangePassword: true },
+      data: {
+        password: "hashed:newpass1",
+        mustChangePassword: true,
+        sessionsValidFrom: expect.any(Date),
+      },
     });
     expect(mockTokenDeleteMany).toHaveBeenCalledWith({
       where: { identifier: "password-reset:target" },
@@ -80,12 +84,20 @@ describe("PATCH setPassword", () => {
     await setPassword({ mustChangePassword: false });
     expect(mockUpdate).toHaveBeenLastCalledWith({
       where: { id: "target" },
-      data: { password: "hashed:newpass1", mustChangePassword: false },
+      data: {
+        password: "hashed:newpass1",
+        mustChangePassword: false,
+        sessionsValidFrom: expect.any(Date),
+      },
     });
     await setPassword();
     expect(mockUpdate).toHaveBeenLastCalledWith({
       where: { id: "target" },
-      data: { password: "hashed:newpass1", mustChangePassword: false },
+      data: {
+        password: "hashed:newpass1",
+        mustChangePassword: false,
+        sessionsValidFrom: expect.any(Date),
+      },
     });
   });
 

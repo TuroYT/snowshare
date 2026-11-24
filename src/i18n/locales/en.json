@@ -270,7 +270,9 @@
     "current_password_label": "Current password",
     "change_title": "Choose a new password",
     "change_description": "An administrator asked you to set your own password before continuing.",
-    "success_password_reset": "Your password has been changed. You can sign in now."
+    "success_password_reset": "Your password has been changed. You can sign in now.",
+    "error_password_unchanged": "The new password must differ from the current one.",
+    "error_session_refresh": "Your password was saved, but your session could not be refreshed. Sign out and sign in again with your new password."
   },
   "profile": {
     "title": "My profile",
@@ -850,7 +852,8 @@
       "s3_bucket_required": "Bucket name is required",
       "email_required": "Email is required",
       "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
-      "paste_password_required_for_content_change": "Enter a password (current or new) to change the content of a protected paste."
+      "paste_password_required_for_content_change": "Enter a password (current or new) to change the content of a protected paste.",
+      "password_unchanged": "The new password must differ from the current one"
     },
     "file_protected": "Protected file",
     "file_count": "{{count}} files",

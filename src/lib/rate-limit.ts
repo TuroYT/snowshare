@@ -33,8 +33,8 @@ export const RATE_LIMITS = {
   accessNotification: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** Password reset requests and reset-page checks, per IP */
   passwordReset: { limit: 10, windowMs: 60 * 60 * 1000 },
-  /** Password reset e-mails, per address (silent past the limit) */
-  passwordResetEmail: { limit: 3, windowMs: 60 * 60 * 1000 },
+  /** Password reset e-mails, per address: one a minute (silent past it, earlier links stay valid) */
+  passwordResetEmail: { limit: 1, windowMs: 60 * 1000 },
   /** Wrong two-factor codes when enabling/disabling it, per user */
   totpVerify: { limit: 10, windowMs: 15 * 60 * 1000 },
 } satisfies Record<string, RateLimitRule>;

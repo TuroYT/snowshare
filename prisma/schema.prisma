@@ -65,6 +65,8 @@ model User {
   totpLastCounter Int?
   /// Set by an admin: the user must pick a new password at their next password sign-in
   mustChangePassword Boolean @default(false)
+  /// Sessions opened before this moment are refused: set when an admin sets the password or a reset link is used
+  sessionsValidFrom DateTime?
   accounts      Account[]
   sessions      Session[]
   shares        Share[]

@@ -46,8 +46,9 @@ export async function POST(request: NextRequest) {
       message: translate(detectLocale(request), "api.messages.password_reset_requested"),
     });
 
-    // Per-address limit: past it, stay silent instead of answering 429 (which would reveal
-    // that the address is being mailed). The mailbox owner is not flooded either way.
+    // One mail a minute per address: past it, stay silent instead of answering 429 (which would
+    // reveal that the address is being mailed). Earlier links stay valid, so someone spamming an
+    // address can neither cancel the owner's link nor flood the mailbox.
     if (consumeRateLimit("passwordResetEmail", email.toLowerCase()) > 0) {
       return response;
     }

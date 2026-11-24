@@ -107,6 +107,7 @@ async function applyPasswordChange(
   request: NextRequest,
   newPassword: unknown,
   currentHash: string | null,
+  mustChangePassword: boolean,
   updateData: ProfileUpdateData
 ): Promise<NextResponse | null> {
   if (!currentHash) {
@@ -118,6 +119,11 @@ async function applyPasswordChange(
       min: PASSWORD_MIN_LENGTH,
       max: PASSWORD_MAX_LENGTH,
     });
+  }
+
+  // The forced change exists because someone else knows the current password
+  if (mustChangePassword && (await verifyPassword(newPassword, currentHash))) {
+    return apiError(request, ErrorCode.PASSWORD_UNCHANGED);
   }
 
   updateData.password = await hashPassword(newPassword);
@@ -234,6 +240,7 @@ export async function PATCH(request: NextRequest) {
         request,
         newPassword,
         user.password,
+        user.mustChangePassword,
         updateData
       );
       if (passwordError) return passwordError;

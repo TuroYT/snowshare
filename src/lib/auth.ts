@@ -1,4 +1,5 @@
-import type { Account, NextAuthOptions, Profile } from "next-auth";
+import type { Account, NextAuthOptions, Profile, Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import { getSettingsCached } from "@/lib/settings";
 import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -40,6 +41,8 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      /** An admin asked this user to pick a new password (see /auth/change-password) */
+      mustChangePassword?: boolean;
     };
   }
 }
@@ -49,8 +52,14 @@ declare module "next-auth/jwt" {
     id: string;
     name?: string | null;
     image?: string | null;
-    /** Set at password sign-in when an admin requires a new password (see proxy.ts) */
+    /** An admin requires a new password: set for password sign-ins only (see proxy.ts) */
     mustChangePassword?: boolean;
+    /** Signed in with a password, so a forced password change applies to this session */
+    viaPassword?: boolean;
+    /** When this session was opened (ms): compared with User.sessionsValidFrom */
+    signedInAt?: number;
+    /** Opened before an admin or a reset changed the password, or the user is gone */
+    revoked?: boolean;
   }
 }
 
@@ -441,18 +450,38 @@ export function crossSiteCookies(): NonNullable<NextAuthOptions["cookies"]> {
   };
 }
 
-async function stillMustChangePassword(userId: string): Promise<boolean> {
+/**
+ * Re-reads what the database says about the account on every session read, so changes made while
+ * a session is open take effect: a session opened before an admin set the password or a reset
+ * link was used is revoked, and an admin's "new password required" flag applies to live sessions.
+ * Keeps the current state when the database cannot be read.
+ */
+export async function applyAccountState(token: JWT): Promise<JWT> {
+  if (!token.id) return token;
+  if (token.revoked) return token;
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { mustChangePassword: true },
+      where: { id: token.id },
+      select: { mustChangePassword: true, sessionsValidFrom: true },
     });
-    return user?.mustChangePassword ?? false;
+    token.revoked =
+      !user ||
+      (!!user.sessionsValidFrom && user.sessionsValidFrom.getTime() > (token.signedInAt ?? 0));
+    token.mustChangePassword = !token.revoked && !!token.viaPassword && !!user?.mustChangePassword;
   } catch (error) {
-    // Keep the current state rather than letting the user skip the change on a database hiccup
-    console.error("Unable to refresh the password-change flag:", error);
-    return true;
+    console.error("Unable to refresh the account state of the session:", error);
   }
+  return token;
+}
+
+/**
+ * A revoked session is an empty one, which next-auth reads as "not signed in" everywhere:
+ * getServerSession() returns null (routes answer 401) and the client sees no session. A session
+ * without a user would make the client believe it is signed in and crash on the missing user.
+ */
+function withoutUserIfRevoked(session: Session, token: JWT): Session {
+  if (token.revoked) return {} as Session;
+  return session;
 }
 
 export async function getAuthOptions(): Promise<NextAuthOptions> {
@@ -497,19 +526,17 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
 
         return true;
       },
-      jwt: async ({ token, user, account, trigger }) => {
+      jwt: async ({ token, user, account }) => {
         if (user) {
           token.id = user.id;
           token.name = user.name;
           token.image = user.image || gravatarUrl(token.email as string);
+          token.signedInAt = Date.now();
+          token.revoked = false;
           // Only a password sign-in is asked for a new password: an SSO user may not have one
-          token.mustChangePassword =
-            account?.provider === "credentials" && user.mustChangePassword === true;
+          token.viaPassword = account?.provider === "credentials";
         }
-        if (trigger === "update" && token.mustChangePassword) {
-          // The change-password page asks for a refresh once the new password is saved
-          token.mustChangePassword = await stillMustChangePassword(token.id);
-        }
+        await applyAccountState(token);
         if (!token.image && token.email) {
           token.image = gravatarUrl(token.email as string);
         }
@@ -520,8 +547,9 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           session.user.id = token.id as string;
           session.user.name = token.name as string | null;
           session.user.image = token.image as string | null;
+          session.user.mustChangePassword = token.mustChangePassword === true;
         }
-        return session;
+        return withoutUserIfRevoked(session, token);
       },
       redirect: async ({ url, baseUrl }) => {
         if (url.startsWith("/")) return `${baseUrl}${url}`;
@@ -558,14 +586,14 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
       }
-      return token;
+      return applyAccountState(token);
     },
     session: async ({ session, token }) => {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string | null;
       }
-      return session;
+      return withoutUserIfRevoked(session, token);
     },
   },
   pages: {
