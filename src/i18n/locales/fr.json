@@ -255,7 +255,26 @@
     "signin_with": "Se connecter avec",
     "error_too_many_attempts": "Trop de tentatives de connexion échouées. Réessayez plus tard.",
     "error_totp_invalid": "Code d'authentification invalide.",
-    "totp_label": "Code d'authentification"
+    "totp_label": "Code d'authentification",
+    "forgot_link": "Mot de passe oublié ?",
+    "forgot_title": "Mot de passe oublié ?",
+    "forgot_description": "Saisissez votre adresse e-mail : nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+    "forgot_button": "Envoyer le lien",
+    "forgot_sent": "Si un compte existe pour cette adresse, un lien de réinitialisation est en route. Il reste valable 1 heure.",
+    "back_to_signin": "Retour à la connexion",
+    "reset_title": "Choisissez un nouveau mot de passe",
+    "reset_button": "Enregistrer le mot de passe",
+    "reset_invalid_title": "Ce lien ne fonctionne plus",
+    "reset_invalid_message": "Le lien de réinitialisation est invalide, expiré ou déjà utilisé. Demandez-en un nouveau.",
+    "new_password_label": "Nouveau mot de passe",
+    "current_password_label": "Mot de passe actuel",
+    "change_title": "Choisissez un nouveau mot de passe",
+    "change_description": "Un administrateur vous demande de définir votre propre mot de passe avant de continuer.",
+    "success_password_reset": "Votre mot de passe a été modifié. Vous pouvez vous connecter.",
+    "error_password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel.",
+    "reset_check_failed": "Impossible de vérifier votre lien pour le moment. Il est peut-être encore valable : réessayez dans un instant.",
+    "reset_retry": "Réessayer",
+    "success_password_changed": "Votre mot de passe a été modifié. Reconnectez-vous."
   },
   "profile": {
     "title": "Mon profil",
@@ -495,7 +514,15 @@
       "create": "Créer l'utilisateur",
       "creating": "Création…",
       "sso_auto_link": "Liaison SSO automatique",
-      "sso_auto_link_hint": "Le compte est lié lors de la première connexion de l'utilisateur via un fournisseur SSO. Aucun mot de passe requis."
+      "sso_auto_link_hint": "Le compte est lié lors de la première connexion de l'utilisateur via un fournisseur SSO. Aucun mot de passe requis.",
+      "action_set_password": "Définir le mot de passe",
+      "set_password_title": "Définir le mot de passe",
+      "set_password_description": "Choisissez un nouveau mot de passe pour {{email}}. L'ancien cesse de fonctionner.",
+      "set_password_submit": "Définir le mot de passe",
+      "set_password_error": "Impossible de définir le mot de passe.",
+      "must_change_password": "Exiger un nouveau mot de passe à la prochaine connexion",
+      "must_change_password_hint": "L'utilisateur devra choisir son propre mot de passe juste après s'être connecté avec celui-ci.",
+      "badge_must_change_password": "Changement de mot de passe requis"
     },
     "settings": {
       "allow_signup": "Autoriser les inscriptions",
@@ -658,9 +685,10 @@
     },
     "email_templates": {
       "title": "Modèles d'e-mail",
-      "description": "Modifiez l'objet et le contenu des e-mails sortants. Variables : {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Modifiez l'objet et le contenu des e-mails envoyés. Variables : {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "E-mail de partage",
       "type_verify": "E-mail de vérification",
+      "type_reset": "E-mail de réinitialisation du mot de passe",
       "subject": "Objet",
       "subject_placeholder": "Objet de l'e-mail…",
       "html_body": "Corps HTML",
@@ -826,7 +854,9 @@
       "s3_bucket_required": "Le nom du bucket est requis",
       "email_required": "L'adresse e-mail est requise",
       "paste_content_required_for_password_change": "Ressaisissez le contenu pour changer ou retirer le mot de passe d'une paste protégée.",
-      "paste_password_required_for_content_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier le contenu d'une paste protégée."
+      "paste_password_required_for_content_change": "Saisissez un mot de passe (actuel ou nouveau) pour modifier le contenu d'une paste protégée.",
+      "password_unchanged": "Le nouveau mot de passe doit être différent de l'actuel",
+      "concurrent_update": "Votre compte a changé pendant l'enregistrement. Rechargez la page et réessayez."
     },
     "file_protected": "Fichier protégé",
     "file_count": "{{count}} fichiers",
@@ -838,7 +868,9 @@
       "account_unlinked": "Compte dissocié",
       "account_linked": "Compte associé",
       "test_email_sent": "E-mail de test envoyé",
-      "no_releases_found": "Aucune version trouvée"
+      "no_releases_found": "Aucune version trouvée",
+      "password_reset_requested": "Si un compte existe pour cette adresse, un lien de réinitialisation a été envoyé.",
+      "password_reset_done": "Mot de passe modifié"
     }
   },
   "share_email": {

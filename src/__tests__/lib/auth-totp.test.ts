@@ -74,6 +74,7 @@ describe("credentials authorize with TOTP", () => {
       id: "u1",
       email: "a@b.c",
       name: null,
+      authenticatedAt: expect.any(Number),
     });
     expect(mockPrisma.user.updateMany).toHaveBeenCalledWith({
       where: {

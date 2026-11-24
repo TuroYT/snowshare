@@ -1,6 +1,6 @@
 import sanitizeHtml from "sanitize-html";
 
-export type EmailType = "share" | "verify";
+export type EmailType = "share" | "verify" | "reset";
 
 /** Variables available inside share-email templates. */
 export interface ShareTemplateVars {
@@ -13,6 +13,12 @@ export interface ShareTemplateVars {
 export interface VerifyTemplateVars {
   appName: string;
   verifyUrl: string;
+}
+
+/** Variables available inside password-reset email templates. */
+export interface ResetTemplateVars {
+  appName: string;
+  resetUrl: string;
 }
 
 export const DEFAULT_SHARE_SUBJECT = `Someone shared "{{shareTitle}}" with you – {{appName}}`;
@@ -46,6 +52,23 @@ export const DEFAULT_VERIFY_HTML = `<div style="font-family: sans-serif; max-wid
 </div>`;
 
 export const DEFAULT_VERIFY_TEXT = `Verify your email for {{appName}}:\n\n{{verifyUrl}}\n\nThis link expires in 24 hours.`;
+
+export const DEFAULT_RESET_SUBJECT = `Reset your password – {{appName}}`;
+
+export const DEFAULT_RESET_HTML = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+  <h2 style="color: #111827;">Reset your password</h2>
+  <p style="color: #374151;">We received a request to reset the password of your <strong>{{appName}}</strong> account. Click the button below to choose a new one.</p>
+  <a href="{{resetUrl}}"
+     style="display: inline-block; margin: 16px 0; padding: 12px 24px; background: #3B82F6; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+    Set a new password
+  </a>
+  <p style="color: #6B7280; font-size: 14px;">This link expires in 1 hour and can be used once.</p>
+  <p style="color: #6B7280; font-size: 14px;">If you didn&#39;t ask for this, you can safely ignore this email: your password will not change.</p>
+  <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 24px 0;" />
+  <p style="color: #9CA3AF; font-size: 12px;">Or copy this URL: {{resetUrl}}</p>
+</div>`;
+
+export const DEFAULT_RESET_TEXT = `We received a request to reset your {{appName}} password. Choose a new one here:\n\n{{resetUrl}}\n\nThis link expires in 1 hour and can be used once. If you didn't ask for this, ignore this email: your password will not change.`;
 
 function escapeHtml(str: string): string {
   return str
@@ -145,6 +168,31 @@ export function renderVerifyEmail(
   const subjectTpl = templates?.subject || DEFAULT_VERIFY_SUBJECT;
   const htmlTpl = sanitizeEmailHtml(templates?.html || DEFAULT_VERIFY_HTML);
   const textTpl = templates?.text || DEFAULT_VERIFY_TEXT;
+
+  return {
+    subject: renderTemplate(subjectTpl, varMap, false),
+    html: renderTemplate(htmlTpl, varMap, true),
+    text: renderTemplate(textTpl, varMap, false),
+  };
+}
+
+/** Render a password-reset email from raw template strings (or defaults). */
+export function renderResetEmail(
+  vars: ResetTemplateVars,
+  templates?: {
+    subject?: string | null;
+    html?: string | null;
+    text?: string | null;
+  }
+): { subject: string; html: string; text: string } {
+  const varMap: Record<string, string> = {
+    appName: vars.appName,
+    resetUrl: vars.resetUrl,
+  };
+
+  const subjectTpl = templates?.subject || DEFAULT_RESET_SUBJECT;
+  const htmlTpl = sanitizeEmailHtml(templates?.html || DEFAULT_RESET_HTML);
+  const textTpl = templates?.text || DEFAULT_RESET_TEXT;
 
   return {
     subject: renderTemplate(subjectTpl, varMap, false),

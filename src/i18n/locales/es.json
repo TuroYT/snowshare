@@ -255,7 +255,26 @@
     "signin_with": "Iniciar sesión con",
     "error_too_many_attempts": "Demasiados intentos de inicio de sesión fallidos. Inténtalo más tarde.",
     "error_totp_invalid": "Código de autenticación no válido.",
-    "totp_label": "Código de autenticación"
+    "totp_label": "Código de autenticación",
+    "forgot_link": "¿Olvidaste tu contraseña?",
+    "forgot_title": "¿Olvidaste tu contraseña?",
+    "forgot_description": "Introduce tu correo electrónico y te enviaremos un enlace para elegir una nueva contraseña.",
+    "forgot_button": "Enviar enlace",
+    "forgot_sent": "Si existe una cuenta con esta dirección, el enlace de restablecimiento va en camino. Es válido durante 1 hora.",
+    "back_to_signin": "Volver a iniciar sesión",
+    "reset_title": "Elige una nueva contraseña",
+    "reset_button": "Guardar contraseña",
+    "reset_invalid_title": "Este enlace ya no funciona",
+    "reset_invalid_message": "El enlace de restablecimiento no es válido, ha caducado o ya se usó. Solicita uno nuevo.",
+    "new_password_label": "Nueva contraseña",
+    "current_password_label": "Contraseña actual",
+    "change_title": "Elige una nueva contraseña",
+    "change_description": "Un administrador te pide que definas tu propia contraseña antes de continuar.",
+    "success_password_reset": "Tu contraseña se ha cambiado. Ya puedes iniciar sesión.",
+    "error_password_unchanged": "La nueva contraseña debe ser distinta de la actual.",
+    "reset_check_failed": "No pudimos comprobar tu enlace en este momento. Puede que siga siendo válido: inténtalo de nuevo en un momento.",
+    "reset_retry": "Reintentar",
+    "success_password_changed": "Tu contraseña se ha cambiado. Vuelve a iniciar sesión."
   },
   "profile": {
     "title": "Mi perfil",
@@ -495,7 +514,15 @@
       "create": "Crear usuario",
       "creating": "Creando…",
       "sso_auto_link": "Vinculación SSO automática",
-      "sso_auto_link_hint": "La cuenta se vincula la primera vez que el usuario inicia sesión con cualquier proveedor SSO. No se necesita contraseña."
+      "sso_auto_link_hint": "La cuenta se vincula la primera vez que el usuario inicia sesión con cualquier proveedor SSO. No se necesita contraseña.",
+      "action_set_password": "Definir contraseña",
+      "set_password_title": "Definir contraseña",
+      "set_password_description": "Elige una nueva contraseña para {{email}}. La actual dejará de funcionar.",
+      "set_password_submit": "Definir contraseña",
+      "set_password_error": "No se pudo definir la contraseña.",
+      "must_change_password": "Exigir una nueva contraseña en el próximo inicio de sesión",
+      "must_change_password_hint": "El usuario deberá elegir su propia contraseña justo después de iniciar sesión con esta.",
+      "badge_must_change_password": "Cambio de contraseña requerido"
     },
     "settings": {
       "allow_signup": "Permitir registro",
@@ -658,9 +685,10 @@
     },
     "email_templates": {
       "title": "Plantillas de correo",
-      "description": "Edite el asunto y el cuerpo de los correos salientes. Variables: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Edita el asunto y el cuerpo de los correos salientes. Variables: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "Correo de compartir",
       "type_verify": "Correo de verificación",
+      "type_reset": "Correo de restablecimiento de contraseña",
       "subject": "Asunto",
       "subject_placeholder": "Asunto del correo…",
       "html_body": "Cuerpo HTML",
@@ -826,7 +854,9 @@
       "s3_bucket_required": "El nombre del bucket es obligatorio",
       "email_required": "El correo electrónico es obligatorio",
       "paste_content_required_for_password_change": "Vuelve a introducir el contenido para cambiar o quitar la contraseña de un paste protegido.",
-      "paste_password_required_for_content_change": "Introduce una contraseña (actual o nueva) para cambiar el contenido de un paste protegido."
+      "paste_password_required_for_content_change": "Introduce una contraseña (actual o nueva) para cambiar el contenido de un paste protegido.",
+      "password_unchanged": "La nueva contraseña debe ser distinta de la actual",
+      "concurrent_update": "Tu cuenta cambió mientras guardabas. Recarga la página e inténtalo de nuevo."
     },
     "file_protected": "Archivo protegido",
     "file_count": "{{count}} archivos",
@@ -838,7 +868,9 @@
       "account_unlinked": "Cuenta desvinculada",
       "account_linked": "Cuenta vinculada",
       "test_email_sent": "Correo de prueba enviado",
-      "no_releases_found": "No se encontraron versiones"
+      "no_releases_found": "No se encontraron versiones",
+      "password_reset_requested": "Si existe una cuenta con esta dirección, se ha enviado un enlace de restablecimiento.",
+      "password_reset_done": "Contraseña cambiada"
     }
   },
   "share_email": {

@@ -10,7 +10,11 @@ import {
   renderTemplate,
   renderShareEmail,
   renderVerifyEmail,
+  renderResetEmail,
   sanitizeEmailHtml,
+  DEFAULT_RESET_SUBJECT,
+  DEFAULT_RESET_HTML,
+  DEFAULT_RESET_TEXT,
   DEFAULT_SHARE_SUBJECT,
   DEFAULT_SHARE_HTML,
   DEFAULT_SHARE_TEXT,
@@ -262,6 +266,49 @@ describe("email-templates", () => {
       );
       expect(html).not.toContain("onmouseover");
       expect(html).not.toContain("evil()");
+    });
+  });
+
+  // ─── renderResetEmail ───────────────────────────────────────────────────────
+
+  describe("renderResetEmail", () => {
+    const vars = {
+      appName: "My <App>",
+      resetUrl: "https://example.com/auth/reset-password?token=a&b=c",
+    };
+
+    it("renders the defaults with the app name and the link", () => {
+      const { subject, html, text } = renderResetEmail(vars);
+      expect(subject).toBe("Reset your password – My <App>");
+      expect(html).toContain('href="https://example.com/auth/reset-password?token=a&amp;b=c"');
+      expect(html).toContain("My &lt;App&gt;");
+      expect(text).toContain("https://example.com/auth/reset-password?token=a&b=c");
+      expect(text).toContain("My <App>");
+    });
+
+    it("exposes the defaults used by the admin editor", () => {
+      expect(DEFAULT_RESET_SUBJECT).toContain("{{appName}}");
+      expect(DEFAULT_RESET_HTML).toContain("{{resetUrl}}");
+      expect(DEFAULT_RESET_TEXT).toContain("{{resetUrl}}");
+    });
+
+    it("uses the custom templates and falls back per field", () => {
+      const { subject, html, text } = renderResetEmail(vars, {
+        subject: "Custom {{appName}}",
+        html: null,
+        text: "Go: {{resetUrl}}",
+      });
+      expect(subject).toBe("Custom My <App>");
+      expect(html).toContain("Set a new password");
+      expect(text).toBe("Go: https://example.com/auth/reset-password?token=a&b=c");
+    });
+
+    it("strips scripts from a custom template", () => {
+      const { html } = renderResetEmail(vars, {
+        html: '<a href="{{resetUrl}}" onclick="evil()">Go</a><script>steal()</script>',
+      });
+      expect(html).not.toContain("onclick");
+      expect(html).not.toContain("<script>");
     });
   });
 });

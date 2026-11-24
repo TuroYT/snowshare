@@ -122,12 +122,38 @@ async function getSetupState(): Promise<{ needsSetup: boolean; allowIframeEmbedd
   return { needsSetup: !!data.needsSetup, allowIframeEmbedding };
 }
 
+/** What a user who must pick a new password may still call: sign-in plumbing and the change itself. */
+const FORCED_CHANGE_API_ALLOWED = [
+  "/api/auth/",
+  "/api/setup/",
+  "/api/settings",
+  "/api/signup-status",
+  "/api/health",
+  "/api/user/profile",
+];
+
+/** Gives a user who must change their password nothing but that: 403 on every other API route. */
+async function blockForcedPasswordChange(
+  request: NextRequest,
+  pathname: string
+): Promise<NextResponse | null> {
+  if (FORCED_CHANGE_API_ALLOWED.some((prefix) => pathname.startsWith(prefix))) return null;
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  if (!token?.mustChangePassword || token.revoked) return null;
+  return apiError(request, ErrorCode.FORBIDDEN);
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isScalarHtml = pathname === "/scalar.html";
 
   if (isCrossSiteMutation(request)) {
     return addSecurityHeaders(apiError(request, ErrorCode.FORBIDDEN), isScalarHtml);
+  }
+
+  if (pathname.startsWith("/api/")) {
+    const blocked = await blockForcedPasswordChange(request, pathname);
+    if (blocked) return addSecurityHeaders(blocked, isScalarHtml);
   }
 
   if (
@@ -159,15 +185,21 @@ export default async function proxy(request: NextRequest) {
   const protectedPaths = ["/admin", "/dashboard", "/profile", "/api/protected"];
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
 
-  if (isProtectedPath) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  const rawToken = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  // A session revoked by a password change counts as signed out
+  const token = rawToken?.revoked ? null : rawToken;
 
-    if (!token) {
-      const signInUrl = new URL("/auth/signin", request.url);
-      signInUrl.searchParams.set("callbackUrl", pathname);
-      const redirectResponse = NextResponse.redirect(signInUrl);
-      return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
-    }
+  if (isProtectedPath && !token) {
+    const signInUrl = new URL("/auth/signin", request.url);
+    signInUrl.searchParams.set("callbackUrl", pathname);
+    const redirectResponse = NextResponse.redirect(signInUrl);
+    return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
+  }
+
+  // An admin asked this user to pick a new password: nothing else until they have
+  if (token?.mustChangePassword && !pathname.startsWith("/auth/")) {
+    const redirectResponse = NextResponse.redirect(new URL("/auth/change-password", request.url));
+    return addSecurityHeaders(redirectResponse, isScalarHtml, allowIframeEmbedding);
   }
 
   const response = NextResponse.next();

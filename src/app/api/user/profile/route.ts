@@ -12,9 +12,14 @@ import {
   PASSWORD_MAX_LENGTH,
 } from "@/lib/constants";
 import { sendVerificationEmail } from "@/lib/email";
+import { revokePasswordResetTokens } from "@/lib/password-reset";
 import crypto from "node:crypto";
 
 const MAX_NAME_LENGTH = 100;
+
+function isPrismaError(error: unknown, code: string): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+}
 
 const VALID_TABS = new Set(["linkshare", "pasteshare", "fileshare"]);
 
@@ -23,6 +28,8 @@ type ProfileUpdateData = {
   email?: string;
   emailVerified?: Date | null;
   password?: string;
+  mustChangePassword?: boolean;
+  sessionsValidFrom?: Date;
   defaultTab?: "linkshare" | "pasteshare" | "fileshare";
   notifyOnAccess?: boolean;
 };
@@ -105,6 +112,7 @@ async function applyPasswordChange(
   request: NextRequest,
   newPassword: unknown,
   currentHash: string | null,
+  mustChangePassword: boolean,
   updateData: ProfileUpdateData
 ): Promise<NextResponse | null> {
   if (!currentHash) {
@@ -118,7 +126,15 @@ async function applyPasswordChange(
     });
   }
 
+  // The forced change exists because someone else knows the current password
+  if (mustChangePassword && (await verifyPassword(newPassword, currentHash))) {
+    return apiError(request, ErrorCode.PASSWORD_UNCHANGED);
+  }
+
   updateData.password = await hashPassword(newPassword);
+  updateData.mustChangePassword = false;
+  // Other sessions (a stolen one, say) are signed out; the client reopens its own (reopenSession)
+  updateData.sessionsValidFrom = new Date();
   return null;
 }
 
@@ -231,13 +247,20 @@ export async function PATCH(request: NextRequest) {
         request,
         newPassword,
         user.password,
+        user.mustChangePassword,
         updateData
       );
       if (passwordError) return passwordError;
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+    // A credential change must be applied to the password hash that was verified above: if an
+    // admin or a reset changed it in between, the update matches nothing (P2025) instead of
+    // undoing that change
+    const credentialChange = emailChanged || !!newPassword;
+    const userUpdate = prisma.user.update({
+      where: credentialChange
+        ? { id: session.user.id, password: user.password }
+        : { id: session.user.id },
       data: updateData,
       select: {
         id: true,
@@ -250,6 +273,18 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
+    // A reset link requested before a new password or a new address must not outlive it (links
+    // go to the old address). Same transaction: no window to use one, and no half-done change.
+    let updatedUser;
+    if (updateData.password || updateData.email) {
+      [updatedUser] = await prisma.$transaction([
+        userUpdate,
+        revokePasswordResetTokens(session.user.id),
+      ]);
+    } else {
+      updatedUser = await userUpdate;
+    }
+
     if (needsEmailVerification && updateData.email) {
       await sendEmailChangeVerification(updateData.email);
     }
@@ -259,6 +294,9 @@ export async function PATCH(request: NextRequest) {
       ...(needsEmailVerification && { requiresVerification: true }),
     });
   } catch (error) {
+    if (isPrismaError(error, "P2025")) {
+      return apiError(request, ErrorCode.CONCURRENT_UPDATE);
+    }
     console.error("Error updating user profile:", error);
     return internalError(request);
   }

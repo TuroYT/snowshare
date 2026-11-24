@@ -20,13 +20,18 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
   const [disableCredentialsLogin, setDisableCredentialsLogin] = useState(true);
+  const [passwordResetAvailable, setPasswordResetAvailable] = useState(false);
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
   // Only known notice codes are shown: never render free text taken from the URL.
-  const noticeKey =
-    searchParams.get("notice") === "account_created" ? "auth.success_account_created" : null;
+  const NOTICE_KEYS: Record<string, string> = {
+    account_created: "auth.success_account_created",
+    password_reset: "auth.success_password_reset",
+    password_changed: "auth.success_password_changed",
+  };
+  const noticeKey = NOTICE_KEYS[searchParams.get("notice") ?? ""] ?? null;
   const { t } = useTranslation();
   const { branding } = useTheme();
 
@@ -39,6 +44,7 @@ export default function SignIn() {
       if (setupRes.ok) {
         const data = await setupRes.json();
         setDisableCredentialsLogin(data.disableCredentialsLogin ?? false);
+        setPasswordResetAvailable(data.passwordResetAvailable ?? false);
       }
     })();
   }, []);
@@ -173,7 +179,7 @@ export default function SignIn() {
           <p className="text-sm text-[var(--foreground-muted)] mt-1">{branding.appName}</p>
         </div>
 
-        {/* The notice comes from signup/setup (?notice=account_created) */}
+        {/* The notice comes from signup/setup/reset (?notice=account_created|password_reset) */}
         <FormNotice
           message={error || (noticeKey ? t(noticeKey) : null)}
           variant={error ? "danger" : "success"}
@@ -199,6 +205,16 @@ export default function SignIn() {
               placeholder={t("auth.password_placeholder")}
               required
             />
+            {passwordResetAvailable && (
+              <div className="text-right -mt-2">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs text-[var(--foreground-muted)] hover:text-[var(--primary)] hover:underline"
+                >
+                  {t("auth.forgot_link", "Forgot your password?")}
+                </Link>
+              </div>
+            )}
             {needsTotp && (
               <Input
                 label={t("auth.totp_label", "Authentication code")}

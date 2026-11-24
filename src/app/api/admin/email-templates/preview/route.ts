@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
-import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
+import { renderResetEmail, renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     const { type, subject, html, text } = data as {
-      type: "share" | "verify";
+      type: "share" | "verify" | "reset";
       subject?: string | null;
       html?: string | null;
       text?: string | null;
@@ -45,6 +45,15 @@ export async function POST(request: NextRequest) {
           appName,
           verifyUrl:
             "https://example.com/auth/verify-email?token=example-token&email=user%40example.com",
+        },
+        { subject, html, text }
+      );
+      return NextResponse.json({ preview: result });
+    } else if (type === "reset") {
+      const result = renderResetEmail(
+        {
+          appName,
+          resetUrl: "https://example.com/auth/reset-password?token=example-token",
         },
         { subject, html, text }
       );

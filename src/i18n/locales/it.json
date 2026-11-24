@@ -255,7 +255,26 @@
     "signin_with": "Accedi con",
     "error_too_many_attempts": "Troppi tentativi di accesso non riusciti. Riprova più tardi.",
     "error_totp_invalid": "Codice di autenticazione non valido.",
-    "totp_label": "Codice di autenticazione"
+    "totp_label": "Codice di autenticazione",
+    "forgot_link": "Password dimenticata?",
+    "forgot_title": "Password dimenticata?",
+    "forgot_description": "Inserisci il tuo indirizzo e-mail: ti invieremo un link per scegliere una nuova password.",
+    "forgot_button": "Invia il link",
+    "forgot_sent": "Se esiste un account per questo indirizzo, un link di reimpostazione è in arrivo. Resta valido per 1 ora.",
+    "back_to_signin": "Torna all'accesso",
+    "reset_title": "Scegli una nuova password",
+    "reset_button": "Salva la password",
+    "reset_invalid_title": "Questo link non funziona più",
+    "reset_invalid_message": "Il link di reimpostazione non è valido, è scaduto o è già stato usato. Richiedine uno nuovo.",
+    "new_password_label": "Nuova password",
+    "current_password_label": "Password attuale",
+    "change_title": "Scegli una nuova password",
+    "change_description": "Un amministratore ti chiede di impostare la tua password prima di continuare.",
+    "success_password_reset": "La tua password è stata modificata. Ora puoi accedere.",
+    "error_password_unchanged": "La nuova password deve essere diversa da quella attuale.",
+    "reset_check_failed": "Al momento non è stato possibile verificare il link. Potrebbe essere ancora valido: riprova tra un momento.",
+    "reset_retry": "Riprova",
+    "success_password_changed": "La tua password è stata modificata. Accedi di nuovo."
   },
   "profile": {
     "title": "Il mio profilo",
@@ -495,7 +514,15 @@
       "create": "Crea utente",
       "creating": "Creazione in corso…",
       "sso_auto_link": "Consenti collegamento automatico SSO",
-      "sso_auto_link_hint": "L'account viene collegato al primo accesso dell'utente tramite qualsiasi provider SSO. Non è necessaria alcuna password."
+      "sso_auto_link_hint": "L'account viene collegato al primo accesso dell'utente tramite qualsiasi provider SSO. Non è necessaria alcuna password.",
+      "action_set_password": "Imposta password",
+      "set_password_title": "Imposta password",
+      "set_password_description": "Scegli una nuova password per {{email}}. Quella attuale smetterà di funzionare.",
+      "set_password_submit": "Imposta password",
+      "set_password_error": "Impossibile impostare la password.",
+      "must_change_password": "Richiedi una nuova password al prossimo accesso",
+      "must_change_password_hint": "L'utente dovrà scegliere la propria password subito dopo aver effettuato l'accesso con questa.",
+      "badge_must_change_password": "Cambio password richiesto"
     },
     "settings": {
       "allow_signup": "Consenti registrazioni",
@@ -658,9 +685,10 @@
     },
     "email_templates": {
       "title": "Modelli email",
-      "description": "Modifica l'oggetto e il contenuto delle email in uscita. Segnaposto: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Modifica l'oggetto e il contenuto delle e-mail in uscita. Segnaposto: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "Email di condivisione",
       "type_verify": "Email di verifica",
+      "type_reset": "E-mail di reimpostazione della password",
       "subject": "Oggetto",
       "subject_placeholder": "Oggetto dell'email…",
       "html_body": "Corpo HTML",
@@ -826,7 +854,9 @@
       "s3_bucket_required": "Il nome del bucket è obbligatorio",
       "email_required": "L'email è obbligatoria",
       "paste_content_required_for_password_change": "Re-enter the content to change or remove the password of a protected paste.",
-      "paste_password_required_for_content_change": "Inserisci una password (corrente o nuova) per cambiare il contenuto di una condivisione protetta."
+      "paste_password_required_for_content_change": "Inserisci una password (corrente o nuova) per cambiare il contenuto di una condivisione protetta.",
+      "password_unchanged": "La nuova password deve essere diversa da quella attuale",
+      "concurrent_update": "Il tuo account è cambiato durante il salvataggio. Ricarica la pagina e riprova."
     },
     "file_protected": "File protetto",
     "file_count": "{{count}} file",
@@ -838,7 +868,9 @@
       "account_unlinked": "Account scollegato",
       "account_linked": "Account collegato",
       "test_email_sent": "Email di prova inviata",
-      "no_releases_found": "Nessuna release trovata"
+      "no_releases_found": "Nessuna release trovata",
+      "password_reset_requested": "Se esiste un account per questo indirizzo, è stato inviato un link di reimpostazione.",
+      "password_reset_done": "Password modificata"
     }
   },
   "share_email": {

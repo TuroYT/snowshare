@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { getSettingsCached } from "@/lib/settings";
-import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
+import { renderResetEmail, renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
 
 async function getSmtpConfig() {
   const settings = await getSettingsCached();
@@ -51,6 +51,35 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   );
 
   await transporter.sendMail({
+    from: `"${appName}" <${fromAddress}>`,
+    to: email,
+    subject,
+    html,
+    text,
+  });
+
+  return true;
+}
+
+export async function sendResetLinkEmail(email: string, token: string): Promise<boolean> {
+  const config = await getSmtpConfig();
+  if (!config) return false;
+
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const resetUrl = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
+  const appName = config.appName || "SnowShare";
+  const fromAddress = config.smtpFrom || config.smtpUser || `noreply@snowshare`;
+
+  const { subject, html, text } = renderResetEmail(
+    { appName, resetUrl },
+    {
+      subject: config.resetEmailSubject,
+      html: config.resetEmailHtml,
+      text: config.resetEmailText,
+    }
+  );
+
+  await createSmtpTransporter(config).sendMail({
     from: `"${appName}" <${fromAddress}>`,
     to: email,
     subject,

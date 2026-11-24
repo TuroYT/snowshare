@@ -10,6 +10,7 @@ import {
 } from "@/lib/constants";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { hashPassword } from "@/lib/security";
+import { revokePasswordResetTokens } from "@/lib/password-reset";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest) {
         name: true,
         isAdmin: true,
         ssoAutoLink: true,
+        mustChangePassword: true,
         createdAt: true,
         _count: {
           select: { shares: true },
@@ -69,6 +71,49 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching users:", error);
     return internalError(request);
   }
+}
+
+/** Sets a user's password (lost password), optionally forcing them to pick their own at sign-in. */
+async function setUserPassword(
+  request: NextRequest,
+  userId: unknown,
+  password: unknown,
+  mustChangePassword: unknown
+): Promise<NextResponse> {
+  if (typeof userId !== "string") {
+    return apiError(request, ErrorCode.INVALID_REQUEST);
+  }
+  if (mustChangePassword !== undefined && typeof mustChangePassword !== "boolean") {
+    return apiError(request, ErrorCode.INVALID_REQUEST);
+  }
+  if (typeof password !== "string" || !isValidPassword(password)) {
+    return apiError(request, ErrorCode.PASSWORD_LENGTH, {
+      min: PASSWORD_MIN_LENGTH,
+      max: PASSWORD_MAX_LENGTH,
+    });
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!target) {
+    return apiError(request, ErrorCode.USER_NOT_FOUND);
+  }
+
+  const hashedPassword = await hashPassword(password);
+  // One transaction: a reset link requested before the admin stepped in cannot be used between
+  // the two writes to undo the new password
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: mustChangePassword === true,
+        // Sessions opened with the old password (a compromised account, say) stop working
+        sessionsValidFrom: new Date(),
+      },
+    }),
+    revokePasswordResetTokens(userId),
+  ]);
+  return NextResponse.json({ success: true });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -87,7 +132,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const { userId, action } = await request.json();
+    const { userId, action, password, mustChangePassword } = await request.json();
 
     if (!userId || !action) {
       return apiError(request, ErrorCode.MISSING_DATA);
@@ -104,6 +149,10 @@ export async function PATCH(request: NextRequest) {
 
     if (userId === session.user.id && action !== "view") {
       return apiError(request, ErrorCode.FORBIDDEN);
+    }
+
+    if (action === "setPassword") {
+      return await setUserPassword(request, userId, password, mustChangePassword);
     }
 
     if (action === "promote") {
@@ -141,7 +190,8 @@ function validateNewUser(
   request: NextRequest,
   email: unknown,
   password: unknown,
-  ssoAutoLink: unknown
+  ssoAutoLink: unknown,
+  mustChangePassword: unknown
 ): NextResponse | null {
   if (!email || typeof email !== "string") {
     return apiError(request, ErrorCode.EMAIL_PASSWORD_REQUIRED);
@@ -153,6 +203,10 @@ function validateNewUser(
 
   // Explicit boolean validation — reject non-boolean values (e.g. "true" as a string) with a 400
   if (ssoAutoLink !== undefined && typeof ssoAutoLink !== "boolean") {
+    return apiError(request, ErrorCode.INVALID_REQUEST);
+  }
+
+  if (mustChangePassword !== undefined && typeof mustChangePassword !== "boolean") {
     return apiError(request, ErrorCode.INVALID_REQUEST);
   }
 
@@ -188,9 +242,22 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { email, name, password, isAdmin: makeAdmin, ssoAutoLink } = await request.json();
+    const {
+      email,
+      name,
+      password,
+      isAdmin: makeAdmin,
+      ssoAutoLink,
+      mustChangePassword,
+    } = await request.json();
 
-    const validationError = validateNewUser(request, email, password, ssoAutoLink);
+    const validationError = validateNewUser(
+      request,
+      email,
+      password,
+      ssoAutoLink,
+      mustChangePassword
+    );
     if (validationError) return validationError;
     const ssoAutoLinkBool = ssoAutoLink === true;
 
@@ -208,6 +275,8 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         isAdmin: makeAdmin || false,
         ssoAutoLink: ssoAutoLinkBool,
+        // Meaningless without a password to replace
+        mustChangePassword: mustChangePassword === true && !!hashedPassword,
       },
       select: {
         id: true,
@@ -215,6 +284,7 @@ export async function POST(request: NextRequest) {
         name: true,
         isAdmin: true,
         ssoAutoLink: true,
+        mustChangePassword: true,
         createdAt: true,
         _count: { select: { shares: true } },
       },

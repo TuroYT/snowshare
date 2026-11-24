@@ -255,7 +255,26 @@
     "signin_with": "Anmelden mit",
     "error_too_many_attempts": "Zu viele fehlgeschlagene Anmeldeversuche. Versuche es später erneut.",
     "error_totp_invalid": "Ungültiger Authentifizierungscode.",
-    "totp_label": "Authentifizierungscode"
+    "totp_label": "Authentifizierungscode",
+    "forgot_link": "Passwort vergessen?",
+    "forgot_title": "Passwort vergessen?",
+    "forgot_description": "Gib deine E-Mail-Adresse ein. Wir senden dir einen Link, mit dem du ein neues Passwort wählst.",
+    "forgot_button": "Link senden",
+    "forgot_sent": "Falls zu dieser Adresse ein Konto existiert, ist ein Link zum Zurücksetzen unterwegs. Er ist 1 Stunde gültig.",
+    "back_to_signin": "Zurück zur Anmeldung",
+    "reset_title": "Neues Passwort wählen",
+    "reset_button": "Passwort speichern",
+    "reset_invalid_title": "Dieser Link funktioniert nicht mehr",
+    "reset_invalid_message": "Der Link zum Zurücksetzen ist ungültig, abgelaufen oder wurde bereits verwendet. Fordere einen neuen an.",
+    "new_password_label": "Neues Passwort",
+    "current_password_label": "Aktuelles Passwort",
+    "change_title": "Neues Passwort wählen",
+    "change_description": "Ein Administrator bittet dich, ein eigenes Passwort festzulegen, bevor du fortfährst.",
+    "success_password_reset": "Dein Passwort wurde geändert. Du kannst dich jetzt anmelden.",
+    "error_password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+    "reset_check_failed": "Dein Link konnte gerade nicht geprüft werden. Er ist möglicherweise noch gültig: Versuche es gleich noch einmal.",
+    "reset_retry": "Erneut versuchen",
+    "success_password_changed": "Dein Passwort wurde geändert. Melde dich erneut an."
   },
   "profile": {
     "title": "Mein Profil",
@@ -495,7 +514,15 @@
       "create": "Benutzer erstellen",
       "creating": "Wird erstellt…",
       "sso_auto_link": "Automatische SSO-Verknüpfung",
-      "sso_auto_link_hint": "Das Konto wird beim ersten Login des Benutzers über einen SSO-Anbieter verknüpft. Kein Passwort erforderlich."
+      "sso_auto_link_hint": "Das Konto wird beim ersten Login des Benutzers über einen SSO-Anbieter verknüpft. Kein Passwort erforderlich.",
+      "action_set_password": "Passwort setzen",
+      "set_password_title": "Passwort setzen",
+      "set_password_description": "Wähle ein neues Passwort für {{email}}. Das bisherige funktioniert danach nicht mehr.",
+      "set_password_submit": "Passwort setzen",
+      "set_password_error": "Das Passwort konnte nicht gesetzt werden.",
+      "must_change_password": "Bei der nächsten Anmeldung ein neues Passwort verlangen",
+      "must_change_password_hint": "Die Person muss direkt nach der Anmeldung mit diesem Passwort ein eigenes wählen.",
+      "badge_must_change_password": "Passwortänderung erforderlich"
     },
     "settings": {
       "allow_signup": "Registrierung zulassen",
@@ -658,9 +685,10 @@
     },
     "email_templates": {
       "title": "E-Mail-Vorlagen",
-      "description": "Bearbeiten Sie Betreff und Inhalt ausgehender E-Mails. Variablen: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}.",
+      "description": "Bearbeiten Sie Betreff und Inhalt ausgehender E-Mails. Platzhalter: {{appName}}, {{shareTitle}}, {{shareUrl}}, {{verifyUrl}}, {{resetUrl}}.",
       "type_share": "Freigabe-E-Mail",
       "type_verify": "Verifizierungs-E-Mail",
+      "type_reset": "E-Mail zum Zurücksetzen des Passworts",
       "subject": "Betreff",
       "subject_placeholder": "E-Mail-Betreff…",
       "html_body": "HTML-Inhalt",
@@ -826,7 +854,9 @@
       "s3_bucket_required": "Der Bucket-Name ist erforderlich",
       "email_required": "E-Mail-Adresse ist erforderlich",
       "paste_content_required_for_password_change": "Gib den Inhalt erneut ein, um das Passwort eines geschützten Pastes zu ändern oder zu entfernen.",
-      "paste_password_required_for_content_change": "Gib ein Passwort (aktuell oder neu) ein, um den Inhalt eines geschützten Pastes zu ändern."
+      "paste_password_required_for_content_change": "Gib ein Passwort (aktuell oder neu) ein, um den Inhalt eines geschützten Pastes zu ändern.",
+      "password_unchanged": "Das neue Passwort muss sich vom aktuellen unterscheiden",
+      "concurrent_update": "Dein Konto hat sich während des Speicherns geändert. Lade die Seite neu und versuche es erneut."
     },
     "file_protected": "Geschützte Datei",
     "file_count": "{{count}} Dateien",
@@ -838,7 +868,9 @@
       "account_unlinked": "Konto getrennt",
       "account_linked": "Konto verknüpft",
       "test_email_sent": "Test-E-Mail gesendet",
-      "no_releases_found": "Keine Versionen gefunden"
+      "no_releases_found": "Keine Versionen gefunden",
+      "password_reset_requested": "Falls zu dieser Adresse ein Konto existiert, wurde ein Link zum Zurücksetzen gesendet.",
+      "password_reset_done": "Passwort geändert"
     }
   },
   "share_email": {

@@ -1,4 +1,5 @@
-import type { Account, NextAuthOptions, Profile } from "next-auth";
+import type { Account, NextAuthOptions, Profile, Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import { getSettingsCached } from "@/lib/settings";
 import type { Prisma } from "@/generated/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -13,6 +14,7 @@ import { cookies } from "next/headers";
 import { getClientIpFromHeaders } from "@/lib/getClientIp";
 import { getRetryAfter, recordRateLimitHit, resetRateLimit } from "@/lib/rate-limit";
 import { openTotpSecret, verifyTotp } from "@/lib/totp";
+import { isUnverified, refreshAccountState } from "@/lib/account-state";
 
 /** httpOnly cookie binding an account-link request to the browser that initiated it. */
 export const LINK_TOKEN_COOKIE = "__snowshare-link-token";
@@ -32,6 +34,9 @@ declare module "next-auth" {
   interface User {
     id: string;
     name?: string | null;
+    mustChangePassword?: boolean;
+    /** When a password sign-in began (ms), taken before the stored hash is read */
+    authenticatedAt?: number;
   }
   interface Session {
     user: {
@@ -39,6 +44,8 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      /** An admin asked this user to pick a new password (see /auth/change-password) */
+      mustChangePassword?: boolean;
     };
   }
 }
@@ -48,6 +55,14 @@ declare module "next-auth/jwt" {
     id: string;
     name?: string | null;
     image?: string | null;
+    /** An admin requires a new password: set for password sign-ins only (see proxy.ts) */
+    mustChangePassword?: boolean;
+    /** Signed in with a password, so a forced password change applies to this session */
+    viaPassword?: boolean;
+    /** When this session was opened (ms): compared with User.sessionsValidFrom */
+    signedInAt?: number;
+    /** Opened before an admin or a reset changed the password, or the user is gone */
+    revoked?: boolean;
   }
 }
 
@@ -304,6 +319,9 @@ export async function getDynamicProviders() {
           if (!credentials?.email || !credentials?.password) {
             return null;
           }
+          // Taken before the stored hash is read: a password change that lands while this
+          // sign-in is in flight then revokes the session it produces (see refreshAccountState)
+          const authenticatedAt = Date.now();
 
           // Throttle failed logins per client IP + email to slow down brute force. The IP
           // resolved by server.js from the socket comes first, like in getClientIp()
@@ -329,6 +347,7 @@ export async function getDynamicProviders() {
               totpEnabled: true,
               totpSecret: true,
               totpLastCounter: true,
+              mustChangePassword: true,
             },
           });
 
@@ -382,6 +401,8 @@ export async function getDynamicProviders() {
             id: user.id,
             email: user.email,
             name: user.name,
+            mustChangePassword: user.mustChangePassword,
+            authenticatedAt,
           };
         },
       })
@@ -436,6 +457,17 @@ export function crossSiteCookies(): NonNullable<NextAuthOptions["cookies"]> {
   };
 }
 
+/**
+ * A revoked session is an empty one, which next-auth reads as "not signed in" everywhere:
+ * getServerSession() returns null (routes answer 401) and the client sees no session. A session
+ * without a user would make the client believe it is signed in and crash on the missing user.
+ */
+function withoutUserIfRevoked(session: Session, token: JWT): Session {
+  // Revoked, or the database could not be asked: deny, without touching the cookie
+  if (token.revoked || isUnverified(token)) return {} as Session;
+  return session;
+}
+
 export async function getAuthOptions(): Promise<NextAuthOptions> {
   const providers = await getDynamicProviders();
 
@@ -478,12 +510,17 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
 
         return true;
       },
-      jwt: async ({ token, user }) => {
+      jwt: async ({ token, user, account }) => {
         if (user) {
           token.id = user.id;
           token.name = user.name;
           token.image = user.image || gravatarUrl(token.email as string);
+          token.signedInAt = user.authenticatedAt ?? Date.now();
+          token.revoked = false;
+          // Only a password sign-in is asked for a new password: an SSO user may not have one
+          token.viaPassword = account?.provider === "credentials";
         }
+        await refreshAccountState(token);
         if (!token.image && token.email) {
           token.image = gravatarUrl(token.email as string);
         }
@@ -494,8 +531,9 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
           session.user.id = token.id as string;
           session.user.name = token.name as string | null;
           session.user.image = token.image as string | null;
+          session.user.mustChangePassword = token.mustChangePassword === true;
         }
-        return session;
+        return withoutUserIfRevoked(session, token);
       },
       redirect: async ({ url, baseUrl }) => {
         if (url.startsWith("/")) return `${baseUrl}${url}`;
@@ -532,14 +570,15 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
       }
-      return token;
+      return refreshAccountState(token);
     },
     session: async ({ session, token }) => {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name as string | null;
+        session.user.mustChangePassword = token.mustChangePassword === true;
       }
-      return session;
+      return withoutUserIfRevoked(session, token);
     },
   },
   pages: {

@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useSession } from "next-auth/react";
 import WaveSkeleton from "@/components/ui/WaveSkeleton";
 import { Alert, Badge, Button, Input } from "@/components/ui";
 import SkeletonTransition from "@/components/ui/SkeletonTransition";
 import CreateUserDialog from "./CreateUserDialog";
+import SetPasswordDialog from "./SetPasswordDialog";
 import WarningModal from "./WarningModal";
 
 type UserAction = "promote" | "demote" | "delete" | "enableSsoAutoLink" | "disableSsoAutoLink";
@@ -16,6 +18,7 @@ interface User {
   name?: string;
   isAdmin: boolean;
   ssoAutoLink: boolean;
+  mustChangePassword: boolean;
   createdAt: string;
   _count: {
     shares: number;
@@ -24,6 +27,7 @@ interface User {
 
 export default function UsersTab() {
   const { t } = useTranslation();
+  const currentUserId = useSession().data?.user?.id;
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +37,7 @@ export default function UsersTab() {
   // Only the latest list request may update the screen
   const fetchIdRef = useRef(0);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<{ id: string; email: string } | null>(null);
   const [pendingAction, setPendingAction] = useState<{
     userId: string;
     action: UserAction;
@@ -223,7 +228,14 @@ export default function UsersTab() {
                       busyUserIds.includes(user.id) ? "opacity-60" : ""
                     }`}
                   >
-                    <td className="px-6 py-3 text-sm text-[var(--foreground)]">{user.email}</td>
+                    <td className="px-6 py-3 text-sm text-[var(--foreground)]">
+                      {user.email}
+                      {user.mustChangePassword && (
+                        <Badge variant="warning" className="ml-2">
+                          {t("admin.users.badge_must_change_password")}
+                        </Badge>
+                      )}
+                    </td>
                     <td className="px-6 py-3 text-sm text-[var(--foreground-muted)]">
                       {user.name || "-"}
                     </td>
@@ -252,6 +264,16 @@ export default function UsersTab() {
                             ? t("admin.users.action_remove_admin")
                             : t("admin.users.action_make_admin")}
                         </Button>
+                        {user.id !== currentUserId && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => setPasswordUser({ id: user.id, email: user.email })}
+                            disabled={busyUserIds.includes(user.id)}
+                          >
+                            {t("admin.users.action_set_password")}
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="secondary"
@@ -287,6 +309,12 @@ export default function UsersTab() {
             </tbody>
           </table>
         </div>
+
+        <SetPasswordDialog
+          user={passwordUser}
+          onClose={() => setPasswordUser(null)}
+          onPasswordSet={fetchUsers}
+        />
 
         <CreateUserDialog
           isOpen={showCreateDialog}

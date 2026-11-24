@@ -4,12 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { apiError, internalError, ErrorCode } from "@/lib/api-errors";
 import { detectLocale, translate } from "@/lib/i18n-server";
-import { renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
+import { renderResetEmail, renderShareEmail, renderVerifyEmail } from "@/lib/email-templates";
 import { isEmailEnabled } from "@/lib/email";
 import nodemailer from "nodemailer";
 
 type TestPayload = {
-  type: "share" | "verify";
+  type: "share" | "verify" | "reset";
   subject?: string | null;
   html?: string | null;
   text?: string | null;
@@ -72,6 +72,12 @@ function renderTestEmail(
         appName,
         verifyUrl: `${baseUrl}/auth/verify-email?token=test-token&email=${encodeURIComponent(userEmail)}`,
       },
+      overrides
+    );
+  }
+  if (payload.type === "reset") {
+    return renderResetEmail(
+      { appName, resetUrl: `${baseUrl}/auth/reset-password?token=test-token` },
       overrides
     );
   }

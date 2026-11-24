@@ -14,7 +14,10 @@ jest.mock("@/lib/prisma", () => ({
     },
     verificationToken: {
       create: jest.fn(),
+      deleteMany: jest.fn(),
     },
+    // Batched writes run together (array form)
+    $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   },
 }));
 
@@ -55,6 +58,7 @@ import { NextRequest } from "next/server";
 const mockFindUnique = prisma.user.findUnique as jest.Mock;
 const mockUpdate = prisma.user.update as jest.Mock;
 const mockTokenCreate = prisma.verificationToken.create as jest.Mock;
+const mockTokenDeleteMany = prisma.verificationToken.deleteMany as jest.Mock;
 const mockGetSession = getServerSession as jest.Mock;
 const mockGetSettings = getSettingsCached as jest.Mock;
 const mockVerifyPassword = verifyPassword as jest.Mock;
@@ -92,6 +96,10 @@ describe("/api/user/profile", () => {
     mockGetSession.mockResolvedValue({ user: { id: "user-1" } });
     mockFindUnique.mockResolvedValue(passwordUser);
     mockUpdate.mockResolvedValue(updatedUser);
+    mockTokenDeleteMany.mockResolvedValue({ count: 0 });
+    (prisma.$transaction as jest.Mock).mockImplementation((ops: Promise<unknown>[]) =>
+      Promise.all(ops)
+    );
     mockVerifyPassword.mockResolvedValue(true);
     (hashPassword as jest.Mock).mockImplementation((p: string) => Promise.resolve(`hashed:${p}`));
     mockGetSettings.mockResolvedValue({ emailVerificationRequired: false, smtpEnabled: false });
@@ -307,6 +315,102 @@ describe("/api/user/profile", () => {
         expect(res.status).toBe(200);
         expect(mockVerifyPassword).toHaveBeenCalledWith("old", "stored-hash");
         expect(mockUpdate.mock.calls[0][0].data.password).toBe("hashed:newpassword123");
+      });
+
+      it("clears the forced-change flag, signs out other sessions and drops pending reset links", async () => {
+        await PATCH(makeRequest({ newPassword: "newpassword123", currentPassword: "old" }));
+        const data = mockUpdate.mock.calls[0][0].data;
+        expect(data.mustChangePassword).toBe(false);
+        expect(data.sessionsValidFrom).toBeInstanceOf(Date);
+        expect(mockTokenDeleteMany).toHaveBeenCalledWith({
+          where: { identifier: "password-reset:user-1" },
+        });
+        // Both writes go through one transaction
+        expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      });
+
+      it("drops pending reset links when the e-mail changes (they went to the old address)", async () => {
+        mockVerifyPassword.mockResolvedValue(true);
+        mockFindUnique.mockResolvedValueOnce(passwordUser).mockResolvedValueOnce(null);
+        mockGetSettings.mockResolvedValue({ emailVerificationRequired: false });
+        await PATCH(makeRequest({ email: "new@example.com", currentPassword: "pw" }));
+        expect(mockTokenDeleteMany).toHaveBeenCalledWith({
+          where: { identifier: "password-reset:user-1" },
+        });
+        // An e-mail change alone does not sign out sessions
+        expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty("sessionsValidFrom");
+      });
+
+      it("applies a credential change only to the password hash that was verified", async () => {
+        await PATCH(makeRequest({ newPassword: "newpassword123", currentPassword: "old" }));
+        expect(mockUpdate.mock.calls[0][0].where).toEqual({
+          id: "user-1",
+          password: "stored-hash",
+        });
+      });
+
+      it("answers 409 when the account changed between the check and the update", async () => {
+        mockUpdate.mockRejectedValue(Object.assign(new Error("not found"), { code: "P2025" }));
+        const res = await PATCH(
+          makeRequest({ newPassword: "newpassword123", currentPassword: "old" })
+        );
+        expect(res.status).toBe(409);
+        expect((await res.json()).code).toBe("CONCURRENT_UPDATE");
+      });
+
+      it("keeps the id-only filter for profile changes that are not credentials", async () => {
+        await PATCH(makeRequest({ name: "Bob" }));
+        expect(mockUpdate.mock.calls[0][0].where).toEqual({ id: "user-1" });
+      });
+
+      it("does not touch the transaction when only the profile fields change", async () => {
+        await PATCH(makeRequest({ name: "Bob" }));
+        expect(prisma.$transaction).not.toHaveBeenCalled();
+      });
+
+      it("leaves the flag and the reset links alone when the password is not changed", async () => {
+        await PATCH(makeRequest({ name: "Bob" }));
+        expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty("mustChangePassword");
+        expect(mockTokenDeleteMany).not.toHaveBeenCalled();
+      });
+
+      it("does not let a password holder skip the current password with an empty one", async () => {
+        // Issue #382 workaround: "leave the current password empty" must not work
+        const res = await PATCH(
+          makeRequest({ newPassword: "newpassword123", currentPassword: "" })
+        );
+        expect((await res.json()).code).toBe("CURRENT_PASSWORD_REQUIRED");
+        expect(mockUpdate).not.toHaveBeenCalled();
+      });
+
+      it("forbids an SSO-only account from adding a password, even with an empty current one", async () => {
+        mockFindUnique.mockResolvedValue({ ...passwordUser, password: null });
+        const res = await PATCH(
+          makeRequest({ newPassword: "newpassword123", currentPassword: "" })
+        );
+        expect((await res.json()).code).toBe("FORBIDDEN");
+        expect(mockUpdate).not.toHaveBeenCalled();
+      });
+
+      it("refuses to keep the temporary password when an admin required a change", async () => {
+        mockFindUnique.mockResolvedValue({ ...passwordUser, mustChangePassword: true });
+        mockVerifyPassword.mockResolvedValue(true); // the new password matches the current hash
+        const res = await PATCH(
+          makeRequest({ newPassword: "temp-password", currentPassword: "temp-password" })
+        );
+        expect(res.status).toBe(400);
+        expect((await res.json()).code).toBe("PASSWORD_UNCHANGED");
+        expect(mockUpdate).not.toHaveBeenCalled();
+      });
+
+      it("accepts a different password when an admin required a change", async () => {
+        mockFindUnique.mockResolvedValue({ ...passwordUser, mustChangePassword: true });
+        mockVerifyPassword.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+        const res = await PATCH(
+          makeRequest({ newPassword: "brand-new-pass", currentPassword: "temp-password" })
+        );
+        expect(res.status).toBe(200);
+        expect(mockUpdate.mock.calls[0][0].data.mustChangePassword).toBe(false);
       });
 
       it("rejects a new password with an invalid length", async () => {
